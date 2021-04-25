@@ -1,0 +1,5 @@
+name: name
+api: 3.0.0
+main: ree_jp\template\Plugin
+version: 1.0.0
+author: ree-jp

@@ -1,0 +1,20 @@
+{
+  "name": "ree_jp/template",
+  "description": "PocketMine-MP plugin",
+  "minimum-stability": "stable",
+  "license": "unlicense",
+  "authors": [
+    {
+      "name": "ree_jp",
+      "email": "mail@ree-jp.net"
+    }
+  ],
+  "require": {
+  },
+  "repositories": [
+    {
+      "type": "vcs",
+      "url": "https://github.com/pmmp/PocketMine-MP.git"
+    }
+  ]
+}
