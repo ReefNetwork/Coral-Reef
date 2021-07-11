@@ -17,7 +17,10 @@ class CoralReefPlugin extends PluginBase
     {
         self::$plugin = $this;
         try {
-            $this->discordBot = new DiscordBot($this->getConfig()->get(ConfigConst::DISCORD_TOKEN), $this->getConfig()->get(ConfigConst::DISCORD_LOG_CHANNEL_ID),);
+            $this->discordBot = new DiscordBot(
+                $this->getConfig()->get(ConfigConst::DISCORD_TOKEN),
+                $this->getConfig()->get(ConfigConst::DISCORD_CHAT_CHANNEL_ID),
+                $this->getConfig()->get(ConfigConst::DISCORD_LOG_CHANNEL_ID));
         } catch (Exception $e) {
             $this->getLogger()->critical("[DiscordBot]" . $e->getMessage());
         }
@@ -32,6 +35,8 @@ class CoralReefPlugin extends PluginBase
 
     public function onDisable()
     {
+        $bot = $this->discordBot;
+        $bot->sendLog("");
         parent::onDisable();
     }
 }
