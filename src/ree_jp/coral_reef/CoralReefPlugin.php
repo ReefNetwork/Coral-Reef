@@ -1,15 +1,27 @@
 <?php
+
 namespace ree_jp\coral_reef;
 
+use DiscordBot;
+use Exception;
 use pocketmine\plugin\PluginBase;
 
 class CoralReefPlugin extends PluginBase
 {
-    private const NOTICE = "§a>> ";
+    const NOTICE = "§a>> ";
+    static CoralReefPlugin $plugin;
+
+    public DiscordBot $discordBot;
 
     public function onLoad()
     {
-        $this->getLogger()->info(self::NOTICE."Load {$this->getName()}\nVer {$this->getDescription()->getVersion()}");
+        self::$plugin = $this;
+        try {
+            $this->discordBot = new DiscordBot($this->getConfig()->get(ConfigConst::DISCORD_TOKEN), $this->getConfig()->get(ConfigConst::DISCORD_LOG_CHANNEL_ID),);
+        } catch (Exception $e) {
+            $this->getLogger()->critical("[DiscordBot]" . $e->getMessage());
+        }
+        $this->getLogger()->info(self::NOTICE . "Load {$this->getName()}\nVer {$this->getDescription()->getVersion()}");
         parent::onLoad();
     }
 
@@ -17,7 +29,7 @@ class CoralReefPlugin extends PluginBase
     {
         parent::onEnable();
     }
-    
+
     public function onDisable()
     {
         parent::onDisable();
