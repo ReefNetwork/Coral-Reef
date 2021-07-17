@@ -1,5 +1,6 @@
-name: name
+name: CoralReef for Reef Server
+main: ree_jp\coral_reef\CoralReefPlugin
 api: 3.0.0
-main: ree_jp\template\Plugin
-version: 1.0.0
-author: ree-jp
+author: Ree-jp
+website: https://reef.ree-jp.net/
+version: 0.1

@@ -2,9 +2,10 @@
 
 /*
  * Make phar by https://github.com/DaisukeDaisuke/BehaviorPackLoader/blob/master/build/make-phar.php
+ * (C) DaisukeDaisuke(https://github.com/DaisukeDaisuke)
  */
 
-$file_phar = "PMMPPlugin.phar";
+$file_phar = "build/CoralReef.phar";
 if (file_exists($file_phar)) {
     echo "Phar file already exists, overwriting...";
     echo PHP_EOL;
@@ -14,7 +15,7 @@ if (file_exists($file_phar)) {
 $files = [];
 $dir = getcwd() . DIRECTORY_SEPARATOR;
 
-$exclusions = ["github", ".gitignore", "composer.json", "composer.lock", "build", ".git"];
+$exclusions = ["github", ".gitignore", "composer.json", "composer.lock", "build", ".git", ".idea"];
 
 foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($dir)) as $path => $file) {
     $bool = true;
