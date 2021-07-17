@@ -1,5 +1,6 @@
 <?php
 
+namespace ree_jp\coral_reef\discord;
 
 use Discord\Discord;
 use Discord\Exceptions\IntentException;
@@ -7,22 +8,43 @@ use Discord\Parts\Channel\Channel;
 use Discord\Parts\Channel\Message;
 use Discord\Parts\Embed\Embed;
 use Discord\WebSockets\Event;
+use Exception;
 use pocketmine\Server;
+use pocketmine\Thread;
 use pocketmine\utils\TextFormat;
 use ree_jp\coral_reef\ConfigConst;
 use ree_jp\coral_reef\CoralReefPlugin;
 
-class DiscordBot
+class DiscordBot extends Thread
 {
     private Discord $bot;
     private Channel $chat_channel;
     private Channel $log_channel;
+
+    private string $token;
+    private string $chat_id;
+    private string $log_id;
 
     /**
      * @throws Exception
      */
     public function __construct(string $token, string $chat_id, string $log_id)
     {
+        require_once "vendor/autoload.php";
+        $this->token = $token;
+        $this->chat_id = $chat_id;
+        $this->log_id = $log_id;
+        $this->start();
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function run(): void
+    {
+        $token = $this->token;
+        $chat_id = $this->chat_id;
+        $log_id = $this->log_id;
         try {
             $this->bot = new Discord(['token' => $token]);
             $this->bot->on('ready', function (Discord $discord) {
@@ -36,6 +58,7 @@ class DiscordBot
                     }
                 });
             });
+            $this->bot->run();
         } catch (IntentException $e) {
             throw new Exception("discord botの初期化中にエラーが発生しました");
         }

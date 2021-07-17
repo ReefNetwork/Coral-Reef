@@ -2,9 +2,9 @@
 
 namespace ree_jp\coral_reef;
 
-use DiscordBot;
 use Exception;
 use pocketmine\plugin\PluginBase;
+use ree_jp\coral_reef\discord\DiscordBot;
 
 class CoralReefPlugin extends PluginBase
 {
@@ -35,8 +35,7 @@ class CoralReefPlugin extends PluginBase
 
     public function onDisable()
     {
-        $bot = $this->discordBot;
-        $bot->sendLog("");
+        $this->discordBot->close();
         parent::onDisable();
     }
 }
