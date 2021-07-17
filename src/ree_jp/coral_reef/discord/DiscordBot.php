@@ -29,7 +29,7 @@ class DiscordBot
                 $discord->on(Event::MESSAGE_CREATE, function (Discord $discord, Message $message) {
                     if ($message->channel_id === CoralReefPlugin::$plugin->getConfig()->get(ConfigConst::DISCORD_CHAT_CHANNEL_ID)) {
                         $user = $message->user;
-                        if (is_null($user)) return;
+                        if (is_null($user) || $user->bot) return;
 
                         Server::getInstance()->broadcastMessage(
                             "<[" . TextFormat::DARK_PURPLE . "Discord" . TextFormat::WHITE . "]$user->username#$user->discriminator> $message->content");
