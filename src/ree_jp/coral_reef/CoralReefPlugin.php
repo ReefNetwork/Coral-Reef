@@ -23,19 +23,27 @@ class CoralReefPlugin extends PluginBase
 //        $bot->run();
 
         try {
-            $this->discordBot = new DiscordBot(
-                $this->getConfig()->get(ConfigConst::DISCORD_TOKEN),
-                $this->getConfig()->get(ConfigConst::DISCORD_CHAT_CHANNEL_ID),
-                $this->getConfig()->get(ConfigConst::DISCORD_LOG_CHANNEL_ID));
-        } catch (Exception $e) {
-            $this->getLogger()->critical("[DiscordBot]" . $e->getMessage());
+            SQLManager::$manager = new SQLManager("CoralReef",
+                $this->getConfig()->get(ConfigConst::MYSQL_HOST), "pmmp",
+                $this->getConfig()->get(ConfigConst::MYSQL_PASSWORD));
+        } catch (PDOException $e) {
+            $this->getLogger()->critical("[SQL]" . $e->getMessage());
         }
+
+        $this->discordBot = new DiscordBot(
+            $this->getFile(),
+            $this->getConfig()->get(ConfigConst::DISCORD_TOKEN),
+            $this->getConfig()->get(ConfigConst::DISCORD_CHAT_CHANNEL_ID),
+            $this->getConfig()->get(ConfigConst::DISCORD_LOG_CHANNEL_ID));
+
         $this->getLogger()->info(self::NOTICE . "Load {$this->getName()}\nVer {$this->getDescription()->getVersion()}");
         parent::onLoad();
     }
 
     public function onEnable()
     {
+        $this->discordBot->start();
+        $this->getServer()->getPluginManager()->registerEvents(new EventListener(), $this);
         parent::onEnable();
     }
 
