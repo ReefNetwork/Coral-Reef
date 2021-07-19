@@ -21,20 +21,17 @@ class DiscordBot extends Thread
     private Channel $chat_channel;
     private Channel $log_channel;
 
+    private string $file;
     private string $token;
     private string $chat_id;
     private string $log_id;
 
-    /**
-     * @throws Exception
-     */
-    public function __construct(string $token, string $chat_id, string $log_id)
+    public function __construct(string $file, string $token, string $chat_id, string $log_id)
     {
-        require_once "vendor/autoload.php";
+        $this->file = $file;
         $this->token = $token;
         $this->chat_id = $chat_id;
         $this->log_id = $log_id;
-        $this->start();
     }
 
     /**
@@ -42,12 +39,14 @@ class DiscordBot extends Thread
      */
     public function run(): void
     {
+        require_once $this->file . "vendor/autoload.php";
+
         $token = $this->token;
         $chat_id = $this->chat_id;
         $log_id = $this->log_id;
         try {
-            $this->bot = new Discord(['token' => $token]);
-            $this->bot->on('ready', function (Discord $discord) {
+            $bot = new Discord(['token' => $token]);
+            $bot->on('ready', function (Discord $discord) {
                 $discord->on(Event::MESSAGE_CREATE, function (Discord $discord, Message $message) {
                     if ($message->channel_id === CoralReefPlugin::$plugin->getConfig()->get(ConfigConst::DISCORD_CHAT_CHANNEL_ID)) {
                         $user = $message->user;
@@ -58,15 +57,17 @@ class DiscordBot extends Thread
                     }
                 });
             });
-            $this->bot->run();
+            $bot->run();
         } catch (IntentException $e) {
             throw new Exception("discord botの初期化中にエラーが発生しました");
         }
-        $chat = $this->bot->getChannel($chat_id);
+        $this->bot = $bot;
+
+        $chat = $bot->getChannel($chat_id);
         if (is_null($chat)) throw new Exception("チャットを送信するチャンネル($chat_id)が見つかりませんでした");
         $this->chat_channel = $chat;
 
-        $log = $this->bot->getChannel($log_id);
+        $log = $bot->getChannel($log_id);
         if (is_null($log)) throw new Exception("ログを送信するチャンネル($log_id)が見つかりませんでした");
         $this->log_channel = $log;
 

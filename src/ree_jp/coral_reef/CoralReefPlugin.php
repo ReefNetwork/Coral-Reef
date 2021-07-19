@@ -2,9 +2,10 @@
 
 namespace ree_jp\coral_reef;
 
-use Exception;
+use PDOException;
 use pocketmine\plugin\PluginBase;
 use ree_jp\coral_reef\discord\DiscordBot;
+use ree_jp\coral_reef\sql\SQLManager;
 
 class CoralReefPlugin extends PluginBase
 {
@@ -16,6 +17,11 @@ class CoralReefPlugin extends PluginBase
     public function onLoad()
     {
         self::$plugin = $this;
+
+//        require_once "vendor/autoload.php";
+//        $bot = new Discord(['token' => $this->getConfig()->get(ConfigConst::DISCORD_TOKEN)]);
+//        $bot->run();
+
         try {
             $this->discordBot = new DiscordBot(
                 $this->getConfig()->get(ConfigConst::DISCORD_TOKEN),
