@@ -2,11 +2,6 @@
   "name": "ree_jp/coral_reef",
   "description": "PocketMine-MP plugin",
   "minimum-stability": "stable",
-  "autoload": {
-    "psr-4": {
-      "": "src/"
-    }
-  },
   "authors": [
     {
       "name": "ree_jp",
