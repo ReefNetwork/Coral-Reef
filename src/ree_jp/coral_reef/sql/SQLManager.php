@@ -126,11 +126,12 @@ class SQLManager
     }
 
     /**
+     * @param string $xuid
      * @throws Exception
      */
-    private function createLogTable(string $xuid): void
+    public function createLogTable(string $xuid): void
     {
-        $prepare = $this->logPdo->prepare("CREATE TABLE IF NOT EXISTS :xuid(TYPE ENUM('join','quit','warp','skill','break','place','chat','other') NOT NULL ,OTHER VARCHAR,VALUE VARCHAR NOT NULL ,TIME DATETIME NOT NULL )");
+        $prepare = $this->logPdo->prepare("CREATE TABLE IF NOT EXISTS :xuid (TYPE ENUM('join','quit','warp','skill','break','place','chat','other') NOT NULL ,OTHER VARCHAR(99) ,VALUE VARCHAR(999) NOT NULL ,TIME DATETIME NOT NULL )");
         if ($prepare === false) throw new Exception('ログテーブルが作成できません');
         $prepare->execute([':xuid' => $xuid]);
     }
