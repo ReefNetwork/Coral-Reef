@@ -20,7 +20,7 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: composer install
-        run: composer install -–no-interaction --no-ansi
+        run: composer install -n --no-ansi
 
       - name: build
         run: php -d phar.readonly=0 ./build/make-phar.php enableCompressAll
