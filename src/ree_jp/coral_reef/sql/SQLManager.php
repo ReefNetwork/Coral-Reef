@@ -39,12 +39,6 @@ class SQLManager
      */
     public function __construct(string $dbName, string $host, string $user, string $pass)
     {
-//        $rootPdo = new PDO("mysql:host=$host", $user, $pass,
-//            [PDO::ATTR_CASE => PDO::CASE_UPPER, PDO::ATTR_TIMEOUT => 5]);
-//        $prepareCreateDb = $rootPdo->prepare("CREATE DATABASE IF NOT EXISTS :dbName");
-//        $prepareCreateDb->execute([':dbName' => $dbName]);
-//        $prepareCreateDb->execute([':dbName' => $dbName . "Log"]);
-
         $options = [PDO::ATTR_CASE => PDO::CASE_UPPER,
             PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
             PDO::ATTR_TIMEOUT => 5];
