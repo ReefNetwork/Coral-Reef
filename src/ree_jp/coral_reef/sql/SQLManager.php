@@ -120,7 +120,7 @@ class SQLManager
     public function setSetting(string $xuid, string $type, string $value): void
     {
         $prepare = $this->pdo->prepare(
-            'INSERT INTO SETTING (XUID, TYPE, VALUE) VALUES (:xuid,:type,:value) ON DUPLICATE KEY UPDATE VALUE = :value');
+            'INSERT INTO SETTING VALUES (:xuid ,:type ,:value) ON DUPLICATE KEY UPDATE VALUE = :value');
         if ($prepare === false) throw new Exception('設定にアクセスできません');
         $prepare->execute([':xuid' => $xuid, ':type' => $type, ':value' => $value]);
     }
@@ -131,9 +131,24 @@ class SQLManager
      */
     public function createLogTable(string $xuid): void
     {
-        $prepare = $this->logPdo->prepare("CREATE TABLE IF NOT EXISTS :xuid (TYPE ENUM('join','quit','warp','skill','break','place','chat','other') NOT NULL ,OTHER VARCHAR(99) ,VALUE VARCHAR(999) NOT NULL ,TIME DATETIME NOT NULL )");
-        if ($prepare === false) throw new Exception('ログテーブルが作成できません');
+        $prepare = $this->logPdo->prepare("CREATE TABLE IF NOT EXISTS :xuid (TYPE ENUM('join','quit','warp','skill','break','place','chat','other') NOT NULL ,OTHER VARCHAR(99) ,VALUE VARCHAR(999) ,TIME DATETIME )");
+        if ($prepare === false) throw new Exception('ログテーブルが作成の準備ができませんでした');
         $prepare->execute([':xuid' => $xuid]);
+    }
+
+    /**
+     * @param string $xuid
+     * @param string $type
+     * @param string|null $otherType
+     * @param string|null $value
+     * @param string|null $time
+     * @throws Exception
+     */
+    public function addLog(string $xuid, string $type, string $otherType = null, string $value = null, string $time = null): void
+    {
+        $prepare = $this->logPdo->prepare('INSERT INTO :xuid VALUES (:type ,:other ,:value ,:time)');
+        if ($prepare === false) throw new Exception('ログの追加の準備ができませんでした');
+        $prepare->execute([':type' => $type, ':other' => $otherType, ':value' => $value, ':time' => $time]);
     }
 
     private function createTable(): void
