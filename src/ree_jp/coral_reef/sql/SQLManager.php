@@ -1,5 +1,13 @@
 <?php
-
+/*
+ *  CCCCC                        lll RRRRRR                 fff
+ * CC    C  oooo  rr rr    aa aa lll RR   RR   eee    eee  ff
+ * CC      oo  oo rrr  r  aa aaa lll RRRRRR  ee   e ee   e ffff
+ * CC    C oo  oo rr     aa  aaa lll RR  RR  eeeee  eeeee  ff
+ *  CCCCC   oooo  rr      aaa aa lll RR   RR  eeeee  eeeee ff
+ *
+ * Copyright (c) 2021-2021. Ree-jp(https://ree-jp.net)
+ */
 
 namespace ree_jp\coral_reef\sql;
 
@@ -139,13 +147,14 @@ class SQLManager
     /**
      * @param string $xuid
      * @param string $type
+     * @param string|null $time
      * @param string|null $otherType
      * @param string|null $value
-     * @param string|null $time
      * @throws Exception
      */
-    public function addLog(string $xuid, string $type, string $otherType = null, string $value = null, string $time = null): void
+    public function addLog(string $xuid, string $type, string $time = null, string $otherType = null, string $value = null): void
     {
+        if ($time === 'now') $time = date("Y-m-d H:i:s");
         $prepare = $this->logPdo->prepare('INSERT INTO :xuid VALUES (:type ,:other ,:value ,:time)');
         if ($prepare === false) throw new Exception('ログの追加の準備ができませんでした');
         $prepare->execute([':type' => $type, ':other' => $otherType, ':value' => $value, ':time' => $time]);

@@ -1,5 +1,13 @@
 <?php
-
+/*
+ *  CCCCC                        lll RRRRRR                 fff
+ * CC    C  oooo  rr rr    aa aa lll RR   RR   eee    eee  ff
+ * CC      oo  oo rrr  r  aa aaa lll RRRRRR  ee   e ee   e ffff
+ * CC    C oo  oo rr     aa  aaa lll RR  RR  eeeee  eeeee  ff
+ *  CCCCC   oooo  rr      aaa aa lll RR   RR  eeeee  eeeee ff
+ *
+ * Copyright (c) 2021-2021. Ree-jp(https://ree-jp.net)
+ */
 
 namespace ree_jp\coral_reef\account;
 
@@ -35,6 +43,12 @@ class AccountManager
     {
         $xuid = $p->getXuid();
         $nick = "";
+
+        try {
+            SQLManager::$manager->addLog($xuid, 'join', 'now');
+        } catch (Exception $e) {
+            Server::getInstance()->getLogger()->error("[Log] {$p->getName()} の処理中に " . $e->getMessage());
+        }
         try {
             $nick = SQLManager::$manager->getSetting($xuid, SettingConst::NICK_NAME);
         } catch (Exception $ex) {
@@ -47,9 +61,15 @@ class AccountManager
         }
     }
 
-    static function userQuit(Player $p): void
+    static function userQuit(Player $p, string $reason): void
     {
+        $xuid = $p->getXuid();
 
+        try {
+            SQLManager::$manager->addLog($xuid, 'quit', 'now', null, $reason);
+        } catch (Exception $e) {
+            Server::getInstance()->getLogger()->error("[Log] {$p->getName()} の処理中に " . $e->getMessage());
+        }
     }
 
     static function getLevel(int $experiment): int
