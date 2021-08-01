@@ -22,7 +22,7 @@ class SQLManager
     static SQLManager $manager;
 
     /**
-     * USER :XUID:NAME:IPS:EXPERIMENT
+     * USER :XUID:NAME:IPS:EXPERIENCE
      * BAN :TYPE:VALUE:REASON:TIME
      * WHITELIST :TYPE:VALUE:TIME
      * SETTING :XUID:TYPE:VALUE
@@ -92,9 +92,9 @@ class SQLManager
         if ($prepare === false) return null;
         $prepare->execute([':xuid' => $xuid]);
         $result = $prepare->fetch();
-        if (!(array_key_exists('xuid', $result) || array_key_exists('name', $result) || array_key_exists('experiment', $result))) throw new Exception('USER_SQLの返り値が不正です');
+        if (!(array_key_exists('xuid', $result) || array_key_exists('name', $result) || array_key_exists('experience', $result))) throw new Exception('USER_SQLの返り値が不正です');
 
-        return new UserAccount($result['xuid'], $result['name'], $result['experiment']);
+        return new UserAccount($result['xuid'], $result['name'], $result['experience']);
     }
 
     /**
@@ -156,7 +156,7 @@ class SQLManager
 
     private function createTable(): void
     {
-        $this->pdo->exec('CREATE TABLE IF NOT EXISTS USER (XUID BIGINT UNSIGNED NOT NULL PRIMARY KEY ,NAME VARCHAR(100) NOT NULL ,IPS VARCHAR(9999) NOT NULL ,EXPERIMENT BIGINT UNSIGNED NOT NULL )');
+        $this->pdo->exec('CREATE TABLE IF NOT EXISTS USER (XUID BIGINT UNSIGNED NOT NULL PRIMARY KEY ,NAME VARCHAR(100) NOT NULL ,IPS VARCHAR(9999) NOT NULL ,EXPERIENCE BIGINT UNSIGNED NOT NULL )');
         $this->pdo->exec("CREATE TABLE IF NOT EXISTS BAN (PRIMARY KEY (TYPE ,VALUE ),TYPE ENUM('ALL','XUID','IP') NOT NULL ,VALUE VARCHAR(20) NOT NULL ,REASON VARCHAR(999) NOT NULL ,TIME DATETIME )");
         $this->pdo->exec("CREATE TABLE IF NOT EXISTS WHITELIST (PRIMARY KEY (TYPE ,VALUE ),TYPE ENUM('XUID','IP') NOT NULL ,VALUE VARCHAR(20) NOT NULL ,REASON VARCHAR(999) NOT NULL ,TIME DATETIME )");
         $this->pdo->exec('CREATE TABLE IF NOT EXISTS SETTING (PRIMARY KEY (XUID ,TYPE),XUID BIGINT UNSIGNED NOT NULL ,TYPE VARCHAR(99) NOT NULL ,VALUE VARCHAR(99) NOT NULL )');
