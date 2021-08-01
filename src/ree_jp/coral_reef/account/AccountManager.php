@@ -21,10 +21,6 @@ use ree_jp\coral_reef\sql\SQLManager;
 
 class AccountManager
 {
-    const LEVEL_EXPERIMENT = [
-        1 => 0, 2 => 100,
-    ];
-
     static function checkUser(Player $p): ?string
     {
         $xuid = $p->getXuid();
@@ -70,15 +66,5 @@ class AccountManager
         } catch (Exception $e) {
             Server::getInstance()->getLogger()->error("[Log] {$p->getName()} の処理中に " . $e->getMessage());
         }
-    }
-
-    static function getLevel(int $experiment): int
-    {
-        foreach (self::LEVEL_EXPERIMENT as $constLevel => $constExperiment) {
-            if ($constExperiment > $experiment) {
-                return --$constLevel;
-            }
-        }
-        return 99999;
     }
 }

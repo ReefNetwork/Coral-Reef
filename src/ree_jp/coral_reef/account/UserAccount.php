@@ -12,16 +12,62 @@
 namespace ree_jp\coral_reef\account;
 
 
+use pocketmine\Server;
+use pocketmine\utils\TextFormat;
+
 class UserAccount
 {
+    const LEVEL_EXPERIMENT = [
+        1 => 0, 2 => 100,
+    ];
+
     public string $xuid;
     public string $name;
-    public int $experiment;
+    public int $experience;
+    public int $level;
+    public int $necessaryExperience;
 
-    public function __construct(string $xuid, string $name, int $experiment)
+    public function __construct(string $xuid, string $name, int $experience)
     {
         $this->xuid = $xuid;
         $this->name = $name;
-        $this->experiment = $experiment;
+        $this->experience = $experience;
+        $this->setLevelAndNecessaryExperience();
+    }
+
+    public function save(): void
+    {
+
+    }
+
+    public function addXp(int $xp = 1): void
+    {
+        $this->experience = $xp + $this->experience;
+        if ($this->necessaryExperience <= $xp) {
+            ++$this->level;
+
+            $p = Server::getInstance()->getPlayer($this->name);
+            $name = "";
+            if (!is_null($p)) {
+                $name = $p->getName();
+                $p->sendTitle(
+                    TextFormat::BLUE . 'L' . TextFormat::GREEN . 'e' . TextFormat::AQUA . 'v' . TextFormat::GREEN . 'e' . TextFormat::BLUE . 'L ' . TextFormat::RED . 'U' . TextFormat::LIGHT_PURPLE . 'P',
+                    TextFormat::YELLOW . ($this->level - 1) . TextFormat::RESET . ' -> ' . TextFormat::GOLD . $this->level);
+            }
+            Server::getInstance()->broadcastMessage($name . "さんのレベルが$this->level になりました");
+        }
+    }
+
+    private function setLevelAndNecessaryExperience(): void
+    {
+        foreach (self::LEVEL_EXPERIMENT as $constLevel => $constExperience) {
+            if ($constExperience > $this->experience) {
+                $this->level = --$constLevel;
+                $this->necessaryExperience = $constExperience - $this->experience;
+                return;
+            }
+        }
+        $this->level = PHP_INT_MAX;
+        $this->necessaryExperience = PHP_INT_MAX;
     }
 }
