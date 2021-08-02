@@ -34,6 +34,8 @@ class SQLManager
      */
     private PDO $logPdo;
 
+    private array $users = [];
+
     /**
      * @throws PDOException
      */
@@ -88,13 +90,29 @@ class SQLManager
      */
     public function getUser(string $xuid): ?UserAccount
     {
-        $prepare = $this->pdo->prepare("SELECT * FROM USER WHERE XUID = :xuid");
+        if (array_key_exists($xuid, $this->users)) return $this->users[$xuid];
+
+        $prepare = $this->pdo->prepare('SELECT * FROM USER WHERE XUID = :xuid');
         if ($prepare === false) return null;
         $prepare->execute([':xuid' => $xuid]);
         $result = $prepare->fetch();
         if (!(array_key_exists('xuid', $result) || array_key_exists('name', $result) || array_key_exists('experience', $result))) throw new Exception('USER_SQLの返り値が不正です');
 
-        return new UserAccount($result['xuid'], $result['name'], $result['experience']);
+        $account = new UserAccount($result['xuid'], $result['name'], $result['experience']);
+        $this->users[$xuid] = $account;
+        return $account;
+    }
+
+    /**
+     * @param string $xuid
+     * @param string $experience
+     * @throws Exception
+     */
+    public function setXp(string $xuid, string $experience): void
+    {
+        $prepare = $this->pdo->prepare('UPDATE USER SET EXPERIENCE = :experience WHERE XUID = :xuid');
+        if ($prepare === false) throw new Exception('xpを保存する準備ができませんでした');
+        if (!$prepare->execute([':experience' => $experience, ':xuid' => $xuid])) throw new Exception('xpを保存できませんでした');
     }
 
     /**
@@ -123,8 +141,8 @@ class SQLManager
     {
         $prepare = $this->pdo->prepare(
             'INSERT INTO SETTING VALUES (:xuid ,:type ,:value) ON DUPLICATE KEY UPDATE VALUE = :value');
-        if ($prepare === false) throw new Exception('設定にアクセスできません');
-        $prepare->execute([':xuid' => $xuid, ':type' => $type, ':value' => $value]);
+        if ($prepare === false) throw new Exception('設定を保存する準備ができませんでした');
+        if (!$prepare->execute([':xuid' => $xuid, ':type' => $type, ':value' => $value])) throw new Exception('設定を保存できませんでした');
     }
 
     /**
@@ -134,8 +152,8 @@ class SQLManager
     public function createLogTable(string $xuid): void
     {
         $prepare = $this->logPdo->prepare("CREATE TABLE IF NOT EXISTS :xuid (TYPE ENUM('join','quit','warp','skill','break','place','chat','other') NOT NULL ,OTHER VARCHAR(99) ,VALUE VARCHAR(999) ,TIME DATETIME )");
-        if ($prepare === false) throw new Exception('ログテーブルが作成の準備ができませんでした');
-        $prepare->execute([':xuid' => $xuid]);
+        if ($prepare === false) throw new Exception('ログ作成の準備ができませんでした');
+        if (!$prepare->execute([':xuid' => $xuid])) throw new Exception('ログを作成できませんでした');
     }
 
     /**
