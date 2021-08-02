@@ -1,5 +1,6 @@
 # Coral Reef
-
+[![CI](https://github.com/ReefNetwork/Coral-Reef/actions/workflows/CI.yml/badge.svg)](https://github.com/ReefNetwork/Coral-Reef/actions/workflows/CI.yml)
+[![Discord](https://img.shields.io/discord/638760361369010177?logo=discord)](https://discord.gg/M4A6cak)
 # How to use
 
 ### Config
