@@ -62,6 +62,12 @@ class AccountManager
         $xuid = $p->getXuid();
 
         try {
+            $account = SQLManager::$manager->getUser($xuid);
+            $account->save();
+        } catch (Exception $e) {
+            Server::getInstance()->getLogger()->error($p->getName() . 'のセーブができませんでした' . $e->getMessage());
+        }
+        try {
             SQLManager::$manager->addLog($xuid, 'quit', 'now', null, $reason);
         } catch (Exception $e) {
             Server::getInstance()->getLogger()->error("[Log] {$p->getName()} の処理中に " . $e->getMessage());

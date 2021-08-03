@@ -12,8 +12,10 @@
 namespace ree_jp\coral_reef\account;
 
 
+use Exception;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat;
+use ree_jp\coral_reef\sql\SQLManager;
 
 class UserAccount
 {
@@ -37,7 +39,11 @@ class UserAccount
 
     public function save(): void
     {
-
+        try {
+            SQLManager::$manager->setXp($this->xuid, $this->experience);
+        } catch (Exception $e) {
+            Server::getInstance()->getLogger()->error($this->name . 'のデータ保存に失敗しました' . $e->getMessage());
+        }
     }
 
     public function addXp(int $xp = 1): void

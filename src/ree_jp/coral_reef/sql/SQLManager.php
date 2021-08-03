@@ -93,7 +93,7 @@ class SQLManager
         if (array_key_exists($xuid, $this->users)) return $this->users[$xuid];
 
         $prepare = $this->pdo->prepare('SELECT * FROM USER WHERE XUID = :xuid');
-        if ($prepare === false) return null;
+        if ($prepare === false) return throw new Exception('アカウントを所得する準備ができませんでした');
         $prepare->execute([':xuid' => $xuid]);
         $result = $prepare->fetch();
         if (!(array_key_exists('xuid', $result) || array_key_exists('name', $result) || array_key_exists('experience', $result))) throw new Exception('USER_SQLの返り値が不正です');
