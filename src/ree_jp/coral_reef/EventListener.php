@@ -14,9 +14,12 @@ namespace ree_jp\coral_reef;
 
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\Listener;
+use pocketmine\event\player\PlayerInteractEvent;
 use pocketmine\event\player\PlayerJoinEvent;
 use pocketmine\event\player\PlayerPreLoginEvent;
 use pocketmine\event\player\PlayerQuitEvent;
+use pocketmine\item\Item;
+use pocketmine\item\ItemIds;
 use pocketmine\utils\TextFormat;
 use ree_jp\coral_reef\account\AccountManager;
 
@@ -40,6 +43,7 @@ class EventListener implements Listener
         } else {
             $ev->setJoinMessage($p->getName() . 'さんが参加しました');
         }
+        if (!$p->getInventory()->contains(Item::get(ItemIds::STICK))) $p->getInventory()->addItem(Item::get(ItemIds::STICK)->setLore(['メニューを開きます']));
     }
 
     public function onQuit(PlayerQuitEvent $ev): void
@@ -53,5 +57,16 @@ class EventListener implements Listener
     public function onBreak(BlockBreakEvent $ev): void
     {
 
+    }
+
+    public function onTouch(PlayerInteractEvent $ev): void
+    {
+        $p = $ev->getPlayer();
+
+        switch ($ev->getItem()->getId()) {
+            case ItemIds::STICK:
+                AccountManager::sendMenu($p);
+                break;
+        }
     }
 }

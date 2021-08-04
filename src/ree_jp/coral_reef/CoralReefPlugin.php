@@ -14,6 +14,7 @@ namespace ree_jp\coral_reef;
 use Frago9876543210\EasyForms\EasyForms;
 use PDOException;
 use pocketmine\plugin\PluginBase;
+use ree_jp\coral_reef\command\MenuCommand;
 use ree_jp\coral_reef\discord\DiscordBot;
 use ree_jp\coral_reef\sql\SQLManager;
 use ree_jp\coral_reef\task\DataSaveTask;
@@ -56,6 +57,7 @@ class CoralReefPlugin extends PluginBase
         date_default_timezone_set('Asia/Tokyo');
         $this->discordBot->start();
         $this->getServer()->getPluginManager()->registerEvents(new EventListener(), $this);
+        $this->getServer()->getCommandMap()->register('menu', new MenuCommand($this));
         $this->getScheduler()->scheduleRepeatingTask(new DataSaveTask(), 20);
 
         $this->getServer()->getPluginManager()->registerEvents(new EasyForms(), $this);
