@@ -11,6 +11,7 @@
 
 namespace ree_jp\coral_reef;
 
+use Frago9876543210\EasyForms\EasyForms;
 use PDOException;
 use pocketmine\plugin\PluginBase;
 use ree_jp\coral_reef\discord\DiscordBot;
@@ -56,6 +57,8 @@ class CoralReefPlugin extends PluginBase
         $this->discordBot->start();
         $this->getServer()->getPluginManager()->registerEvents(new EventListener(), $this);
         $this->getScheduler()->scheduleRepeatingTask(new DataSaveTask(), 20);
+
+        $this->getServer()->getPluginManager()->registerEvents(new EasyForms(), $this);
         parent::onEnable();
     }
 
