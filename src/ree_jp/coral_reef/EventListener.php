@@ -43,7 +43,11 @@ class EventListener implements Listener
         if (is_null($p->getLastPlayed())) {
             $ev->setJoinMessage($p->getName() . 'さんが初めて参加しました');
         } else {
-            $ev->setJoinMessage($p->getName() . 'さんが参加しました');
+            if (AccountManager::hasValue($p->getXuid(), 'rejoin')) {
+                $ev->setJoinMessage($p->getName() . 'さんが再参加しました');
+            } else {
+                $ev->setJoinMessage($p->getName() . 'さんが参加しました');
+            }
         }
         if (!$p->getInventory()->contains(Item::get(ItemIds::STICK))) $p->getInventory()->addItem(Item::get(ItemIds::STICK)->setLore(['メニューを開きます']));
     }

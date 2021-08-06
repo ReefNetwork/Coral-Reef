@@ -26,22 +26,22 @@ class AccountManager
 
     static array $values = array();
 
-    static function setValue(string $xuid, string $value, int $time = null): void
+    static function setValue(string $xuid, string $value, int $tick = null): void
     {
         $key = $xuid . ':' . $value;
-        if ($time === 0) {
+        if ($tick === 0) {
             if (self::hasValue($xuid, $value)) {
                 unset(self::$values[$key]);
             }
         } else {
-            self::$values[$key] = $time;
-            if (!is_null($time)) {
+            self::$values[$key] = $tick;
+            if (is_int($tick)) {
                 CoralReefPlugin::$plugin->getScheduler()->scheduleDelayedTask(
                     new ClosureTask(function () use ($key) {
                         if (array_key_exists($key, self::$values)) {
                             unset(self::$values[$key]);
                         }
-                    }), $time);
+                    }), $tick);
             }
 
         }
@@ -104,5 +104,6 @@ class AccountManager
         } catch (Exception $e) {
             Server::getInstance()->getLogger()->error("[Log] {$p->getName()} の処理中に " . $e->getMessage());
         }
+        self::setValue($xuid, 'rejoin', 60 * 3 * 20);
     }
 }
