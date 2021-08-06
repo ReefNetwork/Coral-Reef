@@ -14,6 +14,7 @@ namespace ree_jp\coral_reef;
 
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\Listener;
+use pocketmine\event\player\PlayerGameModeChangeEvent;
 use pocketmine\event\player\PlayerInteractEvent;
 use pocketmine\event\player\PlayerJoinEvent;
 use pocketmine\event\player\PlayerPreLoginEvent;
@@ -22,6 +23,7 @@ use pocketmine\item\Item;
 use pocketmine\item\ItemIds;
 use pocketmine\utils\TextFormat;
 use ree_jp\coral_reef\account\AccountManager;
+use ree_jp\coral_reef\form\FormManager;
 
 class EventListener implements Listener
 {
@@ -65,8 +67,18 @@ class EventListener implements Listener
 
         switch ($ev->getItem()->getId()) {
             case ItemIds::STICK:
-                AccountManager::sendMenu($p);
+                FormManager::sendMenu($p);
                 break;
+        }
+    }
+
+    public function onModeChange(PlayerGameModeChangeEvent $ev): void
+    {
+        $p = $ev->getPlayer();
+        if (AccountManager::hasValue($p->getXuid(), 'fly')) {
+            $p->setFlying(false);
+            $p->setAllowFlight(false);
+            $p->sendMessage('モードが変わったため飛行を無効化しました');
         }
     }
 }

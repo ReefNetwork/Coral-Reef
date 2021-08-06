@@ -13,8 +13,6 @@ namespace ree_jp\coral_reef\account;
 
 
 use Exception;
-use Frago9876543210\EasyForms\elements\Button;
-use Frago9876543210\EasyForms\forms\MenuForm;
 use pocketmine\Player;
 use pocketmine\scheduler\ClosureTask;
 use pocketmine\Server;
@@ -25,27 +23,34 @@ use ree_jp\coral_reef\sql\SQLManager;
 
 class AccountManager
 {
-    static array $wait = [];
 
-    static function setTimer(string $xuid, int $time = 10): void
+    static array $values = array();
+
+    static function setValue(string $xuid, string $value, int $time = null): void
     {
-        self::$wait[$xuid] = $time;
-        CoralReefPlugin::$plugin->getScheduler()->scheduleDelayedTask(
-            new ClosureTask(function () use ($xuid) {
-                if (array_key_exists($xuid, AccountManager::$wait)) {
-                    unset(AccountManager::$wait[$xuid]);
-                }
-            }), $time);
+        $key = $xuid . ':' . $value;
+        if ($time === 0) {
+            if (self::hasValue($xuid, $value)) {
+                unset(self::$values[$key]);
+            }
+        } else {
+            self::$values[$key] = $time;
+            if (!is_null($time)) {
+                CoralReefPlugin::$plugin->getScheduler()->scheduleDelayedTask(
+                    new ClosureTask(function () use ($key) {
+                        if (array_key_exists($key, self::$values)) {
+                            unset(self::$values[$key]);
+                        }
+                    }), $time);
+            }
+
+        }
     }
 
-    /**
-     * @param string $xuid
-     * @return bool
-     * タイマーが残ってればtrue
-     */
-    static function hasTimer(string $xuid): bool
+    static function hasValue(string $xuid, string $value): bool
     {
-        return array_key_exists($xuid, self::$wait);
+        $key = $xuid . ':' . $value;
+        return array_key_exists($key, self::$values);
     }
 
     static function checkUser(Player $p): ?string
@@ -99,37 +104,5 @@ class AccountManager
         } catch (Exception $e) {
             Server::getInstance()->getLogger()->error("[Log] {$p->getName()} の処理中に " . $e->getMessage());
         }
-    }
-
-    static function sendMenu(Player $p): void
-    {
-        $xuid = $p->getXuid();
-        if (self::hasTimer($xuid)) return;
-        self::setTimer($xuid);
-
-        $level = 'loading';
-        $necessaryExperience = 'loading';
-        try {
-            $user = SQLManager::$manager->getUser($xuid);
-            $level = $user->level;
-            $necessaryExperience = $user->necessaryExperience;
-        } catch (Exception $e) {
-            Server::getInstance()->getLogger()->error('ユーザーデータの取得中に' . $e->getMessage());
-        }
-        $p->sendForm(new MenuForm('ReefServer Menu', "レベル : $level \nレベルアップまで : $necessaryExperience", [new Button('ワールド移動'), new Button('設定')],
-            function (Player $p, Button $button) {
-                switch ($button->getValue()) {
-                    case 0:
-                        $p->sendForm(new MenuForm('Menu -> World', '移動するワールドを選択してください'));
-                        break;
-
-                    case 1:
-                        $p->sendForm(new MenuForm('Menu -> Setting'));
-                        break;
-
-                    default:
-                        $p->sendMessage('ページを開けませんでした');
-                }
-            }));
     }
 }
