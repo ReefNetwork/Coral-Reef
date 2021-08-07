@@ -22,7 +22,7 @@ class SQLManager
     static SQLManager $manager;
 
     /**
-     * USER :XUID:NAME:IPS:EXPERIENCE
+     * USER :XUID:NAME:IPS:EXPERIENCE:SKILL
      * BAN :TYPE:VALUE:REASON:TIME
      * WHITELIST :TYPE:VALUE:TIME
      * SETTING :XUID:TYPE:VALUE
@@ -96,9 +96,9 @@ class SQLManager
         if ($prepare === false) return throw new Exception('アカウントを取得する準備ができませんでした');
         $prepare->execute([':xuid' => $xuid]);
         $result = $prepare->fetch();
-        if (!(array_key_exists('xuid', $result) || array_key_exists('name', $result) || array_key_exists('experience', $result))) throw new Exception('USER_SQLの返り値が不正です');
+        if (!(array_key_exists('xuid', $result) || array_key_exists('name', $result) || array_key_exists('experience', $result) || array_key_exists('skill', $result))) throw new Exception('USER_SQLの返り値が不正です');
 
-        $account = new UserAccount($result['xuid'], $result['name'], $result['experience']);
+        $account = new UserAccount($result['xuid'], $result['name'], $result['experience'], $result['skill']);
         $this->users[$xuid] = $account;
         return $account;
     }
@@ -174,7 +174,7 @@ class SQLManager
 
     private function createTable(): void
     {
-        $this->pdo->exec('CREATE TABLE IF NOT EXISTS USER (XUID BIGINT UNSIGNED NOT NULL PRIMARY KEY ,NAME VARCHAR(100) NOT NULL ,IPS VARCHAR(9999) NOT NULL ,EXPERIENCE BIGINT UNSIGNED NOT NULL )');
+        $this->pdo->exec('CREATE TABLE IF NOT EXISTS USER (XUID BIGINT UNSIGNED NOT NULL PRIMARY KEY ,NAME VARCHAR(100) NOT NULL ,IPS VARCHAR(9999) NOT NULL ,EXPERIENCE BIGINT UNSIGNED NOT NULL ,SKILL VARCHAR(99) )');
         $this->pdo->exec("CREATE TABLE IF NOT EXISTS BAN (PRIMARY KEY (TYPE ,VALUE ),TYPE ENUM('ALL','XUID','IP') NOT NULL ,VALUE VARCHAR(20) NOT NULL ,REASON VARCHAR(999) NOT NULL ,TIME DATETIME )");
         $this->pdo->exec("CREATE TABLE IF NOT EXISTS WHITELIST (PRIMARY KEY (TYPE ,VALUE ),TYPE ENUM('XUID','IP') NOT NULL ,VALUE VARCHAR(20) NOT NULL ,REASON VARCHAR(999) NOT NULL ,TIME DATETIME )");
         $this->pdo->exec('CREATE TABLE IF NOT EXISTS SETTING (PRIMARY KEY (XUID ,TYPE),XUID BIGINT UNSIGNED NOT NULL ,TYPE VARCHAR(99) NOT NULL ,VALUE VARCHAR(99) NOT NULL )');

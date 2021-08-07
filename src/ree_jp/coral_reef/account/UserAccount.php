@@ -15,6 +15,8 @@ namespace ree_jp\coral_reef\account;
 use Exception;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat;
+use ree_jp\coral_reef\skill\BreakSkill;
+use ree_jp\coral_reef\skill\SkillManager;
 use ree_jp\coral_reef\sql\SQLManager;
 
 class UserAccount
@@ -28,13 +30,15 @@ class UserAccount
     public int $experience;
     public int $level;
     public int $necessaryExperience;
+    public BreakSkill $skill;
 
-    public function __construct(string $xuid, string $name, int $experience)
+    public function __construct(string $xuid, string $name, int $experience, string $skill)
     {
         $this->xuid = $xuid;
         $this->name = $name;
         $this->experience = $experience;
         $this->setLevelAndNecessaryExperience();
+        $this->skill = SkillManager::getSkill($skill);
     }
 
     public function save(): void

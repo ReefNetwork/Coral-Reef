@@ -12,6 +12,7 @@
 namespace ree_jp\coral_reef;
 
 
+use Exception;
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerGameModeChangeEvent;
@@ -21,9 +22,11 @@ use pocketmine\event\player\PlayerPreLoginEvent;
 use pocketmine\event\player\PlayerQuitEvent;
 use pocketmine\item\Item;
 use pocketmine\item\ItemIds;
+use pocketmine\Server;
 use pocketmine\utils\TextFormat;
 use ree_jp\coral_reef\account\AccountManager;
 use ree_jp\coral_reef\form\FormManager;
+use ree_jp\coral_reef\skill\SkillManager;
 
 class EventListener implements Listener
 {
@@ -62,7 +65,13 @@ class EventListener implements Listener
 
     public function onBreak(BlockBreakEvent $ev): void
     {
-
+        $p = $ev->getPlayer();
+        try {
+            SkillManager::skillActive($p, $ev->getBlock());
+        } catch (Exception $e) {
+            $p->sendMessage('スキルを実行できませんでした');
+            Server::getInstance()->getLogger()->error('[skill]' . $p->getName() . 'の処理中に' . $e->getMessage());
+        }
     }
 
     public function onTouch(PlayerInteractEvent $ev): void
