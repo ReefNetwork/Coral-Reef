@@ -26,7 +26,6 @@ use pocketmine\Server;
 use pocketmine\utils\TextFormat;
 use ree_jp\coral_reef\account\AccountManager;
 use ree_jp\coral_reef\form\FormManager;
-use ree_jp\coral_reef\skill\SkillManager;
 
 class EventListener implements Listener
 {
@@ -63,14 +62,18 @@ class EventListener implements Listener
         $ev->setQuitMessage(TextFormat::GRAY . $p->getName() . 'さんが' . $ev->getQuitReason() . 'で退出しました');
     }
 
-    public function onBreak(BlockBreakEvent $ev): void
+    /**
+     * @priority MONITOR
+     */
+    public function onBreakMonitor(BlockBreakEvent $ev): void
     {
         $p = $ev->getPlayer();
+        if ($ev->isCancelled()) return;
         try {
-            SkillManager::skillActive($p, $ev->getBlock());
+            AccountManager::brockBroken($p, $ev->getBlock(), $ev->getItem());
         } catch (Exception $e) {
-            $p->sendMessage('スキルを実行できませんでした');
-            Server::getInstance()->getLogger()->error('[skill]' . $p->getName() . 'の処理中に' . $e->getMessage());
+            $p->sendMessage('エラーが発生しました');
+            Server::getInstance()->getLogger()->error('[blockBroke]' . $p->getName() . 'の処理中に' . $e->getMessage());
         }
     }
 

@@ -45,74 +45,108 @@ class BreakSkill
      */
     public function runSkill(Vector3 $block, Player $p): void
     {
+        $direction = $p->getDirection();
         $isFly = AccountManager::hasValue($p->getXuid(), 'fly');
         $isDirectUnder = ($p->getFloorX() === $block->getFloorX()) && ($p->getFloorZ() === $block->getFloorZ());
-        $widthSide = $this->width / 2;
+        $widthSide = floor($this->width / 2);
+        $depthSide = floor($this->depth / 2);
         if ($p->getFloorY() - 1 > $block->getFloorY() ||
             ((!$isFly || $isDirectUnder) && ($p->getFloorY() > $block->getFloorY()))) {
 
-        } elseif ($block->getFloorY() - $p->getFloorY() < $this->height) {
-
+            $depthCeil = ceil($this->depth / 2);
+            for ($height = 0; $height > $this->height; ++$height) {
+                for ($width = $widthSide; $width < -$widthSide; --$width) {
+                    for ($depth = $depthCeil; $depth < -$depthSide; --$depth) {
+                        if ($height !== 0 && $width !== 0 && $depth !== 0) {
+                            $vec = $this->getSideFromUserView($block->add(0, -$height), $direction, self::RIGHT, $width);
+                            $vec = $this->getSideFromUserView($vec, $direction, self::FORWARD, $depth);
+                            $this->breakBrockBySkill($p, $vec);
+                        }
+                    }
+                }
+            }
         } else {
-
+            $isSkillHigh = ($block->getFloorY() - $p->getFloorY()) < $this->height;
+            for ($height = 0; $height > $this->height; ++$height) {
+                for ($width = $widthSide; $width < -$widthSide; --$width) {
+                    for ($depth = 0; $depth > $this->depth; ++$depth) {
+                        if ($height !== 0 && $width !== 0 && $depth !== 0) {
+                            if ($isSkillHigh) {
+                                $base = $block->add(0, $height);
+                            } else {
+                                $base = $p->add(0, $height);
+                            }
+                            $vec = $this->getSideFromUserView($base, $direction, self::RIGHT, $width);
+                            $vec = $this->getSideFromUserView($vec, $direction, self::FORWARD, $depth);
+                            $this->breakBrockBySkill($p, $vec);
+                        }
+                    }
+                }
+            }
         }
+    }
+
+    private function breakBrockBySkill(Player $p, Vector3 $vec): void
+    {
+        $hand = $p->getInventory()->getItemInHand();
+        $p->getLevel()->useBreakOn($vec, $hand, $p);
     }
 
     /**
      * @throws Exception
      */
-    private function getSideFromUserView(Vector3 $vec3, int $view, int $direction): Vector3
+    private function getSideFromUserView(Vector3 $vec3, int $view, int $direction, int $value): Vector3
     {
         switch ($view) {
             case Vector3::SIDE_NORTH:
                 switch ($direction) {
                     case self::FORWARD:
-                        return $vec3->add(0, 0, 1);
+                        return $vec3->add(0, 0, $value);
                     case self::BACKWARD:
-                        return $vec3->add(0, 0, -1);
+                        return $vec3->add(0, 0, -$value);
                     case self::RIGHT:
-                        return $vec3->add(1);
+                        return $vec3->add($value);
                     case self::LEFT:
-                        return $vec3->add(-1);
+                        return $vec3->add(-$value);
                     default:
                         throw new Exception('不正な方角');
                 }
             case Vector3::SIDE_SOUTH:
                 switch ($direction) {
                     case self::FORWARD:
-                        return $vec3->add(0, 0, -1);
+                        return $vec3->add(0, 0, -$value);
                     case self::BACKWARD:
-                        return $vec3->add(0, 0, 1);
+                        return $vec3->add(0, 0, $value);
                     case self::RIGHT:
-                        return $vec3->add(-1);
+                        return $vec3->add(-$value);
                     case self::LEFT:
-                        return $vec3->add(1);
+                        return $vec3->add($value);
                     default:
                         throw new Exception('不正な方角');
                 }
             case Vector3::SIDE_WEST:
                 switch ($direction) {
                     case self::FORWARD:
-                        return $vec3->add(-1);
+                        return $vec3->add(-$value);
                     case self::BACKWARD:
-                        return $vec3->add(1);
+                        return $vec3->add($value);
                     case self::RIGHT:
-                        return $vec3->add(0, 0, -1);
+                        return $vec3->add(0, 0, -$value);
                     case self::LEFT:
-                        return $vec3->add(0, 0, 1);
+                        return $vec3->add(0, 0, $value);
                     default:
                         throw new Exception('不正な方角');
                 }
             case Vector3::SIDE_EAST:
                 switch ($direction) {
                     case self::FORWARD:
-                        return $vec3->add(1);
+                        return $vec3->add($value);
                     case self::BACKWARD:
-                        return $vec3->add(-1);
+                        return $vec3->add(-$value);
                     case self::RIGHT:
-                        return $vec3->add(0, 0, 1);
+                        return $vec3->add(0, 0, $value);
                     case self::LEFT:
-                        return $vec3->add(0, 0, -1);
+                        return $vec3->add(0, 0, -$value);
                     default:
                         throw new Exception('不正な方角');
                 }

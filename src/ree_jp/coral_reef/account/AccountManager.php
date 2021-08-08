@@ -13,11 +13,15 @@ namespace ree_jp\coral_reef\account;
 
 
 use Exception;
+use pocketmine\block\Block;
+use pocketmine\item\Item;
 use pocketmine\Player;
 use pocketmine\scheduler\ClosureTask;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat;
 use ree_jp\coral_reef\CoralReefPlugin;
+use ree_jp\coral_reef\skill\BreakSkill;
+use ree_jp\coral_reef\skill\SkillManager;
 use ree_jp\coral_reef\sql\SettingConst;
 use ree_jp\coral_reef\sql\SQLManager;
 
@@ -43,7 +47,6 @@ class AccountManager
                         }
                     }), $tick);
             }
-
         }
     }
 
@@ -105,5 +108,29 @@ class AccountManager
             Server::getInstance()->getLogger()->error("[Log] {$p->getName()} の処理中に " . $e->getMessage());
         }
         self::setValue($xuid, 'rejoin', 60 * 3 * 20);
+    }
+
+    /**
+     * @param Player $p
+     * @param Block $bl
+     * @param Item $item
+     * @throws Exception
+     */
+    static function brockBroken(Player $p, Block $bl, Item $item): void
+    {
+        $xuid = $p->getXuid();
+        $user = SQLManager::$manager->getUser($xuid);
+        $skill = $user->skill;
+        $logDetail = $bl->x . ':' . $bl->y . ':' . $bl->z . '/' . $item->getVanillaName();
+        SQLManager::$manager->addLog($xuid, 'break', 'now', null, $logDetail);
+        if ($skill instanceof BreakSkill) {
+            if (!self::hasValue($xuid, 'skill_cool_time')) {
+                AccountManager::setValue($xuid, 'skill_active');
+                $logDetail = $bl->x . ':' . $bl->y . ':' . $bl->z . '/' . $skill->id;
+                SQLManager::$manager->addLog($xuid, 'skill', 'now', null, $logDetail);
+                SkillManager::skillActive($p, $bl);
+                AccountManager::setValue($xuid, 'skill_active', 0);
+            }
+        }
     }
 }

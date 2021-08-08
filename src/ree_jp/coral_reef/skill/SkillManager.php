@@ -42,7 +42,7 @@ class SkillManager
         $xuid = $p->getXuid();
         $user = SQLManager::$manager->getUser($xuid);
         $skill = $user->skill;
-        if (is_null($skill)) return;
+        if (is_null($skill)) throw new Exception('スキルが設定されていません');
 
         $skill->runSkill($bl, $p);
         if ($skill->cool_time !== 0) {
@@ -53,10 +53,5 @@ class SkillManager
                 $p->getLevel()->broadcastLevelSoundEvent($p, LevelSoundEventPacket::SOUND_LEVELUP, (int)$volume);
             }), $skill->cool_time);
         }
-    }
-
-    static function isSkillActive(string $xuid): bool
-    {
-        return AccountManager::hasValue($xuid, 'skill_cool_time');
     }
 }
