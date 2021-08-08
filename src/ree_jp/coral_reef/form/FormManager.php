@@ -21,6 +21,7 @@ use ree_jp\coral_reef\sql\SQLManager;
 
 class FormManager
 {
+    const STOP_FLY_WORLD = array('lobby');
 
     static function sendMenu(Player $p): void
     {
@@ -50,6 +51,12 @@ class FormManager
                         $p->sendForm(new MenuForm('Menu -> World', '移動するワールドを選択してください', [new Button('ロビー'), new Button('整地ワールド1')],
                             function (Player $p, Button $button) {
                                 $teleportWorld = function (string $levelName) use ($p) {
+                                    if (in_array($levelName, self::STOP_FLY_WORLD) && AccountManager::hasValue($p->getXuid(), 'fly')) {
+                                        AccountManager::setValue($p->getXuid(), 'fly', 0);
+                                        $p->setFlying(false);
+                                        $p->setAllowFlight(false);
+                                        $p->sendMessage('このワールドで飛行することはできません');
+                                    }
                                     $level = Server::getInstance()->getLevelByName($levelName);
                                     if (is_null($level)) {
                                         $p->sendMessage('ワールドが見つかりませんでした');
@@ -78,6 +85,10 @@ class FormManager
                             $p->setAllowFlight(false);
                             $p->sendMessage('飛行を無効にしました');
                         } else {
+                            if (in_array($p->getLevel()->getFolderName(), self::STOP_FLY_WORLD)) {
+                                $p->sendMessage('このワールドで飛行することはできません');
+                                return;
+                            }
                             AccountManager::setValue($xuid, 'fly');
                             $p->setAllowFlight(true);
                             $p->setFlying(true);
