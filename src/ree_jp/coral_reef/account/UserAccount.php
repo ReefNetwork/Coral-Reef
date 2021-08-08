@@ -30,7 +30,7 @@ class UserAccount
     public int $experience;
     public int $level;
     public int $necessaryExperience;
-    public BreakSkill $skill;
+    public ?BreakSkill $skill;
 
     public function __construct(string $xuid, string $name, int $experience, string $skill)
     {
