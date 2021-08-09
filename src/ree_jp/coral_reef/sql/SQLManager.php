@@ -193,6 +193,38 @@ class SQLManager
 
     /**
      * @param string $xuid
+     * @return array
+     * @throws Exception
+     */
+    public function getWarps(string $xuid): array
+    {
+        $prepare = $this->pdo->prepare('SELECT NAME ,LEVEL ,X ,Y ,Z FROM WARP WHERE XUID = :xuid');
+        if ($prepare === false) throw new Exception('設定にアクセスできません');
+        $prepare->execute([':xuid' => $xuid]);
+        $result = $prepare->fetchAll();
+        if ($result === false) return [];
+        return $result;
+    }
+
+    /**
+     * @param string $xuid
+     * @param string $name
+     * @param string $level
+     * @param int $x
+     * @param int $y
+     * @param int $z
+     * @throws Exception
+     */
+    public function addWarp(string $xuid, string $name, string $level, int $x, int $y, int $z): void
+    {
+        $prepare = $this->pdo->prepare(
+            'INSERT INTO WARP VALUES (:xuid ,:name ,:level ,:x ,:y ,:z) ON DUPLICATE KEY UPDATE LEVEL = :level AND X = :x AND Y = :y AND Z = :z');
+        if ($prepare === false) throw new Exception('ワープ地点を保存する準備ができませんでした');
+        if (!$prepare->execute([':xuid' => $xuid, ':name' => $name, ':level' => $level, ':x' => $x, ':y' => $y, ':z' => $z])) throw new Exception('ワープ地点を保存できませんでした');
+    }
+
+    /**
+     * @param string $xuid
      * @throws Exception
      */
     public function createLogTable(string $xuid): void
@@ -224,5 +256,6 @@ class SQLManager
         $this->pdo->exec("CREATE TABLE IF NOT EXISTS BAN (PRIMARY KEY (TYPE ,VALUE ),TYPE ENUM('ALL','XUID','IP') NOT NULL ,VALUE VARCHAR(20) NOT NULL ,REASON VARCHAR(999) NOT NULL ,TIME DATETIME )");
         $this->pdo->exec("CREATE TABLE IF NOT EXISTS WHITELIST (PRIMARY KEY (TYPE ,VALUE ),TYPE ENUM('XUID','IP') NOT NULL ,VALUE VARCHAR(20) NOT NULL ,REASON VARCHAR(999) NOT NULL ,TIME DATETIME )");
         $this->pdo->exec('CREATE TABLE IF NOT EXISTS SETTING (PRIMARY KEY (XUID ,TYPE),XUID BIGINT UNSIGNED NOT NULL ,TYPE VARCHAR(99) NOT NULL ,VALUE VARCHAR(99) NOT NULL )');
+        $this->pdo->exec('CREATE TABLE IF NOT EXISTS WARP (PRIMARY KEY (XUID ,NAME),XUID BIGINT UNSIGNED NOT NULL ,NAME VARCHAR(99) NOT NULL , LEVEL VARCHAR(99) NOT NULL ,X INT NOT NULL ,Y INT NOT NULL ,Z INT NOT NULL )');
     }
 }
