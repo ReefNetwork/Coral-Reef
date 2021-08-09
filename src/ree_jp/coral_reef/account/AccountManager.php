@@ -76,7 +76,9 @@ class AccountManager
         $nick = "";
 
         try {
-            SQLManager::$manager->addLog($xuid, 'join', 'now');
+            SQLManager::$manager->setUser($xuid, $p->getName(), $p->getAddress());
+            SQLManager::$manager->createLogTable($xuid);
+            SQLManager::$manager->addLog($xuid, 'join', 'now', null, $p->getAddress());
         } catch (Exception $e) {
             Server::getInstance()->getLogger()->error("[Log] {$p->getName()} の処理中に " . $e->getMessage());
         }

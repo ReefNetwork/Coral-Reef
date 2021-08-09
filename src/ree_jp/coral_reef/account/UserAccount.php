@@ -43,8 +43,14 @@ class UserAccount
 
     public function save(): void
     {
+        if (is_null($this->skill)) {
+            $skillId = null;
+        } else {
+            $skillId = $this->skill->id;
+        }
         try {
             SQLManager::$manager->setXp($this->xuid, $this->experience);
+            SQLManager::$manager->setSkill($this->xuid, $skillId);
         } catch (Exception $e) {
             Server::getInstance()->getLogger()->error($this->name . 'のデータ保存に失敗しました' . $e->getMessage());
         }

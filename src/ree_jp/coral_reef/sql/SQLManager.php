@@ -105,6 +105,23 @@ class SQLManager
 
     /**
      * @param string $xuid
+     * @param string $name
+     * @param string $ip
+     * @throws Exception
+     */
+    public function setUser(string $xuid, string $name, string $ip): void
+    {
+        $ips = $this->getIps($xuid);
+        if (is_null($ips)) $ips = [];
+        if (!in_array($ip, $ips)) array_push($ips, $ip);
+        $prepare = $this->pdo->prepare(
+            'INSERT INTO USER VALUES (:xuid ,:name ,:ip ,0 ,null) ON DUPLICATE KEY UPDATE NAME = :name AND IPS = :ips');
+        if ($prepare === false) throw new Exception('ユーザーデータを保存する準備ができませんでした');
+        if (!$prepare->execute([':xuid' => $xuid, ':name' => $name, ':ips' => implode(':', $ips)])) throw new Exception('ユーザーデータを保存できませんでした');
+    }
+
+    /**
+     * @param string $xuid
      * @param string $experience
      * @throws Exception
      */
@@ -114,6 +131,35 @@ class SQLManager
         if ($prepare === false) throw new Exception('xpを保存する準備ができませんでした');
         if (!$prepare->execute([':experience' => $experience, ':xuid' => $xuid])) throw new Exception('xpを保存できませんでした');
     }
+
+    /**
+     * @param string $xuid
+     * @param string|null $skill
+     * @throws Exception
+     */
+    public function setSkill(string $xuid, ?string $skill): void
+    {
+        $prepare = $this->pdo->prepare('UPDATE USER SET Skill = :experience WHERE XUID = :xuid');
+        if ($prepare === false) throw new Exception('スキルを保存する準備ができませんでした');
+        if (!$prepare->execute([':skill' => $skill, ':xuid' => $xuid])) throw new Exception('スキルを保存できませんでした');
+    }
+
+    /**
+     * @param string $xuid
+     * @return array|null
+     * @throws Exception
+     */
+    public function getIps(string $xuid): ?array
+    {
+        $prepare = $this->pdo->prepare('SELECT IPS FROM USER WHERE XUID = :xuid');
+        if ($prepare === false) throw new Exception('ユーザーデータにアクセスする準備ができませんでした');
+        $prepare->execute([':xuid' => $xuid]);
+        $result = $prepare->fetchColumn();
+        if ($result === false) return null;
+        if (!is_string($result)) throw new Exception('ipが見つかりませんでした');
+        return explode(':', $result);
+    }
+
 
     /**
      * @param string $xuid
