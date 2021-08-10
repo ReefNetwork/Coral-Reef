@@ -225,6 +225,19 @@ class SQLManager
 
     /**
      * @param string $xuid
+     * @param string $name
+     * @throws Exception
+     */
+    public function deleteWarp(string $xuid, string $name): void
+    {
+        $prepare = $this->pdo->prepare(
+            'DELETE FROM WARP WHERE XUID = :xuid AND NAME = :name');
+        if ($prepare === false) throw new Exception('ワープ地点を削除する準備ができませんでした');
+        if (!$prepare->execute([':xuid' => $xuid, ':name' => $name])) throw new Exception('ワープ地点を削除できませんでした');
+    }
+
+    /**
+     * @param string $xuid
      * @throws Exception
      */
     public function createLogTable(string $xuid): void
