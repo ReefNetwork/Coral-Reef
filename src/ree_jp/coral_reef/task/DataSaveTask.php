@@ -23,11 +23,11 @@ class DataSaveTask extends Task
 {
     const SHUTDOWN = 10800;
     const SAVE_INTERVAL = 900;
-    private int $timer = 0;
+    private int $timer = self::SHUTDOWN;
 
     public function onRun(int $currentTick)
     {
-        ++$this->timer;
+        --$this->timer;
         switch ($this->timer % self::SAVE_INTERVAL) {
             case 60:
                 Server::getInstance()->broadcastMessage(TextFormat::GRAY . '1分後にデータのセーブと地面に落ちているアイテムなどの削除を行います');
@@ -51,7 +51,7 @@ class DataSaveTask extends Task
                 }
                 Server::getInstance()->broadcastMessage(TextFormat::GRAY . '完了しました(' . round(microtime(true) - $start, 5) . '秒)');
         }
-        switch (self::SHUTDOWN - $this->timer) {
+        switch ($this->timer) {
             case 3600:
                 Server::getInstance()->broadcastMessage(TextFormat::GRAY . '1時間後に再起動を行います');
                 break;
