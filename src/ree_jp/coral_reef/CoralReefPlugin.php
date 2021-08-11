@@ -11,6 +11,8 @@
 
 namespace ree_jp\coral_reef;
 
+require_once "vendor/autoload.php";
+
 use Frago9876543210\EasyForms\EasyForms;
 use PDOException;
 use pocketmine\plugin\PluginBase;
@@ -30,7 +32,6 @@ class CoralReefPlugin extends PluginBase
     {
         self::$plugin = $this;
 
-//        require_once "vendor/autoload.php";
 //        $bot = new Discord(['token' => $this->getConfig()->get(ConfigConst::DISCORD_TOKEN)]);
 //        $bot->run();
 

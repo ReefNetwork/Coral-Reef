@@ -11,7 +11,7 @@
   "require": {
     "team-reflex/discord-php": "^6.0",
     "xenialdan/apibossbar": "0.0.5",
-    "frago9876543210/easyforms": "1.5.0",
+    "frago9876543210/easyforms": "^1.5",
     "ext-pdo": "*"
   },
   "repositories": [
