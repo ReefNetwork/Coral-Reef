@@ -96,9 +96,10 @@ class SQLManager
         if ($prepare === false) throw new Exception('アカウントを取得する準備ができませんでした');
         $prepare->execute([':xuid' => $xuid]);
         $result = $prepare->fetch();
-        if (!(array_key_exists('xuid', $result) || array_key_exists('name', $result) || array_key_exists('experience', $result) || array_key_exists('skill', $result))) throw new Exception('USER_SQLの返り値が不正です');
+        var_dump($result);
+        if (!(array_key_exists('XUID', $result) && array_key_exists('NAME', $result) && array_key_exists('EXPERIENCE', $result) && array_key_exists('SKILL', $result))) throw new Exception('USER_SQLの返り値が不正です');
 
-        $account = new UserAccount($result['xuid'], $result['name'], $result['experience'], $result['skill']);
+        $account = new UserAccount($result['XUID'], $result['NAME'], $result['EXPERIENCE'], $result['SKILL']);
         $this->users[$xuid] = $account;
         return $account;
     }
