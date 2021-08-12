@@ -22,12 +22,19 @@ use ree_jp\coral_reef\sql\SQLManager;
 
 class SkillManager
 {
+    const SKILLS = ['double', 'triple', 'test'];
 
     static function getSkill(?string $skill): ?BreakSkill
     {
         switch ($skill) {
             case 'double':
                 return new BreakSkill('ダブル', $skill, 0, 1, 0, 0);
+
+            case 'triple':
+                return new BreakSkill('トリプル', $skill, 0, 2, 1, 1);
+
+            case 'test':
+                return new BreakSkill('てすと', $skill, 10, 9, 2, 2);
 
             default:
                 return null;
