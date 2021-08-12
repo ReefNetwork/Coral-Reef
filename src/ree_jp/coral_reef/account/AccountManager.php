@@ -41,7 +41,7 @@ class AccountManager
             self::$values[$key] = $tick;
             if (is_int($tick)) {
                 CoralReefPlugin::$plugin->getScheduler()->scheduleDelayedTask(
-                    new ClosureTask(function () use ($key) {
+                    new ClosureTask(function () use ($key): void {
                         if (array_key_exists($key, self::$values)) {
                             unset(self::$values[$key]);
                         }

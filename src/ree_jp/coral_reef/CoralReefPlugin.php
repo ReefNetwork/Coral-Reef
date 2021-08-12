@@ -67,7 +67,7 @@ class CoralReefPlugin extends PluginBase
 
     public function onDisable()
     {
-        $this->discordBot->close();
+//        $this->discordBot->close();
         parent::onDisable();
     }
 }

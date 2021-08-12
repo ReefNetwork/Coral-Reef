@@ -54,7 +54,7 @@ class FormManager
         }
         $p->sendForm(new MenuForm('ReefServer Menu', "レベル : $level \nレベルアップまで : $necessaryExperience",
             [new Button('ワールド移動'), new Button("飛行を$fly_status にする"), new Button('ワープ地点'), new Button('設定')],
-            function (Player $p, Button $button) {
+            function (Player $p, Button $button): void {
                 switch ($button->getValue()) {
                     case 0:
                         $p->sendForm(self::worldTeleportForm());
@@ -96,7 +96,7 @@ class FormManager
     static function worldTeleportForm(): MenuForm
     {
         return new MenuForm('Menu -> World', '移動するワールドを選択してください', [new Button('ロビー'), new Button('整地ワールド1')],
-            function (Player $p, Button $button) {
+            function (Player $p, Button $button): void {
                 switch ($button->getValue()) {
                     case 0:
                         self::teleport($p, 'lobby');
@@ -130,7 +130,7 @@ class FormManager
         $warpButtons = $buttons;
         $editValue = array_push($buttons, new Button('ワープ地点を 作成/削除 する'));
         return new MenuForm('Menu -> MyWarp', '自分だけのワープ地点を設定できます', $buttons,
-            function (Player $p, Button $button) use ($warps, $warpButtons, $editValue) {
+            function (Player $p, Button $button) use ($warps, $warpButtons, $editValue): void {
                 if (array_key_exists($button->getValue(), $warps)) {
                     $warpPoint = $warps[$button->getValue()];
                     $p->sendMessage($warpPoint['name'] . 'にワープしています...');
@@ -145,11 +145,11 @@ class FormManager
     {
         $createValue = array_push($warpButtons, new Button('ワープ地点を作成する'));
         return new MenuForm('MyWarp -> edit', 'ワープ地点を作成するか削除したいワープ地点を選択してください', $warpButtons,
-            function (Player $p, Button $button) use ($warps, $createValue) {
+            function (Player $p, Button $button) use ($warps, $createValue): void {
                 if (array_key_exists($button->getValue(), $warps)) {
                     $warpPoint = $warps[$button->getValue()];
                     $p->sendForm(new ModalForm('MyWarpEdit -> delete', TextFormat::DARK_RED . $warpPoint['name'] . 'を本当に削除しますか?',
-                        function (Player $p, bool $result) use ($warpPoint) {
+                        function (Player $p, bool $result) use ($warpPoint): void {
                             if ($result) {
                                 try {
                                     SQLManager::$manager->deleteWarp($p->getXuid(), $warpPoint['name']);
@@ -171,7 +171,7 @@ class FormManager
         return new CustomForm('MyWarpEdit -> Create', [
             new Label('現在の位置にワープ地点を作成します\n重複する名前の場合上書きされます'),
             new Input('作成したいワープ地点の名前を入力してください', '新しいワープ地点')
-        ], function (Player $p, CustomFormResponse $result) {
+        ], function (Player $p, CustomFormResponse $result): void {
             $input = $result->getInput()->getValue();
             if (mb_strlen($input) < 1) {
                 $p->sendMessage('ワープ地点の名前が短すぎます');
@@ -208,7 +208,7 @@ class FormManager
 
     static function messageForm(string $label): ModalForm
     {
-        return new ModalForm('メッセージ', $label, function () {
+        return new ModalForm('メッセージ', $label, function (): void {
         }, 'ok', 'ok');
     }
 }

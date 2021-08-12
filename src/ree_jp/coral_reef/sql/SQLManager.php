@@ -115,7 +115,7 @@ class SQLManager
         if (is_null($ips)) $ips = [];
         if (!in_array($ip, $ips)) array_push($ips, $ip);
         $prepare = $this->pdo->prepare(
-            'INSERT INTO USER VALUES (:xuid ,:name ,:ip ,0 ,null) ON DUPLICATE KEY UPDATE NAME = :name AND IPS = :ips');
+            'INSERT INTO USER VALUES (:xuid ,:name ,:ips ,0 ,null) ON DUPLICATE KEY UPDATE NAME = :name, IPS = :ips');
         if ($prepare === false) throw new Exception('ユーザーデータを保存する準備ができませんでした');
         if (!$prepare->execute([':xuid' => $xuid, ':name' => $name, ':ips' => implode(':', $ips)])) throw new Exception('ユーザーデータを保存できませんでした');
     }
@@ -218,7 +218,7 @@ class SQLManager
     public function addWarp(string $xuid, string $name, string $level, int $x, int $y, int $z): void
     {
         $prepare = $this->pdo->prepare(
-            'INSERT INTO WARP VALUES (:xuid ,:name ,:level ,:x ,:y ,:z) ON DUPLICATE KEY UPDATE LEVEL = :level AND X = :x AND Y = :y AND Z = :z');
+            'INSERT INTO WARP VALUES (:xuid ,:name ,:level ,:x ,:y ,:z) ON DUPLICATE KEY UPDATE LEVEL = :level ,X = :x ,Y = :y ,Z = :z');
         if ($prepare === false) throw new Exception('ワープ地点を保存する準備ができませんでした');
         if (!$prepare->execute([':xuid' => $xuid, ':name' => $name, ':level' => $level, ':x' => $x, ':y' => $y, ':z' => $z])) throw new Exception('ワープ地点を保存できませんでした');
     }
@@ -242,7 +242,7 @@ class SQLManager
      */
     public function createLogTable(string $xuid): void
     {
-        $prepare = $this->logPdo->prepare("CREATE TABLE IF NOT EXISTS :xuid (TYPE ENUM('join','quit','warp','skill','break','place','chat','other') NOT NULL ,OTHER VARCHAR(99) ,VALUE VARCHAR(999) ,TIME DATETIME )");
+        $prepare = $this->logPdo->prepare("CREATE TABLE IF NOT EXISTS `:xuid` (TYPE ENUM('join','quit','warp','skill','break','place','chat','other') NOT NULL ,OTHER VARCHAR(99) ,VALUE VARCHAR(999) ,TIME DATETIME )");
         if ($prepare === false) throw new Exception('ログ作成の準備ができませんでした');
         if (!$prepare->execute([':xuid' => $xuid])) throw new Exception('ログを作成できませんでした');
     }
@@ -258,9 +258,9 @@ class SQLManager
     public function addLog(string $xuid, string $type, string $time = null, string $otherType = null, string $value = null): void
     {
         if ($time === 'now') $time = date("Y-m-d H:i:s");
-        $prepare = $this->logPdo->prepare('INSERT INTO :xuid VALUES (:type ,:other ,:value ,:time)');
+        $prepare = $this->logPdo->prepare("INSERT INTO `:xuid` VALUES (:type ,:other ,:value ,:time)");
         if ($prepare === false) throw new Exception('ログの追加の準備ができませんでした');
-        $prepare->execute([':type' => $type, ':other' => $otherType, ':value' => $value, ':time' => $time]);
+        $prepare->execute([':xuid' => $xuid, ':type' => $type, ':other' => $otherType, ':value' => $value, ':time' => $time]);
     }
 
     private function createTable(): void
