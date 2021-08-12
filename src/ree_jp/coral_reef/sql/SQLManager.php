@@ -97,9 +97,9 @@ class SQLManager
         $prepare->execute([':xuid' => $xuid]);
         $result = $prepare->fetch();
         var_dump($result);
-        if (!(array_key_exists('XUID', $result) && array_key_exists('NAME', $result) && array_key_exists('EXPERIENCE', $result) && array_key_exists('SKILL', $result))) throw new Exception('USER_SQLの返り値が不正です');
+        if (!(array_key_exists('XUID', $result) && array_key_exists('NAME', $result) && array_key_exists('EXPERIENCE', $result) && is_numeric($result['EXPERIENCE']) && array_key_exists('SKILL', $result))) throw new Exception('USER_SQLの返り値が不正です');
 
-        $account = new UserAccount($result['XUID'], $result['NAME'], $result['EXPERIENCE'], $result['SKILL']);
+        $account = new UserAccount($result['XUID'], $result['NAME'], intval($result['EXPERIENCE']), $result['SKILL']);
         $this->users[$xuid] = $account;
         return $account;
     }
