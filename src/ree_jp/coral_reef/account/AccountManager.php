@@ -15,6 +15,7 @@ namespace ree_jp\coral_reef\account;
 use Exception;
 use pocketmine\block\Block;
 use pocketmine\item\Item;
+use pocketmine\level\Position;
 use pocketmine\Player;
 use pocketmine\scheduler\ClosureTask;
 use pocketmine\Server;
@@ -27,6 +28,8 @@ use ree_jp\coral_reef\sql\SQLManager;
 
 class AccountManager
 {
+
+    const STOP_FLY_WORLD = array('lobby');
 
     static array $values = array();
 
@@ -133,6 +136,27 @@ class AccountManager
                 SkillManager::skillActive($p, $bl);
                 AccountManager::setValue($xuid, 'skill_active', 0);
             }
+        }
+    }
+
+    static function teleport(Player $p, string $levelName, Position $pos = null): void
+    {
+        if (in_array($levelName, self::STOP_FLY_WORLD) && AccountManager::hasValue($p->getXuid(), 'fly')) {
+            AccountManager::setValue($p->getXuid(), 'fly', 0);
+            $p->setFlying(false);
+            $p->setAllowFlight(false);
+            $p->sendMessage('このワールドで飛行することはできません');
+        }
+        $level = Server::getInstance()->getLevelByName($levelName);
+        if (is_null($level)) {
+            $p->sendMessage('ワールドが見つかりませんでした');
+        } else {
+            if (is_null($pos)) {
+                $pos = $level->getSpawnLocation();
+            } else {
+                $pos = $pos->setLevel($level);
+            }
+            $p->teleport($pos);
         }
     }
 }
