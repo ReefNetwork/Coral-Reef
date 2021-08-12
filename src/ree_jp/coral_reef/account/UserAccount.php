@@ -32,7 +32,7 @@ class UserAccount
     public int $necessaryExperience;
     public ?BreakSkill $skill;
 
-    public function __construct(string $xuid, string $name, int $experience, string $skill)
+    public function __construct(string $xuid, string $name, int $experience, ?string $skill)
     {
         $this->xuid = $xuid;
         $this->name = $name;

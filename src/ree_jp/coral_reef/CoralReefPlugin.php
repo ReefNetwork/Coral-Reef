@@ -16,6 +16,8 @@ require_once "vendor/autoload.php";
 use Frago9876543210\EasyForms\EasyForms;
 use PDOException;
 use pocketmine\plugin\PluginBase;
+use pocketmine\Server;
+use pocketmine\utils\TextFormat;
 use ree_jp\coral_reef\command\MenuCommand;
 use ree_jp\coral_reef\discord\DiscordBot;
 use ree_jp\coral_reef\sql\SQLManager;
@@ -68,6 +70,9 @@ class CoralReefPlugin extends PluginBase
     public function onDisable()
     {
 //        $this->discordBot->close();
+        foreach (Server::getInstance()->getOnlinePlayers() as $p) {
+            $p->kick(TextFormat::GREEN . 'Reef ' . TextFormat::YELLOW . "Server\n\nサーバーが停止しました", false, '停止');
+        }
         parent::onDisable();
     }
 }
