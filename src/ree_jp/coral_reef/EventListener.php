@@ -26,12 +26,17 @@ use pocketmine\Server;
 use pocketmine\utils\TextFormat;
 use ree_jp\coral_reef\account\AccountManager;
 use ree_jp\coral_reef\form\FormManager;
+use ree_jp\coral_reef\sql\SQLManager;
 
 class EventListener implements Listener
 {
     public function onPreLogin(PlayerPreLoginEvent $ev): void
     {
         $p = $ev->getPlayer();
+        if (is_null(SQLManager::$manager)) {
+            $p->kick(TextFormat::DARK_RED . 'データサーバーにアクセスできませんでした');
+            return;
+        }
         $reason = AccountManager::checkUser($p);
         if (is_string($reason)) $p->kick("Banされています" . TextFormat::EOL . $reason);
     }
