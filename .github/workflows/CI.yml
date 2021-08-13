@@ -54,5 +54,5 @@ jobs:
           host: ${{ secrets.DEBUG_HOST }}
           username: ${{ secrets.DEBUG_USERNAME }}
           key: ${{ secrets.DEBUG_KEY}}
-          target: builtPlugin/*
-          source: /home/${{ secrets.DEBUG_USERNAME }}/pmmp/plugins/
+          source: builtPlugin/*
+          target: /home/${{ secrets.DEBUG_USERNAME }}/pmmp/plugins/
