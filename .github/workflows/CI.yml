@@ -42,7 +42,7 @@ jobs:
     needs: build
     steps:
       - run: sudo mkdir ~/builtPlugin
-      - run: sudo chmod -R 777 ~/buildPlugin
+      - run: sudo chmod -R 777 ~/builtPlugin
       - name: download
         uses: actions/download-artifact@v2
         with:
