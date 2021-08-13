@@ -41,13 +41,13 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     steps:
-      - run: sudo mkdir ~/builtPlugin
-      - run: sudo chmod -R 777 ~/builtPlugin
+      - run: mkdir ~/builtPlugin
       - name: download
         uses: actions/download-artifact@v2
         with:
           name: CoralReef
           path: builtPlugin
+      - run: sudo chmod -R 777 ~/builtPlugin
 
       - name: deploy debug server
         uses: appleboy/scp-action@master
