@@ -19,7 +19,7 @@ use ree_jp\coral_reef\account\UserAccount;
 
 class SQLManager
 {
-    static SQLManager $manager;
+    static ?SQLManager $manager = null;
 
     /**
      * USER :XUID:NAME:IPS:EXPERIENCE:SKILL
