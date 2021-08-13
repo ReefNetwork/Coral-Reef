@@ -38,7 +38,7 @@ jobs:
           path: ./LICENSES/
 
       - name: deploy debug server
-        uses: actions/scp-action@v0.0.1
+        uses: appleboy/scp-action@v0.0.1
         with:
           host: ${{ secrets.DEBUG_HOST }}
           username: ${{ secrets.DEBUG_USERNAME }}
