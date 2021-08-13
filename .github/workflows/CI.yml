@@ -49,6 +49,8 @@ jobs:
       #          path: builtPlugin
       #      - run: sudo chmod -R 777 ~/builtPlugin
 
+      - run: cp ./build/CoralReef.phar ./CoralReef.phar
+
       - name: deploy debug server
         uses: appleboy/scp-action@master
         with:
