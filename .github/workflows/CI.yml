@@ -37,9 +37,6 @@ jobs:
           name: LICENSES
           path: ./LICENSES/
 
-  deploy:
-    runs-on: ubuntu-latest
-    steps:
       - name: deploy debug server
         uses: actions/scp-action@v0.0.1
         with:
