@@ -37,17 +37,17 @@ jobs:
           name: LICENSES
           path: ./LICENSES/
 
-  deploy:
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - run: mkdir ~/builtPlugin
-      - name: download
-        uses: actions/download-artifact@v2
-        with:
-          name: CoralReef
-          path: builtPlugin
-      - run: sudo chmod -R 777 ~/builtPlugin
+      #  deploy:
+      #    runs-on: ubuntu-latest
+      #    needs: build
+      #    steps:
+      #      - run: mkdir ~/builtPlugin
+      #      - name: download
+      #        uses: actions/download-artifact@v2
+      #        with:
+      #          name: CoralReef
+      #          path: builtPlugin
+      #      - run: sudo chmod -R 777 ~/builtPlugin
 
       - name: deploy debug server
         uses: appleboy/scp-action@master
@@ -55,5 +55,5 @@ jobs:
           host: ${{ secrets.DEBUG_HOST }}
           username: ${{ secrets.DEBUG_USERNAME }}
           key: ${{ secrets.DEBUG_KEY}}
-          source: builtPlugin/*
+          source: ./build/CoralReef.phar
           target: /home/${{ secrets.DEBUG_USERNAME }}/pmmp/plugins/
