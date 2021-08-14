@@ -71,7 +71,7 @@ class DataSaveTask extends Task
                 Server::getInstance()->broadcastMessage(TextFormat::GRAY . '5秒後に再起動を行います');
                 break;
         }
-        if (self::SHUTDOWN <= $this->timer) {
+        if ($this->timer < 0) {
             Server::getInstance()->broadcastMessage(TextFormat::DARK_RED . '再起動中...');
             foreach (Server::getInstance()->getOnlinePlayers() as $p) {
                 $p->kick(TextFormat::GREEN . 'Reef ' . TextFormat::YELLOW . 'Server\n\n再起動しています', false, '再起動');
