@@ -31,7 +31,7 @@ class SkillManager
                 return new BreakSkill('ダブル', $skill, 0, 1, 0, 0);
 
             case 'triple':
-                return new BreakSkill('トリプル', $skill, 0, 2, 1, 1);
+                return new BreakSkill('トリプル', $skill, 0, 2, 2, 2);
 
             case 'test':
                 return new BreakSkill('てすと', $skill, 10, 9, 2, 2);

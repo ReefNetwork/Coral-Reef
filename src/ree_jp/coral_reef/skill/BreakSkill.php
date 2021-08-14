@@ -23,6 +23,11 @@ class BreakSkill
     const RIGHT = 3;
     const LEFT = 4;
 
+    const NORTH = 2;
+    const SOUTH = 0;
+    const EAST = 3;
+    const WEST = 1;
+
     public string $name;
     public string $id;
     public int $cool_time;
@@ -48,16 +53,16 @@ class BreakSkill
         $direction = $p->getDirection();
         $isFly = AccountManager::hasValue($p->getXuid(), 'fly');
         $isDirectUnder = ($p->getFloorX() === $block->getFloorX()) && ($p->getFloorZ() === $block->getFloorZ());
-        $widthSide = floor($this->width / 2);
-        $depthSide = floor($this->depth / 2);
+        $widthSide = intval(floor($this->width / 2));
+        $depthSide = intval(floor($this->depth / 2));
         if ($p->getFloorY() - 1 > $block->getFloorY() ||
             ((!$isFly || $isDirectUnder) && ($p->getFloorY() > $block->getFloorY()))) {
 
             $depthCeil = ceil($this->depth / 2);
-            for ($height = 0; $height > $this->height; ++$height) {
-                for ($width = $widthSide; $width < -$widthSide; --$width) {
-                    for ($depth = $depthCeil; $depth < -$depthSide; --$depth) {
-                        if ($height !== 0 && $width !== 0 && $depth !== 0) {
+            for ($height = 0; $height <= $this->height; ++$height) {
+                for ($width = $widthSide; $width >= -$widthSide; --$width) {
+                    for ($depth = $depthCeil; $depth >= -$depthSide; --$depth) {
+                        if (!($height === 0 && $width === 0 && $depth === 0)) {
                             $vec = $this->getSideFromUserView($block->add(0, -$height), $direction, self::RIGHT, $width);
                             $vec = $this->getSideFromUserView($vec, $direction, self::FORWARD, $depth);
                             $this->breakBrockBySkill($p, $vec);
@@ -66,20 +71,23 @@ class BreakSkill
                 }
             }
         } else {
-            $isSkillHigh = ($block->getFloorY() - $p->getFloorY()) < $this->height;
-            for ($height = 0; $height > $this->height; ++$height) {
-                for ($width = $widthSide; $width < -$widthSide; --$width) {
-                    for ($depth = 0; $depth > $this->depth; ++$depth) {
-                        if ($height !== 0 && $width !== 0 && $depth !== 0) {
-                            if ($isSkillHigh) {
-                                $base = $block->add(0, $height);
-                            } else {
-                                $base = $p->add(0, $height);
-                            }
-                            $vec = $this->getSideFromUserView($base, $direction, self::RIGHT, $width);
-                            $vec = $this->getSideFromUserView($vec, $direction, self::FORWARD, $depth);
-                            $this->breakBrockBySkill($p, $vec);
+            $isSkillHigh = ($block->getFloorY() - $p->getFloorY()) <= $this->height;
+            $playerY = $p->getFloorY();
+            for ($height = 0; $height <= $this->height; ++$height) {
+                for ($width = $widthSide; $width >= -$widthSide; --$width) {
+                    for ($depth = 0; $depth <= $this->depth; ++$depth) {
+                        var_dump("$height,$width,$depth");
+                        if ($isSkillHigh) {
+                            $baseY = intval($height + $playerY);
+                            if ($baseY === $block->getFloorY() && $width === 0 && $depth === 0) continue;
+                            $base = new Vector3($block->x, $height + $playerY, $block->z);
+                        } else {
+                            if ($height === 0 && $width === 0 && $depth === 0) continue;// スキル起点のブロックへのスキル発動防止
+                            $base = $block->add(0, $height);
                         }
+                        $vec = $this->getSideFromUserView($base, $direction, self::RIGHT, $width);
+                        $vec = $this->getSideFromUserView($vec, $direction, self::FORWARD, $depth);
+                        $this->breakBrockBySkill($p, $vec);
                     }
                 }
             }
@@ -88,6 +96,7 @@ class BreakSkill
 
     private function breakBrockBySkill(Player $p, Vector3 $vec): void
     {
+        var_dump($vec);
         $hand = $p->getInventory()->getItemInHand();
         $p->getLevel()->useBreakOn($vec, $hand, $p);
     }
@@ -98,7 +107,7 @@ class BreakSkill
     private function getSideFromUserView(Vector3 $vec3, int $view, int $direction, int $value): Vector3
     {
         switch ($view) {
-            case Vector3::SIDE_NORTH:
+            case self::NORTH:
                 switch ($direction) {
                     case self::FORWARD:
                         return $vec3->add(0, 0, $value);
@@ -111,7 +120,7 @@ class BreakSkill
                     default:
                         throw new Exception('不正な方角');
                 }
-            case Vector3::SIDE_SOUTH:
+            case self::SOUTH:
                 switch ($direction) {
                     case self::FORWARD:
                         return $vec3->add(0, 0, -$value);
@@ -124,7 +133,7 @@ class BreakSkill
                     default:
                         throw new Exception('不正な方角');
                 }
-            case Vector3::SIDE_WEST:
+            case self::WEST:
                 switch ($direction) {
                     case self::FORWARD:
                         return $vec3->add(-$value);
@@ -137,7 +146,7 @@ class BreakSkill
                     default:
                         throw new Exception('不正な方角');
                 }
-            case Vector3::SIDE_EAST:
+            case self::EAST:
                 switch ($direction) {
                     case self::FORWARD:
                         return $vec3->add($value);

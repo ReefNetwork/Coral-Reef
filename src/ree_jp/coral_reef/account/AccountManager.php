@@ -126,10 +126,10 @@ class AccountManager
         $xuid = $p->getXuid();
         $user = SQLManager::$manager->getUser($xuid);
         $skill = $user->skill;
-        $logDetail = $bl->x . ':' . $bl->y . ':' . $bl->z . '/' . $item->getVanillaName();
+        $logDetail = $bl->x . ':' . $bl->y . ':' . $bl->z . '/' . $item->getVanillaName() . '/' . $bl->getName();
         SQLManager::$manager->addLog($xuid, 'break', 'now', null, $logDetail);
         if ($skill instanceof BreakSkill) {
-            if (!self::hasValue($xuid, 'skill_cool_time')) {
+            if (!self::hasValue($xuid, 'skill_cool_time') && !self::hasValue($xuid, 'skill_active')) {
                 AccountManager::setValue($xuid, 'skill_active');
                 $logDetail = $bl->x . ':' . $bl->y . ':' . $bl->z . '/' . $skill->id;
                 SQLManager::$manager->addLog($xuid, 'skill', 'now', null, $logDetail);
