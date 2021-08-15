@@ -76,7 +76,6 @@ class BreakSkill
             for ($height = 0; $height <= $this->height; ++$height) {
                 for ($width = $widthSide; $width >= -$widthSide; --$width) {
                     for ($depth = 0; $depth <= $this->depth; ++$depth) {
-                        var_dump("$height,$width,$depth");
                         if ($isSkillHigh) {
                             $baseY = intval($height + $playerY);
                             if ($baseY === $block->getFloorY() && $width === 0 && $depth === 0) continue;
@@ -96,7 +95,6 @@ class BreakSkill
 
     private function breakBrockBySkill(Player $p, Vector3 $vec): void
     {
-        var_dump($vec);
         $hand = $p->getInventory()->getItemInHand();
         $p->getLevel()->useBreakOn($vec, $hand, $p);
     }
@@ -110,52 +108,52 @@ class BreakSkill
             case self::NORTH:
                 switch ($direction) {
                     case self::FORWARD:
-                        return $vec3->add(0, 0, $value);
-                    case self::BACKWARD:
-                        return $vec3->add(0, 0, -$value);
-                    case self::RIGHT:
-                        return $vec3->add($value);
-                    case self::LEFT:
                         return $vec3->add(-$value);
+                    case self::BACKWARD:
+                        return $vec3->add($value);
+                    case self::RIGHT:
+                        return $vec3->add(0, 0, -$value);
+                    case self::LEFT:
+                        return $vec3->add(0, 0, $value);
                     default:
                         throw new Exception('不正な方角');
                 }
             case self::SOUTH:
                 switch ($direction) {
                     case self::FORWARD:
-                        return $vec3->add(0, 0, -$value);
-                    case self::BACKWARD:
-                        return $vec3->add(0, 0, $value);
-                    case self::RIGHT:
-                        return $vec3->add(-$value);
-                    case self::LEFT:
                         return $vec3->add($value);
+                    case self::BACKWARD:
+                        return $vec3->add(-$value);
+                    case self::RIGHT:
+                        return $vec3->add(0, 0, -$value);
+                    case self::LEFT:
+                        return $vec3->add(0, 0, $value);
                     default:
                         throw new Exception('不正な方角');
                 }
             case self::WEST:
                 switch ($direction) {
                     case self::FORWARD:
-                        return $vec3->add(-$value);
-                    case self::BACKWARD:
-                        return $vec3->add($value);
-                    case self::RIGHT:
-                        return $vec3->add(0, 0, -$value);
-                    case self::LEFT:
                         return $vec3->add(0, 0, $value);
+                    case self::BACKWARD:
+                        return $vec3->add(0, 0, -$value);
+                    case self::RIGHT:
+                        return $vec3->add(-$value);
+                    case self::LEFT:
+                        return $vec3->add($value);
                     default:
                         throw new Exception('不正な方角');
                 }
             case self::EAST:
                 switch ($direction) {
                     case self::FORWARD:
-                        return $vec3->add($value);
-                    case self::BACKWARD:
-                        return $vec3->add(-$value);
-                    case self::RIGHT:
-                        return $vec3->add(0, 0, $value);
-                    case self::LEFT:
                         return $vec3->add(0, 0, -$value);
+                    case self::BACKWARD:
+                        return $vec3->add(0, 0, $value);
+                    case self::RIGHT:
+                        return $vec3->add(-$value);
+                    case self::LEFT:
+                        return $vec3->add($value);
                     default:
                         throw new Exception('不正な方角');
                 }
