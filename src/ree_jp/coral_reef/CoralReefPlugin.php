@@ -71,7 +71,7 @@ class CoralReefPlugin extends PluginBase
     {
 //        $this->discordBot->close();
         foreach (Server::getInstance()->getOnlinePlayers() as $p) {
-            $p->kick(TextFormat::GREEN . 'Reef ' . TextFormat::YELLOW . "Server\n\nサーバーが停止しました", false, '停止');
+            $p->kick(TextFormat::GREEN . 'Reef ' . TextFormat::YELLOW . 'Server' . TextFormat::RESET . "\n\nサーバーが停止しました", false, '停止');
         }
         parent::onDisable();
     }

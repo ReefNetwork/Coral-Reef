@@ -41,7 +41,7 @@ class MyWarpForm
         }
         foreach ($warps as $warpPoint) {
             if (array_key_exists('NAME', $warpPoint) && array_key_exists('LEVEL', $warpPoint) && array_key_exists('X', $warpPoint) && array_key_exists('Y', $warpPoint) && array_key_exists('Z', $warpPoint)) {
-                array_push($buttons, new Button($warpPoint['NAME'] . '\n' . $warpPoint['X'] . ':' . $warpPoint['Y'] . ':' . $warpPoint['Z']));
+                array_push($buttons, new Button($warpPoint['NAME'] . "\n" . $warpPoint['X'] . ':' . $warpPoint['Y'] . ':' . $warpPoint['Z']));
             } else {
                 array_push($buttons, new Button('エラーが発生しました'));
             }
@@ -88,7 +88,7 @@ class MyWarpForm
     static function myWarpCreateForm(): CustomForm
     {
         return new CustomForm('MyWarpEdit -> Create', [
-            new Label('現在の位置にワープ地点を作成します\n重複する名前の場合上書きされます'),
+            new Label("現在の位置にワープ地点を作成します\n重複する名前の場合上書きされます"),
             new Input('作成したいワープ地点の名前を入力してください', '新しいワープ地点')
         ], function (Player $p, CustomFormResponse $result): void {
             $input = $result->getInput()->getValue();

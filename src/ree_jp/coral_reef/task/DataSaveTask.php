@@ -39,7 +39,7 @@ class DataSaveTask extends Task
                 Server::getInstance()->broadcastMessage(TextFormat::GRAY . '5秒後にデータのセーブと地面に落ちているアイテムなどの削除を行います');
                 break;
             case 0:
-                Server::getInstance()->broadcastMessage(TextFormat::GRAY . 'データのセーブと地面に落ちているアイテムなどの削除を行います\n数秒かかります...');
+                Server::getInstance()->broadcastMessage(TextFormat::GRAY . "データのセーブと地面に落ちているアイテムなどの削除を行います\n数秒かかります...");
                 $start = microtime(true);
                 $this->save();
                 foreach (Server::getInstance()->getLevels() as $level) {
@@ -74,7 +74,7 @@ class DataSaveTask extends Task
         if ($this->timer < 0) {
             Server::getInstance()->broadcastMessage(TextFormat::DARK_RED . '再起動中...');
             foreach (Server::getInstance()->getOnlinePlayers() as $p) {
-                $p->kick(TextFormat::GREEN . 'Reef ' . TextFormat::YELLOW . 'Server\n\n再起動しています', false, '再起動');
+                $p->kick(TextFormat::GREEN . 'Reef ' . TextFormat::YELLOW . 'Server' . TextFormat::RESET . "\n\n再起動しています", false, '再起動');
             }
             Server::getInstance()->shutdown();
         }
