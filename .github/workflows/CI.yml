@@ -55,5 +55,5 @@ jobs:
           host: ${{ secrets.DEBUG_HOST }}
           username: ${{ secrets.DEBUG_USERNAME }}
           key: ${{ secrets.DEBUG_KEY}}
-          source: ./CoralReef.phar
-          target: /home/${{ secrets.DEBUG_USERNAME }}/pmmp/plugins/
+          source: ./plugins/CoralReef.phar
+          target: /home/${{ secrets.DEBUG_USERNAME }}/pmmp/
