@@ -69,8 +69,8 @@ class AccountManager
             return SQLManager::$manager->getBanReason($xuid, $ip);
         } catch (Exception $ex) {
             Server::getInstance()->getLogger()->error("[CheckBAN] $name の確認中に " . $ex->getMessage());
+            return '[BAN_NOT_SHOW]データベースサーバーにアクセスできませんでした';
         }
-        return null;
     }
 
     static function userJoin(Player $p): void

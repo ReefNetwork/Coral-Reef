@@ -34,11 +34,18 @@ class EventListener implements Listener
     {
         $p = $ev->getPlayer();
         if (is_null(SQLManager::$manager)) {
-            $p->kick(TextFormat::DARK_RED . 'データサーバーにアクセスできませんでした');
+            $p->kick(TextFormat::GREEN . 'Reef ' . TextFormat::YELLOW . 'Server' . TextFormat::DARK_RED . 'データベースサーバーが見つかりませんでした');
             return;
         }
         $reason = AccountManager::checkUser($p);
-        if (is_string($reason)) $p->kick("Banされています" . TextFormat::EOL . $reason);
+        if (is_string($reason)) {
+            $isNotShow = strstr($reason, '[BAN_NOT_SHOW]', true);
+            if ($isNotShow === false) {
+                $p->kick("Banされています" . TextFormat::EOL . $reason);
+            } else {
+                $p->kick(TextFormat::GREEN . 'Reef ' . TextFormat::YELLOW . 'Server' . TextFormat::DARK_RED . "\n\n$isNotShow");
+            }
+        }
     }
 
     public function onJoin(PlayerJoinEvent $ev): void
