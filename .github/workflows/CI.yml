@@ -1,4 +1,3 @@
-
 name: CI
 
 # Controls when the action will run. Triggers the workflow on push or pull request
@@ -37,19 +36,18 @@ jobs:
           name: LICENSES
           path: ./LICENSES/
 
-      #  deploy:
-      #    runs-on: ubuntu-latest
-      #    needs: build
-      #    steps:
-      #      - run: mkdir ~/builtPlugin
-      #      - name: download
-      #        uses: actions/download-artifact@v2
-      #        with:
-      #          name: CoralReef
-      #          path: builtPlugin
-      #      - run: sudo chmod -R 777 ~/builtPlugin
-
-      - run: cp ./build/CoralReef.phar ./CoralReef.phar
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.ref == 'refs/heads/master'
+    steps:
+      - uses: actions/checkout@v2
+      - run: mkdir ~/plugins
+      - name: download
+        uses: actions/download-artifact@v2
+        with:
+          name: CoralReef
+          path: plugins
 
       - name: deploy debug server
         uses: appleboy/scp-action@master
