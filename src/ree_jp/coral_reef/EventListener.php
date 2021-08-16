@@ -27,6 +27,7 @@ use pocketmine\utils\TextFormat;
 use ree_jp\coral_reef\account\AccountManager;
 use ree_jp\coral_reef\form\FormManager;
 use ree_jp\coral_reef\sql\SQLManager;
+use ree_jp\stackStorage\api\StackStorageAPI;
 
 class EventListener implements Listener
 {
@@ -87,6 +88,12 @@ class EventListener implements Listener
             $p->sendMessage('エラーが発生しました');
             Server::getInstance()->getLogger()->error('[blockBroke]' . $p->getName() . 'の処理中に' . $e->getMessage());
         }
+        if (class_exists('StackStorageAPI')) {
+            foreach ($ev->getDrops() as $dropItem) {
+                StackStorageAPI::getInstance()->add($p->getXuid(), $dropItem);
+            }
+            $ev->setDrops([]);
+        } else $p->sendMessage('ストレージ');
     }
 
     public function onTouch(PlayerInteractEvent $ev): void
