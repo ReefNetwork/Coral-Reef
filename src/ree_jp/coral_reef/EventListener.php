@@ -130,7 +130,7 @@ class EventListener implements Listener
                 FormManager::sendMenu($p);
                 break;
         }
-        $ev->setCancelled(AccountManager::protect($p, $ev->getBlock(), ''));
+        $ev->setCancelled(AccountManager::protect($p, $ev->getBlock(), null));
     }
 
     public function onModeChange(PlayerGameModeChangeEvent $ev): void
