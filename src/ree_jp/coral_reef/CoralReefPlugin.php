@@ -13,6 +13,7 @@ namespace ree_jp\coral_reef;
 
 require_once "vendor/autoload.php";
 
+use Exception;
 use Frago9876543210\EasyForms\EasyForms;
 use PDOException;
 use pocketmine\plugin\PluginBase;
@@ -20,6 +21,7 @@ use pocketmine\Server;
 use pocketmine\utils\TextFormat;
 use ree_jp\coral_reef\command\MenuCommand;
 use ree_jp\coral_reef\discord\DiscordBot;
+use ree_jp\coral_reef\land\LandManager;
 use ree_jp\coral_reef\sql\SQLManager;
 use ree_jp\coral_reef\task\DataSaveTask;
 
@@ -62,6 +64,12 @@ class CoralReefPlugin extends PluginBase
         $this->getServer()->getPluginManager()->registerEvents(new EventListener(), $this);
         $this->getServer()->getCommandMap()->register('menu', new MenuCommand($this));
         $this->getScheduler()->scheduleRepeatingTask(new DataSaveTask(), 20);
+
+        try {
+            LandManager::$instance = new LandManager();
+        } catch (Exception $e) {
+            $this->getLogger()->critical("[LandManager]" . $e->getMessage());
+        }
 
         $this->getServer()->getPluginManager()->registerEvents(new EasyForms(), $this);
         parent::onEnable();

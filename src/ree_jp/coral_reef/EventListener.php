@@ -14,6 +14,7 @@ namespace ree_jp\coral_reef;
 
 use Exception;
 use pocketmine\event\block\BlockBreakEvent;
+use pocketmine\event\block\BlockPlaceEvent;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerGameModeChangeEvent;
 use pocketmine\event\player\PlayerInteractEvent;
@@ -77,6 +78,16 @@ class EventListener implements Listener
     }
 
     /**
+     * @priority LOW
+     */
+    public function onBreak(BlockBreakEvent $ev): void
+    {
+        $p = $ev->getPlayer();
+
+        $ev->setCancelled(AccountManager::protect($p, $ev->getBlock(), 'このワールドでブロックを掘ることはできません'));
+    }
+
+    /**
      * @priority MONITOR
      */
     public function onBreakMonitor(BlockBreakEvent $ev): void
@@ -91,12 +102,23 @@ class EventListener implements Listener
         }
         try {
             foreach ($ev->getDrops() as $dropItem) {
+                /** @noinspection PhpSingleStatementWithBracesInspection */
                 StackStorageAPI::$instance->add($p->getXuid(), $dropItem);
             }
             $ev->setDrops([]);
         } catch (Throwable $e) {
             $p->sendMessage('ストレージにアクセスできませんでした');
         }
+    }
+
+    /**
+     * @priority LOW
+     */
+    public function onPlace(BlockPlaceEvent $ev): void
+    {
+        $p = $ev->getPlayer();
+
+        $ev->setCancelled(AccountManager::protect($p, $ev->getBlock(), 'このワールドでブロックを設置することはできません'));
     }
 
     public function onTouch(PlayerInteractEvent $ev): void
@@ -108,6 +130,7 @@ class EventListener implements Listener
                 FormManager::sendMenu($p);
                 break;
         }
+        $ev->setCancelled(AccountManager::protect($p, $ev->getBlock(), ''));
     }
 
     public function onModeChange(PlayerGameModeChangeEvent $ev): void
