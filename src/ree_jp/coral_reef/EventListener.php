@@ -91,7 +91,7 @@ class EventListener implements Listener
         }
         try {
             foreach ($ev->getDrops() as $dropItem) {
-                StackStorageAPI::getInstance()->add($p->getXuid(), $dropItem);
+                StackStorageAPI::$instance->add($p->getXuid(), $dropItem);
             }
             $ev->setDrops([]);
         } catch (Throwable $e) {
