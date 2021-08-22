@@ -16,6 +16,7 @@ use Exception;
 use PDO;
 use PDOException;
 use ree_jp\coral_reef\account\UserAccount;
+use ree_jp\coral_reef\land\LandData;
 
 class SQLManager
 {
@@ -93,10 +94,10 @@ class SQLManager
         if (array_key_exists($xuid, $this->users)) return $this->users[$xuid];
 
         $prepare = $this->pdo->prepare('SELECT * FROM USER WHERE XUID = :xuid');
-        if ($prepare === false) throw new Exception('アカウントを取得する準備ができませんでした');
         $prepare->execute([':xuid' => $xuid]);
         $result = $prepare->fetch();
-        if (!(array_key_exists('XUID', $result) && array_key_exists('NAME', $result) && array_key_exists('EXPERIENCE', $result) && is_numeric($result['EXPERIENCE']) && array_key_exists('SKILL', $result))) throw new Exception('USER_SQLの返り値が不正です');
+        if (!(array_key_exists('XUID', $result) && array_key_exists('NAME', $result) && array_key_exists('EXPERIENCE', $result) &&
+            is_numeric($result['EXPERIENCE']) && array_key_exists('SKILL', $result))) throw new Exception('USER_SQLの返り値が不正です');
 
         $account = new UserAccount($result['XUID'], $result['NAME'], intval($result['EXPERIENCE']), $result['SKILL']);
         $this->users[$xuid] = $account;
@@ -116,8 +117,7 @@ class SQLManager
         if (!in_array($ip, $ips)) array_push($ips, $ip);
         $prepare = $this->pdo->prepare(
             'INSERT INTO USER VALUES (:xuid ,:name ,:ips ,0 ,null) ON DUPLICATE KEY UPDATE NAME = :name, IPS = :ips');
-        if ($prepare === false) throw new Exception('ユーザーデータを保存する準備ができませんでした');
-        if (!$prepare->execute([':xuid' => $xuid, ':name' => $name, ':ips' => implode(':', $ips)])) throw new Exception('ユーザーデータを保存できませんでした');
+        $prepare->execute([':xuid' => $xuid, ':name' => $name, ':ips' => implode(':', $ips)]);
     }
 
     /**
@@ -128,8 +128,7 @@ class SQLManager
     public function setXp(string $xuid, string $experience): void
     {
         $prepare = $this->pdo->prepare('UPDATE USER SET EXPERIENCE = :experience WHERE XUID = :xuid');
-        if ($prepare === false) throw new Exception('xpを保存する準備ができませんでした');
-        if (!$prepare->execute([':experience' => $experience, ':xuid' => $xuid])) throw new Exception('xpを保存できませんでした');
+        $prepare->execute([':experience' => $experience, ':xuid' => $xuid]);
     }
 
     /**
@@ -140,8 +139,7 @@ class SQLManager
     public function setSkill(string $xuid, ?string $skill): void
     {
         $prepare = $this->pdo->prepare('UPDATE USER SET Skill = :experience WHERE XUID = :xuid');
-        if ($prepare === false) throw new Exception('スキルを保存する準備ができませんでした');
-        if (!$prepare->execute([':skill' => $skill, ':xuid' => $xuid])) throw new Exception('スキルを保存できませんでした');
+        $prepare->execute([':skill' => $skill, ':xuid' => $xuid]);
     }
 
     /**
@@ -152,7 +150,6 @@ class SQLManager
     public function getIps(string $xuid): ?array
     {
         $prepare = $this->pdo->prepare('SELECT IPS FROM USER WHERE XUID = :xuid');
-        if ($prepare === false) throw new Exception('ユーザーデータにアクセスする準備ができませんでした');
         $prepare->execute([':xuid' => $xuid]);
         $result = $prepare->fetchColumn();
         if ($result === false) return null;
@@ -170,7 +167,6 @@ class SQLManager
     public function getSetting(string $xuid, string $type): ?string
     {
         $prepare = $this->pdo->prepare('SELECT VALUE FROM SETTING WHERE XUID = :xuid AND TYPE = :type');
-        if ($prepare === false) throw new Exception('設定にアクセスできません');
         $prepare->execute([':xuid' => $xuid, ':type' => $type]);
         $result = $prepare->fetchColumn();
         if ($result === false) return null;
@@ -187,8 +183,7 @@ class SQLManager
     {
         $prepare = $this->pdo->prepare(
             'INSERT INTO SETTING VALUES (:xuid ,:type ,:value) ON DUPLICATE KEY UPDATE VALUE = :value');
-        if ($prepare === false) throw new Exception('設定を保存する準備ができませんでした');
-        if (!$prepare->execute([':xuid' => $xuid, ':type' => $type, ':value' => $value])) throw new Exception('設定を保存できませんでした');
+        $prepare->execute([':xuid' => $xuid, ':type' => $type, ':value' => $value]);
     }
 
     /**
@@ -199,7 +194,6 @@ class SQLManager
     public function getWarps(string $xuid): array
     {
         $prepare = $this->pdo->prepare('SELECT NAME ,LEVEL ,X ,Y ,Z FROM WARP WHERE XUID = :xuid');
-        if ($prepare === false) throw new Exception('設定にアクセスできません');
         $prepare->execute([':xuid' => $xuid]);
         $result = $prepare->fetchAll();
         if ($result === false) return [];
@@ -219,8 +213,7 @@ class SQLManager
     {
         $prepare = $this->pdo->prepare(
             'INSERT INTO WARP VALUES (:xuid ,:name ,:level ,:x ,:y ,:z) ON DUPLICATE KEY UPDATE LEVEL = :level ,X = :x ,Y = :y ,Z = :z');
-        if ($prepare === false) throw new Exception('ワープ地点を保存する準備ができませんでした');
-        if (!$prepare->execute([':xuid' => $xuid, ':name' => $name, ':level' => $level, ':x' => $x, ':y' => $y, ':z' => $z])) throw new Exception('ワープ地点を保存できませんでした');
+        $prepare->execute([':xuid' => $xuid, ':name' => $name, ':level' => $level, ':x' => $x, ':y' => $y, ':z' => $z]);
     }
 
     /**
@@ -232,8 +225,39 @@ class SQLManager
     {
         $prepare = $this->pdo->prepare(
             'DELETE FROM WARP WHERE XUID = :xuid AND NAME = :name');
-        if ($prepare === false) throw new Exception('ワープ地点を削除する準備ができませんでした');
-        if (!$prepare->execute([':xuid' => $xuid, ':name' => $name])) throw new Exception('ワープ地点を削除できませんでした');
+        $prepare->execute([':xuid' => $xuid, ':name' => $name]);
+    }
+
+    /**
+     * @return array
+     * @throws Exception
+     */
+    public function getAllProtectLand(): array
+    {
+        $prepare = $this->pdo->prepare('SELECT * FROM LAND');
+        $prepare->execute();
+        return $prepare->fetchAll();
+    }
+
+    /**
+     * @param LandData $land
+     * @throws Exception
+     */
+    public function addProtectLand(LandData $land): void
+    {
+        $prepare = $this->pdo->prepare('INSERT INTO LAND VALUES (:xuid, :name, :level, :mx, :sx, :mz, :sz)');
+        $prepare->execute([':xuid' => $land->xuid, ':name' => $land->name, ':level' => $land->level, ':mx' => $land->aabb->maxX, ':sx' => $land->aabb->minX,
+            ':mz' => $land->aabb->maxZ, ':sz' => $land->aabb->minZ]);
+    }
+
+    /**
+     * @param LandData $land
+     * @throws Exception
+     */
+    public function deleteProtectLand(LandData $land): void
+    {
+        $prepare = $this->pdo->prepare('DELETE FROM LAND WHERE XUID = :xuid AND NAME = :name');
+        $prepare->execute([':xuid' => $land->xuid, ':name' => $land->name]);
     }
 
     /**
@@ -242,9 +266,9 @@ class SQLManager
      */
     public function createLogTable(string $xuid): void
     {
-        $prepare = $this->logPdo->prepare("CREATE TABLE IF NOT EXISTS `:xuid` (TYPE ENUM('join','quit','warp','skill','break','place','chat','other') NOT NULL ,OTHER VARCHAR(99) ,VALUE VARCHAR(999) ,TIME DATETIME )");
-        if ($prepare === false) throw new Exception('ログ作成の準備ができませんでした');
-        if (!$prepare->execute([':xuid' => $xuid])) throw new Exception('ログを作成できませんでした');
+        $prepare = $this->logPdo->prepare("CREATE TABLE IF NOT EXISTS `:xuid` 
+            (TYPE ENUM('join','quit','warp','skill','break','place','chat','other') NOT NULL ,OTHER VARCHAR(99) ,VALUE VARCHAR(999) ,TIME DATETIME )");
+        $prepare->execute([':xuid' => $xuid]);
     }
 
     /**
@@ -259,7 +283,6 @@ class SQLManager
     {
         if ($time === 'now') $time = date("Y-m-d H:i:s");
         $prepare = $this->logPdo->prepare("INSERT INTO `:xuid` VALUES (:type ,:other ,:value ,:time)");
-        if ($prepare === false) throw new Exception('ログの追加の準備ができませんでした');
         $prepare->execute([':xuid' => $xuid, ':type' => $type, ':other' => $otherType, ':value' => $value, ':time' => $time]);
     }
 
@@ -270,5 +293,6 @@ class SQLManager
         $this->pdo->exec("CREATE TABLE IF NOT EXISTS WHITELIST (PRIMARY KEY (TYPE ,VALUE ),TYPE ENUM('XUID','IP') NOT NULL ,VALUE VARCHAR(20) NOT NULL ,REASON VARCHAR(999) NOT NULL ,TIME DATETIME )");
         $this->pdo->exec('CREATE TABLE IF NOT EXISTS SETTING (PRIMARY KEY (XUID ,TYPE),XUID BIGINT UNSIGNED NOT NULL ,TYPE VARCHAR(99) NOT NULL ,VALUE VARCHAR(99) NOT NULL )');
         $this->pdo->exec('CREATE TABLE IF NOT EXISTS WARP (PRIMARY KEY (XUID ,NAME),XUID BIGINT UNSIGNED NOT NULL ,NAME VARCHAR(99) NOT NULL , LEVEL VARCHAR(99) NOT NULL ,X INT NOT NULL ,Y INT NOT NULL ,Z INT NOT NULL )');
+        $this->pdo->exec('CREATE TABLE IF NOT EXISTS LAND (PRIMARY KEY (XUID ,NAME),XUID BIGINT UNSIGNED NOT NULL ,NAME VARCHAR(99) NOT NULL , LEVEL VARCHAR(99) NOT NULL ,MX INT NOT NULL ,SX INT NOT NULL ,MZ INT NOT NULL ,SZ INT NOT NULL )');
     }
 }
