@@ -28,8 +28,10 @@ use pocketmine\utils\TextFormat;
 use ree_jp\coral_reef\account\AccountManager;
 use ree_jp\coral_reef\form\FormManager;
 use ree_jp\coral_reef\sql\SQLManager;
-use ree_jp\stackStorage\api\StackStorageAPI;
 use Throwable;
+
+/** @noinspection PhpIncludeInspection */
+include_once 'ree_jp\stackStorage\api\StackStorageAPI';
 
 class EventListener implements Listener
 {
@@ -102,7 +104,7 @@ class EventListener implements Listener
         }
         try {
             foreach ($ev->getDrops() as $dropItem) {
-                /** @noinspection PhpSingleStatementWithBracesInspection */
+                /** @noinspection PhpUndefinedClassInspection */
                 StackStorageAPI::$instance->add($p->getXuid(), $dropItem);
             }
             $ev->setDrops([]);
