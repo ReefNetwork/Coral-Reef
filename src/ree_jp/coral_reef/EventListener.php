@@ -28,10 +28,8 @@ use pocketmine\utils\TextFormat;
 use ree_jp\coral_reef\account\AccountManager;
 use ree_jp\coral_reef\form\FormManager;
 use ree_jp\coral_reef\sql\SQLManager;
+use ree_jp\stackStorage\api\StackStorageAPI;
 use Throwable;
-
-/** @noinspection PhpIncludeInspection */
-include_once 'ree_jp\stackStorage\api\StackStorageAPI';
 
 class EventListener implements Listener
 {
