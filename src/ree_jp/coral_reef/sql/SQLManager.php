@@ -282,6 +282,7 @@ class SQLManager
     public function addLog(string $xuid, string $type, string $time = null, string $otherType = null, string $value = null): void
     {
         if ($time === 'now') $time = date("Y-m-d H:i:s");
+        /** @noinspection SqlResolve */
         $prepare = $this->logPdo->prepare("INSERT INTO `:xuid` VALUES (:type ,:other ,:value ,:time)");
         $prepare->execute([':xuid' => $xuid, ':type' => $type, ':other' => $otherType, ':value' => $value, ':time' => $time]);
     }
