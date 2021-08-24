@@ -19,7 +19,6 @@ use pocketmine\level\sound\GenericSound;
 use pocketmine\math\AxisAlignedBB;
 use pocketmine\network\mcpe\protocol\LevelEventPacket;
 use pocketmine\Player;
-use pocketmine\Server;
 use ree_jp\coral_reef\account\AccountManager;
 use ree_jp\coral_reef\sql\SQLManager;
 
@@ -67,6 +66,16 @@ class LandManager
         return $myLands;
     }
 
+    public function canCreateLand(AxisAlignedBB $aabb): ?LandData
+    {
+        foreach ($this->lands as $land) {
+            if ($land->aabb->intersectsWith($aabb, -0.00001)) {
+                return $land;
+            }
+        }
+        return null;
+    }
+
     static function protect(Player $p, Block $bl, ?string $message): bool
     {
         if (in_array($p->getLevel()->getFolderName(), ['lobby', 'lobby2']) && !($p->isOp() && $p->isCreative())) {
@@ -76,12 +85,7 @@ class LandManager
             $land = self::$instance->getLand($bl);
             if (is_null($land)) return false;
 
-            $name = '';
-            try {
-                $name = SQLManager::$manager->getUser($land->xuid);
-            } catch (Exception $e) {
-                Server::getInstance()->getLogger()->critical("[LandBreak]" . $e->getMessage());
-            }
+            $name = AccountManager::getUserName($land->xuid);
             $p->sendTip("この土地は$name によって保護されています($land->name)");
             if ($p->isOp() && $p->isCreative()) return false;
 

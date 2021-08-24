@@ -139,6 +139,17 @@ class AccountManager
         }
     }
 
+    static function getUserName(string $xuid): string
+    {
+        $name = "";
+        try {
+            $name = SQLManager::$manager->getUser($xuid);
+        } catch (Exception $e) {
+            Server::getInstance()->getLogger()->critical("[GETUserName]" . $e->getMessage());
+        }
+        return $name;
+    }
+
     static function teleport(Player $p, string $levelName, Position $pos = null): void
     {
         if (in_array($levelName, self::STOP_FLY_WORLD) && AccountManager::hasValue($p->getXuid(), 'fly')) {
