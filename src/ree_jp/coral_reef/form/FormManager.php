@@ -47,7 +47,7 @@ class FormManager
             $fly_status = '有効';
         }
         $p->sendForm(new MenuForm('ReefServer Menu', "レベル : $level \nレベルアップまで : $necessaryExperience",
-            [new Button('ワールド移動'), new Button("飛行を$fly_status にする"), new Button('ワープ地点'), new Button('スキル設定'), new Button('ストレージ'), new Button('設定')],
+            [new Button('ストレージ'), new Button("飛行を$fly_status にする"), new Button('ワープ地点'), new Button('ワールド移動'), new Button('スキル設定'), new Button('土地保護'), new Button('設定')],
             function (Player $p, Button $button): void {
                 switch ($button->getValue()) {
                     case 0:
@@ -78,11 +78,15 @@ class FormManager
                         break;
 
                     case 3:
-                        $p->sendForm(self::skillSelectForm($p));
+                        Server::getInstance()->dispatchCommand($p, 'stackstorage');
                         break;
 
                     case 4:
-                        Server::getInstance()->dispatchCommand($p, 'stackstorage');
+                        $p->sendForm(self::skillSelectForm($p));
+                        break;
+
+                    case 5:
+                        $p->sendForm(LandForm::landForm($p->getXuid()));
                         break;
 
                     case 9:

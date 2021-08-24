@@ -12,8 +12,15 @@
 namespace ree_jp\coral_reef\land;
 
 use Exception;
+use pocketmine\block\Block;
+use pocketmine\level\particle\PortalParticle;
 use pocketmine\level\Position;
+use pocketmine\level\sound\GenericSound;
 use pocketmine\math\AxisAlignedBB;
+use pocketmine\network\mcpe\protocol\LevelEventPacket;
+use pocketmine\Player;
+use pocketmine\Server;
+use ree_jp\coral_reef\account\AccountManager;
 use ree_jp\coral_reef\sql\SQLManager;
 
 class LandManager
@@ -47,5 +54,47 @@ class LandManager
             }
         }
         return null;
+    }
+
+    public function getMyLand(string $xuid): array
+    {
+        $myLands = [];
+        foreach ($this->lands as $land) {
+            if ($land->xuid === $xuid) {
+                array_push($myLands, $land);
+            }
+        }
+        return $myLands;
+    }
+
+    static function protect(Player $p, Block $bl, ?string $message): bool
+    {
+        if (in_array($p->getLevel()->getFolderName(), ['lobby', 'lobby2']) && !($p->isOp() && $p->isCreative())) {
+            if (is_null($message)) return false;
+            $p->sendTip($message);
+        } else {
+            $land = self::$instance->getLand($bl);
+            if (is_null($land)) return false;
+
+            $name = '';
+            try {
+                $name = SQLManager::$manager->getUser($land->xuid);
+            } catch (Exception $e) {
+                Server::getInstance()->getLogger()->critical("[LandBreak]" . $e->getMessage());
+            }
+            $p->sendTip("この土地は$name によって保護されています($land->name)");
+            if ($p->isOp() && $p->isCreative()) return false;
+
+            if (AccountManager::hasValue($p->getXuid(), 'protect_warning')) {
+                AccountManager::setValue($p->getXuid(), 'protect_warning', 10);
+                $p->getLevelNonNull()->addSound(new GenericSound($bl, LevelEventPacket::EVENT_SOUND_PORTAL), [$p]);
+                $particleVec = $bl->add(0.5, 1.5, 0.5);
+                for ($count = 0; $count < 30; $count++) {
+                    $p->getLevelNonNull()->addParticle(new PortalParticle(
+                        $particleVec->add(mt_rand(-10, 10) * 0.1, 0, mt_rand(-10, 10) * 0.1)), [$p]);
+                }
+            }
+        }
+        return true;
     }
 }

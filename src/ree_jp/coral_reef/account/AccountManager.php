@@ -15,16 +15,12 @@ namespace ree_jp\coral_reef\account;
 use Exception;
 use pocketmine\block\Block;
 use pocketmine\item\Item;
-use pocketmine\level\particle\PortalParticle;
 use pocketmine\level\Position;
-use pocketmine\level\sound\GenericSound;
-use pocketmine\network\mcpe\protocol\LevelEventPacket;
 use pocketmine\Player;
 use pocketmine\scheduler\ClosureTask;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat;
 use ree_jp\coral_reef\CoralReefPlugin;
-use ree_jp\coral_reef\land\LandManager;
 use ree_jp\coral_reef\skill\BreakSkill;
 use ree_jp\coral_reef\skill\SkillManager;
 use ree_jp\coral_reef\sql\SettingConst;
@@ -162,31 +158,5 @@ class AccountManager
             }
             $p->teleport($pos);
         }
-    }
-
-    static function protect(Player $p, Block $bl, ?string $message): bool
-    {
-        if (in_array($p->getLevel()->getFolderName(), ['lobby', 'lobby2']) && !($p->isOp() && $p->isCreative())) {
-            if (is_null($message)) return false;
-            $p->sendTip($message);
-        } else {
-            $land = LandManager::$instance->getLand($bl);
-            if (is_null($land)) return false;
-
-            $name = '';
-            try {
-                $name = SQLManager::$manager->getUser($land->xuid);
-            } catch (Exception $e) {
-                Server::getInstance()->getLogger()->critical("[LandBreak]" . $e->getMessage());
-            }
-            $p->sendTip("この土地は$name によって保護されています($land->name)");
-            if ($p->isOp() && $p->isCreative()) return false;
-        }
-        $p->getLevelNonNull()->addSound(new GenericSound($bl, LevelEventPacket::EVENT_SOUND_PORTAL), [$p]);
-        $particleVec = $bl->add(0.5, 1.5, 0.5);
-        for ($count = 0; $count < 15; $count++) {
-            $p->getLevelNonNull()->addParticle(new PortalParticle($particleVec), [$p]);
-        }
-        return true;
     }
 }
