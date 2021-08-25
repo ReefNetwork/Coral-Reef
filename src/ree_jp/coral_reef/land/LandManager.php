@@ -20,6 +20,7 @@ use pocketmine\math\AxisAlignedBB;
 use pocketmine\network\mcpe\protocol\LevelEventPacket;
 use pocketmine\Player;
 use ree_jp\coral_reef\account\AccountManager;
+use ree_jp\coral_reef\form\PartyForm;
 use ree_jp\coral_reef\sql\SQLManager;
 
 class LandManager
@@ -83,7 +84,7 @@ class LandManager
             $p->sendTip($message);
         } else {
             $land = self::$instance->getLand($bl);
-            if (is_null($land) || $land->xuid === $p->getXuid()) return false;
+            if (is_null($land) || $land->xuid === $p->getXuid() || PartyForm::isParty($land->xuid, $p->getXuid())) return false;
 
             $name = AccountManager::getUserName($land->xuid);
             $p->sendTip("この土地は$name によって保護されています($land->name)");

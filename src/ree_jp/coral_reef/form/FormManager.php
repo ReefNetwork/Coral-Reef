@@ -47,15 +47,15 @@ class FormManager
             $fly_status = '有効';
         }
         $p->sendForm(new MenuForm('ReefServer Menu', "レベル : $level \nレベルアップまで : $necessaryExperience",
-            [new Button('ストレージ'), new Button("飛行を$fly_status にする"), new Button('ワープ地点'), new Button('ワールド移動'), new Button('スキル設定'), new Button('土地保護'), new Button('設定')],
+            [new Button('ストレージ'), new Button("飛行を$fly_status にする"), new Button('ワープ地点'), new Button('ワールド移動'), new Button('スキル設定'), new Button('パーティー'), new Button('土地保護'), new Button('設定')],
             function (Player $p, Button $button): void {
+                $xuid = $p->getXuid();
                 switch ($button->getValue()) {
                     case 0:
                         $p->sendForm(self::worldTeleportForm());
                         break;
 
                     case 1:
-                        $xuid = $p->getXuid();
                         if (AccountManager::hasValue($xuid, 'fly')) {
                             AccountManager::setValue($xuid, 'fly', 0);
                             $p->setFlying(false);
@@ -86,7 +86,11 @@ class FormManager
                         break;
 
                     case 5:
-                        $p->sendForm(LandForm::landForm($p->getXuid()));
+                        $p->sendForm(PartyForm::partyForm($xuid));
+                        break;
+
+                    case 6:
+                        $p->sendForm(LandForm::landForm($xuid));
                         break;
 
                     case 9:
