@@ -83,7 +83,7 @@ class LandManager
             $p->sendTip($message);
         } else {
             $land = self::$instance->getLand($bl);
-            if (is_null($land)) return false;
+            if (is_null($land) || $land->xuid === $p->getXuid()) return false;
 
             $name = AccountManager::getUserName($land->xuid);
             $p->sendTip("この土地は$name によって保護されています($land->name)");
