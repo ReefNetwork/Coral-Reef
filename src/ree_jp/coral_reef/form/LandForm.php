@@ -42,7 +42,7 @@ class LandForm
         }
         $createValue = array_push($buttons, new Button('新しく土地保護を作成する')) - 1;
         return new MenuForm('Menu -> Land', '土地を保護できます', $buttons,
-            function (Player $p, Button $button) use ($lands, $createValue) {
+            function (Player $p, Button $button) use ($lands, $createValue): void {
                 if (isset($lands[$button->getValue()])) {
                     $p->sendForm(self::landEditForm($lands[$button->getValue()]));
                 } elseif ($button->getValue() === $createValue) {
