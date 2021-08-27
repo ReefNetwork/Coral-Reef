@@ -11,8 +11,6 @@
 
 namespace ree_jp\coral_reef;
 
-require_once "vendor/autoload.php";
-
 use Exception;
 use PDOException;
 use pocketmine\plugin\PluginBase;

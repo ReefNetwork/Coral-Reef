@@ -11,7 +11,9 @@
 
 namespace ree_jp\coral_reef\discord;
 
+use pocketmine\scheduler\ClosureTask;
 use pocketmine\Thread;
+use ree_jp\coral_reef\CoralReefPlugin;
 
 class DiscordBot extends Thread
 {
@@ -23,7 +25,19 @@ class DiscordBot extends Thread
     {
         $this->chat_id = $chat_id;
         $this->log_id = $log_id;
-        $this->client = new discordThread($file, $token, $server_id, $chat_id, 2);
+        $this->client = new discordThread($file, $token, 2);
+        CoralReefPlugin::$plugin->getScheduler()->scheduleDelayedRepeatingTask(new ClosureTask(
+            function (int $currentTick): void {
+                foreach ($this->client->fetchMessages() as $message) {
+                    switch ($message[discordThread::MESSAGE_TYPE]) {
+                        case discordThread::MESSAGE_TYPE_SEND;
+                            if ($message[discordThread::MESSAGE_IS_MYSELF]) return;
+                            if ($message[discordThread::MESSAGE_IS_BOT]) return;
+                            $content = $message[discordThread::MESSAGE];
+                    }
+                }
+            }
+        ), 5, 2);
     }
 
     public function sendChat(string $chat): void
@@ -38,7 +52,7 @@ class DiscordBot extends Thread
 
     public function sendStartMessage(): void
     {
-        $this->client->sendMessage('サーバーが起動しました', $this->chat_id, [date("Y/m/d H:i:s")]);
+        $this->client->sendMessage('サーバーが起動しました' . date("Y/m/d H:i:s"), $this->chat_id);
     }
 
     public function close(): void

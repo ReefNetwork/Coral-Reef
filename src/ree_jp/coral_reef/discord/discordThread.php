@@ -6,7 +6,7 @@
  * CC    C oo  oo rr     aa  aaa lll RR  RR  eeeee  eeeee  ff
  *  CCCCC   oooo  rr      aaa aa lll RR   RR  eeeee  eeeee ff
  *
- * Copyright (c) 2021. Ree-jp(https://ree-jp.net)
+ * Copyright (c) 2021-2021. Ree-jp(https://ree-jp.net)
  */
 
 /**
@@ -17,12 +17,13 @@
 namespace ree_jp\coral_reef\discord;
 
 use Discord\Discord;
+use Discord\Exceptions\IntentException;
 use Discord\Parts\Channel\Channel;
 use Discord\Parts\Channel\Message;
 use Discord\Parts\User\Member;
 use Discord\Parts\WebSockets\MessageReaction;
 use pocketmine\utils\TextFormat;
-use React\EventLoop\Factory;
+use React\EventLoop\Loop;
 use stdClass;
 use Thread;
 use Threaded;
@@ -61,21 +62,17 @@ class discordThread extends Thread
     public string $file;
     public bool $stopped = false;
     public bool $started = false;
-    public $content;
-    public string $send_guildId;
-    public string $send_channelId;
+    public string $content;
     public int $send_interval;
     public int $receive_check_interval;
     protected $D2P_Queue;
     protected $P2D_Queue;
     private string $token;
 
-    public function __construct($file, string $token, string $send_guildId, string $send_channelId, int $send_interval = 1)
+    public function __construct($file, string $token, int $send_interval = 1)
     {
         $this->file = $file;
         $this->token = $token;
-        $this->send_guildId = $send_guildId;
-        $this->send_channelId = $send_channelId;
 
         $this->send_interval = $send_interval;
 
@@ -85,55 +82,42 @@ class discordThread extends Thread
         $this->start();
     }
 
+    /**
+     * @throws IntentException
+     */
     public function run()
     {
-        include $this->file . "vendor/autoload.php";
+        /** @noinspection PhpIncludeInspection */
+        include_once $this->file . "vendor/autoload.php";
 
-        $loop = Factory::create();
-        //$emitter = new \Evenement\EventEmitter();
-
+        $loop = Loop::get();
         $discord = new Discord([
             'token' => $this->token,
             "loop" => $loop,
         ]);
-
-        //sleep(1);//...?
-
         unset($this->token);
 
-        $discord->on('ready', function (Discord $discord) use ($loop) {
+        $discord->on('ready', function (Discord $discord) use ($loop): void {
             $this->started = true;
             echo "Bot is ready.", PHP_EOL;
 
-            $guild = $discord->guilds->get('id', $this->send_guildId);
-            //$channel = $guild->channels->get('id', $this->send_channelId);
-
-            //var_dump("!!");
-            /*var_dump($guild->emojis->save($guild)->then(function ($test){
-                $test->freshen();
-            }));*/
-            //var_dump("!!");
-
-            $channel = $discord->factory(Channel::class, ['id' => $this->send_channelId]);
-
-            $timer = $loop->addPeriodicTimer(1, function () use ($discord) {
+            $timerForStop = $loop->addPeriodicTimer(1, function () use ($discord) {
                 if ($this->stopped) {
                     $discord->close();
                     $discord->getLoop()->stop();
                     $this->started = false;
-                    return;
                 }
             });
 
-            $timer1 = $loop->addPeriodicTimer(1, function () use ($discord, $channel) {
-                $this->task($discord, $channel);
+            $timerForSend = $loop->addPeriodicTimer(1, function () use ($discord) {
+                $this->task($discord);
             });
 
             // Listen for events here
             $botUserId = $discord->user->id;
             // = $this->receive_channelId;
 
-            $discord->on('message', function (Message $message) use ($botUserId) {//, $receive_channelId
+            $discord->on('message', function (Message $message) use ($botUserId): void {//, $receive_channelId
                 //$message->react("🤔");
                 if ($message->type !== Message::TYPE_NORMAL) {
                     return;//join message etc...
@@ -240,7 +224,7 @@ class discordThread extends Thread
         $discord->run();
     }
 
-    public function task($discord, $channel)
+    public function task(Discord $discord)
     {
         if (!$this->started) return;
         $send = "";
@@ -249,20 +233,16 @@ class discordThread extends Thread
             $message = unserialize($this->P2D_Queue->shift());
             switch ($message[self::MESSAGE_TYPE]) {
                 case self::MESSAGE_TYPE_SEND:
-                    $channel = $message[self::MESSAGE_CHANNEL_ID] === null ? $channel : $discord->factory(Channel::class, ['id' => $message[self::MESSAGE_CHANNEL_ID]]);
-                    $channelId = $channel->id;
+                    $channel = $discord->factory(Channel::class, ['id' => $message[self::MESSAGE_CHANNEL_ID], 'guild_id' => 638760361369010177]);
                     $send = preg_replace(['/\]0;.*\%/', '/[\x07]/', "/Server thread\//"], '', TextFormat::clean(substr($message[self::MESSAGE], 0, 1900)));//processtile,ANSIコードの削除を実施致します...
                     if ($send === "") continue 2;
-                    //$send .= $message;//."\n";
-                    //if(strlen($send) >= 1800){
+
                     $channel->sendMessage($send, false, $message[self::MESSAGE_EMBEDS] ?? null);//message, tts message, embeds message
                     break;
                 case self::MESSAGE_TYPE_EDIT:
-                    $this->messageUpdate($discord, $message[self::MESSAGE_ID], $message[self::MESSAGE_CHANNEL_ID] ?? $channel, $message[self::MESSAGE]);
+                    $this->messageUpdate($discord, $message[self::MESSAGE_ID], $message[self::MESSAGE_CHANNEL_ID], $message[self::MESSAGE]);
                     break;
             }
-            //$message = unserialize($this->P2D_Queue->shift());//
-
         }
 
     }
@@ -281,12 +261,12 @@ class discordThread extends Thread
         $this->stopped = true;
     }
 
-    public function replyMessage(string $userId, ?string $channelId, string $message, ?array $embeds = null)
+    public function replyMessage(string $userId, string $channelId, string $message, ?array $embeds = null)
     {
         $this->sendMessage("<@" . $userId . ">, " . $message, $channelId, $embeds);
     }
 
-    public function sendMessage(string $message, ?string $channelId = null, ?array $embeds = null)
+    public function sendMessage(string $message, string $channelId, ?array $embeds = null)
     {
         //var_dump("send".$message);
         $this->P2D_Queue[] = serialize([
@@ -297,7 +277,7 @@ class discordThread extends Thread
         ]);
     }
 
-    public function editMessage(string $messageId, ?string $channelId = null, string $message)
+    public function editMessage(string $messageId, string $channelId, string $message)
     {
         $this->P2D_Queue[] = serialize([
             self::MESSAGE_TYPE => self::MESSAGE_TYPE_EDIT,
@@ -308,14 +288,12 @@ class discordThread extends Thread
         ]);
     }
 
-    public function fetchMessages()
+    public function fetchMessages(): array
     {
-        //var_dump("?!?!");
         $messages = [];
         while (count($this->D2P_Queue) > 0) {
             $messages[] = unserialize($this->D2P_Queue->shift());
         }
-        //var_dump($messages);
         return $messages;
     }
 }
