@@ -14,7 +14,6 @@ namespace ree_jp\coral_reef;
 require_once "vendor/autoload.php";
 
 use Exception;
-use Frago9876543210\EasyForms\EasyForms;
 use PDOException;
 use pocketmine\plugin\PluginBase;
 use pocketmine\Server;
@@ -36,8 +35,23 @@ class CoralReefPlugin extends PluginBase
     {
         self::$plugin = $this;
 
-//        $bot = new Discord(['token' => $this->getConfig()->get(ConfigConst::DISCORD_TOKEN)]);
-//        $bot->run();
+        $this->discordBot = new DiscordBot(
+            $this->getFile(),
+            $this->getConfig()->get(ConfigConst::DISCORD_TOKEN),
+            $this->getConfig()->get(ConfigConst::DISCORD_SERVER_ID),
+            $this->getConfig()->get(ConfigConst::DISCORD_CHAT_CHANNEL_ID),
+            $this->getConfig()->get(ConfigConst::DISCORD_LOG_CHANNEL_ID));
+
+        $this->getLogger()->info(self::NOTICE . "Load {$this->getName()}\nVer {$this->getDescription()->getVersion()}");
+    }
+
+    public function onEnable()
+    {
+        date_default_timezone_set('Asia/Tokyo');
+        $this->discordBot->sendStartMessage();
+        $this->getServer()->getPluginManager()->registerEvents(new EventListener(), $this);
+        $this->getServer()->getCommandMap()->register('menu', new MenuCommand($this));
+        $this->getScheduler()->scheduleRepeatingTask(new DataSaveTask(), 20);
 
         try {
             SQLManager::$manager = new SQLManager("CoralReef",
@@ -46,38 +60,18 @@ class CoralReefPlugin extends PluginBase
         } catch (PDOException $e) {
             $this->getLogger()->critical("[SQL]" . $e->getMessage());
         }
-
-        $this->discordBot = new DiscordBot(
-            $this->getFile(),
-            $this->getConfig()->get(ConfigConst::DISCORD_TOKEN),
-            $this->getConfig()->get(ConfigConst::DISCORD_CHAT_CHANNEL_ID),
-            $this->getConfig()->get(ConfigConst::DISCORD_LOG_CHANNEL_ID));
-
-        $this->getLogger()->info(self::NOTICE . "Load {$this->getName()}\nVer {$this->getDescription()->getVersion()}");
-        parent::onLoad();
-    }
-
-    public function onEnable()
-    {
-        date_default_timezone_set('Asia/Tokyo');
-        $this->discordBot->start();
-        $this->getServer()->getPluginManager()->registerEvents(new EventListener(), $this);
-        $this->getServer()->getCommandMap()->register('menu', new MenuCommand($this));
-        $this->getScheduler()->scheduleRepeatingTask(new DataSaveTask(), 20);
-
         try {
             LandManager::$instance = new LandManager();
         } catch (Exception $e) {
             $this->getLogger()->critical("[LandManager]" . $e->getMessage());
         }
 
-        $this->getServer()->getPluginManager()->registerEvents(new EasyForms(), $this);
         parent::onEnable();
     }
 
     public function onDisable()
     {
-//        $this->discordBot->close();
+        $this->discordBot->close();
         foreach (Server::getInstance()->getOnlinePlayers() as $p) {
             $p->kick(TextFormat::GREEN . 'Reef ' . TextFormat::YELLOW . 'Server' . TextFormat::RESET . "\n\nサーバーが停止しました", false, '停止');
         }
