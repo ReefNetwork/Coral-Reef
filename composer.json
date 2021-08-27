@@ -10,18 +10,6 @@
   ],
   "require": {
     "team-reflex/discord-php": "^6.0",
-    "xenialdan/apibossbar": "0.0.5",
-    "frago9876543210/easyforms": "^1.5",
     "ext-pdo": "*"
-  },
-  "repositories": [
-    {
-      "type": "vcs",
-      "url": "https://github.com/Ree-jp-minecraft/apibossbar.git"
-    },
-    {
-      "type": "vcs",
-      "url": "https://github.com/Ree-jp-minecraft/EasyForms.git"
-    }
-  ]
+  }
 }
