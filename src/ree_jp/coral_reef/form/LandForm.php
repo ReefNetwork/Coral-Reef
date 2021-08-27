@@ -64,7 +64,7 @@ class LandForm
             new Input('z座標1', '1', $z1),
             new Input('x座標2', '10', $x2),
             new Input('z座標2', '10', $z2),
-        ], function (Player $p, CustomFormResponse $response) {
+        ], function (Player $p, CustomFormResponse $response): void {
             list($x1, $z1, $x2, $z2, $name) = $response->getValues();
             if (is_numeric($x1) && is_numeric($z1) && is_numeric($x2) && is_numeric($z2)) {
                 if (mb_strlen($name) > 0) {
