@@ -12,6 +12,7 @@
 namespace ree_jp\coral_reef\discord;
 
 use pocketmine\scheduler\ClosureTask;
+use pocketmine\Server;
 use pocketmine\Thread;
 use ree_jp\coral_reef\CoralReefPlugin;
 
@@ -30,10 +31,12 @@ class DiscordBot extends Thread
             function (int $currentTick): void {
                 foreach ($this->client->fetchMessages() as $message) {
                     switch ($message[discordThread::MESSAGE_TYPE]) {
-                        case discordThread::MESSAGE_TYPE_SEND;
+                        case discordThread::MESSAGE_TYPE_REPLY;
                             if ($message[discordThread::MESSAGE_IS_MYSELF]) return;
                             if ($message[discordThread::MESSAGE_IS_BOT]) return;
+                            if ($message[discordThread::MESSAGE_CHANNEL_ID] != $this->chat_id) return;
                             $content = $message[discordThread::MESSAGE];
+                            Server::getInstance()->broadcastMessage("[{$message[discordThread::MESSAGE_USERNAME]}] $content");
                     }
                 }
             }
@@ -57,6 +60,7 @@ class DiscordBot extends Thread
 
     public function close(): void
     {
+        $this->client->sendMessage('サーバーが停止しました' . date("Y/m/d H:i:s"), $this->chat_id);
         $this->client->shutdown();
     }
 }

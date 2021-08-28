@@ -13,7 +13,6 @@ use Discord\Parts\Channel\Channel;
 use Discord\Parts\Channel\Message;
 use Discord\Parts\User\Member;
 use Discord\Parts\WebSockets\MessageReaction;
-use Monolog\Logger;
 use pocketmine\utils\TextFormat;
 use React\EventLoop\Loop;
 use stdClass;
@@ -85,8 +84,8 @@ class discordThread extends Thread
         $loop = Loop::get();
         $discord = new Discord([
             'token' => $this->token,
-            "loop" => $loop,
-            'loggerLevel' => Logger::WARNING,
+            'loop' => $loop,
+//            'loggerLevel' => Logger::WARNING,
         ]);
         unset($this->token);
 
