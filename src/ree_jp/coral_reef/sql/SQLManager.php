@@ -45,7 +45,7 @@ class SQLManager
         $options = [PDO::ATTR_CASE => PDO::CASE_UPPER,
             PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
             PDO::ATTR_TIMEOUT => 5];
-        $dsn = "mysql:host=$host;dbname=$dbName;charset=utf8";
+        $dsn = "mysql:host=$host;port=3306;dbname=$dbName;charset=utf8";
         $this->pdo = new PDO($dsn, $user, $pass, $options);
         $logDsn = "mysql:host=$host;dbname=${dbName}Log;charset=utf8";
         $this->logPdo = new PDO($logDsn, $user, $pass, $options);

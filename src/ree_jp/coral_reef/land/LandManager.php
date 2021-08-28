@@ -37,6 +37,7 @@ class LandManager
      */
     public function __construct()
     {
+        if (is_null(SQLManager::$manager)) throw new Exception('データベースにアクセス出来ませんでした');
         $arrayLands = SQLManager::$manager->getAllProtectLand();
         foreach ($arrayLands as $arrayLand) {
             if (!(isset($arrayLand['XUID']) && isset($arrayLand['NAME']) && isset($arrayLand['LEVEL']) && isset($arrayLand['MX']) && isset($arrayLand['SX']) &&
