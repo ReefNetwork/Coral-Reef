@@ -16,6 +16,7 @@ use Exception;
 use pocketmine\block\Block;
 use pocketmine\item\Item;
 use pocketmine\level\Position;
+use pocketmine\network\mcpe\protocol\GameRulesChangedPacket;
 use pocketmine\Player;
 use pocketmine\scheduler\ClosureTask;
 use pocketmine\Server;
@@ -85,16 +86,8 @@ class AccountManager
         } catch (Exception $e) {
             Server::getInstance()->getLogger()->error("[Log] {$p->getName()} の処理中に " . $e->getMessage());
         }
-        try {
-            $nick = SQLManager::$manager->getSetting($xuid, SettingConst::NICK_NAME);
-        } catch (Exception $ex) {
-            Server::getInstance()->getLogger()->error("[Nick] {$p->getName()} の確認中に " . $ex->getMessage());
-        }
-        if (!is_null($nick)) {
-            $p->sendMessage(TextFormat::GRAY . "現在のユーザーネームは" . $nick . "に設定されています");
-            $p->setNameTag($nick);
-            $p->setDisplayName($nick);
-        }
+        self::updateNickName($p);
+        self::updateShowCoordinates($p);
     }
 
     static function userQuit(Player $p, string $reason): void
@@ -169,5 +162,38 @@ class AccountManager
             }
             $p->teleport($pos);
         }
+    }
+
+    static function updateNickName(Player $p, string $nick = null): void
+    {
+        if (is_null($nick)) {
+            try {
+                $nick = SQLManager::$manager->getSetting($p->getXuid(), SettingConst::NICK_NAME);
+            } catch (Exception $ex) {
+                Server::getInstance()->getLogger()->error("[setting nick] {$p->getName()} の確認中に " . $ex->getMessage());
+            }
+        }
+        if (!empty($nick)) {
+            $p->sendMessage(TextFormat::GRAY . "現在のユーザーネームは" . $nick . "に設定されています");
+            $p->setNameTag($nick);
+            $p->setDisplayName($nick);
+        }
+    }
+
+    static function updateShowCoordinates(Player $p, bool $bool = null): void
+    {
+        if (is_null($bool)) {
+            $bool = true;
+            try {
+                $result = SQLManager::$manager->getSetting($p->getXuid(), SettingConst::SHOW_COORDINATES);
+                if ($result == false) $bool = false;
+            } catch (Exception $e) {
+                Server::getInstance()->getLogger()->critical("[setting showCoordinates]" . $e->getMessage());
+            }
+        }
+        $pk = new GameRulesChangedPacket();
+        /** @noinspection SpellCheckingInspection */
+        $pk->gameRules["showcoordinates"] = [1, $bool];
+        $p->dataPacket($pk);
     }
 }

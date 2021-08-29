@@ -167,7 +167,7 @@ class SQLManager
     public function getSetting(string $xuid, string $type): ?string
     {
         $prepare = $this->pdo->prepare('SELECT VALUE FROM SETTING WHERE XUID = :xuid AND TYPE = :type');
-        $prepare->execute([':xuid' => $xuid, ':type' => $type]);
+        $prepare->execute([':xuid' => $xuid, ':type' => strtoupper($type)]);
         $result = $prepare->fetchColumn();
         if ($result === false) return null;
         return $result;
@@ -176,14 +176,14 @@ class SQLManager
     /**
      * @param string $xuid
      * @param string $type
-     * @param string $value
+     * @param string|null $value
      * @throws Exception
      */
-    public function setSetting(string $xuid, string $type, string $value): void
+    public function setSetting(string $xuid, string $type, ?string $value): void
     {
         $prepare = $this->pdo->prepare(
             'INSERT INTO SETTING VALUES (:xuid ,:type ,:value) ON DUPLICATE KEY UPDATE VALUE = :value');
-        $prepare->execute([':xuid' => $xuid, ':type' => $type, ':value' => $value]);
+        $prepare->execute([':xuid' => $xuid, ':type' => strtoupper($type), ':value' => $value]);
     }
 
     /**
@@ -292,7 +292,7 @@ class SQLManager
         $this->pdo->exec('CREATE TABLE IF NOT EXISTS USER (XUID BIGINT UNSIGNED NOT NULL PRIMARY KEY ,NAME VARCHAR(100) NOT NULL ,IPS VARCHAR(9999) NOT NULL ,EXPERIENCE BIGINT UNSIGNED NOT NULL ,SKILL VARCHAR(99) )');
         $this->pdo->exec("CREATE TABLE IF NOT EXISTS BAN (PRIMARY KEY (TYPE ,VALUE ),TYPE ENUM('ALL','XUID','IP') NOT NULL ,VALUE VARCHAR(20) NOT NULL ,REASON VARCHAR(999) NOT NULL ,TIME DATETIME )");
         $this->pdo->exec("CREATE TABLE IF NOT EXISTS WHITELIST (PRIMARY KEY (TYPE ,VALUE ),TYPE ENUM('XUID','IP') NOT NULL ,VALUE VARCHAR(20) NOT NULL ,REASON VARCHAR(999) NOT NULL ,TIME DATETIME )");
-        $this->pdo->exec('CREATE TABLE IF NOT EXISTS SETTING (PRIMARY KEY (XUID ,TYPE),XUID BIGINT UNSIGNED NOT NULL ,TYPE VARCHAR(99) NOT NULL ,VALUE VARCHAR(99) NOT NULL )');
+        $this->pdo->exec('CREATE TABLE IF NOT EXISTS SETTING (PRIMARY KEY (XUID ,TYPE),XUID BIGINT UNSIGNED NOT NULL ,TYPE VARCHAR(99) NOT NULL ,VALUE VARCHAR(99) )');
         $this->pdo->exec('CREATE TABLE IF NOT EXISTS WARP (PRIMARY KEY (XUID ,NAME),XUID BIGINT UNSIGNED NOT NULL ,NAME VARCHAR(99) NOT NULL , LEVEL VARCHAR(99) NOT NULL ,X INT NOT NULL ,Y INT NOT NULL ,Z INT NOT NULL )');
         $this->pdo->exec('CREATE TABLE IF NOT EXISTS LAND (PRIMARY KEY (XUID ,NAME),XUID BIGINT UNSIGNED NOT NULL ,NAME VARCHAR(99) NOT NULL , LEVEL VARCHAR(99) NOT NULL ,MX INT NOT NULL ,SX INT NOT NULL ,MZ INT NOT NULL ,SZ INT NOT NULL )');
     }

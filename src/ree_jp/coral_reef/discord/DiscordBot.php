@@ -14,6 +14,7 @@ namespace ree_jp\coral_reef\discord;
 use pocketmine\scheduler\ClosureTask;
 use pocketmine\Server;
 use pocketmine\Thread;
+use pocketmine\utils\TextFormat;
 use ree_jp\coral_reef\CoralReefPlugin;
 
 class DiscordBot extends Thread
@@ -36,8 +37,9 @@ class DiscordBot extends Thread
                             if ($message[discordThread::MESSAGE_IS_BOT]) return;
                             if ($message[discordThread::MESSAGE_CHANNEL_ID] != $this->chat_id) return;
                             $content = $message[discordThread::MESSAGE];
+                            $discord = TextFormat::DARK_PURPLE . 'Discord' . TextFormat::RESET;
                             Server::getInstance()->broadcastMessage(
-                                "[{$message[discordThread::MESSAGE_USERNAME]}#{$message[discordThread::MESSAGE_DISCRIMINATOR]}] $content");
+                                "<[$discord]{$message[discordThread::MESSAGE_USERNAME]}#{$message[discordThread::MESSAGE_DISCRIMINATOR]}> $content");
                             break;
                     }
                 }
