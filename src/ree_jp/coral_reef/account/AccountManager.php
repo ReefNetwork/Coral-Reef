@@ -192,8 +192,7 @@ class AccountManager
             }
         }
         $pk = new GameRulesChangedPacket();
-        /** @noinspection SpellCheckingInspection */
-        $pk->gameRules["showcoordinates"] = [1, $bool];
+        $pk->gameRules["showCoordinates"] = [1, $bool, true];
         $p->dataPacket($pk);
     }
 }
