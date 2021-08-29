@@ -13,6 +13,8 @@ use Discord\Parts\Channel\Channel;
 use Discord\Parts\Channel\Message;
 use Discord\Parts\User\Member;
 use Discord\Parts\WebSockets\MessageReaction;
+use Monolog\Handler\StreamHandler;
+use Monolog\Logger;
 use pocketmine\utils\TextFormat;
 use React\EventLoop\Loop;
 use stdClass;
@@ -82,10 +84,12 @@ class discordThread extends Thread
         include_once $this->file . "vendor/autoload.php";
 
         $loop = Loop::get();
+        $logger = new Logger('DiscordPHP');
+        $logger->pushHandler(new StreamHandler('php://stdout', Logger::INFO));
         $discord = new Discord([
             'token' => $this->token,
             'loop' => $loop,
-//            'loggerLevel' => Logger::WARNING,
+            'logger' => $logger,
         ]);
         unset($this->token);
 

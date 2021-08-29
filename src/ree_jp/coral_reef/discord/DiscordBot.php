@@ -62,5 +62,6 @@ class DiscordBot extends Thread
     {
         $this->client->sendMessage('サーバーが停止しました' . date("Y/m/d H:i:s"), $this->chat_id);
         $this->client->shutdown();
+        sleep(1);
     }
 }

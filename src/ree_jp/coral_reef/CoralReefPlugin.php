@@ -24,7 +24,6 @@ use ree_jp\coral_reef\task\DataSaveTask;
 
 class CoralReefPlugin extends PluginBase
 {
-    const NOTICE = "§a>> ";
     static CoralReefPlugin $plugin;
 
     public DiscordBot $discordBot;
@@ -32,15 +31,6 @@ class CoralReefPlugin extends PluginBase
     public function onLoad()
     {
         self::$plugin = $this;
-
-        $this->discordBot = new DiscordBot(
-            $this->getFile(),
-            $this->getConfig()->get(ConfigConst::DISCORD_TOKEN),
-            $this->getConfig()->get(ConfigConst::DISCORD_SERVER_ID),
-            $this->getConfig()->get(ConfigConst::DISCORD_CHAT_CHANNEL_ID),
-            $this->getConfig()->get(ConfigConst::DISCORD_LOG_CHANNEL_ID));
-
-        $this->getLogger()->info(self::NOTICE . "Load {$this->getName()}\nVer {$this->getDescription()->getVersion()}");
     }
 
     public function onEnable()
@@ -63,16 +53,34 @@ class CoralReefPlugin extends PluginBase
         } catch (Exception $e) {
             $this->getLogger()->critical("[LandManager]" . $e->getMessage());
         }
-
-        parent::onEnable();
+        $this->discordBot = new DiscordBot(
+            $this->getFile(),
+            $this->getConfig()->get(ConfigConst::DISCORD_TOKEN),
+            $this->getConfig()->get(ConfigConst::DISCORD_SERVER_ID),
+            $this->getConfig()->get(ConfigConst::DISCORD_CHAT_CHANNEL_ID),
+            $this->getConfig()->get(ConfigConst::DISCORD_LOG_CHANNEL_ID));
+        $this->pluginInformation();
+        $this->getLogger()->info("Load {$this->getName()}\nVer {$this->getDescription()->getVersion()}");
+        $this->getLogger()->info("Load {$this->getName()}\nVer {$this->getDescription()->getVersion()}");
     }
 
     public function onDisable()
     {
-        $this->discordBot->close();
         foreach (Server::getInstance()->getOnlinePlayers() as $p) {
             $p->kick(TextFormat::GREEN . 'Reef ' . TextFormat::YELLOW . 'Server' . TextFormat::RESET . "\n\nサーバーが停止しました", false, '停止');
         }
-        parent::onDisable();
+        $this->discordBot->close();
+    }
+
+    private function pluginInformation(): void
+    {
+        $this->getLogger()->info('------------------------------------------------------------------------------------');
+        $this->getLogger()->info(' CCCCC                        lll   RRRRRR                 fff');
+        $this->getLogger()->info('CC    C  oooo  rr rr    aa aa lll   RR   RR   eee    eee  ff');
+        $this->getLogger()->info('CC      oo  oo rrr  r  aa aaa lll   RRRRRR  ee   e ee   e ffff');
+        $this->getLogger()->info('CC    C oo  oo rr     aa  aaa lll   RR  RR  eeeee  eeeee  ff');
+        $this->getLogger()->info(' CCCCC   oooo  rr      aaa aa lll   RR   RR  eeeee  eeeee ff    ver ' . $this->getDescription()->getVersion());
+        $this->getLogger()->info('by ree-jp(https://ree-jp.net) & ReefNetwork(https://reef.ree-jp.net) & oss');
+        $this->getLogger()->info('------------------------------------------------------------------------------------');
     }
 }
