@@ -36,7 +36,6 @@ class CoralReefPlugin extends PluginBase
     public function onEnable()
     {
         date_default_timezone_set('Asia/Tokyo');
-        $this->discordBot->sendStartMessage();
         $this->getServer()->getPluginManager()->registerEvents(new EventListener(), $this);
         $this->getServer()->getCommandMap()->register('menu', new MenuCommand($this));
         $this->getScheduler()->scheduleRepeatingTask(new DataSaveTask(), 20);
@@ -60,8 +59,7 @@ class CoralReefPlugin extends PluginBase
             $this->getConfig()->get(ConfigConst::DISCORD_CHAT_CHANNEL_ID),
             $this->getConfig()->get(ConfigConst::DISCORD_LOG_CHANNEL_ID));
         $this->pluginInformation();
-        $this->getLogger()->info("Load {$this->getName()}\nVer {$this->getDescription()->getVersion()}");
-        $this->getLogger()->info("Load {$this->getName()}\nVer {$this->getDescription()->getVersion()}");
+        $this->discordBot->sendStartMessage();
     }
 
     public function onDisable()
