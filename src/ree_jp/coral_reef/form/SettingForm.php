@@ -62,8 +62,9 @@ class SettingForm
         }
         return new CustomForm('Setting -> ' . $settingType, [new Label($label), new Toggle($toggleMessage, $isToggle)],
             function (Player $p, CustomFormResponse $response) use ($settingType, $func): void {
-                if (!$response->getToggle()->hasChanged()) return;
-                $result = $response->getToggle()->getValue() ? 'true' : 'false';
+                $toggle = $response->getToggle();
+                if (!$toggle->hasChanged()) return;
+                $result = $toggle->getValue() ? 'true' : 'false';
                 try {
                     SQLManager::$manager->setSetting($p->getXuid(), $settingType, $result);
                     $p->sendMessage('設定を保存しました');
