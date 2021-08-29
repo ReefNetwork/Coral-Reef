@@ -97,7 +97,8 @@ class discordThread extends Thread
             $this->started = true;
             echo "Bot is ready.", PHP_EOL;
 
-            $timerForStop = $loop->addPeriodicTimer(1, function () use ($discord) {
+            $timer = $loop->addPeriodicTimer(1, function () use ($discord) {
+                $this->task($discord);
                 if ($this->stopped) {
                     $discord->close();
                     $discord->getLoop()->stop();
@@ -105,9 +106,9 @@ class discordThread extends Thread
                 }
             });
 
-            $timerForSend = $loop->addPeriodicTimer(1, function () use ($discord) {
-                $this->task($discord);
-            });
+//            $timerForSend = $loop->addPeriodicTimer(1, function () use ($discord) {
+//                $this->task($discord);
+//            });
 
             // Listen for events here
             $botUserId = $discord->user->id;

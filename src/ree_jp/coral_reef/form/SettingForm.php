@@ -35,16 +35,16 @@ class SettingForm
                 $xuid = $p->getXuid();
                 switch ($button->getValue()) {
                     case 0:
-                        self::boolForm($xuid, '座標を表示するか隠すのを変更出来ます', '隠す / 表示',
+                        $p->sendForm(self::boolForm($xuid, '座標を表示するか隠すのを変更出来ます', '隠す / 表示',
                             SettingConst::SHOW_COORDINATES, function () use ($p) {
                                 AccountManager::updateShowCoordinates($p);
-                            });
+                            }));
                         break;
                     case 1:
-                        self::inputForm($xuid, "ニックネームを設定できます\n無効にするにはニックネームを空白に設定してください", 'ニックネーム',
+                        $p->sendForm(self::inputForm($xuid, "ニックネームを設定できます\n無効にするにはニックネームを空白に設定してください", 'ニックネーム',
                             'せいちのかみ', SettingConst::NICK_NAME, function () use ($p) {
                                 AccountManager::updateNickName($p);
-                            });
+                            }));
                         break;
                     default:
                         $p->sendMessage('エラーが発生しました');
