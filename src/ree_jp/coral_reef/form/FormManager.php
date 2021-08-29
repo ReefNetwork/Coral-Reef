@@ -93,8 +93,8 @@ class FormManager
                         $p->sendForm(LandForm::landForm($xuid));
                         break;
 
-                    case 9:
-                        $p->sendForm(new MenuForm('Menu -> Setting'));
+                    case 7:
+                        $p->sendForm(SettingForm::settingForm());
                         break;
 
                     default:
