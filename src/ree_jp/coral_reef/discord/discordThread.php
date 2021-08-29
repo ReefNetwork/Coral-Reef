@@ -58,8 +58,8 @@ class discordThread extends Thread
     public string $content;
     public int $send_interval;
     public int $receive_check_interval;
-    protected $D2P_Queue;
-    protected $P2D_Queue;
+    protected Threaded $D2P_Queue;
+    protected Threaded $P2D_Queue;
     private string $token;
 
     public function __construct($file, string $token, int $send_interval = 1)
@@ -130,6 +130,7 @@ class discordThread extends Thread
                     self::MESSAGE_IS_BOT => $message->author->bot ?? false,
                     self::MESSAGE_IS_MYSELF => ($message->author->id === $botUserId),
                     self::MESSAGE_IS_DM => $message->channel->is_private,
+                    self::MESSAGE_DISCRIMINATOR => $message->author->discriminator,
                     //self::MESSAGE_CONTENTS_TYPE => $message->type,
                     //'md5' => md5($message["content"]),
                 ]);

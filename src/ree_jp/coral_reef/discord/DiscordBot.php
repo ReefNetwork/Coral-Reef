@@ -36,7 +36,9 @@ class DiscordBot extends Thread
                             if ($message[discordThread::MESSAGE_IS_BOT]) return;
                             if ($message[discordThread::MESSAGE_CHANNEL_ID] != $this->chat_id) return;
                             $content = $message[discordThread::MESSAGE];
-                            Server::getInstance()->broadcastMessage("[{$message[discordThread::MESSAGE_USERNAME]}] $content");
+                            Server::getInstance()->broadcastMessage(
+                                "[{$message[discordThread::MESSAGE_USERNAME]}#{$message[discordThread::MESSAGE_DISCRIMINATOR]}] $content");
+                            break;
                     }
                 }
             }

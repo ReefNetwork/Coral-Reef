@@ -16,6 +16,7 @@ use Exception;
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\block\BlockPlaceEvent;
 use pocketmine\event\Listener;
+use pocketmine\event\player\PlayerChatEvent;
 use pocketmine\event\player\PlayerGameModeChangeEvent;
 use pocketmine\event\player\PlayerInteractEvent;
 use pocketmine\event\player\PlayerJoinEvent;
@@ -59,15 +60,17 @@ class EventListener implements Listener
         AccountManager::userJoin($p);
 
         if (is_null($p->getLastPlayed())) {
-            $ev->setJoinMessage($p->getName() . 'さんが初めて参加しました');
+            $ev->setJoinMessage($p->getDisplayName() . 'さんが初めて参加しました');
         } else {
             if (AccountManager::hasValue($p->getXuid(), 'rejoin')) {
-                $ev->setJoinMessage($p->getName() . 'さんが再参加しました');
+                $ev->setJoinMessage($p->getDisplayName() . 'さんが再参加しました');
             } else {
-                $ev->setJoinMessage($p->getName() . 'さんが参加しました');
+                $ev->setJoinMessage($p->getDisplayName() . 'さんが参加しました');
             }
         }
-        if (!$p->getInventory()->contains(Item::get(ItemIds::STICK))) $p->getInventory()->addItem(Item::get(ItemIds::STICK)->setLore(['メニューを開きます']));
+        CoralReefPlugin::$plugin->discordBot->sendChat($ev->getJoinMessage());
+        if (!$p->getInventory()->contains(Item::get(ItemIds::STICK)))
+            $p->getInventory()->addItem(Item::get(ItemIds::STICK)->setLore(['メニューを開きます']));
     }
 
     public function onQuit(PlayerQuitEvent $ev): void
@@ -75,7 +78,19 @@ class EventListener implements Listener
         $p = $ev->getPlayer();
 
         AccountManager::userQuit($p, $ev->getQuitReason());
-        $ev->setQuitMessage(TextFormat::GRAY . $p->getName() . 'さんが' . $ev->getQuitReason() . 'で退出しました');
+        $ev->setQuitMessage(TextFormat::GRAY . $p->getDisplayName() . 'さんが' . $ev->getQuitReason() . 'で退出しました');
+        CoralReefPlugin::$plugin->discordBot->sendChat($p->getDisplayName() . 'さんが' . $ev->getQuitReason() . 'で退出しました');
+    }
+
+    /**
+     * @priority MONITOR
+     */
+    public function onChat(PlayerChatEvent $ev): void
+    {
+        $name = $ev->getPlayer()->getDisplayName();
+        if (!$ev->isCancelled()) {
+            CoralReefPlugin::$plugin->discordBot->sendChat("[$name] " . $ev->getMessage());
+        }
     }
 
     /**
