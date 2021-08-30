@@ -121,6 +121,7 @@ class AccountManager
         $skill = $user->skill;
         $logDetail = $bl->x . ':' . $bl->y . ':' . $bl->z . '/' . $item->getVanillaName() . '/' . $bl->getName();
         SQLManager::$manager->addLog($xuid, 'break', 'now', null, $logDetail);
+        $user->addXp();
         if ($skill instanceof BreakSkill && $p->isSurvival()) {
             if (!self::hasValue($xuid, 'skill_cool_time') && !self::hasValue($xuid, 'skill_active')) {
                 AccountManager::setValue($xuid, 'skill_active');
