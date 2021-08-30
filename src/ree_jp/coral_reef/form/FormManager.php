@@ -33,10 +33,12 @@ class FormManager
 
         $level = 'loading';
         $necessaryExperience = 'loading';
+        $exp = 'xp';
         try {
             $user = SQLManager::$manager->getUser($xuid);
             $level = $user->level;
             $necessaryExperience = $user->necessaryExperience;
+            $exp = $user->experience;
         } catch (Exception $e) {
             Server::getInstance()->getLogger()->error('ユーザーデータの取得中に' . $e->getMessage());
         }
@@ -46,7 +48,7 @@ class FormManager
         } else {
             $fly_status = '有効';
         }
-        $p->sendForm(new MenuForm('ReefServer Menu', "レベル : $level \nレベルアップまで : $necessaryExperience",
+        $p->sendForm(new MenuForm('ReefServer Menu', "レベル : $level\nレベルアップまで : $necessaryExperience\n経験値 : $exp",
             [new Button('ストレージ'), new Button("飛行を$fly_status にする"), new Button('ワープ地点'), new Button('ワールド移動'), new Button('スキル設定'), new Button('パーティー'), new Button('土地保護'), new Button('設定')],
             function (Player $p, Button $button): void {
                 $xuid = $p->getXuid();
