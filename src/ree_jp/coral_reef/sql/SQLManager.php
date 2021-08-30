@@ -138,7 +138,7 @@ class SQLManager
      */
     public function setSkill(string $xuid, ?string $skill): void
     {
-        $prepare = $this->pdo->prepare('UPDATE USER SET Skill = :experience WHERE XUID = :xuid');
+        $prepare = $this->pdo->prepare('UPDATE USER SET Skill = :skill WHERE XUID = :xuid');
         $prepare->execute([':skill' => $skill, ':xuid' => $xuid]);
     }
 

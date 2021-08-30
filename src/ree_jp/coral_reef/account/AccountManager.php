@@ -186,7 +186,7 @@ class AccountManager
             $bool = true;
             try {
                 $result = SQLManager::$manager->getSetting($p->getXuid(), SettingConst::SHOW_COORDINATES);
-                if ($result == false) $bool = false;
+                if ($result === 'false') $bool = false;
             } catch (Exception $e) {
                 Server::getInstance()->getLogger()->critical("[setting showCoordinates]" . $e->getMessage());
             }
