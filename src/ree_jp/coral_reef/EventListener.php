@@ -69,6 +69,7 @@ class EventListener implements Listener
             }
         }
         CoralReefPlugin::$plugin->discordBot->sendChat($ev->getJoinMessage());
+        $p->sendTitle(TextFormat::GREEN . 'Reef ' . TextFormat::YELLOW . 'Server');
         if (!$p->getInventory()->contains(Item::get(ItemIds::STICK)))
             $p->getInventory()->addItem(Item::get(ItemIds::STICK)->setLore(['メニューを開きます']));
     }
