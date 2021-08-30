@@ -56,7 +56,7 @@ class SettingForm
     {
         $isToggle = false;
         try {
-            if (SQLManager::$manager->getSetting($xuid, $settingType) == true) $isToggle = true;
+            if (SQLManager::$manager->getSetting($xuid, $settingType) === 'true') $isToggle = true;
         } catch (Exception $e) {
             Server::getInstance()->getLogger()->critical("[SettingGet $settingType]" . $e->getMessage());
         }

@@ -43,6 +43,7 @@ class ScoreBoardManager
         $p->sendDataPacket($pk);
 
         $pk = new SetScorePacket();
+        $pk->type = SetScorePacket::TYPE_CHANGE;
         $user = SQLManager::$manager->getUser($p->getXuid());
         $skillName = is_null($user->skill) ? 'なし' : $user->skill->name;
         self::setScore($pk, 1, '現在のスキル : ' . $skillName);
