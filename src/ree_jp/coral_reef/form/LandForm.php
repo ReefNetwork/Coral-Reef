@@ -18,7 +18,9 @@ use Frago9876543210\EasyForms\elements\Label;
 use Frago9876543210\EasyForms\forms\CustomForm;
 use Frago9876543210\EasyForms\forms\CustomFormResponse;
 use Frago9876543210\EasyForms\forms\MenuForm;
-use pocketmine\math\AxisAlignedBB;
+use pocketmine\item\Item;
+use pocketmine\item\ItemIds;
+use pocketmine\math\Vector3;
 use pocketmine\Player;
 use pocketmine\Server;
 use ree_jp\coral_reef\account\AccountManager;
@@ -46,7 +48,8 @@ class LandForm
                 if (isset($lands[$button->getValue()])) {
                     $p->sendForm(self::landEditForm($lands[$button->getValue()]));
                 } elseif ($button->getValue() === $createValue) {
-                    $p->sendForm(self::landCreateForm());
+                    $p->getInventory()->addItem(Item::get(ItemIds::CLOCK)->setLore(['土地保護を設定します']));
+                    $p->sendMessage('時計を地面にクリックすることで土地保護を設定できます');
                 } else $p->sendMessage('エラーが発生しました');
             });
     }
@@ -56,10 +59,49 @@ class LandForm
         return new MenuForm('Land -> Edit', "土地保護の名前: $land->name\nワールド: $land->level\n");
     }
 
+    static function landCreateAssistForm(string $xuid, Vector3 $vec3): MenuForm
+    {
+        $x1 = '設定されていません';
+        $z1 = '設定されていません';
+        if (isset(LandManager::$pos[$xuid][1]) && LandManager::$pos[$xuid][1] instanceof Vector3) {
+            $storeVec = LandManager::$pos[$xuid][1];
+            $x1 = $storeVec->getFloorX();
+            $z1 = $storeVec->getFloorZ();
+        }
+        $x2 = '設定されていません';
+        $z2 = '設定されていません';
+        if (isset(LandManager::$pos[$xuid][2]) && LandManager::$pos[$xuid][2] instanceof Vector3) {
+            $storeVec = LandManager::$pos[$xuid][2];
+            $x2 = $storeVec->getFloorX();
+            $z2 = $storeVec->getFloorZ();
+        }
+        return new MenuForm('Land Create Assist', 'クリックした場所に地点を設定するか指定した範囲を確認、土地保護を作成できます', [
+            new Button('範囲を確認する'), new Button('地点1を設定する'), new Button('地点2を設定する'), new Button('土地保護を作成する')],
+            function (Player $p, Button $button) use ($vec3, $x1, $z1, $x2, $z2) {
+                $xuid = $p->getXuid();
+                $value = $button->getValue();
+                switch ($value) {
+                    case 0:
+                        LandManager::$instance->checkSpace($p);
+                        break;
+                    case 1:
+                    case 2:
+                        LandManager::$pos[$xuid][$value] = $vec3;
+                        $p->sendMessage("地点$value を設定しました");
+                        break;
+                    case 3:
+                        $p->sendForm(self::landCreateForm($x1, $z1, $x2, $z2));
+                        break;
+                    default:
+                        $p->sendMessage('エラーが発生しました');
+                }
+            });
+    }
+
     static function landCreateForm(string $x1 = '', string $z1 = '', string $x2 = '', string $z2 = ''): CustomForm
     {
         return new CustomForm('Land -> Create', [
-            new Label("作成する土地の情報を入力してください\nウェブサイトに詳しく載っています(https://reef.ree-jp.net)"),
+            new Label("作成する土地の情報を入力してください"),
             new Input('x座標1', '1', $x1),
             new Input('z座標1', '1', $z1),
             new Input('x座標2', '10', $x2),
@@ -67,22 +109,12 @@ class LandForm
         ], function (Player $p, CustomFormResponse $response): void {
             list($x1, $z1, $x2, $z2, $name) = $response->getValues();
             if (is_numeric($x1) && is_numeric($z1) && is_numeric($x2) && is_numeric($z2)) {
+                $x1 = intval($x1);
+                $z1 = intval($z1);
+                $x2 = intval($x2);
+                $z2 = intval($z2);
                 if (mb_strlen($name) > 0) {
-                    if ($x1 > $x2) {
-                        $minX = $x2;
-                        $maxX = $x1;
-                    } else {
-                        $minX = $x1;
-                        $maxX = $x2;
-                    }
-                    if ($z1 > $z2) {
-                        $minZ = $z2;
-                        $maxZ = $z1;
-                    } else {
-                        $minZ = $z1;
-                        $maxZ = $z2;
-                    }
-                    $aabb = new AxisAlignedBB($minX, 0, $minZ, $maxX, 0, $maxZ);
+                    $aabb = LandManager::$instance->getAabb($x1, $z1, $x2, $z2);
                     $land = new LandData($p->getXuid(), $name, $p->getLevel()->getFolderName(), $aabb);
                     $result = LandManager::$instance->canCreateLand($aabb);
                     if (is_null($result)) {

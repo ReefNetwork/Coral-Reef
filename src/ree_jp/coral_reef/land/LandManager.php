@@ -17,6 +17,7 @@ use pocketmine\level\particle\PortalParticle;
 use pocketmine\level\Position;
 use pocketmine\level\sound\GenericSound;
 use pocketmine\math\AxisAlignedBB;
+use pocketmine\math\Vector3;
 use pocketmine\network\mcpe\protocol\LevelEventPacket;
 use pocketmine\Player;
 use ree_jp\coral_reef\account\AccountManager;
@@ -26,6 +27,7 @@ use ree_jp\coral_reef\sql\SQLManager;
 class LandManager
 {
     static LandManager $instance;
+    static array $pos;
 
     /**
      * @var LandData[]
@@ -102,5 +104,37 @@ class LandManager
             }
         }
         return true;
+    }
+
+    public function checkSpace(Player $p): void
+    {
+        $xuid = $p->getXuid();
+        if (isset(LandManager::$pos[$xuid][1]) && isset(LandManager::$pos[$xuid][2])) {
+            $vec1 = LandManager::$pos[$xuid][1];
+            $vec2 = LandManager::$pos[$xuid][2];
+            if ($vec1 instanceof Vector3 && $vec2 instanceof Vector3) {
+                $aabb = $this->getAabb($vec1->getFloorX(), $vec1->getFloorZ(), $vec2->getFloorX(), $vec2->getFloorZ());
+                $p->sendMessage("指定されている範囲にブロックを敷き詰めています\n解除するにはもう一度「範囲を確認する」を選択してください");
+            } else $p->sendMessage('エラーが発生しました');
+        } else $p->sendMessage('地点を2つとも設定してください');
+    }
+
+    public function getAabb(int $x1, int $z1, int $x2, int $z2): AxisAlignedBB
+    {
+        if ($x1 > $x2) {
+            $minX = $x2;
+            $maxX = $x1;
+        } else {
+            $minX = $x1;
+            $maxX = $x2;
+        }
+        if ($z1 > $z2) {
+            $minZ = $z2;
+            $maxZ = $z1;
+        } else {
+            $minZ = $z1;
+            $maxZ = $z2;
+        }
+        return new AxisAlignedBB($minX, 0, $minZ, $maxX, 0, $maxZ);
     }
 }

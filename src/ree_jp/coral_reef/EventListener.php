@@ -28,6 +28,7 @@ use pocketmine\Server;
 use pocketmine\utils\TextFormat;
 use ree_jp\coral_reef\account\AccountManager;
 use ree_jp\coral_reef\form\FormManager;
+use ree_jp\coral_reef\form\LandForm;
 use ree_jp\coral_reef\land\LandManager;
 use ree_jp\coral_reef\sql\SQLManager;
 use ree_jp\stackStorage\api\StackStorageAPI;
@@ -145,6 +146,10 @@ class EventListener implements Listener
         switch ($ev->getItem()->getId()) {
             case ItemIds::STICK:
                 FormManager::sendMenu($p);
+                break;
+
+            case ItemIds::CLOCK:
+                LandForm::landCreateAssistForm($p->getXuid(), $ev->getBlock());
                 break;
         }
         $ev->setCancelled(LandManager::$instance->protect($p, $ev->getBlock(), null));
