@@ -136,7 +136,8 @@ class AccountManager
     {
         $name = "";
         try {
-            $name = SQLManager::$manager->getUser($xuid);
+            $user = SQLManager::$manager->getUser($xuid);
+            if (!is_null($user)) $name = $user->name;
         } catch (Exception $e) {
             Server::getInstance()->getLogger()->critical("[GETUserName]" . $e->getMessage());
         }
