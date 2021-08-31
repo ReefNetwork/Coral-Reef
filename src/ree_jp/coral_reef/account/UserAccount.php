@@ -15,6 +15,7 @@ namespace ree_jp\coral_reef\account;
 use Exception;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat;
+use ree_jp\coral_reef\CoralReefPlugin;
 use ree_jp\coral_reef\skill\BreakSkill;
 use ree_jp\coral_reef\skill\SkillManager;
 use ree_jp\coral_reef\sql\SQLManager;
@@ -22,7 +23,7 @@ use ree_jp\coral_reef\sql\SQLManager;
 class UserAccount
 {
     const LEVEL_EXPERIMENT = [
-        1 => 0, 2 => 100,
+        1 => 1, 2 => 100, 3 => 1000, 4 => 5000, 5 => 10000,
     ];
 
     public string $xuid;
@@ -59,8 +60,10 @@ class UserAccount
     public function addXp(int $xp = 1): void
     {
         $this->experience = $xp + $this->experience;
-        if ($this->necessaryExperience <= $xp) {
-            ++$this->level;
+        $this->necessaryExperience -= $xp;
+        if ($this->necessaryExperience <= 0) {
+            $beforeLevel = $this->level;
+            $this->setLevelAndNecessaryExperience();
 
             $p = Server::getInstance()->getPlayer($this->name);
             $name = "";
@@ -68,9 +71,11 @@ class UserAccount
                 $name = $p->getName();
                 $p->sendTitle(
                     TextFormat::BLUE . 'L' . TextFormat::GREEN . 'e' . TextFormat::AQUA . 'v' . TextFormat::GREEN . 'e' . TextFormat::BLUE . 'L ' . TextFormat::RED . 'U' . TextFormat::LIGHT_PURPLE . 'P',
-                    TextFormat::YELLOW . ($this->level - 1) . TextFormat::RESET . ' -> ' . TextFormat::GOLD . $this->level);
+                    TextFormat::YELLOW . $beforeLevel . TextFormat::RESET . ' -> ' . TextFormat::GOLD . $this->level);
             }
-            Server::getInstance()->broadcastMessage($name . "さんのレベルが$this->level になりました");
+            $message = $name . "さんのレベルが$this->level になりました";
+            Server::getInstance()->broadcastMessage($message);
+            CoralReefPlugin::$plugin->discordBot->sendChat($message);
         }
     }
 

@@ -14,9 +14,11 @@ namespace ree_jp\coral_reef\task;
 use Exception;
 use pocketmine\entity\object\ExperienceOrb;
 use pocketmine\entity\object\ItemEntity;
+use pocketmine\scheduler\ClosureTask;
 use pocketmine\scheduler\Task;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat;
+use ree_jp\coral_reef\CoralReefPlugin;
 use ree_jp\coral_reef\sql\SQLManager;
 
 class DataSaveTask extends Task
@@ -39,17 +41,13 @@ class DataSaveTask extends Task
                 Server::getInstance()->broadcastMessage(TextFormat::GRAY . '5秒後にデータのセーブと地面に落ちているアイテムなどの削除を行います');
                 break;
             case 0:
-                Server::getInstance()->broadcastMessage(TextFormat::GRAY . "データのセーブと地面に落ちているアイテムなどの削除を行います\n数秒かかります...");
+                Server::getInstance()->broadcastMessage(TextFormat::GRAY . "データのセーブを行います\n数秒かかります...");
                 $start = microtime(true);
                 $this->save();
-                foreach (Server::getInstance()->getLevels() as $level) {
-                    foreach ($level->getEntities() as $entity) {
-                        if ($entity instanceof ItemEntity or $entity instanceof ExperienceOrb) {
-                            $entity->close();
-                        }
-                    }
-                }
-                Server::getInstance()->broadcastMessage(TextFormat::GRAY . '完了しました(' . round(microtime(true) - $start, 5) . '秒)');
+                $message = 'データをセーブしました(' . round(microtime(true) - $start, 2) . '秒)';
+                Server::getInstance()->broadcastMessage(TextFormat::GRAY . $message);
+                CoralReefPlugin::$plugin->discordBot->sendChat($message);
+                self::startClearItem();
         }
         switch ($this->timer) {
             case 3600:
@@ -92,5 +90,32 @@ class DataSaveTask extends Task
                 Server::getInstance()->getLogger()->error("[autoSave] {$p->getName()} の処理中に" . $e->getMessage());
             }
         }
+    }
+
+    static function startClearItem(): void
+    {
+        Server::getInstance()->broadcastMessage(TextFormat::GRAY . '5秒後に地面に落ちているアイテムなどの削除を行います');
+        foreach (Server::getInstance()->getLevels() as $level) {
+            foreach ($level->getEntities() as $entity) {
+                if ($entity instanceof ItemEntity or $entity instanceof ExperienceOrb) {
+                    $entity->namedtag->setByte('drop_item_clean_warn', 0);
+                }
+            }
+        }
+        CoralReefPlugin::$plugin->getScheduler()->scheduleDelayedTask(new ClosureTask(function (int $currentTick): void {
+            self::clearWarnItem();
+        }), 20 * 5);
+    }
+
+    private static function clearWarnItem(): void
+    {
+        foreach (Server::getInstance()->getLevels() as $level) {
+            foreach ($level->getEntities() as $entity) {
+                if ($entity instanceof ItemEntity or $entity instanceof ExperienceOrb) {
+                    if ($entity->namedtag->offsetExists('drop_item_clean_warn')) $entity->close();
+                }
+            }
+        }
+        Server::getInstance()->broadcastMessage(TextFormat::GRAY . '地面に落ちているアイテムなどを削除しました');
     }
 }
