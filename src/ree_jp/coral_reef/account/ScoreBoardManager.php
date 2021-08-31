@@ -31,6 +31,9 @@ class ScoreBoardManager
      */
     static function sendScoreBoard(Player $p): void
     {
+        $user = SQLManager::$manager->getUser($p->getXuid());
+        if (is_null($user)) return;
+
         $pk = new RemoveObjectivePacket();
         $pk->objectiveName = self::board;
         $p->sendDataPacket($pk);
@@ -44,7 +47,6 @@ class ScoreBoardManager
 
         $pk = new SetScorePacket();
         $pk->type = SetScorePacket::TYPE_CHANGE;
-        $user = SQLManager::$manager->getUser($p->getXuid());
         $skillName = is_null($user->skill) ? 'なし' : $user->skill->name;
         self::setScore($pk, 1, '現在のスキル : ' . $skillName);
         self::setScore($pk, 2, '次のレベルまで : ' . $user->necessaryExperience);

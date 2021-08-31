@@ -96,6 +96,7 @@ class SQLManager
         $prepare = $this->pdo->prepare('SELECT * FROM USER WHERE XUID = :xuid');
         $prepare->execute([':xuid' => $xuid]);
         $result = $prepare->fetch();
+        if ($result === false) return null;
         if (!(array_key_exists('XUID', $result) && array_key_exists('NAME', $result) && array_key_exists('EXPERIENCE', $result) &&
             is_numeric($result['EXPERIENCE']) && array_key_exists('SKILL', $result))) throw new Exception('USER_SQLの返り値が不正です');
 

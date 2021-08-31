@@ -77,7 +77,6 @@ class AccountManager
     static function userJoin(Player $p): void
     {
         $xuid = $p->getXuid();
-        $nick = "";
 
         try {
             SQLManager::$manager->setUser($xuid, $p->getName(), $p->getAddress());
