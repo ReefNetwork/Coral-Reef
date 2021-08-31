@@ -78,7 +78,7 @@ class LandManager
         return null;
     }
 
-    static function protect(Player $p, Block $bl, ?string $message): bool
+    public function protect(Player $p, Block $bl, ?string $message): bool
     {
         if (in_array($p->getLevel()->getFolderName(), ['lobby', 'lobby2']) && !($p->isOp() && $p->isCreative())) {
             if (is_null($message)) return false;

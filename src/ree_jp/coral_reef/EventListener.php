@@ -101,7 +101,7 @@ class EventListener implements Listener
     {
         $p = $ev->getPlayer();
 
-        $ev->setCancelled(LandManager::protect($p, $ev->getBlock(), 'このワールドでブロックを掘ることはできません'));
+        $ev->setCancelled(LandManager::$instance->protect($p, $ev->getBlock(), 'このワールドでブロックを掘ることはできません'));
     }
 
     /**
@@ -135,7 +135,7 @@ class EventListener implements Listener
     {
         $p = $ev->getPlayer();
 
-        $ev->setCancelled(LandManager::protect($p, $ev->getBlock(), 'このワールドでブロックを設置することはできません'));
+        $ev->setCancelled(LandManager::$instance->protect($p, $ev->getBlock(), 'このワールドでブロックを設置することはできません'));
     }
 
     public function onTouch(PlayerInteractEvent $ev): void
@@ -147,7 +147,7 @@ class EventListener implements Listener
                 FormManager::sendMenu($p);
                 break;
         }
-        $ev->setCancelled(LandManager::protect($p, $ev->getBlock(), null));
+        $ev->setCancelled(LandManager::$instance->protect($p, $ev->getBlock(), null));
     }
 
     public function onModeChange(PlayerGameModeChangeEvent $ev): void
