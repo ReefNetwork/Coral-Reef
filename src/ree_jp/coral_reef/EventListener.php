@@ -142,6 +142,7 @@ class EventListener implements Listener
     public function onTouch(PlayerInteractEvent $ev): void
     {
         $p = $ev->getPlayer();
+        $xuid = $p->getXuid();
 
         switch ($ev->getItem()->getId()) {
             case ItemIds::STICK:
@@ -149,7 +150,9 @@ class EventListener implements Listener
                 break;
 
             case ItemIds::CLOCK:
-                LandForm::landCreateAssistForm($p->getXuid(), $ev->getBlock());
+                if (AccountManager::hasValue($xuid, 'form_cool_time')) return;
+                AccountManager::setValue($xuid, 'form_cool_time', 10);
+                $p->sendForm(LandForm::landCreateAssistForm($xuid, $ev->getBlock()));
                 break;
         }
         $ev->setCancelled(LandManager::$instance->protect($p, $ev->getBlock(), null));

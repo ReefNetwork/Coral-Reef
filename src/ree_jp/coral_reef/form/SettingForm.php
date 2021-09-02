@@ -6,7 +6,7 @@
  * CC    C oo  oo rr     aa  aaa lll RR  RR  eeeee  eeeee  ff
  *  CCCCC   oooo  rr      aaa aa lll RR   RR  eeeee  eeeee ff
  *
- * Copyright (c) 2021. Ree-jp(https://ree-jp.net)
+ * Copyright (c) 2021-2021. Ree-jp(https://ree-jp.net)
  */
 
 namespace ree_jp\coral_reef\form;
@@ -54,16 +54,19 @@ class SettingForm
 
     static function boolForm(string $xuid, string $label, string $toggleMessage, string $settingType, ?callable $func = null): CustomForm
     {
-        $isToggle = false;
+        $defaultToggle = false;
+        $resultIsNull = false;
         try {
-            if (SQLManager::$manager->getSetting($xuid, $settingType) === 'true') $isToggle = true;
+            $result = SQLManager::$manager->getSetting($xuid, $settingType);
+            $resultIsNull = is_null($result);
+            if ($result === 'true') $defaultToggle = true;
         } catch (Exception $e) {
             Server::getInstance()->getLogger()->critical("[SettingGet $settingType]" . $e->getMessage());
         }
-        return new CustomForm('Setting -> ' . $settingType, [new Label($label), new Toggle($toggleMessage, $isToggle)],
-            function (Player $p, CustomFormResponse $response) use ($settingType, $func): void {
+        return new CustomForm('Setting -> ' . $settingType, [new Label($label), new Toggle($toggleMessage, $defaultToggle)],
+            function (Player $p, CustomFormResponse $response) use ($settingType, $func, $resultIsNull): void {
                 $toggle = $response->getToggle();
-                if (!$toggle->hasChanged()) return;
+                if (!($toggle->hasChanged() || $resultIsNull)) return;
                 $result = $toggle->getValue() ? 'true' : 'false';
                 try {
                     SQLManager::$manager->setSetting($p->getXuid(), $settingType, $result);
