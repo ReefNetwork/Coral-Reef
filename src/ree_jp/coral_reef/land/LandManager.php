@@ -93,7 +93,7 @@ class LandManager
             $p->sendTip("この土地は$name によって保護されています($land->name)");
             if ($p->isOp() && $p->isCreative()) return false;
         }
-        if (AccountManager::hasValue($p->getXuid(), 'protect_warning')) {
+        if (!AccountManager::hasValue($p->getXuid(), 'protect_warning')) {
             AccountManager::setValue($p->getXuid(), 'protect_warning', 10);
             $p->getLevelNonNull()->addSound(new GenericSound($bl, LevelEventPacket::EVENT_SOUND_PORTAL), [$p]);
             $particleVec = $bl->add(0.5, 1.5, 0.5);
