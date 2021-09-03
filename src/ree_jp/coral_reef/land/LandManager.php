@@ -116,7 +116,7 @@ class LandManager
                 $aabb->minY = $p->getFloorY();
                 $aabb->maxY = $p->getFloorY() + 3;
                 $p->sendMessage("指定されている範囲を表示しています");
-                for ($x = $aabb->minX; $x <= $aabb->maxX; $x = $aabb->maxX) {
+                for ($x = $aabb->minX; $x <= $aabb->maxX; $x++) {
                     for ($y = $aabb->minY; $y <= $aabb->maxY; $y++) {
                         $p->getLevelNonNull()->addParticle(new PortalParticle(
                             new Vector3($x + 0.5, $y, $aabb->minZ + 0.5)), [$p]);
