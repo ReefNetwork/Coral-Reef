@@ -116,11 +116,11 @@ class LandManager
                 $aabb->minY = $p->getFloorY();
                 $aabb->maxY = $p->getFloorY() + 3;
                 $p->sendMessage("指定されている範囲を表示しています");
-                for ($x = $aabb->minX; $x <= $aabb->maxX; $x++) {
+                for ($x = $aabb->minX; $x <= $aabb->maxX; $x += 0.3) {
                     $this->sendCheckSpaceEffect($p, $aabb, $x, $aabb->minZ);
                     $this->sendCheckSpaceEffect($p, $aabb, $x, $aabb->maxZ);
                 }
-                for ($z = $aabb->minZ; $z <= $aabb->maxZ; $z++) {
+                for ($z = $aabb->minZ; $z <= $aabb->maxZ; $z += 0.3) {
                     $this->sendCheckSpaceEffect($p, $aabb, $aabb->minX, $z);
                     $this->sendCheckSpaceEffect($p, $aabb, $aabb->maxX, $z);
                 }
