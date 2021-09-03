@@ -78,7 +78,7 @@ class LandForm
         return new MenuForm('Land Create Assist', "クリックした場所に地点を設定して土地保護を作成できます\n
         シフト中に時計をクリックすると指定した範囲を確認することもできます", [
             new Button('土地保護を作成する'), new Button('地点1を設定する'), new Button('地点2を設定する')],
-            function (Player $p, Button $button) use ($vec3, $x1, $z1, $x2, $z2) {
+            function (Player $p, Button $button) use ($vec3, $x1, $z1, $x2, $z2): void {
                 $xuid = $p->getXuid();
                 $value = $button->getValue();
                 switch ($value) {
