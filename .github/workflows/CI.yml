@@ -43,12 +43,12 @@ jobs:
     if: github.ref == 'refs/heads/master'
     steps:
       - uses: actions/checkout@v2
-      - run: mkdir ~/plugins
+      - run: mkdir ~/install_plugins
       - name: download
         uses: actions/download-artifact@v2
         with:
           name: CoralReef
-          path: plugins
+          path: install_plugins
 
       - name: deploy debug server
         uses: appleboy/scp-action@master
@@ -56,5 +56,5 @@ jobs:
           host: ${{ secrets.DEBUG_HOST }}
           username: ${{ secrets.DEBUG_USERNAME }}
           key: ${{ secrets.DEBUG_KEY}}
-          source: ./plugins/CoralReef.phar
+          source: ./install_plugins/CoralReef.phar
           target: /home/${{ secrets.DEBUG_USERNAME }}/pmmp/

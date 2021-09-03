@@ -117,15 +117,25 @@ class LandManager
                 $aabb->maxY = $p->getFloorY() + 3;
                 $p->sendMessage("指定されている範囲を表示しています");
                 for ($x = $aabb->minX; $x <= $aabb->maxX; $x++) {
-                    for ($y = $aabb->minY; $y <= $aabb->maxY; $y++) {
-                        $p->getLevelNonNull()->addParticle(new PortalParticle(
-                            new Vector3($x + 0.5, $y, $aabb->minZ + 0.5)), [$p]);
-                        $p->getLevelNonNull()->addParticle(new PortalParticle(
-                            new Vector3($x + 0.5, $y, $aabb->maxZ + 0.5)), [$p]);
-                    }
+                    $this->sendCheckSpaceEffect($p, $aabb, $x, $aabb->minZ);
+                    $this->sendCheckSpaceEffect($p, $aabb, $x, $aabb->maxZ);
+                }
+                for ($z = $aabb->minZ; $z <= $aabb->maxZ; $z++) {
+                    $this->sendCheckSpaceEffect($p, $aabb, $aabb->minX, $z);
+                    $this->sendCheckSpaceEffect($p, $aabb, $aabb->maxX, $z);
                 }
             } else $p->sendMessage('エラーが発生しました');
         } else $p->sendMessage('地点を2つとも設定してください');
+    }
+
+    private function sendCheckSpaceEffect(Player $p, AxisAlignedBB $aabb, int $x, int $z): void
+    {
+        for ($y = $aabb->minY; $y <= $aabb->maxY; $y += 0.3) {
+            $p->getLevelNonNull()->addParticle(new PortalParticle(
+                new Vector3($x + 0.5, $y, $z + 0.5)), [$p]);
+            $p->getLevelNonNull()->addParticle(new PortalParticle(
+                new Vector3($x + 0.5, $y, $z + 0.5)), [$p]);
+        }
     }
 
     public function getAabb(int $x1, int $z1, int $x2, int $z2): AxisAlignedBB
