@@ -150,9 +150,13 @@ class EventListener implements Listener
                 break;
 
             case ItemIds::CLOCK:
-                if (AccountManager::hasValue($xuid, 'form_cool_time')) return;
-                AccountManager::setValue($xuid, 'form_cool_time', 10);
-                $p->sendForm(LandForm::landCreateAssistForm($xuid, $ev->getBlock()));
+                if ($p->isSneaking()) {
+                    LandManager::$instance->checkSpace($p);
+                } else {
+                    if (AccountManager::hasValue($xuid, 'form_cool_time')) return;
+                    AccountManager::setValue($xuid, 'form_cool_time', 10);
+                    $p->sendForm(LandForm::landCreateAssistForm($xuid, $ev->getBlock()));
+                }
                 break;
         }
         $ev->setCancelled(LandManager::$instance->protect($p, $ev->getBlock(), null));

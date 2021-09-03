@@ -75,22 +75,20 @@ class LandForm
             $x2 = $storeVec->getFloorX();
             $z2 = $storeVec->getFloorZ();
         }
-        return new MenuForm('Land Create Assist', 'クリックした場所に地点を設定するか指定した範囲を確認、土地保護を作成できます', [
-            new Button('範囲を確認する'), new Button('地点1を設定する'), new Button('地点2を設定する'), new Button('土地保護を作成する')],
+        return new MenuForm('Land Create Assist', "クリックした場所に地点を設定して土地保護を作成できます\n
+        シフト中に時計をクリックすると指定した範囲を確認することもできます", [
+            new Button('土地保護を作成する'), new Button('地点1を設定する'), new Button('地点2を設定する')],
             function (Player $p, Button $button) use ($vec3, $x1, $z1, $x2, $z2) {
                 $xuid = $p->getXuid();
                 $value = $button->getValue();
                 switch ($value) {
                     case 0:
-                        LandManager::$instance->checkSpace($p);
+                        $p->sendForm(self::landCreateForm($x1, $z1, $x2, $z2));
                         break;
                     case 1:
                     case 2:
                         LandManager::$pos[$xuid][$value] = $vec3;
                         $p->sendMessage("地点$value を設定しました");
-                        break;
-                    case 3:
-                        $p->sendForm(self::landCreateForm($x1, $z1, $x2, $z2));
                         break;
                     default:
                         $p->sendMessage('エラーが発生しました');

@@ -92,15 +92,14 @@ class LandManager
             $name = AccountManager::getUserName($land->xuid);
             $p->sendTip("この土地は$name によって保護されています($land->name)");
             if ($p->isOp() && $p->isCreative()) return false;
-
-            if (AccountManager::hasValue($p->getXuid(), 'protect_warning')) {
-                AccountManager::setValue($p->getXuid(), 'protect_warning', 10);
-                $p->getLevelNonNull()->addSound(new GenericSound($bl, LevelEventPacket::EVENT_SOUND_PORTAL), [$p]);
-                $particleVec = $bl->add(0.5, 1.5, 0.5);
-                for ($count = 0; $count < 30; $count++) {
-                    $p->getLevelNonNull()->addParticle(new PortalParticle(
-                        $particleVec->add(mt_rand(-10, 10) * 0.1, 0, mt_rand(-10, 10) * 0.1)), [$p]);
-                }
+        }
+        if (AccountManager::hasValue($p->getXuid(), 'protect_warning')) {
+            AccountManager::setValue($p->getXuid(), 'protect_warning', 10);
+            $p->getLevelNonNull()->addSound(new GenericSound($bl, LevelEventPacket::EVENT_SOUND_PORTAL), [$p]);
+            $particleVec = $bl->add(0.5, 1.5, 0.5);
+            for ($count = 0; $count < 30; $count++) {
+                $p->getLevelNonNull()->addParticle(new PortalParticle(
+                    $particleVec->add(mt_rand(-10, 10) * 0.1, 0, mt_rand(-10, 10) * 0.1)), [$p]);
             }
         }
         return true;
@@ -114,7 +113,17 @@ class LandManager
             $vec2 = LandManager::$pos[$xuid][2];
             if ($vec1 instanceof Vector3 && $vec2 instanceof Vector3) {
                 $aabb = $this->getAabb($vec1->getFloorX(), $vec1->getFloorZ(), $vec2->getFloorX(), $vec2->getFloorZ());
-                $p->sendMessage("指定されている範囲にブロックを敷き詰めています\n解除するにはもう一度「範囲を確認する」を選択してください");
+                $aabb->minY = $p->getFloorY();
+                $aabb->maxY = $p->getFloorY() + 3;
+                $p->sendMessage("指定されている範囲を表示しています");
+                for ($x = $aabb->minX; $x <= $aabb->maxX; $x = $aabb->maxX) {
+                    for ($y = $aabb->minY; $y <= $aabb->maxY; $y++) {
+                        $p->getLevelNonNull()->addParticle(new PortalParticle(
+                            new Vector3($x + 0.5, $y, $aabb->minZ + 0.5)), [$p]);
+                        $p->getLevelNonNull()->addParticle(new PortalParticle(
+                            new Vector3($x + 0.5, $y, $aabb->maxZ + 0.5)), [$p]);
+                    }
+                }
             } else $p->sendMessage('エラーが発生しました');
         } else $p->sendMessage('地点を2つとも設定してください');
     }
