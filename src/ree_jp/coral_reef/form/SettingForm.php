@@ -23,6 +23,7 @@ use pocketmine\Player;
 use pocketmine\Server;
 use ree_jp\coral_reef\account\AccountManager;
 use ree_jp\coral_reef\sql\SettingConst;
+use ree_jp\coral_reef\sql\SQLConst;
 use ree_jp\coral_reef\sql\SQLManager;
 
 class SettingForm
@@ -57,7 +58,7 @@ class SettingForm
         $defaultToggle = false;
         $resultIsNull = false;
         try {
-            $result = SQLManager::$manager->getSetting($xuid, $settingType);
+            $result = SQLManager::$manager->getValue($xuid, SQLConst::TYPE_SETTINGS, $settingType);
             $resultIsNull = is_null($result);
             if ($result === 'true') $defaultToggle = true;
         } catch (Exception $e) {
@@ -69,7 +70,7 @@ class SettingForm
                 if (!($toggle->hasChanged() || $resultIsNull)) return;
                 $result = $toggle->getValue() ? 'true' : 'false';
                 try {
-                    SQLManager::$manager->setSetting($p->getXuid(), $settingType, $result);
+                    SQLManager::$manager->setValue($p->getXuid(), SQLConst::TYPE_SETTINGS, $settingType, $result);
                     $p->sendMessage('設定を保存しました');
                     if (!is_null($func)) $func();
                 } catch (Exception $e) {
@@ -83,7 +84,7 @@ class SettingForm
     {
         $default = "";
         try {
-            $result = SQLManager::$manager->getSetting($xuid, $settingType);
+            $result = SQLManager::$manager->getValue($xuid, SQLConst::TYPE_SETTINGS, $settingType);
             if (!is_null($result)) $default = $result;
         } catch (Exception $e) {
             Server::getInstance()->getLogger()->critical("[SettingGet $settingType]" . $e->getMessage());
@@ -93,7 +94,7 @@ class SettingForm
                 $result = $response->getInput()->getValue();
                 if (empty($result)) $result = null;
                 try {
-                    SQLManager::$manager->setSetting($p->getXuid(), $settingType, $result);
+                    SQLManager::$manager->setValue($p->getXuid(), SQLConst::TYPE_SETTINGS, $settingType, $result);
                     $p->sendMessage('設定を保存しました');
                     if (!is_null($func)) $func();
                 } catch (Exception $e) {

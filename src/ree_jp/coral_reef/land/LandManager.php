@@ -26,6 +26,8 @@ use ree_jp\coral_reef\sql\SQLManager;
 
 class LandManager
 {
+    const CAN_CREATE_LAND = array('main_1');
+
     static LandManager $instance;
     static array $pos;
 

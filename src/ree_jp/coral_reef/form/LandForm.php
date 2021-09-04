@@ -100,12 +100,17 @@ class LandForm
     {
         return new CustomForm('Land -> Create', [
             new Label("作成する土地の情報を入力してください"),
+            new Input('土地の名前', '土地1', ''),
             new Input('x座標1', '1', $x1),
             new Input('z座標1', '1', $z1),
             new Input('x座標2', '10', $x2),
             new Input('z座標2', '10', $z2),
         ], function (Player $p, CustomFormResponse $response): void {
-            list($x1, $z1, $x2, $z2, $name) = $response->getValues();
+            if (!in_array($p->getLevelNonNull()->getFolderName(), LandManager::CAN_CREATE_LAND)) {
+                $p->sendMessage('このワールドでは土地保護が出来ません');
+                return;
+            }
+            list($name, $x1, $z1, $x2, $z2) = $response->getValues();
             if (is_numeric($x1) && is_numeric($z1) && is_numeric($x2) && is_numeric($z2)) {
                 $x1 = intval($x1);
                 $z1 = intval($z1);

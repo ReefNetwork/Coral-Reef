@@ -25,6 +25,7 @@ use ree_jp\coral_reef\CoralReefPlugin;
 use ree_jp\coral_reef\skill\BreakSkill;
 use ree_jp\coral_reef\skill\SkillManager;
 use ree_jp\coral_reef\sql\SettingConst;
+use ree_jp\coral_reef\sql\SQLConst;
 use ree_jp\coral_reef\sql\SQLManager;
 
 class AccountManager
@@ -163,7 +164,7 @@ class AccountManager
     {
         if (is_null($nick)) {
             try {
-                $nick = SQLManager::$manager->getSetting($p->getXuid(), SettingConst::NICK_NAME);
+                $nick = SQLManager::$manager->getValue($p->getXuid(), SQLConst::TYPE_SETTINGS, SettingConst::NICK_NAME);
             } catch (Exception $ex) {
                 Server::getInstance()->getLogger()->error("[setting nick] {$p->getName()} の確認中に " . $ex->getMessage());
             }
@@ -180,7 +181,7 @@ class AccountManager
         if (is_null($bool)) {
             $bool = true;
             try {
-                $result = SQLManager::$manager->getSetting($p->getXuid(), SettingConst::SHOW_COORDINATES);
+                $result = SQLManager::$manager->getValue($p->getXuid(), SQLConst::TYPE_SETTINGS, SettingConst::SHOW_COORDINATES);
                 if ($result === 'false') $bool = false;
             } catch (Exception $e) {
                 Server::getInstance()->getLogger()->critical("[setting showCoordinates]" . $e->getMessage());
