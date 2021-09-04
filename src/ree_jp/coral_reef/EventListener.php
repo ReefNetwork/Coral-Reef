@@ -15,6 +15,9 @@ namespace ree_jp\coral_reef;
 use Exception;
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\block\BlockPlaceEvent;
+use pocketmine\event\entity\EntityDamageByEntityEvent;
+use pocketmine\event\entity\EntityDamageEvent;
+use pocketmine\event\entity\EntityTeleportEvent;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerChatEvent;
 use pocketmine\event\player\PlayerGameModeChangeEvent;
@@ -24,6 +27,7 @@ use pocketmine\event\player\PlayerPreLoginEvent;
 use pocketmine\event\player\PlayerQuitEvent;
 use pocketmine\item\Item;
 use pocketmine\item\ItemIds;
+use pocketmine\Player;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat;
 use ree_jp\coral_reef\account\AccountManager;
@@ -95,6 +99,35 @@ class EventListener implements Listener
         }
     }
 
+    public function onDamage(EntityDamageEvent $ev)
+    {
+        $p = $ev->getEntity();
+        if (!$p instanceof Player) return;
+        $health = $p->getHealth();
+        if ($ev instanceof EntityDamageByEntityEvent && $ev->getDamager() instanceof Player) {
+            $ev->setCancelled();
+            return;
+        }
+        switch ($ev->getCause()) {
+            case EntityDamageEvent::CAUSE_FALL:
+                $ev->setBaseDamage(0);
+                break;
+
+            case EntityDamageEvent::CAUSE_VOID:
+                $health = -1;
+                break;
+        }
+        if ($health <= $ev->getFinalDamage()) {
+            $ev->setCancelled();
+            $p->setHealth($p->getMaxHealth());
+            $p->setFood($p->getMaxFood());
+            $p->teleport(Server::getInstance()->getDefaultLevel()->getSpawnLocation());
+            Server::getInstance()->broadcastMessage(TextFormat::DARK_GRAY . '[死亡] ' . $p->getDisplayName());
+            $p->sendTip("死亡しました");
+        }
+    }
+
+
     /**
      * @priority LOW
      */
@@ -160,6 +193,25 @@ class EventListener implements Listener
                 break;
         }
         $ev->setCancelled(LandManager::$instance->protect($p, $ev->getBlock(), null));
+    }
+
+    public function onTeleport(EntityTeleportEvent $ev): void
+    {
+        $p = $ev->getEntity();
+        if (!$p instanceof Player) return;
+        $fromLevelName = $ev->getFrom()->getLevel()->getFolderName();
+        $toLevelName = $ev->getTo()->getLevel()->getFolderName();
+        $isWorldChange = $fromLevelName !== $toLevelName;
+
+        if (in_array($toLevelName, AccountManager::STOP_FLY_WORLD) && AccountManager::hasValue($p->getXuid(), 'fly')) {
+            AccountManager::setValue($p->getXuid(), 'fly', 0);
+            $p->setFlying(false);
+            $p->setAllowFlight(false);
+            $p->sendMessage('このワールドで飛行することはできません');
+        }
+        if ($isWorldChange) {
+            unset(LandManager::$pos[$p->getXuid()]);
+        }
     }
 
     public function onModeChange(PlayerGameModeChangeEvent $ev): void

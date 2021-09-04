@@ -146,12 +146,6 @@ class AccountManager
 
     static function teleport(Player $p, string $levelName, Position $pos = null): void
     {
-        if (in_array($levelName, self::STOP_FLY_WORLD) && AccountManager::hasValue($p->getXuid(), 'fly')) {
-            AccountManager::setValue($p->getXuid(), 'fly', 0);
-            $p->setFlying(false);
-            $p->setAllowFlight(false);
-            $p->sendMessage('このワールドで飛行することはできません');
-        }
         $level = Server::getInstance()->getLevelByName($levelName);
         if (is_null($level)) {
             $p->sendMessage('ワールドが見つかりませんでした');
