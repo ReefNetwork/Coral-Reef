@@ -22,7 +22,7 @@ jobs:
         run: composer install -n --no-ansi
 
       - name: build
-        run: php -d phar.readonly=0 ./build/make-phar.php enableCompressAll
+        run: php -d phar.readonly=0 ./build/make-phar.php ${{ github.run_number }}.${github.ref##*/ }
 
       - name: upload
         uses: actions/upload-artifact@v2

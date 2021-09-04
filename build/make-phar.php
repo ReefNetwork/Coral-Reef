@@ -35,23 +35,21 @@ foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($dir)) a
     $files[str_replace($dir, "", $path)] = $path;
 }
 
+if (isset($argv[1])) {
+    if ($argv[1] === 'master') {
+        $argv[1] = 'dev';
+    }
+    $yaml = yaml_parse_file('plugin.yml');
+    $yaml['version'] = $yaml['version'] . $argv[1];
+    yaml_emit_file('plugin.yml', $yaml);
+}
+
 echo "Compressing..." . PHP_EOL;
 $phar = new Phar($file_phar, 0);
 $phar->startBuffering();
 $phar->setSignatureAlgorithm(\Phar::SHA1);
 $phar->buildFromIterator(new \ArrayIterator($files));
 $phar->setStub("<?php __HALT_COMPILER(); ?>");
-
-if (isset($argv[1]) && $argv[1] === "enableCompressAll") {
-    $phar->compressFiles(Phar::GZ);
-} else {
-    foreach ($phar as $file => $finfo) {
-        /** @var \PharFileInfo $finfo */
-        if ($finfo->getSize() > (1024 * 512)) {
-            $finfo->compress(\Phar::GZ);
-        }
-    }
-}
-
+$phar->compressFiles(Phar::GZ);
 $phar->stopBuffering();
 echo "end." . PHP_EOL;

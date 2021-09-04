@@ -6,7 +6,7 @@
  * CC    C oo  oo rr     aa  aaa lll RR  RR  eeeee  eeeee  ff
  *  CCCCC   oooo  rr      aaa aa lll RR   RR  eeeee  eeeee ff
  *
- * Copyright (c) 2021. Ree-jp(https://ree-jp.net)
+ * Copyright (c) 2021-2021. Ree-jp(https://ree-jp.net)
  */
 
 namespace ree_jp\coral_reef\account;
@@ -18,6 +18,7 @@ use pocketmine\network\mcpe\protocol\SetScorePacket;
 use pocketmine\network\mcpe\protocol\types\ScorePacketEntry;
 use pocketmine\Player;
 use pocketmine\utils\TextFormat;
+use ree_jp\coral_reef\CoralReefPlugin;
 use ree_jp\coral_reef\sql\SQLManager;
 
 class ScoreBoardManager
@@ -52,6 +53,10 @@ class ScoreBoardManager
         self::setScore($pk, 2, '次のレベルまで : ' . $user->necessaryExperience);
         self::setScore($pk, 14, TextFormat::DARK_GRAY . $p->getDisplayName());
         self::setScore($pk, 15, TextFormat::DARK_GRAY . date("Y/m/d H:i:s"));
+
+        if (CoralReefPlugin::$plugin->isDev) {
+            self::setScore($pk, 13, CoralReefPlugin::$plugin->getDescription()->getVersion());
+        }
         $p->sendDataPacket($pk);
     }
 

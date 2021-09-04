@@ -29,10 +29,12 @@ class CoralReefPlugin extends PluginBase
     static CoralReefPlugin $plugin;
 
     public DiscordBot $discordBot;
+    public bool $isDev = false;
 
     public function onLoad()
     {
         self::$plugin = $this;
+        $this->isDev = !strstr($this->getDescription()->getVersion(), 'stable');
     }
 
     public function onEnable()

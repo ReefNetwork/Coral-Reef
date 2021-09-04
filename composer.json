@@ -10,6 +10,7 @@
   ],
   "require": {
     "team-reflex/discord-php": "^6.0",
-    "ext-pdo": "*"
+    "ext-pdo": "*",
+    "ext-yaml": "*"
   }
 }
