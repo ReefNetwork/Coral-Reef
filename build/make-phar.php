@@ -36,11 +36,9 @@ foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($dir)) a
 }
 
 if (isset($argv[1])) {
-    if ($argv[1] === 'master') {
-        $argv[1] = 'dev';
-    }
+    str_replace('master', 'dev', $argv[1]);
     $yaml = yaml_parse_file('plugin.yml');
-    $yaml['version'] = $yaml['version'] . $argv[1];
+    $yaml['version'] = $yaml['version'] . '.' . $argv[1];
     yaml_emit_file('plugin.yml', $yaml);
 }
 
