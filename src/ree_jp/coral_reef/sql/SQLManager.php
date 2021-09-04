@@ -15,40 +15,30 @@ namespace ree_jp\coral_reef\sql;
 use Exception;
 use PDO;
 use PDOException;
+use pocketmine\utils\Config;
+use poggit\libasynql\DataConnector;
+use poggit\libasynql\libasynql;
 use ree_jp\coral_reef\account\UserAccount;
+use ree_jp\coral_reef\CoralReefPlugin;
 use ree_jp\coral_reef\land\LandData;
 
 class SQLManager
 {
     static ?SQLManager $manager = null;
 
-    /**
-     * USER :XUID:NAME:IPS:EXPERIENCE:SKILL
-     * BAN :TYPE:VALUE:REASON:TIME
-     * WHITELIST :TYPE:VALUE:TIME
-     * SETTING :XUID:TYPE:VALUE
-     */
-    private PDO $pdo;
-
-    /**
-     * XUID :TYPE:OTHER:VALUE:TIME
-     */
-    private PDO $logPdo;
+    private DataConnector $db;
 
     private array $users = [];
 
     /**
      * @throws PDOException
      */
-    public function __construct(string $dbName, string $host, string $user, string $pass)
+    public function __construct(string $path)
     {
-        $options = [PDO::ATTR_CASE => PDO::CASE_UPPER,
-            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-            PDO::ATTR_TIMEOUT => 5];
-        $dsn = "mysql:host=$host;port=3306;dbname=$dbName;charset=utf8";
-        $this->pdo = new PDO($dsn, $user, $pass, $options);
-        $logDsn = "mysql:host=$host;dbname=${dbName}Log;charset=utf8";
-        $this->logPdo = new PDO($logDsn, $user, $pass, $options);
+        $config = new Config($path . 'sql.yml');
+        $this->db = libasynql::create(CoralReefPlugin::$plugin, $config->get('database'), [
+            "mysql" => "mysql.sql",
+        ]);
         $this->createTable();
     }
 
@@ -268,9 +258,9 @@ class SQLManager
      */
     public function createLogTable(string $xuid): void
     {
-        $prepare = $this->logPdo->prepare("CREATE TABLE IF NOT EXISTS `:xuid` 
-            (TYPE VARCHAR(99) NOT NULL ,OTHER VARCHAR(99) ,VALUE VARCHAR(999) ,TIME DATETIME )");
-        $prepare->execute([':xuid' => $xuid]);
+//        $prepare = $this->logPdo->prepare("CREATE TABLE IF NOT EXISTS `:xuid`
+//            (TYPE VARCHAR(99) NOT NULL ,OTHER VARCHAR(99) ,VALUE VARCHAR(999) ,TIME DATETIME )");
+//        $prepare->execute([':xuid' => $xuid]);
     }
 
     /**
@@ -283,10 +273,10 @@ class SQLManager
      */
     public function addLog(string $xuid, string $type, string $time = null, string $otherType = null, string $value = null): void
     {
-        if ($time === 'now') $time = date("Y-m-d H:i:s");
-        /** @noinspection SqlResolve */
-        $prepare = $this->logPdo->prepare("INSERT INTO `:xuid` VALUES (:type ,:other ,:value ,:time)");
-        $prepare->execute([':xuid' => $xuid, ':type' => $type, ':other' => $otherType, ':value' => $value, ':time' => $time]);
+//        if ($time === 'now') $time = date("Y-m-d H:i:s");
+//        /** @noinspection SqlResolve */
+//        $prepare = $this->logPdo->prepare("INSERT INTO `:xuid` VALUES (:type ,:other ,:value ,:time)");
+//        $prepare->execute([':xuid' => $xuid, ':type' => $type, ':other' => $otherType, ':value' => $value, ':time' => $time]);
     }
 
     private function createTable(): void

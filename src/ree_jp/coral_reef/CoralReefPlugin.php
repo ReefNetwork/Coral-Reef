@@ -48,9 +48,7 @@ class CoralReefPlugin extends PluginBase
         }), 10);
 
         try {
-            SQLManager::$manager = new SQLManager("CoralReef",
-                $this->getConfig()->get(ConfigConst::MYSQL_HOST), "pmmp",
-                $this->getConfig()->get(ConfigConst::MYSQL_PASSWORD));
+            SQLManager::$manager = new SQLManager($this->getDataFolder());
         } catch (PDOException $e) {
             $this->getLogger()->critical("[SQL]" . $e->getMessage());
         }
