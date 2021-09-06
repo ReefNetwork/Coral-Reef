@@ -73,6 +73,8 @@ class CoralReefPlugin extends PluginBase
             $p->kick(TextFormat::GREEN . 'Reef ' . TextFormat::YELLOW . 'Server' . TextFormat::RESET . "\n\nサーバーが停止しました", false, '停止');
         }
         $this->discordBot->close();
+        if (!is_null(SQLManager::$manager)) SQLManager::$manager->close();
+
     }
 
     private function pluginInformation(): void

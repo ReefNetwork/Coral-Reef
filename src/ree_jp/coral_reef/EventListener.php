@@ -47,6 +47,7 @@ class EventListener implements Listener
             $p->kick(TextFormat::GREEN . 'Reef ' . TextFormat::YELLOW . 'Server' . TextFormat::DARK_RED . 'データベースサーバーが見つかりませんでした');
             return;
         }
+        SQLManager::$manager->loadUser($p->getXuid());
         $reason = AccountManager::checkUser($p);
         if (is_string($reason)) {
             $isNotShow = strstr($reason, '[BAN_NOT_SHOW]', true);

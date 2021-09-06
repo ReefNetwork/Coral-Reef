@@ -15,9 +15,12 @@ namespace ree_jp\coral_reef\sql;
 use Exception;
 use PDO;
 use PDOException;
+use pocketmine\Server;
 use pocketmine\utils\Config;
 use poggit\libasynql\DataConnector;
 use poggit\libasynql\libasynql;
+use poggit\libasynql\result\SqlColumnInfo;
+use poggit\libasynql\SqlError;
 use ree_jp\coral_reef\account\UserAccount;
 use ree_jp\coral_reef\CoralReefPlugin;
 use ree_jp\coral_reef\land\LandData;
@@ -36,10 +39,22 @@ class SQLManager
     public function __construct(string $path)
     {
         $config = new Config($path . 'sql.yml');
+        Server::getInstance()->getLogger()->info('[SQL] サーバーに接続中...');
         $this->db = libasynql::create(CoralReefPlugin::$plugin, $config->get('database'), [
             "mysql" => "mysql.sql",
         ]);
+        Server::getInstance()->getLogger()->info('[SQL] 準備しています');
         $this->createTable();
+        $this->db->waitAll();
+        Server::getInstance()->getLogger()->info('[SQL] complete');
+    }
+
+    public function close(): void
+    {
+        Server::getInstance()->getLogger()->info('[SQL] クエリの終了を待っています');
+        $this->db->waitAll();
+        $this->db->close();
+        Server::getInstance()->getLogger()->info('[SQL] complete');
     }
 
     /**
@@ -74,25 +89,24 @@ class SQLManager
         return $prepareResult;
     }
 
+    public function loadUser(string $xuid): void
+    {
+        $this->db->executeSelect('coral_reef.user.get', ['xuid' => $xuid], function (array $rows, SqlColumnInfo $columns) {
+            if (!(array_key_exists('xuid', $rows) && array_key_exists('name', $rows) && array_key_exists('experience', $rows) &&
+                array_key_exists('skill', $rows))) throw new Exception('USER_SQLの返り値が不正です');
+            $account = new UserAccount($rows['xuid'], $rows['name'], intval($rows['experience']), $rows['skill']);
+            $this->users[$account->xuid] = $account;
+        });
+    }
+
     /**
      * @param string $xuid
      * @return UserAccount|null
-     * @throws Exception
      */
     public function getUser(string $xuid): ?UserAccount
     {
         if (array_key_exists($xuid, $this->users)) return $this->users[$xuid];
-
-        $prepare = $this->pdo->prepare('SELECT * FROM USER WHERE XUID = :xuid');
-        $prepare->execute([':xuid' => $xuid]);
-        $result = $prepare->fetch();
-        if ($result === false) return null;
-        if (!(array_key_exists('XUID', $result) && array_key_exists('NAME', $result) && array_key_exists('EXPERIENCE', $result) &&
-            is_numeric($result['EXPERIENCE']) && array_key_exists('SKILL', $result))) throw new Exception('USER_SQLの返り値が不正です');
-
-        $account = new UserAccount($result['XUID'], $result['NAME'], intval($result['EXPERIENCE']), $result['SKILL']);
-        $this->users[$xuid] = $account;
-        return $account;
+        return null;
     }
 
     /**
@@ -106,9 +120,10 @@ class SQLManager
         $ips = $this->getIps($xuid);
         if (is_null($ips)) $ips = [];
         if (!in_array($ip, $ips)) array_push($ips, $ip);
-        $prepare = $this->pdo->prepare(
-            'INSERT INTO USER VALUES (:xuid ,:name ,:ips ,0 ,null) ON DUPLICATE KEY UPDATE NAME = :name, IPS = :ips');
-        $prepare->execute([':xuid' => $xuid, ':name' => $name, ':ips' => implode(':', $ips)]);
+        $this->db->executeInsert('coral_reef.user.set', ['xuid' => $xuid, 'name' => $name, 'ips' => implode(':', $ips)], null,
+            function (SqlError $error) use ($name) {
+                Server::getInstance()->getLogger()->error("[SQL] $name のデータ保存中に" . $error->getErrorMessage());
+            });
     }
 
     /**
@@ -281,11 +296,10 @@ class SQLManager
 
     private function createTable(): void
     {
-        $this->pdo->exec('CREATE TABLE IF NOT EXISTS USER (XUID BIGINT UNSIGNED NOT NULL PRIMARY KEY ,NAME VARCHAR(100) NOT NULL ,IPS VARCHAR(9999) NOT NULL ,EXPERIENCE BIGINT UNSIGNED NOT NULL ,SKILL VARCHAR(99) )');
-        $this->pdo->exec("CREATE TABLE IF NOT EXISTS BAN (PRIMARY KEY (TYPE ,VALUE ),TYPE ENUM('ALL','XUID','IP') NOT NULL ,VALUE VARCHAR(20) NOT NULL ,REASON VARCHAR(999) NOT NULL ,TIME DATETIME )");
-        $this->pdo->exec("CREATE TABLE IF NOT EXISTS WHITELIST (PRIMARY KEY (TYPE ,VALUE ),TYPE ENUM('XUID','IP') NOT NULL ,VALUE VARCHAR(20) NOT NULL ,REASON VARCHAR(999) NOT NULL ,TIME DATETIME )");
-        $this->pdo->exec('CREATE TABLE IF NOT EXISTS WARP (PRIMARY KEY (XUID ,NAME),XUID BIGINT UNSIGNED NOT NULL ,NAME VARCHAR(99) NOT NULL , LEVEL VARCHAR(99) NOT NULL ,X INT NOT NULL ,Y INT NOT NULL ,Z INT NOT NULL )');
-        $this->pdo->exec('CREATE TABLE IF NOT EXISTS LAND (PRIMARY KEY (XUID ,NAME),XUID BIGINT UNSIGNED NOT NULL ,NAME VARCHAR(99) NOT NULL , LEVEL VARCHAR(99) NOT NULL ,MX INT NOT NULL ,SX INT NOT NULL ,MZ INT NOT NULL ,SZ INT NOT NULL )');
-        $this->pdo->exec('CREATE TABLE IF NOT EXISTS VIRTUAL_VALUES (PRIMARY KEY (XUID ,TYPE ,SUBTYPE),XUID BIGINT UNSIGNED NOT NULL ,TYPE VARCHAR(99) NOT NULL ,SUBTYPE VARCHAR(99) NOT NULL,VALUE VARCHAR(99) )');
+        $this->db->executeGeneric('coral_reef.init.tables.user');
+        $this->db->executeGeneric('coral_reef.init.tables.whitelist');
+        $this->db->executeGeneric('coral_reef.init.tables.warp');
+        $this->db->executeGeneric('coral_reef.init.tables.land');
+        $this->db->executeGeneric('coral_reef.init.tables.virtual_value');
     }
 }
