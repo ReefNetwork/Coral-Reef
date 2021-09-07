@@ -20,6 +20,8 @@ use pocketmine\math\AxisAlignedBB;
 use pocketmine\math\Vector3;
 use pocketmine\network\mcpe\protocol\LevelEventPacket;
 use pocketmine\Player;
+use poggit\libasynql\result\SqlColumnInfo;
+use poggit\libasynql\SqlError;
 use ree_jp\coral_reef\account\AccountManager;
 use ree_jp\coral_reef\form\PartyForm;
 use ree_jp\coral_reef\sql\SQLManager;
@@ -34,7 +36,7 @@ class LandManager
     /**
      * @var LandData[]
      */
-    private array $lands = [];
+    public array $lands = [];
 
     /**
      * @throws Exception
@@ -42,13 +44,18 @@ class LandManager
     public function __construct()
     {
         if (is_null(SQLManager::$manager)) throw new Exception('データベースにアクセス出来ませんでした');
-        $arrayLands = SQLManager::$manager->getAllProtectLand();
-        foreach ($arrayLands as $arrayLand) {
-            if (!(isset($arrayLand['XUID']) && isset($arrayLand['NAME']) && isset($arrayLand['LEVEL']) && isset($arrayLand['MX']) && isset($arrayLand['SX']) &&
-                isset($arrayLand['MZ']) && isset($arrayLand['SZ']))) throw new Exception('土地の情報が不足しています');
-            array_push($this->lands, new LandData($arrayLand['XUID'], $arrayLand['NAME'], $arrayLand['LEVEL'],
-                new AxisAlignedBB($arrayLand['SX'], 0, $arrayLand['SZ'], $arrayLand['MX'], 0, $arrayLand['MZ'])));
-        }
+        SQLManager::$manager->loadProtectLand(function (array $rows, SqlColumnInfo $columns) {
+            foreach ($rows as $arrayLand) {
+                if (isset($arrayLand['xuid']) && isset($arrayLand['name']) && isset($arrayLand['level']) && isset($arrayLand['mx']) && isset($arrayLand['sx']) &&
+                    isset($arrayLand['mz']) && isset($arrayLand['sz'])) {
+                    array_push($this->lands, new LandData($arrayLand['xuid'], $arrayLand['name'], $arrayLand['level'],
+                        new AxisAlignedBB($arrayLand['sx'], 0, $arrayLand['sz'], $arrayLand['mx'], 0, $arrayLand['mz'])));
+                } else {
+
+                }
+            }
+        }, function (SqlError $error) {
+        });
     }
 
     public function getLand(Position $pos): ?LandData

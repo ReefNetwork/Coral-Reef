@@ -12,9 +12,11 @@
 namespace ree_jp\coral_reef\sql;
 
 
+use Closure;
 use Exception;
 use PDO;
 use PDOException;
+use pocketmine\Player;
 use pocketmine\Server;
 use pocketmine\utils\Config;
 use poggit\libasynql\DataConnector;
@@ -24,6 +26,7 @@ use poggit\libasynql\SqlError;
 use ree_jp\coral_reef\account\UserAccount;
 use ree_jp\coral_reef\CoralReefPlugin;
 use ree_jp\coral_reef\land\LandData;
+use ree_jp\coral_reef\land\LandManager;
 
 class SQLManager
 {
@@ -31,7 +34,8 @@ class SQLManager
 
     private DataConnector $db;
 
-    private array $users = [];
+    public array $users = [];
+    public array $setting = [];
 
     /**
      * @throws PDOException
@@ -91,30 +95,33 @@ class SQLManager
 
     public function loadUser(string $xuid): void
     {
-        $this->db->executeSelect('coral_reef.user.get', ['xuid' => $xuid], function (array $rows, SqlColumnInfo $columns) {
-            if (!(array_key_exists('xuid', $rows) && array_key_exists('name', $rows) && array_key_exists('experience', $rows) &&
-                array_key_exists('skill', $rows))) throw new Exception('USER_SQLの返り値が不正です');
-            $account = new UserAccount($rows['xuid'], $rows['name'], intval($rows['experience']), $rows['skill']);
-            $this->users[$account->xuid] = $account;
+        $this->db->executeSelect('coral_reef.user.get', ['xuid' => $xuid], function (array $rows, SqlColumnInfo $columns) use ($xuid) {
+            if (array_key_exists('xuid', $rows) && array_key_exists('name', $rows) && array_key_exists('experience', $rows) &&
+                array_key_exists('skill', $rows)) {
+                $account = new UserAccount($rows['xuid'], $rows['name'], intval($rows['experience']), $rows['skill']);
+                $this->users[$account->xuid] = $account;
+            } else {
+                Server::getInstance()->getLogger()->warning($xuid . 'のデータの読み込みに失敗しました');
+            }
         });
+        $this->db->executeSelect('coral_reef.values.get.all_subtype', ['xuid' => $xuid, 'type' => SQLConst::TYPE_SETTINGS],
+            function (array $rows, SqlColumnInfo $columns) use ($xuid) {
+                foreach ($rows as $option) {
+                    if (array_key_exists('subtype', $option) && array_key_exists('value', $option)) {
+                        $this->setting[$xuid][$option['subtype']] = $option['value'];
+                    } else {
+                        Server::getInstance()->getLogger()->warning($xuid . 'の設定の読み込みに失敗しました');
+                    }
+                }
+            });
     }
 
-    /**
-     * @param string $xuid
-     * @return UserAccount|null
-     */
     public function getUser(string $xuid): ?UserAccount
     {
         if (array_key_exists($xuid, $this->users)) return $this->users[$xuid];
         return null;
     }
 
-    /**
-     * @param string $xuid
-     * @param string $name
-     * @param string $ip
-     * @throws Exception
-     */
     public function setUser(string $xuid, string $name, string $ip): void
     {
         $ips = $this->getIps($xuid);
@@ -126,26 +133,20 @@ class SQLManager
             });
     }
 
-    /**
-     * @param string $xuid
-     * @param string $experience
-     * @throws Exception
-     */
     public function setXp(string $xuid, string $experience): void
     {
-        $prepare = $this->pdo->prepare('UPDATE USER SET EXPERIENCE = :experience WHERE XUID = :xuid');
-        $prepare->execute([':experience' => $experience, ':xuid' => $xuid]);
+        $this->db->executeGeneric('coral_reef.user.set.xp', ['xuid' => $xuid, 'experience' => $experience], null,
+            function (SqlError $error) use ($xuid) {
+                Server::getInstance()->getLogger()->error("[SQL] $xuid のxp保存中に" . $error->getErrorMessage());
+            });
     }
 
-    /**
-     * @param string $xuid
-     * @param string|null $skill
-     * @throws Exception
-     */
     public function setSkill(string $xuid, ?string $skill): void
     {
-        $prepare = $this->pdo->prepare('UPDATE USER SET Skill = :skill WHERE XUID = :xuid');
-        $prepare->execute([':skill' => $skill, ':xuid' => $xuid]);
+        $this->db->executeGeneric('coral_reef.user.set.skill', ['xuid' => $xuid, 'skill' => $skill], null,
+            function (SqlError $error) use ($xuid) {
+                Server::getInstance()->getLogger()->error("[SQL] $xuid のスキル保存中に" . $error->getErrorMessage());
+            });
     }
 
     /**
@@ -163,20 +164,10 @@ class SQLManager
         return explode(':', $result);
     }
 
-    /**
-     * @param string $xuid
-     * @param string $type
-     * @param string $subtype
-     * @return string|null
-     * @throws PDOException
-     */
-    public function getValue(string $xuid, string $type, string $subtype): ?string
+    public function getValue(string $xuid, string $type, string $subtype, callable $func, ?callable $failure = null): void
     {
-        $prepare = $this->pdo->prepare('SELECT VALUE FROM VIRTUAL_VALUES WHERE XUID = :xuid AND TYPE = :type AND SUBTYPE = :subtype');
-        $prepare->execute([':xuid' => $xuid, ':type' => strtolower($type), ':subtype' => strtolower($subtype)]);
-        $result = $prepare->fetchColumn();
-        if ($result === false) return null;
-        return $result;
+        $this->db->executeSelect('coral_reef.values.get.one', ['xuid' => $xuid, 'type' => strtolower($type), 'subtype' => strtolower($subtype)],
+            $func, $failure);
     }
 
     /**
@@ -188,9 +179,8 @@ class SQLManager
      */
     public function setValue(string $xuid, string $type, string $subtype, ?string $value): void
     {
-        $prepare = $this->pdo->prepare(
-            'INSERT INTO VIRTUAL_VALUES VALUES (:xuid ,:colum ,:type ,:value) ON DUPLICATE KEY UPDATE VALUE = :value');
-        $prepare->execute([':xuid' => $xuid, ':type' => strtolower($type), ':subtype' => strtolower($subtype), ':value' => $value]);
+        $this->db->executeInsert('coral_reef.values.set',
+            ['xuid' => $xuid, 'type' => strtolower($type), 'subtype' => strtolower($subtype), 'value' => $value]);
     }
 
     /**
@@ -235,36 +225,38 @@ class SQLManager
         $prepare->execute([':xuid' => $xuid, ':name' => $name]);
     }
 
-    /**
-     * @return array
-     * @throws Exception
-     */
-    public function getAllProtectLand(): array
+    public function loadProtectLand(Closure $func, Closure $failure): void
     {
-        $prepare = $this->pdo->prepare('SELECT * FROM LAND');
-        $prepare->execute();
-        return $prepare->fetchAll();
+        $this->db->executeSelect('coral_reef.land.get', [], $func, $failure);
     }
 
-    /**
-     * @param LandData $land
-     * @throws Exception
-     */
-    public function addProtectLand(LandData $land): void
+    public function addProtectLand(LandData $land, Player $p): void
     {
-        $prepare = $this->pdo->prepare('INSERT INTO LAND VALUES (:xuid, :name, :level, :mx, :sx, :mz, :sz)');
-        $prepare->execute([':xuid' => $land->xuid, ':name' => $land->name, ':level' => $land->level, ':mx' => $land->aabb->maxX, ':sx' => $land->aabb->minX,
-            ':mz' => $land->aabb->maxZ, ':sz' => $land->aabb->minZ]);
+        $this->db->executeInsert('coral_reef.land.create', ['xuid' => $land->xuid, 'name' => $land->name, 'level' => $land->level,
+            'mx' => $land->aabb->maxX, 'sx' => $land->aabb->minX, 'mz' => $land->aabb->maxZ, 'sz' => $land->aabb->minZ],
+            function (int $insertId, int $affectedRows) use ($p, $land) {
+                array_push(LandManager::$instance->lands, $land);
+                $p->sendMessage($land->name . 'を作成しました');
+            }, function (SqlError $error) use ($p, $land) {
+                Server::getInstance()->getLogger()->error("[LandSQL] $land->name の作成中に" . $error->getErrorMessage());
+                $p->sendMessage('エラーが発生しました');
+            });
     }
 
-    /**
-     * @param LandData $land
-     * @throws Exception
-     */
-    public function deleteProtectLand(LandData $land): void
+    public function deleteProtectLand(LandData $land, Player $p): void
     {
-        $prepare = $this->pdo->prepare('DELETE FROM LAND WHERE XUID = :xuid AND NAME = :name');
-        $prepare->execute([':xuid' => $land->xuid, ':name' => $land->name]);
+        $this->db->executeGeneric('coral_reef.land.delete', ['xuid' => $land->xuid, 'name' => $land->name],
+            function (int $insertId, int $affectedRows) use ($p, $land) {
+                foreach (LandManager::$instance->lands as $key => $cacheLand) {
+                    if ($cacheLand->xuid === $land->xuid && $cacheLand->name === $land->name) {
+                        array_splice(LandManager::$instance->lands, $key, 1);
+                    }
+                }
+                $p->sendMessage('土地を削除しました');
+            }, function (SqlError $error) use ($p, $land) {
+                Server::getInstance()->getLogger()->error("[LandSQL] $land->name の削除中に" . $error->getErrorMessage());
+                $p->sendMessage('エラーが発生しました');
+            });
     }
 
     /**
@@ -297,7 +289,6 @@ class SQLManager
     private function createTable(): void
     {
         $this->db->executeGeneric('coral_reef.init.tables.user');
-        $this->db->executeGeneric('coral_reef.init.tables.whitelist');
         $this->db->executeGeneric('coral_reef.init.tables.warp');
         $this->db->executeGeneric('coral_reef.init.tables.land');
         $this->db->executeGeneric('coral_reef.init.tables.virtual_value');
