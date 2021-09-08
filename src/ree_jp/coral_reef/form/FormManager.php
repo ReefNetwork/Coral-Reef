@@ -76,7 +76,7 @@ class FormManager
                         break;
 
                     case 2:
-                        $p->sendForm(MyWarpForm::myWarpForm($p));
+                        MyWarpForm::sendWarpForm($p);
                         break;
 
                     case 3:

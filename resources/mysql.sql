@@ -73,6 +73,11 @@ SELECT *
 FROM USER
 WHERE xuid = :xuid;
 -- #        }
+-- #        { get_ip
+SELECT ips
+FROM USER
+WHERE xuid = :xuid;
+-- #        }
 -- #        { set
 -- #            { account
 INSERT INTO USER
@@ -89,6 +94,16 @@ WHERE xuid = :xuid;
 UPDATE USER
 SET skill = :skill
 WHERE xuid = :xuid;
+/*
+ *  CCCCC                        lll RRRRRR                 fff
+ * CC    C  oooo  rr rr    aa aa lll RR   RR   eee    eee  ff
+ * CC      oo  oo rrr  r  aa aaa lll RRRRRR  ee   e ee   e ffff
+ * CC    C oo  oo rr     aa  aaa lll RR  RR  eeeee  eeeee  ff
+ *  CCCCC   oooo  rr      aaa aa lll RR   RR  eeeee  eeeee ff
+ *
+ * Copyright (c) 2021. Ree-jp(https://ree-jp.net)
+ */
+
 -- #            }
 -- #        }
 -- #    }
@@ -100,16 +115,6 @@ FROM VIRTUAL_VALUES
 WHERE xuid = :xuid
   AND type = :type
   AND subtype = :subtype;
-/*
- *  CCCCC                        lll RRRRRR                 fff
- * CC    C  oooo  rr rr    aa aa lll RR   RR   eee    eee  ff
- * CC      oo  oo rrr  r  aa aaa lll RRRRRR  ee   e ee   e ffff
- * CC    C oo  oo rr     aa  aaa lll RR  RR  eeeee  eeeee  ff
- *  CCCCC   oooo  rr      aaa aa lll RR   RR  eeeee  eeeee ff
- *
- * Copyright (c) 2021. Ree-jp(https://ree-jp.net)
- */
-
 -- #            }
 -- #            { all_subtype
 SELECT subtype, value
@@ -125,7 +130,24 @@ ON DUPLICATE KEY UPDATE value = :value;
 -- #        }
 -- #    }
 -- #    { warp
--- #        {
+-- #        { get
+SELECT name, level, x, y, z
+FROM WARP
+WHERE xuid = :xuid;
+-- #        }
+-- #        { create
+INSERT INTO WARP
+VALUES (:xuid, :name, :level, :x, :y, :z)
+ON DUPLICATE KEY UPDATE level = :level,
+                        x     = :x,
+                        y     = :y,
+                        z     = :z;
+-- #        }
+-- #        { delete
+DELETE
+FROM WARP
+WHERE xuid = :xuid
+  AND name = :name;
 -- #        }
 -- #    }
 -- #    { land
@@ -146,11 +168,7 @@ WHERE xuid = :xuid
 -- #    }
 -- #}
 
--- #
--- #
--- #
--- #
--- #
+
 -- #
 -- #
 -- #

@@ -11,53 +11,48 @@
 
 namespace ree_jp\coral_reef\form;
 
-use Exception;
 use Frago9876543210\EasyForms\elements\Button;
 use Frago9876543210\EasyForms\elements\Input;
 use Frago9876543210\EasyForms\elements\Label;
 use Frago9876543210\EasyForms\forms\CustomForm;
 use Frago9876543210\EasyForms\forms\CustomFormResponse;
-use Frago9876543210\EasyForms\forms\Form;
 use Frago9876543210\EasyForms\forms\MenuForm;
 use Frago9876543210\EasyForms\forms\ModalForm;
 use pocketmine\level\Position;
 use pocketmine\Player;
-use pocketmine\Server;
 use pocketmine\utils\TextFormat;
+use poggit\libasynql\result\SqlColumnInfo;
 use ree_jp\coral_reef\account\AccountManager;
 use ree_jp\coral_reef\sql\SQLManager;
 
 class MyWarpForm
 {
-    static function myWarpForm(Player $p): Form
+    static function sendWarpForm(Player $p): void
     {
         $xuid = $p->getXuid();
-        $buttons = [];
-        try {
-            $warps = SQLManager::$manager->getWarps($xuid);
-        } catch (Exception $e) {
-            Server::getInstance()->getLogger()->error('[MyWarp]' . $p->getName() . 'の処理中に' . $e->getMessage());
-            return FormManager::messageForm('エラーが発生しました');
-        }
-        foreach ($warps as $warpPoint) {
-            if (array_key_exists('NAME', $warpPoint) && array_key_exists('LEVEL', $warpPoint) && array_key_exists('X', $warpPoint) && array_key_exists('Y', $warpPoint) && array_key_exists('Z', $warpPoint)) {
-                array_push($buttons, new Button($warpPoint['NAME'] . "\n" . $warpPoint['X'] . ':' . $warpPoint['Y'] . ':' . $warpPoint['Z']));
-            } else {
-                array_push($buttons, new Button('エラーが発生しました'));
+        SQLManager::$manager->getWarps($xuid, function (array $rows, SqlColumnInfo $columns) {
+            $buttons = [];
+            foreach ($rows as $warpPoint) {
+                if (array_key_exists('name', $warpPoint) && array_key_exists('level', $warpPoint) && array_key_exists('x', $warpPoint)
+                    && array_key_exists('y', $warpPoint) && array_key_exists('z', $warpPoint)) {
+                    array_push($buttons, new Button($warpPoint['name'] . "\n" . $warpPoint['x'] . ':' . $warpPoint['y'] . ':' . $warpPoint['z']));
+                } else {
+                    array_push($buttons, new Button('エラーが発生しました'));
+                }
             }
-        }
-        $warpButtons = $buttons;
-        $editValue = array_push($buttons, new Button('ワープ地点を 作成/削除 する')) - 1;
-        return new MenuForm('Menu -> MyWarp', '自分だけのワープ地点を設定できます', $buttons,
-            function (Player $p, Button $button) use ($warps, $warpButtons, $editValue): void {
-                if (array_key_exists($button->getValue(), $warps)) {
-                    $warpPoint = $warps[$button->getValue()];
-                    $p->sendMessage($warpPoint['NAME'] . 'にワープしています...');
-                    AccountManager::teleport($p, $warpPoint['LEVEL'], new Position($warpPoint['X'], $warpPoint['Y'], $warpPoint['Z']));
-                } elseif ($button->getValue() === $editValue) {
-                    $p->sendForm(self::myWarpEditForm($warps, $warpButtons));
-                } else $p->sendMessage('エラーが発生しました');
-            });
+            $warpButtons = $buttons;
+            $editValue = array_push($buttons, new Button('ワープ地点を 作成/削除 する')) - 1;
+            return new MenuForm('Menu -> MyWarp', '自分だけのワープ地点を設定できます', $buttons,
+                function (Player $p, Button $button) use ($rows, $warpButtons, $editValue): void {
+                    if (array_key_exists($button->getValue(), $rows)) {
+                        $warpPoint = $rows[$button->getValue()];
+                        $p->sendMessage($warpPoint['name'] . 'にワープしています...');
+                        AccountManager::teleport($p, $warpPoint['level'], new Position($warpPoint['x'], $warpPoint['y'], $warpPoint['z']));
+                    } elseif ($button->getValue() === $editValue) {
+                        $p->sendForm(self::myWarpEditForm($rows, $warpButtons));
+                    } else $p->sendMessage('エラーが発生しました');
+                });
+        });
     }
 
     static function myWarpEditForm(array $warps, array $warpButtons): MenuForm
@@ -67,17 +62,11 @@ class MyWarpForm
             function (Player $p, Button $button) use ($warps, $createValue): void {
                 if (array_key_exists($button->getValue(), $warps)) {
                     $warpPoint = $warps[$button->getValue()];
-                    $p->sendForm(new ModalForm('MyWarpEdit -> delete', TextFormat::DARK_RED . $warpPoint['NAME'] . 'を本当に削除しますか?',
+                    $p->sendForm(new ModalForm('MyWarpEdit -> delete', TextFormat::DARK_RED . $warpPoint['name'] . 'を本当に削除しますか?',
                         function (Player $p, bool $result) use ($warpPoint): void {
                             if ($result) {
-                                try {
-                                    SQLManager::$manager->deleteWarp($p->getXuid(), $warpPoint['NAME']);
-                                    $p->sendMessage('ワープ地点を削除しました');
-                                } catch (Exception $e) {
-                                    Server::getInstance()->getLogger()->error('[MyWarpDelete]' . $p->getName() . 'の処理中に' . $e->getMessage());
-                                    $p->sendMessage('エラーが発生しました');
-                                }
-                            } else $p->sendForm(self::myWarpForm($p));
+                                SQLManager::$manager->deleteWarp($p->getXuid(), $warpPoint['name']);
+                            } else self::sendWarpForm($p);
                         }));
                 } elseif ($button->getValue() === $createValue) {
                     $p->sendForm(self::myWarpCreateForm());
@@ -94,16 +83,7 @@ class MyWarpForm
             $input = $result->getInput()->getValue();
             if (mb_strlen($input) < 1) {
                 $p->sendMessage('ワープ地点の名前が短すぎます');
-            } else {
-                try {
-                    SQLManager::$manager->addWarp($p->getXuid(), $input, $p->getLevel()->getFolderName(), $p->getFloorX(), $p->getFloorY(), $p->getFloorZ());
-                    $p->sendMessage('ワープ地点を作成しました');
-                } catch (Exception $e) {
-                    Server::getInstance()->getLogger()->error('[MyWarpCreate]' . $p->getName() . 'の処理中に' . $e->getMessage());
-                    $p->sendMessage('エラーが発生しました');
-                    return;
-                }
-            }
+            } else SQLManager::$manager->addWarp($p->getXuid(), $input, $p->getLevel()->getFolderName(), $p->getFloorX(), $p->getFloorY(), $p->getFloorZ());
         });
     }
 }

@@ -63,10 +63,6 @@ class SQLManager
 
     /**
      * Banされている時はその理由、されていないときはnull
-     * @param string $xuid
-     * @param string $ip
-     * @return string|null
-     * @throws Exception
      */
     public function getBanReason(string $xuid, string $ip): ?string
     {
@@ -100,7 +96,7 @@ class SQLManager
                 array_key_exists('skill', $rows)) {
                 $account = new UserAccount($rows['xuid'], $rows['name'], intval($rows['experience']), $rows['skill']);
                 $this->users[$account->xuid] = $account;
-            } else {
+            } elseif (!empty($rows)) {
                 Server::getInstance()->getLogger()->warning($xuid . 'のデータの読み込みに失敗しました');
             }
         });
@@ -109,7 +105,7 @@ class SQLManager
                 foreach ($rows as $option) {
                     if (array_key_exists('subtype', $option) && array_key_exists('value', $option)) {
                         $this->setting[$xuid][$option['subtype']] = $option['value'];
-                    } else {
+                    } elseif (!empty($rows)) {
                         Server::getInstance()->getLogger()->warning($xuid . 'の設定の読み込みに失敗しました');
                     }
                 }
@@ -124,13 +120,20 @@ class SQLManager
 
     public function setUser(string $xuid, string $name, string $ip): void
     {
-        $ips = $this->getIps($xuid);
-        if (is_null($ips)) $ips = [];
-        if (!in_array($ip, $ips)) array_push($ips, $ip);
-        $this->db->executeInsert('coral_reef.user.set', ['xuid' => $xuid, 'name' => $name, 'ips' => implode(':', $ips)], null,
-            function (SqlError $error) use ($name) {
-                Server::getInstance()->getLogger()->error("[SQL] $name のデータ保存中に" . $error->getErrorMessage());
-            });
+        $this->db->executeSelect('coral_reef.user.get_ip', ['xuid' => $xuid], function (array $rows, SqlColumnInfo $columns) use ($ip, $name, $xuid) {
+            $ips = [];
+            if (isset($rows['ips'])) {
+                $ips = explode(':', $rows['ips']);
+            }
+            if (!in_array($ip, $ips)) array_push($ips, $ip);
+            $this->db->executeInsert('coral_reef.user.set',
+                ['xuid' => $xuid, 'name' => $name, 'ips' => implode(':', $ips)], null,
+                function (SqlError $error) use ($name) {
+                    Server::getInstance()->getLogger()->error("[SQL] $name のデータ保存中に" . $error->getErrorMessage());
+                });
+        }, function (SqlError $error) use ($name) {
+            Server::getInstance()->getLogger()->error("[SQL] $name のip取得中に" . $error->getErrorMessage());
+        });
     }
 
     public function setXp(string $xuid, string $experience): void
@@ -149,80 +152,34 @@ class SQLManager
             });
     }
 
-    /**
-     * @param string $xuid
-     * @return array|null
-     * @throws Exception
-     */
-    public function getIps(string $xuid): ?array
-    {
-        $prepare = $this->pdo->prepare('SELECT IPS FROM USER WHERE XUID = :xuid');
-        $prepare->execute([':xuid' => $xuid]);
-        $result = $prepare->fetchColumn();
-        if ($result === false) return null;
-        if (!is_string($result)) throw new Exception('ipが見つかりませんでした');
-        return explode(':', $result);
-    }
-
     public function getValue(string $xuid, string $type, string $subtype, callable $func, ?callable $failure = null): void
     {
         $this->db->executeSelect('coral_reef.values.get.one', ['xuid' => $xuid, 'type' => strtolower($type), 'subtype' => strtolower($subtype)],
             $func, $failure);
     }
 
-    /**
-     * @param string $xuid
-     * @param string $type
-     * @param string $subtype
-     * @param string|null $value
-     * @throws PDOException
-     */
     public function setValue(string $xuid, string $type, string $subtype, ?string $value): void
     {
         $this->db->executeInsert('coral_reef.values.set',
             ['xuid' => $xuid, 'type' => strtolower($type), 'subtype' => strtolower($subtype), 'value' => $value]);
     }
 
-    /**
-     * @param string $xuid
-     * @return array
-     * @throws Exception
-     */
-    public function getWarps(string $xuid): array
+    public function getWarps(string $xuid, Closure $func): void
     {
-        $prepare = $this->pdo->prepare('SELECT NAME ,LEVEL ,X ,Y ,Z FROM WARP WHERE XUID = :xuid');
-        $prepare->execute([':xuid' => $xuid]);
-        $result = $prepare->fetchAll();
-        if ($result === false) return [];
-        return $result;
+        $this->db->executeSelect('coral_reef.warp.get', ['xuid' => $xuid], $func, $this->noticeByXUid($xuid, 'エラーが発生しました'));
     }
 
-    /**
-     * @param string $xuid
-     * @param string $name
-     * @param string $level
-     * @param int $x
-     * @param int $y
-     * @param int $z
-     * @throws Exception
-     */
     public function addWarp(string $xuid, string $name, string $level, int $x, int $y, int $z): void
     {
-        $prepare = $this->pdo->prepare(
-            'INSERT INTO WARP VALUES (:xuid ,:name ,:level ,:x ,:y ,:z) ON DUPLICATE KEY UPDATE LEVEL = :level ,X = :x ,Y = :y ,Z = :z');
-        $prepare->execute([':xuid' => $xuid, ':name' => $name, ':level' => $level, ':x' => $x, ':y' => $y, ':z' => $z]);
+        $this->db->executeInsert('coral_reef.warp.create',
+            ['xuid' => $xuid, 'name' => $name, 'level' => $level, 'x' => $x, 'y' => $y, 'z' => $z],
+            $this->noticeByXUid($xuid, 'ワード地点を作成しました'), $this->noticeByXUid($xuid, 'エラーが発生しました'));
     }
 
-    /**
-     * @param string $xuid
-     * @param string $name
-     * @throws Exception
-     */
     public function deleteWarp(string $xuid, string $name): void
     {
-        $prepare = $this->pdo->prepare(
-            'DELETE FROM WARP WHERE XUID = :xuid AND NAME = :name');
-        $prepare->execute([':xuid' => $xuid, ':name' => $name]);
+        $this->db->executeGeneric('coral_reef.warp.delete', ['xuid' => $xuid, 'name' => $name],
+            $this->noticeByXUid($xuid, 'ワード地点を削除しました'), $this->noticeByXUid($xuid, 'エラーが発生しました'));
     }
 
     public function loadProtectLand(Closure $func, Closure $failure): void
@@ -259,31 +216,22 @@ class SQLManager
             });
     }
 
-    /**
-     * @param string $xuid
-     * @throws Exception
-     */
-    public function createLogTable(string $xuid): void
-    {
-//        $prepare = $this->logPdo->prepare("CREATE TABLE IF NOT EXISTS `:xuid`
-//            (TYPE VARCHAR(99) NOT NULL ,OTHER VARCHAR(99) ,VALUE VARCHAR(999) ,TIME DATETIME )");
-//        $prepare->execute([':xuid' => $xuid]);
-    }
-
-    /**
-     * @param string $xuid
-     * @param string $type
-     * @param string|null $time
-     * @param string|null $otherType
-     * @param string|null $value
-     * @throws Exception
-     */
     public function addLog(string $xuid, string $type, string $time = null, string $otherType = null, string $value = null): void
     {
 //        if ($time === 'now') $time = date("Y-m-d H:i:s");
 //        /** @noinspection SqlResolve */
 //        $prepare = $this->logPdo->prepare("INSERT INTO `:xuid` VALUES (:type ,:other ,:value ,:time)");
 //        $prepare->execute([':xuid' => $xuid, ':type' => $type, ':other' => $otherType, ':value' => $value, ':time' => $time]);
+    }
+
+
+    private function noticeByXUid(string $xuid, string $notice): Closure
+    {
+        return function () use ($notice, $xuid) {
+            foreach (Server::getInstance()->getOnlinePlayers() as $p) {
+                if ($p->getXuid() === $xuid) $p->sendMessage($notice);
+            }
+        };
     }
 
     private function createTable(): void
