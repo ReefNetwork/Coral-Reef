@@ -20,7 +20,6 @@ use pocketmine\math\AxisAlignedBB;
 use pocketmine\math\Vector3;
 use pocketmine\network\mcpe\protocol\LevelEventPacket;
 use pocketmine\Player;
-use poggit\libasynql\result\SqlColumnInfo;
 use poggit\libasynql\SqlError;
 use ree_jp\coral_reef\account\AccountManager;
 use ree_jp\coral_reef\CoralReefPlugin;
@@ -45,7 +44,7 @@ class LandManager
     public function __construct()
     {
         if (is_null(SQLManager::$manager)) throw new Exception('データベースにアクセス出来ませんでした');
-        SQLManager::$manager->loadProtectLand(function (array $rows, SqlColumnInfo $columns) {
+        SQLManager::$manager->loadProtectLand(function (array $rows) {
             foreach ($rows as $arrayLand) {
                 array_push($this->lands, new LandData($arrayLand['xuid'], $arrayLand['name'], $arrayLand['level'],
                     new AxisAlignedBB($arrayLand['sx'], 0, $arrayLand['sz'], $arrayLand['mx'], 0, $arrayLand['mz'])));

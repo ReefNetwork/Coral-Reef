@@ -21,7 +21,6 @@ use Frago9876543210\EasyForms\forms\ModalForm;
 use pocketmine\level\Position;
 use pocketmine\Player;
 use pocketmine\utils\TextFormat;
-use poggit\libasynql\result\SqlColumnInfo;
 use ree_jp\coral_reef\account\AccountManager;
 use ree_jp\coral_reef\sql\SQLManager;
 
@@ -30,7 +29,7 @@ class MyWarpForm
     static function sendWarpForm(Player $p): void
     {
         $xuid = $p->getXuid();
-        SQLManager::$manager->getWarps($xuid, function (array $rows, SqlColumnInfo $columns) {
+        SQLManager::$manager->getWarps($xuid, function (array $rows) {
             $buttons = [];
             foreach ($rows as $warpPoint) {
                 if (array_key_exists('name', $warpPoint) && array_key_exists('level', $warpPoint) && array_key_exists('x', $warpPoint)

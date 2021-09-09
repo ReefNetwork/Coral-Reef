@@ -1,13 +1,3 @@
-/*
- *  CCCCC                        lll RRRRRR                 fff
- * CC    C  oooo  rr rr    aa aa lll RR   RR   eee    eee  ff
- * CC      oo  oo rrr  r  aa aaa lll RRRRRR  ee   e ee   e ffff
- * CC    C oo  oo rr     aa  aaa lll RR  RR  eeeee  eeeee  ff
- *  CCCCC   oooo  rr      aaa aa lll RR   RR  eeeee  eeeee ff
- *
- * Copyright (c) 2021-2021. Ree-jp(https://ree-jp.net)
- */
-
 -- #!mysql
 -- #{ coral_reef
 -- #    { init.tables
@@ -47,13 +37,13 @@ CREATE TABLE IF NOT EXISTS WARP
 CREATE TABLE IF NOT EXISTS LAND
 (
     PRIMARY KEY (xuid, name),
-    XUID  BIGINT UNSIGNED NOT NULL,
+    xuid  BIGINT UNSIGNED NOT NULL,
     name  VARCHAR(99)     NOT NULL,
     level VARCHAR(99)     NOT NULL,
     mx    INT             NOT NULL,
     sx    INT             NOT NULL,
     mz    INT             NOT NULL,
-    SZ    INT             NOT NULL
+    sz    INT             NOT NULL
 );
 -- #        }
 -- #        { virtual_value
@@ -69,31 +59,51 @@ CREATE TABLE IF NOT EXISTS VIRTUAL_VALUES
 -- #    }
 -- #    { user
 -- #        { get
+-- #        :xuid int
+
 SELECT *
 FROM USER
 WHERE xuid = :xuid;
 -- #        }
 -- #        { get_ip
+-- #        :xuid int
 SELECT ips
 FROM USER
 WHERE xuid = :xuid;
 -- #        }
 -- #        { set
 -- #            { account
+-- #            :xuid int
+-- #            :name string
+-- #            :ips string
 INSERT INTO USER
 VALUES (:xuid, :name, :ips, 0, null)
 ON DUPLICATE KEY UPDATE name = :name,
                         ips  = :ips;
 -- #            }
 -- #            { xp
+-- #            :xuid int
+-- #            :experience int
 UPDATE USER
 SET experience = :experience
 WHERE xuid = :xuid;
 -- #            }
 -- #            { skill
+-- #            :xuid int
+-- #            :skill ?string
 UPDATE USER
 SET skill = :skill
 WHERE xuid = :xuid;
+/*
+ *  CCCCC                        lll RRRRRR                 fff
+ * CC    C  oooo  rr rr    aa aa lll RR   RR   eee    eee  ff
+ * CC      oo  oo rrr  r  aa aaa lll RRRRRR  ee   e ee   e ffff
+ * CC    C oo  oo rr     aa  aaa lll RR  RR  eeeee  eeeee  ff
+ *  CCCCC   oooo  rr      aaa aa lll RR   RR  eeeee  eeeee ff
+ *
+ * Copyright (c) 2021-2021. Ree-jp(https://ree-jp.net)
+ */
+
 -- #            }
 -- #        }
 -- #    }
@@ -106,6 +116,9 @@ FROM BAN;
 -- #    { values
 -- #        { get
 -- #            { one
+-- #            :xuid int
+-- #            :type string
+-- #            :subtype string
 SELECT value
 FROM VIRTUAL_VALUES
 WHERE xuid = :xuid
@@ -113,6 +126,8 @@ WHERE xuid = :xuid
   AND subtype = :subtype;
 -- #            }
 -- #            { all_subtype
+-- #            :xuid int
+-- #            :type string
 SELECT subtype, value
 FROM VIRTUAL_VALUES
 WHERE xuid = :xuid
@@ -120,18 +135,29 @@ WHERE xuid = :xuid
 -- #            }
 -- #        }
 -- #        { set
+-- #        :xuid int
+-- #        :type string
+-- #        :subtype string
+-- #        :value ?string
 INSERT INTO VIRTUAL_VALUES
-VALUES (:xuid, :colum, :type, :value)
+VALUES (:xuid, :type, :subtype, :value)
 ON DUPLICATE KEY UPDATE value = :value;
 -- #        }
 -- #    }
 -- #    { warp
 -- #        { get
+-- #        :xuid int
 SELECT name, level, x, y, z
 FROM WARP
 WHERE xuid = :xuid;
 -- #        }
 -- #        { create
+-- #        :xuid int
+-- #        :name string
+-- #        :level string
+-- #        :x int
+-- #        :y int
+-- #        :z int
 INSERT INTO WARP
 VALUES (:xuid, :name, :level, :x, :y, :z)
 ON DUPLICATE KEY UPDATE level = :level,
@@ -140,6 +166,8 @@ ON DUPLICATE KEY UPDATE level = :level,
                         z     = :z;
 -- #        }
 -- #        { delete
+-- #        :xuid int
+-- #        :name string
 DELETE
 FROM WARP
 WHERE xuid = :xuid
@@ -152,10 +180,19 @@ SELECT *
 FROM LAND;
 -- #        }
 -- #        { create
+-- #        :xuid int
+-- #        :name string
+-- #        :level string
+-- #        :mx int
+-- #        :sx int
+-- #        :mz int
+-- #        :sz int
 INSERT INTO LAND
 VALUES (:xuid, :name, :level, :mx, :sx, :mz, :sz);
 -- #        }
 -- #        { delete
+-- #        :xuid int
+-- #        :name string
 DELETE
 FROM LAND
 WHERE xuid = :xuid

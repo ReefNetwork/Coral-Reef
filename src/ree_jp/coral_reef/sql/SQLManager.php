@@ -19,7 +19,6 @@ use pocketmine\Server;
 use pocketmine\utils\Config;
 use poggit\libasynql\DataConnector;
 use poggit\libasynql\libasynql;
-use poggit\libasynql\result\SqlColumnInfo;
 use poggit\libasynql\SqlError;
 use ree_jp\coral_reef\account\UserAccount;
 use ree_jp\coral_reef\CoralReefPlugin;
@@ -63,7 +62,7 @@ class SQLManager
 
     public function loadBan(): void
     {
-        $this->db->executeSelect('coral_reef.ban.get', [], function (array $rows, SqlColumnInfo $columns) {
+        $this->db->executeSelect('coral_reef.ban.get', [], function (array $rows) {
             $this->ban = $rows;
         }, function (SqlError $error) {
             CoralReefPlugin::$plugin->setError('BAN情報を読み込み中に' . $error->getErrorMessage());
@@ -88,19 +87,21 @@ class SQLManager
         return null;
     }
 
-    public function loadUser(string $xuid): void
+    public function loadUser(string $xuid, string $name): void
     {
-        $this->db->executeSelect('coral_reef.user.get', ['xuid' => $xuid], function (array $rows, SqlColumnInfo $columns) use ($xuid) {
-            if (array_key_exists('xuid', $rows) && array_key_exists('name', $rows) && array_key_exists('experience', $rows) &&
-                array_key_exists('skill', $rows)) {
-                $account = new UserAccount($rows['xuid'], $rows['name'], intval($rows['experience']), $rows['skill']);
+        $this->db->executeSelect('coral_reef.user.get', ['xuid' => intval($xuid)], function (array $rows) use ($name, $xuid) {
+            $arrayAccount = array_shift($rows);
+            if (isset($arrayAccount['xuid']) && isset($arrayAccount['name']) && isset($arrayAccount['experience']) && isset($arrayAccount['skill'])) {
+                $account = new UserAccount($arrayAccount['xuid'], $arrayAccount['name'], intval($arrayAccount['experience']), $arrayAccount['skill']);
                 $this->users[$account->xuid] = $account;
-            } elseif (!empty($rows)) {
+            } elseif (empty($arrayAccount)) {
+                $this->users[$xuid] = new UserAccount($xuid, $name, 0, null);
+            } else {
                 Server::getInstance()->getLogger()->warning($xuid . 'のデータの読み込みに失敗しました');
             }
         });
-        $this->db->executeSelect('coral_reef.values.get.all_subtype', ['xuid' => $xuid, 'type' => SQLConst::TYPE_SETTINGS],
-            function (array $rows, SqlColumnInfo $columns) use ($xuid) {
+        $this->db->executeSelect('coral_reef.values.get.all_subtype', ['xuid' => intval($xuid), 'type' => SQLConst::TYPE_SETTINGS],
+            function (array $rows) use ($xuid) {
                 foreach ($rows as $option) {
                     if (array_key_exists('subtype', $option) && array_key_exists('value', $option)) {
                         $this->setting[$xuid][$option['subtype']] = $option['value'];
@@ -119,14 +120,14 @@ class SQLManager
 
     public function setUser(string $xuid, string $name, string $ip): void
     {
-        $this->db->executeSelect('coral_reef.user.get_ip', ['xuid' => $xuid], function (array $rows, SqlColumnInfo $columns) use ($ip, $name, $xuid) {
+        $this->db->executeSelect('coral_reef.user.get_ip', ['xuid' => intval($xuid)], function (array $rows) use ($ip, $name, $xuid) {
             $ips = [];
             if (isset($rows['ips'])) {
                 $ips = explode(':', $rows['ips']);
             }
             if (!in_array($ip, $ips)) array_push($ips, $ip);
-            $this->db->executeInsert('coral_reef.user.set',
-                ['xuid' => $xuid, 'name' => $name, 'ips' => implode(':', $ips)], null,
+            $this->db->executeInsert('coral_reef.user.set.account',
+                ['xuid' => intval($xuid), 'name' => $name, 'ips' => implode(':', $ips)], null,
                 function (SqlError $error) use ($name) {
                     Server::getInstance()->getLogger()->error("[SQL] $name のデータ保存中に" . $error->getErrorMessage());
                 });
@@ -137,7 +138,7 @@ class SQLManager
 
     public function setXp(string $xuid, string $experience): void
     {
-        $this->db->executeGeneric('coral_reef.user.set.xp', ['xuid' => $xuid, 'experience' => $experience], null,
+        $this->db->executeGeneric('coral_reef.user.set.xp', ['xuid' => intval($xuid), 'experience' => intval($experience)], null,
             function (SqlError $error) use ($xuid) {
                 Server::getInstance()->getLogger()->error("[SQL] $xuid のxp保存中に" . $error->getErrorMessage());
             });
@@ -145,7 +146,7 @@ class SQLManager
 
     public function setSkill(string $xuid, ?string $skill): void
     {
-        $this->db->executeGeneric('coral_reef.user.set.skill', ['xuid' => $xuid, 'skill' => $skill], null,
+        $this->db->executeGeneric('coral_reef.user.set.skill', ['xuid' => intval($xuid), 'skill' => $skill], null,
             function (SqlError $error) use ($xuid) {
                 Server::getInstance()->getLogger()->error("[SQL] $xuid のスキル保存中に" . $error->getErrorMessage());
             });
@@ -153,31 +154,31 @@ class SQLManager
 
     public function getValue(string $xuid, string $type, string $subtype, callable $func, ?callable $failure = null): void
     {
-        $this->db->executeSelect('coral_reef.values.get.one', ['xuid' => $xuid, 'type' => strtolower($type), 'subtype' => strtolower($subtype)],
+        $this->db->executeSelect('coral_reef.values.get.one', ['xuid' => intval($xuid), 'type' => strtolower($type), 'subtype' => strtolower($subtype)],
             $func, $failure);
     }
 
-    public function setValue(string $xuid, string $type, string $subtype, ?string $value): void
+    public function setValue(string $xuid, string $type, string $subtype, ?string $value, callable $func, ?callable $failure = null): void
     {
         $this->db->executeInsert('coral_reef.values.set',
-            ['xuid' => $xuid, 'type' => strtolower($type), 'subtype' => strtolower($subtype), 'value' => $value]);
+            ['xuid' => intval($xuid), 'type' => strtolower($type), 'subtype' => strtolower($subtype), 'value' => $value], $func, $failure);
     }
 
     public function getWarps(string $xuid, Closure $func): void
     {
-        $this->db->executeSelect('coral_reef.warp.get', ['xuid' => $xuid], $func, $this->noticeByXUid($xuid, 'エラーが発生しました'));
+        $this->db->executeSelect('coral_reef.warp.get', ['xuid' => intval($xuid)], $func, $this->noticeByXUid($xuid, 'エラーが発生しました'));
     }
 
     public function addWarp(string $xuid, string $name, string $level, int $x, int $y, int $z): void
     {
         $this->db->executeInsert('coral_reef.warp.create',
-            ['xuid' => $xuid, 'name' => $name, 'level' => $level, 'x' => $x, 'y' => $y, 'z' => $z],
+            ['xuid' => intval($xuid), 'name' => $name, 'level' => $level, 'x' => $x, 'y' => $y, 'z' => $z],
             $this->noticeByXUid($xuid, 'ワード地点を作成しました'), $this->noticeByXUid($xuid, 'エラーが発生しました'));
     }
 
     public function deleteWarp(string $xuid, string $name): void
     {
-        $this->db->executeGeneric('coral_reef.warp.delete', ['xuid' => $xuid, 'name' => $name],
+        $this->db->executeGeneric('coral_reef.warp.delete', ['xuid' => intval($xuid), 'name' => $name],
             $this->noticeByXUid($xuid, 'ワード地点を削除しました'), $this->noticeByXUid($xuid, 'エラーが発生しました'));
     }
 
@@ -236,6 +237,7 @@ class SQLManager
     private function createTable(): void
     {
         $this->db->executeGeneric('coral_reef.init.tables.user');
+        $this->db->executeGeneric('coral_reef.init.tables.ban');
         $this->db->executeGeneric('coral_reef.init.tables.warp');
         $this->db->executeGeneric('coral_reef.init.tables.land');
         $this->db->executeGeneric('coral_reef.init.tables.virtual_value');

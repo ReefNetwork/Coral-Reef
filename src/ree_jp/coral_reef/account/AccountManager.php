@@ -21,7 +21,6 @@ use pocketmine\Player;
 use pocketmine\scheduler\ClosureTask;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat;
-use poggit\libasynql\result\SqlColumnInfo;
 use poggit\libasynql\SqlError;
 use ree_jp\coral_reef\CoralReefPlugin;
 use ree_jp\coral_reef\skill\BreakSkill;
@@ -79,6 +78,7 @@ class AccountManager
 
         try {
             $account = SQLManager::$manager->getUser($xuid);
+            if (is_null($account)) throw new Exception('ユーザーデータがありません');
             $account->save();
         } catch (Exception $e) {
             Server::getInstance()->getLogger()->error($p->getName() . 'のセーブができませんでした' . $e->getMessage());
@@ -146,7 +146,7 @@ class AccountManager
     static function updateNickName(Player $p): void
     {
         SQLManager::$manager->getValue($p->getXuid(), SQLConst::TYPE_SETTINGS, SettingConst::NICK_NAME,
-            function (array $rows, SqlColumnInfo $columns) use ($p) {
+            function (array $rows) use ($p) {
                 if (!isset($rows['value'])) return;
                 $nick = $rows['value'];
                 $p->sendMessage(TextFormat::GRAY . "現在のユーザーネームは" . $nick . "に設定されています");
@@ -162,7 +162,7 @@ class AccountManager
     {
 
         SQLManager::$manager->getValue($p->getXuid(), SQLConst::TYPE_SETTINGS, SettingConst::SHOW_COORDINATES,
-            function (array $rows, SqlColumnInfo $columns) use ($p) {
+            function (array $rows) use ($p) {
                 if (!isset($rows['value'])) return;
                 $value = $rows['value'];
                 $bool = true;
