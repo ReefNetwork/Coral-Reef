@@ -43,12 +43,18 @@ class EventListener implements Listener
     public function onPreLogin(PlayerPreLoginEvent $ev): void
     {
         $p = $ev->getPlayer();
+        $xuid = $p->getXuid();
         if (is_null(SQLManager::$manager)) {
             $p->kick(TextFormat::GREEN . 'Reef ' . TextFormat::YELLOW . 'Server' . TextFormat::DARK_RED . 'データベースサーバーが見つかりませんでした');
             return;
         }
-        SQLManager::$manager->loadUser($p->getXuid());
-        $reason = AccountManager::checkUser($p);
+        $error = CoralReefPlugin::$plugin->isError();
+        if (!is_null($error)) {
+            $p->kick(TextFormat::GREEN . 'Reef ' . TextFormat::YELLOW . 'Server' . TextFormat::DARK_RED . 'データの読み込み中に予期せぬエラーが発生しました');
+            return;
+        }
+        SQLManager::$manager->loadUser($xuid);
+        $reason = SQLManager::$manager->getBanReason($xuid, $p->getAddress());
         if (is_string($reason)) {
             $isNotShow = strstr($reason, '[BAN_NOT_SHOW]', true);
             if ($isNotShow === false) {

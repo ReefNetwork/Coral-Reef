@@ -23,6 +23,7 @@ use pocketmine\Player;
 use poggit\libasynql\result\SqlColumnInfo;
 use poggit\libasynql\SqlError;
 use ree_jp\coral_reef\account\AccountManager;
+use ree_jp\coral_reef\CoralReefPlugin;
 use ree_jp\coral_reef\form\PartyForm;
 use ree_jp\coral_reef\sql\SQLManager;
 
@@ -46,15 +47,11 @@ class LandManager
         if (is_null(SQLManager::$manager)) throw new Exception('データベースにアクセス出来ませんでした');
         SQLManager::$manager->loadProtectLand(function (array $rows, SqlColumnInfo $columns) {
             foreach ($rows as $arrayLand) {
-                if (isset($arrayLand['xuid']) && isset($arrayLand['name']) && isset($arrayLand['level']) && isset($arrayLand['mx']) && isset($arrayLand['sx']) &&
-                    isset($arrayLand['mz']) && isset($arrayLand['sz'])) {
-                    array_push($this->lands, new LandData($arrayLand['xuid'], $arrayLand['name'], $arrayLand['level'],
-                        new AxisAlignedBB($arrayLand['sx'], 0, $arrayLand['sz'], $arrayLand['mx'], 0, $arrayLand['mz'])));
-                } else {
-
-                }
+                array_push($this->lands, new LandData($arrayLand['xuid'], $arrayLand['name'], $arrayLand['level'],
+                    new AxisAlignedBB($arrayLand['sx'], 0, $arrayLand['sz'], $arrayLand['mx'], 0, $arrayLand['mz'])));
             }
         }, function (SqlError $error) {
+            CoralReefPlugin::$plugin->setError('土地情報を取得中に' . $error->getErrorMessage());
         });
     }
 

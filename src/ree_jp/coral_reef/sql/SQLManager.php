@@ -13,8 +13,6 @@ namespace ree_jp\coral_reef\sql;
 
 
 use Closure;
-use Exception;
-use PDO;
 use PDOException;
 use pocketmine\Player;
 use pocketmine\Server;
@@ -35,6 +33,7 @@ class SQLManager
     private DataConnector $db;
 
     public array $users = [];
+    public array $ban = [];
     public array $setting = [];
 
     /**
@@ -49,6 +48,7 @@ class SQLManager
         ]);
         Server::getInstance()->getLogger()->info('[SQL] 準備しています');
         $this->createTable();
+        $this->loadBan();
         $this->db->waitAll();
         Server::getInstance()->getLogger()->info('[SQL] complete');
     }
@@ -61,32 +61,31 @@ class SQLManager
         Server::getInstance()->getLogger()->info('[SQL] complete');
     }
 
+    public function loadBan(): void
+    {
+        $this->db->executeSelect('coral_reef.ban.get', [], function (array $rows, SqlColumnInfo $columns) {
+            $this->ban = $rows;
+        }, function (SqlError $error) {
+            CoralReefPlugin::$plugin->setError('BAN情報を読み込み中に' . $error->getErrorMessage());
+        });
+    }
+
     /**
      * Banされている時はその理由、されていないときはnull
      */
     public function getBanReason(string $xuid, string $ip): ?string
     {
-        $collectQuery = $this->pdo->query("SELECT VALUE ,REASON ,TIME FROM BAN WHERE TYPE = 'ALL'");
-        if ($collectQuery === false) return null;
-        $collectPrepare = $this->pdo->prepare("SELECT NAME FROM USER WHERE XUID = :xuid AND FIND_IN_SET(:ip ,IPS)");
-        while ($banData = $collectQuery->fetch(PDO::FETCH_ASSOC)) {
-            if (!(array_key_exists('XUID', $banData) && array_key_exists('REASON', $banData))) throw new Exception('BAN_SQLの返り値が不正です');
-
-            if ($xuid === $banData['XUID']) return $banData['REASON'];
-
-            $collectPrepare->execute([':xuid' => $banData['XUID'], ':ip' => $ip]);
-            $collectResult = $collectPrepare->fetchColumn();
-            if ($collectResult !== false) return $banData['REASON'];
+        foreach ($this->ban as $ban) {
+            switch ($ban['type']) {
+                case 'XUID':
+                    if ($xuid === $ban['value']) return $ban['reason'];
+                    break;
+                case 'IP':
+                    if ($ip === $ban['value']) return $ban['reason'];
+                    break;
+            }
         }
-
-        $singlePrepare = $this->pdo->prepare("SELECT REASON FROM BAN WHERE 
-                            (TYPE = 'IP' AND VALUE = :ip ) OR 
-                            (TYPE = 'XUID' AND VALUE = :xuid )");
-        if ($singlePrepare === false) return null;
-        $singlePrepare->execute([':ip' => $ip, ':xuid' => $xuid]);
-        $prepareResult = $singlePrepare->fetchColumn();
-        if (!is_string($prepareResult)) return null;
-        return $prepareResult;
+        return null;
     }
 
     public function loadUser(string $xuid): void

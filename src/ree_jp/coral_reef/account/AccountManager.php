@@ -63,20 +63,6 @@ class AccountManager
         return array_key_exists($key, self::$values);
     }
 
-    static function checkUser(Player $p): ?string
-    {
-        $xuid = $p->getXuid();
-        $name = $p->getName();
-        $ip = $p->getAddress();
-
-        try {
-            return SQLManager::$manager->getBanReason($xuid, $ip);
-        } catch (Exception $ex) {
-            Server::getInstance()->getLogger()->error("[CheckBAN] $name の確認中に " . $ex->getMessage());
-            return '[BAN_NOT_SHOW]データベースサーバーにアクセスできませんでした';
-        }
-    }
-
     static function userJoin(Player $p): void
     {
         $xuid = $p->getXuid();

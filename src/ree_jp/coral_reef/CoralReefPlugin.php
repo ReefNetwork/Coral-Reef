@@ -31,6 +31,8 @@ class CoralReefPlugin extends PluginBase
     public DiscordBot $discordBot;
     public bool $isDev = false;
 
+    private array $errors = [];
+
     public function onLoad()
     {
         self::$plugin = $this;
@@ -74,7 +76,18 @@ class CoralReefPlugin extends PluginBase
         }
         $this->discordBot->close();
         if (!is_null(SQLManager::$manager)) SQLManager::$manager->close();
+    }
 
+    public function setError(string $error): void
+    {
+        $this->getLogger()->emergency($error);
+        array_push($this->errors, $error);
+    }
+
+    public function isError(): ?array
+    {
+        if (empty($this->errors)) return null;
+        return $this->errors;
     }
 
     private function pluginInformation(): void

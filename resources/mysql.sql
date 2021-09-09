@@ -25,9 +25,9 @@ CREATE TABLE IF NOT EXISTS USER
 CREATE TABLE IF NOT EXISTS BAN
 (
     PRIMARY KEY (type, value),
-    type   ENUM ('ALL','XUID','IP') NOT NULL,
-    value  VARCHAR(20)              NOT NULL,
-    reason VARCHAR(999)             NOT NULL,
+    type   ENUM ('XUID','IP') NOT NULL,
+    value  VARCHAR(20)        NOT NULL,
+    reason VARCHAR(999)       NOT NULL,
     time   DATETIME
 );
 -- #        }
@@ -95,6 +95,12 @@ UPDATE USER
 SET skill = :skill
 WHERE xuid = :xuid;
 -- #            }
+-- #        }
+-- #    }
+-- #    { ban
+-- #        { get
+SELECT *
+FROM BAN;
 -- #        }
 -- #    }
 -- #    { values
