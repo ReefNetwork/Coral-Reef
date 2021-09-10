@@ -59,10 +59,12 @@ class SettingForm
     static function sendBoolForm(Player $p, string $label, string $toggleMessage, string $settingType, ?Closure $func = null): void
     {
         $xuid = $p->getXuid();
-        SQLManager::$manager->getValue($xuid, SQLConst::TYPE_SETTINGS, $settingType, function (array $rows) use ($toggleMessage, $label, $func, $settingType, $p) {
+        SQLManager::$manager->getValue($xuid, SQLConst::TYPE_SETTINGS, $settingType, function (array $rows)
+        use ($toggleMessage, $label, $func, $settingType, $p) {
+            $row = array_shift($rows);
             $defaultToggle = false;
             $resultIsNull = false;
-            if (isset($rows['value']) && $rows['value'] === 'true') $defaultToggle = true;
+            if (isset($row['value']) && $row['value'] === 'true') $defaultToggle = true;
             $p->sendForm(new CustomForm('Setting -> ' . $settingType, [new Label($label), new Toggle($toggleMessage, $defaultToggle)],
                 function (Player $p, CustomFormResponse $response) use ($settingType, $func, $resultIsNull): void {
                     $toggle = $response->getToggle();
@@ -80,9 +82,11 @@ class SettingForm
     static function sendInputForm(Player $p, string $label, string $inputMessage, string $holder, string $settingType, ?Closure $func = null): void
     {
         $xuid = $p->getXuid();
-        SQLManager::$manager->getValue($xuid, SQLConst::TYPE_SETTINGS, $settingType, function (array $rows) use ($p, $func, $holder, $inputMessage, $label, $settingType) {
+        SQLManager::$manager->getValue($xuid, SQLConst::TYPE_SETTINGS, $settingType, function (array $rows)
+        use ($p, $func, $holder, $inputMessage, $label, $settingType) {
+            $row = array_shift($rows);
             $default = "";
-            if (isset($rows['value'])) $default = $rows['value'];
+            if (isset($row['value'])) $default = $row['value'];
             $p->sendForm(new CustomForm('Setting -> ' . $settingType, [new Label($label), new Input($inputMessage, $holder, $default)],
                 function (Player $p, CustomFormResponse $response) use ($settingType, $func): void {
                     $result = $response->getInput()->getValue();

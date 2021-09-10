@@ -147,8 +147,9 @@ class AccountManager
     {
         SQLManager::$manager->getValue($p->getXuid(), SQLConst::TYPE_SETTINGS, SettingConst::NICK_NAME,
             function (array $rows) use ($p) {
-                if (!isset($rows['value'])) return;
-                $nick = $rows['value'];
+                $row = array_shift($rows);
+                if (!isset($row['value'])) return;
+                $nick = $row['value'];
                 $p->sendMessage(TextFormat::GRAY . "現在のユーザーネームは" . $nick . "に設定されています");
                 $p->setNameTag($nick);
                 $p->setDisplayName($nick);
@@ -163,8 +164,9 @@ class AccountManager
 
         SQLManager::$manager->getValue($p->getXuid(), SQLConst::TYPE_SETTINGS, SettingConst::SHOW_COORDINATES,
             function (array $rows) use ($p) {
-                if (!isset($rows['value'])) return;
-                $value = $rows['value'];
+                $row = array_shift($rows);
+                if (!isset($row['value'])) return;
+                $value = $row['value'];
                 $bool = true;
                 if ($value === 'false') $bool = false;
                 $pk = new GameRulesChangedPacket();
