@@ -91,14 +91,20 @@ class SQLManager
     {
         $this->db->executeSelect('coral_reef.user.get', ['xuid' => intval($xuid)], function (array $rows) use ($name, $xuid) {
             $arrayAccount = array_shift($rows);
-            if (isset($arrayAccount['xuid']) && isset($arrayAccount['name']) && isset($arrayAccount['experience']) && isset($arrayAccount['skill'])) {
-                $account = new UserAccount($arrayAccount['xuid'], $arrayAccount['name'], intval($arrayAccount['experience']), $arrayAccount['skill']);
+            if (isset($arrayAccount['xuid']) && isset($arrayAccount['name']) && isset($arrayAccount['experience'])) {
+                $skill = $arrayAccount['skill'] ?? null;
+                $account = new UserAccount($arrayAccount['xuid'], $arrayAccount['name'], intval($arrayAccount['experience']), $skill);
                 $this->users[$account->xuid] = $account;
             } elseif (empty($arrayAccount)) {
                 $this->users[$xuid] = new UserAccount($xuid, $name, 0, null);
             } else {
                 Server::getInstance()->getLogger()->warning($xuid . 'のデータの読み込みに失敗しました');
+                return;
             }
+            $p = Server::getInstance()->getPlayer($name);
+            if (is_null($p)) return;
+            $p->sendMessage('データを読み込みました');
+            if ($p->isImmobile()) $p->setImmobile(false);
         });
         $this->db->executeSelect('coral_reef.values.get.all_subtype', ['xuid' => intval($xuid), 'type' => SQLConst::TYPE_SETTINGS],
             function (array $rows) use ($xuid) {

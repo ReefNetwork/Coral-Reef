@@ -69,9 +69,9 @@ class EventListener implements Listener
     {
         $p = $ev->getPlayer();
 
-        if (is_null(SQLManager::$manager->getUser($p->getXuid()))) {
-            $p->kick('ユーザーデータを読み込むことが出来ませんでした');
-            return;
+        if (is_null(SQLManager::$manager->getUser($p->getXuid()))) { // データをまだ読み込めてなかったら動きを止める
+            $p->sendMessage('データを確認しています...');
+            $p->setImmobile();
         }
         AccountManager::userJoin($p);
 

@@ -29,7 +29,7 @@ class MyWarpForm
     static function sendWarpForm(Player $p): void
     {
         $xuid = $p->getXuid();
-        SQLManager::$manager->getWarps($xuid, function (array $rows) {
+        SQLManager::$manager->getWarps($xuid, function (array $rows) use ($p) {
             $buttons = [];
             foreach ($rows as $warpPoint) {
                 if (array_key_exists('name', $warpPoint) && array_key_exists('level', $warpPoint) && array_key_exists('x', $warpPoint)
@@ -41,7 +41,7 @@ class MyWarpForm
             }
             $warpButtons = $buttons;
             $editValue = array_push($buttons, new Button('ワープ地点を 作成/削除 する')) - 1;
-            return new MenuForm('Menu -> MyWarp', '自分だけのワープ地点を設定できます', $buttons,
+            $p->sendForm(new MenuForm('Menu -> MyWarp', '自分だけのワープ地点を設定できます', $buttons,
                 function (Player $p, Button $button) use ($rows, $warpButtons, $editValue): void {
                     if (array_key_exists($button->getValue(), $rows)) {
                         $warpPoint = $rows[$button->getValue()];
@@ -50,7 +50,7 @@ class MyWarpForm
                     } elseif ($button->getValue() === $editValue) {
                         $p->sendForm(self::myWarpEditForm($rows, $warpButtons));
                     } else $p->sendMessage('エラーが発生しました');
-                });
+                }));
         });
     }
 

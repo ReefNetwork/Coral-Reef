@@ -24,6 +24,12 @@ jobs:
       - name: build
         run: php -d phar.readonly=0 ./build/make-phar.php ${{ github.run_number }}-${GITHUB_REF##*/}
 
+      - name: virion download
+        run: wget https://poggit.pmmp.io/r/137205/libasynql_dev-146.phar -O libasynql.phar
+
+      - name: virion install
+        run: php -d phar.readonly=0 libasynql.phar ./build/CoralReef.phar ree_jp\coral_reef\
+
       - name: upload
         uses: actions/upload-artifact@v2
         with:
