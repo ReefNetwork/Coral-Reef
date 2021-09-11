@@ -32,6 +32,11 @@ foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($dir)) a
     if ($file->isFile() === false) {
         continue;
     }
+    if (isset($argv[2]) && isset($argv[3])) {
+        $fileString = file_get_contents($path);
+        str_replace($argv[2], $argv[3], $fileString);
+        file_put_contents($path, $fileString);
+    }
     $files[str_replace($dir, "", $path)] = $path;
 }
 

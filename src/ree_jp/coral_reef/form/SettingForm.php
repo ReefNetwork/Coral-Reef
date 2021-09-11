@@ -11,7 +11,7 @@
 
 namespace ree_jp\coral_reef\form;
 
-use Exception;
+use Closure;
 use Frago9876543210\EasyForms\elements\Button;
 use Frago9876543210\EasyForms\elements\Input;
 use Frago9876543210\EasyForms\elements\Label;
@@ -21,6 +21,7 @@ use Frago9876543210\EasyForms\forms\CustomFormResponse;
 use Frago9876543210\EasyForms\forms\MenuForm;
 use pocketmine\Player;
 use pocketmine\Server;
+use poggit\libasynql\SqlError;
 use ree_jp\coral_reef\account\AccountManager;
 use ree_jp\coral_reef\sql\SettingConst;
 use ree_jp\coral_reef\sql\SQLConst;
@@ -36,16 +37,18 @@ class SettingForm
                 $xuid = $p->getXuid();
                 switch ($button->getValue()) {
                     case 0:
-                        $p->sendForm(self::boolForm($xuid, '座標を表示するか隠すのを変更出来ます', '隠す / 表示',
+                        self::sendBoolForm($p, '座標を表示するか隠すのを変更出来ます', '隠す / 表示',
                             SettingConst::SHOW_COORDINATES, function () use ($p) {
+                                $p->sendMessage('設定を保存しました');
                                 AccountManager::updateShowCoordinates($p);
-                            }));
+                            });
                         break;
                     case 1:
-                        $p->sendForm(self::inputForm($xuid, "ニックネームを設定できます\n無効にするにはニックネームを空白に設定してください", 'ニックネーム',
+                        self::sendInputForm($p, "ニックネームを設定できます\n無効にするにはニックネームを空白に設定してください", 'ニックネーム',
                             'せいちのかみ', SettingConst::NICK_NAME, function () use ($p) {
+                                $p->sendMessage('設定を保存しました');
                                 AccountManager::updateNickName($p);
-                            }));
+                            });
                         break;
                     default:
                         $p->sendMessage('エラーが発生しました');
@@ -53,54 +56,47 @@ class SettingForm
             });
     }
 
-    static function boolForm(string $xuid, string $label, string $toggleMessage, string $settingType, ?callable $func = null): CustomForm
+    static function sendBoolForm(Player $p, string $label, string $toggleMessage, string $settingType, ?Closure $func = null): void
     {
-        $defaultToggle = false;
-        $resultIsNull = false;
-        try {
-            $result = SQLManager::$manager->getValue($xuid, SQLConst::TYPE_SETTINGS, $settingType);
-            $resultIsNull = is_null($result);
-            if ($result === 'true') $defaultToggle = true;
-        } catch (Exception $e) {
-            Server::getInstance()->getLogger()->critical("[SettingGet $settingType]" . $e->getMessage());
-        }
-        return new CustomForm('Setting -> ' . $settingType, [new Label($label), new Toggle($toggleMessage, $defaultToggle)],
-            function (Player $p, CustomFormResponse $response) use ($settingType, $func, $resultIsNull): void {
-                $toggle = $response->getToggle();
-                if (!($toggle->hasChanged() || $resultIsNull)) return;
-                $result = $toggle->getValue() ? 'true' : 'false';
-                try {
-                    SQLManager::$manager->setValue($p->getXuid(), SQLConst::TYPE_SETTINGS, $settingType, $result);
-                    $p->sendMessage('設定を保存しました');
-                    if (!is_null($func)) $func();
-                } catch (Exception $e) {
-                    $p->sendMessage('エラーが発生しました');
-                    Server::getInstance()->getLogger()->critical("[SettingSave $settingType]" . $e->getMessage());
-                }
-            });
+        $xuid = $p->getXuid();
+        SQLManager::$manager->getValue($xuid, SQLConst::TYPE_SETTINGS, $settingType, function (array $rows)
+        use ($toggleMessage, $label, $func, $settingType, $p) {
+            $row = array_shift($rows);
+            $defaultToggle = false;
+            $resultIsNull = false;
+            if (isset($row['value']) && $row['value'] === 'true') $defaultToggle = true;
+            $p->sendForm(new CustomForm('Setting -> ' . $settingType, [new Label($label), new Toggle($toggleMessage, $defaultToggle)],
+                function (Player $p, CustomFormResponse $response) use ($settingType, $func, $resultIsNull): void {
+                    $toggle = $response->getToggle();
+                    if (!($toggle->hasChanged() || $resultIsNull)) return;
+                    $result = $toggle->getValue() ? 'true' : 'false';
+                    SQLManager::$manager->setValue($p->getXuid(), SQLConst::TYPE_SETTINGS, $settingType, $result, $func,
+                        function (SqlError $error) use ($p, $settingType) {
+                            $p->sendMessage('エラーが発生しました');
+                            Server::getInstance()->getLogger()->critical("[SettingSave $settingType]" . $error->getMessage());
+                        });
+                }));
+        });
     }
 
-    static function inputForm(string $xuid, string $label, string $inputMessage, string $holder, string $settingType, ?callable $func = null): CustomForm
+    static function sendInputForm(Player $p, string $label, string $inputMessage, string $holder, string $settingType, ?Closure $func = null): void
     {
-        $default = "";
-        try {
-            $result = SQLManager::$manager->getValue($xuid, SQLConst::TYPE_SETTINGS, $settingType);
-            if (!is_null($result)) $default = $result;
-        } catch (Exception $e) {
-            Server::getInstance()->getLogger()->critical("[SettingGet $settingType]" . $e->getMessage());
-        }
-        return new CustomForm('Setting -> ' . $settingType, [new Label($label), new Input($inputMessage, $holder, $default)],
-            function (Player $p, CustomFormResponse $response) use ($settingType, $func): void {
-                $result = $response->getInput()->getValue();
-                if (empty($result)) $result = null;
-                try {
-                    SQLManager::$manager->setValue($p->getXuid(), SQLConst::TYPE_SETTINGS, $settingType, $result);
-                    $p->sendMessage('設定を保存しました');
-                    if (!is_null($func)) $func();
-                } catch (Exception $e) {
-                    $p->sendMessage('エラーが発生しました');
-                    Server::getInstance()->getLogger()->critical("[SettingSave $settingType]" . $e->getMessage());
-                }
-            });
+        $xuid = $p->getXuid();
+        SQLManager::$manager->getValue($xuid, SQLConst::TYPE_SETTINGS, $settingType, function (array $rows)
+        use ($p, $func, $holder, $inputMessage, $label, $settingType) {
+            $row = array_shift($rows);
+            $default = "";
+            if (isset($row['value'])) $default = $row['value'];
+            $p->sendForm(new CustomForm('Setting -> ' . $settingType, [new Label($label), new Input($inputMessage, $holder, $default)],
+                function (Player $p, CustomFormResponse $response) use ($settingType, $func): void {
+                    $result = $response->getInput()->getValue();
+                    if (empty($result)) $result = null;
+                    SQLManager::$manager->setValue($p->getXuid(), SQLConst::TYPE_SETTINGS, $settingType, $result, $func,
+                        function (SqlError $error) use ($p, $settingType) {
+                            $p->sendMessage('エラーが発生しました');
+                            Server::getInstance()->getLogger()->critical("[SettingSave $settingType]" . $error->getMessage());
+                        });
+                }));
+        });
     }
 }

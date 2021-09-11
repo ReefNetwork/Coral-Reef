@@ -12,7 +12,7 @@ jobs:
   build:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
-
+    if: "!contains(github.event.head_commit.message, '[ci skip]')"
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
@@ -22,7 +22,13 @@ jobs:
         run: composer install -n --no-ansi
 
       - name: build
-        run: php -d phar.readonly=0 ./build/make-phar.php ${{ github.run_number }}-${GITHUB_REF##*/}
+        run: php -d phar.readonly=0 ./build/make-phar.php ${{ github.run_number }}-${GITHUB_REF##*/} "use poggit\libasynql\" "use ree_jp\coral_reef\libs\poggit\libasynql\"
+
+      - name: virion download
+        run: wget https://poggit.pmmp.io/r/137205/libasynql_dev-146.phar -O libasynql.phar
+
+      - name: virion install
+        run: php -d phar.readonly=0 libasynql.phar ./build/CoralReef.phar "ree_jp\\coral_reef\\libs\\"
 
       - name: upload
         uses: actions/upload-artifact@v2

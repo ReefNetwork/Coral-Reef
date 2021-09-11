@@ -23,7 +23,7 @@ use pocketmine\event\player\PlayerChatEvent;
 use pocketmine\event\player\PlayerGameModeChangeEvent;
 use pocketmine\event\player\PlayerInteractEvent;
 use pocketmine\event\player\PlayerJoinEvent;
-use pocketmine\event\player\PlayerPreLoginEvent;
+use pocketmine\event\player\PlayerLoginEvent;
 use pocketmine\event\player\PlayerQuitEvent;
 use pocketmine\item\Item;
 use pocketmine\item\ItemIds;
@@ -40,14 +40,21 @@ use Throwable;
 
 class EventListener implements Listener
 {
-    public function onPreLogin(PlayerPreLoginEvent $ev): void
+    public function onPreLogin(PlayerLoginEvent $ev): void
     {
         $p = $ev->getPlayer();
+        $xuid = $p->getXuid();
         if (is_null(SQLManager::$manager)) {
             $p->kick(TextFormat::GREEN . 'Reef ' . TextFormat::YELLOW . 'Server' . TextFormat::DARK_RED . 'データベースサーバーが見つかりませんでした');
             return;
         }
-        $reason = AccountManager::checkUser($p);
+        $error = CoralReefPlugin::$plugin->isError();
+        if (!is_null($error)) {
+            $p->kick(TextFormat::GREEN . 'Reef ' . TextFormat::YELLOW . 'Server' . TextFormat::DARK_RED . 'データの読み込み中に予期せぬエラーが発生しました');
+            return;
+        }
+        SQLManager::$manager->loadUser($xuid, $p->getName());
+        $reason = SQLManager::$manager->getBanReason($xuid, $p->getAddress());
         if (is_string($reason)) {
             $isNotShow = strstr($reason, '[BAN_NOT_SHOW]', true);
             if ($isNotShow === false) {
@@ -62,6 +69,10 @@ class EventListener implements Listener
     {
         $p = $ev->getPlayer();
 
+        if (is_null(SQLManager::$manager->getUser($p->getXuid()))) { // データをまだ読み込めてなかったら動きを止める
+            $p->sendMessage('データを確認しています...');
+            $p->setImmobile();
+        }
         AccountManager::userJoin($p);
 
         if (is_null($p->getLastPlayed())) {

@@ -54,7 +54,7 @@ class FormManager
                 $xuid = $p->getXuid();
                 switch ($button->getValue()) {
                     case 0:
-                        $p->sendForm(self::worldTeleportForm());
+                        Server::getInstance()->dispatchCommand($p, 'stackstorage');
                         break;
 
                     case 1:
@@ -76,11 +76,11 @@ class FormManager
                         break;
 
                     case 2:
-                        $p->sendForm(MyWarpForm::myWarpForm($p));
+                        MyWarpForm::sendWarpForm($p);
                         break;
 
                     case 3:
-                        Server::getInstance()->dispatchCommand($p, 'stackstorage');
+                        $p->sendForm(self::worldTeleportForm());
                         break;
 
                     case 4:

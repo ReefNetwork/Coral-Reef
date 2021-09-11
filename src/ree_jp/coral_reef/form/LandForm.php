@@ -11,7 +11,6 @@
 
 namespace ree_jp\coral_reef\form;
 
-use Exception;
 use Frago9876543210\EasyForms\elements\Button;
 use Frago9876543210\EasyForms\elements\Input;
 use Frago9876543210\EasyForms\elements\Label;
@@ -22,7 +21,6 @@ use pocketmine\item\Item;
 use pocketmine\item\ItemIds;
 use pocketmine\math\Vector3;
 use pocketmine\Player;
-use pocketmine\Server;
 use ree_jp\coral_reef\account\AccountManager;
 use ree_jp\coral_reef\land\LandData;
 use ree_jp\coral_reef\land\LandManager;
@@ -121,16 +119,10 @@ class LandForm
                     $land = new LandData($p->getXuid(), $name, $p->getLevel()->getFolderName(), $aabb);
                     $result = LandManager::$instance->canCreateLand($aabb);
                     if (is_null($result)) {
-                        try {
-                            SQLManager::$manager->addProtectLand($land);
-                            $p->sendMessage($land->name . 'の土地保護を作成しました');
-                        } catch (Exception $e) {
-                            Server::getInstance()->getLogger()->error('[LandCreate]' . $p->getName() . 'の処理中に' . $e->getMessage());
-                            $p->sendMessage('エラーが発生しました');
-                        }
+                        SQLManager::$manager->addProtectLand($land, $p);
                     } else {
                         $name = AccountManager::getUserName($land->xuid);
-                        $p->sendMessage("指定した土地の1部が$name さんの$land->name とかぶっていたため土地を作成することが出来ませんでした");
+                        $p->sendMessage("指定した土地の一部が$name さんの$land->name とかぶっていたため土地を作成することが出来ませんでした");
                     }
                 } else $p->sendMessage('名前が短すぎます');
             } else $p->sendMessage('座標の欄には数字を入力してください');

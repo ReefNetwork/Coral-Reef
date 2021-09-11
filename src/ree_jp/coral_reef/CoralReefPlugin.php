@@ -31,6 +31,8 @@ class CoralReefPlugin extends PluginBase
     public DiscordBot $discordBot;
     public bool $isDev = false;
 
+    private array $errors = [];
+
     public function onLoad()
     {
         self::$plugin = $this;
@@ -48,9 +50,7 @@ class CoralReefPlugin extends PluginBase
         }), 10);
 
         try {
-            SQLManager::$manager = new SQLManager("CoralReef",
-                $this->getConfig()->get(ConfigConst::MYSQL_HOST), "pmmp",
-                $this->getConfig()->get(ConfigConst::MYSQL_PASSWORD));
+            SQLManager::$manager = new SQLManager($this->getDataFolder());
         } catch (PDOException $e) {
             $this->getLogger()->critical("[SQL]" . $e->getMessage());
         }
@@ -75,6 +75,19 @@ class CoralReefPlugin extends PluginBase
             $p->kick(TextFormat::GREEN . 'Reef ' . TextFormat::YELLOW . 'Server' . TextFormat::RESET . "\n\nサーバーが停止しました", false, '停止');
         }
         $this->discordBot->close();
+        if (!is_null(SQLManager::$manager)) SQLManager::$manager->close();
+    }
+
+    public function setError(string $error): void
+    {
+        $this->getLogger()->emergency($error);
+        array_push($this->errors, $error);
+    }
+
+    public function isError(): ?array
+    {
+        if (empty($this->errors)) return null;
+        return $this->errors;
     }
 
     private function pluginInformation(): void
