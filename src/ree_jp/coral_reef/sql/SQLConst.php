@@ -13,7 +13,10 @@ namespace ree_jp\coral_reef\sql;
 
 class SQLConst
 {
+    const NOW_TIME = 'now';
     const TYPE_NULL = 'empty';
 
     const TYPE_SETTINGS = 'setting';
+
+    const LOG_GATYA = 'gatya';
 }

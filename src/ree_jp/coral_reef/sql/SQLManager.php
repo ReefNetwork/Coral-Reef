@@ -222,12 +222,15 @@ class SQLManager
             });
     }
 
-    public function addLog(string $xuid, string $type, string $time = null, string $otherType = null, string $value = null): void
+    public function addLog(string $xuid, string $type, ?string $subType, ?string $value, ?string $time): void
     {
-//        if ($time === 'now') $time = date("Y-m-d H:i:s");
-//        /** @noinspection SqlResolve */
-//        $prepare = $this->logPdo->prepare("INSERT INTO `:xuid` VALUES (:type ,:other ,:value ,:time)");
-//        $prepare->execute([':xuid' => $xuid, ':type' => $type, ':other' => $otherType, ':value' => $value, ':time' => $time]);
+        if ($time === 'now') $time = date("Y-m-d H:i:s");
+        $this->db->executeInsert('coral_reef.log.add', ['xuid' => $xuid, 'type' => $type, 'subtype' => $subType, 'value' => $value, 'time' => $time]);
+    }
+
+    public function getLog(string $xuid, string $type, Closure $func, Closure $failure): void
+    {
+        $this->db->executeInsert('coral_reef.log.get.type', ['xuid' => $xuid, 'type' => $type], $func, $failure);
     }
 
 
@@ -247,5 +250,6 @@ class SQLManager
         $this->db->executeGeneric('coral_reef.init.tables.warp');
         $this->db->executeGeneric('coral_reef.init.tables.land');
         $this->db->executeGeneric('coral_reef.init.tables.virtual_value');
+        $this->db->executeGeneric('coral_reef.init.tables.log');
     }
 }

@@ -56,6 +56,16 @@ CREATE TABLE IF NOT EXISTS VIRTUAL_VALUES
     value   VARCHAR(99)
 );
 -- #        }
+-- #        { log
+CREATE TABLE IF NOT EXISTS LOG
+(
+    xuid    BIGINT UNSIGNED NOT NULL,
+    type    VARCHAR(99)     NOT NULL,
+    subtype VARCHAR(99),
+    value   VARCHAR(99)     NOT NULL,
+    time    DATETIME
+);
+-- #        }
 -- #    }
 -- #    { user
 -- #        { get
@@ -179,6 +189,16 @@ FROM LAND;
 -- #        :sz int
 INSERT INTO LAND
 VALUES (:xuid, :name, :level, :mx, :sx, :mz, :sz);
+/*
+ *  CCCCC                        lll RRRRRR                 fff
+ * CC    C  oooo  rr rr    aa aa lll RR   RR   eee    eee  ff
+ * CC      oo  oo rrr  r  aa aaa lll RRRRRR  ee   e ee   e ffff
+ * CC    C oo  oo rr     aa  aaa lll RR  RR  eeeee  eeeee  ff
+ *  CCCCC   oooo  rr      aaa aa lll RR   RR  eeeee  eeeee ff
+ *
+ * Copyright (c) 2021. Ree-jp(https://ree-jp.net)
+ */
+
 -- #        }
 -- #        { delete
 -- #        :xuid int
@@ -187,6 +207,33 @@ DELETE
 FROM LAND
 WHERE xuid = :xuid
   AND name = :name;
+-- #        }
+-- #    }
+-- #    { log
+-- #        { add
+-- #        :xuid int
+-- #        :type string
+-- #        :subtype string
+-- #        :value string
+-- #        :time string
+INSERT INTO LOG
+VALUES (:xuid, :type, :subtype, :value, :time);
+-- #        }
+-- #        { get
+-- #            { all
+-- #            :xuid int
+SELECT *
+FROM LOG
+WHERE xuid = :xuid;
+-- #            }
+-- #            { type
+-- #        :xuid int
+-- #        :type string
+SELECT *
+FROM LOG
+WHERE xuid = :xuid
+  AND type = :type;
+-- #            }
 -- #        }
 -- #    }
 -- #}
