@@ -17,6 +17,7 @@ use Frago9876543210\EasyForms\elements\Label;
 use Frago9876543210\EasyForms\forms\CustomForm;
 use Frago9876543210\EasyForms\forms\CustomFormResponse;
 use Frago9876543210\EasyForms\forms\MenuForm;
+use Frago9876543210\EasyForms\forms\ModalForm;
 use pocketmine\item\Item;
 use pocketmine\item\ItemIds;
 use pocketmine\math\Vector3;
@@ -54,7 +55,23 @@ class LandForm
 
     static function landEditForm(LandData $land): MenuForm
     {
-        return new MenuForm('Land -> Edit', "土地保護の名前: $land->name\nワールド: $land->level\n");
+        $aabb = $land->aabb;
+        $space = (($aabb->maxX - $aabb->minX) + 1) * (($aabb->maxZ - $aabb->minZ) + 1);
+        return new MenuForm('Land -> Edit', "土地保護の名前: $land->name\nワールド: $land->level\nX座標: $aabb->minX - $aabb->maxX\n
+        Z座標: $aabb->minZ - $aabb->maxZ\n大きさ: $space ブロック", [new Button('土地を削除する')], function (Player $p, Button $button) use ($land) {
+            switch ($button->getValue()) {
+                case 0:
+                    $p->sendForm(new ModalForm('LandEdit -> Delete', "本当に$land->name を削除しますか?",
+                        function (Player $p, bool $result) use ($land) {
+                            if ($result) {
+                                SQLManager::$manager->deleteProtectLand($land, $p);
+                            } else $p->sendForm(self::landEditForm($land));
+                        }));
+                    break;
+                default:
+                    $p->sendMessage('エラーが発生しました');
+            }
+        });
     }
 
     static function landCreateAssistForm(string $xuid, Vector3 $vec3): MenuForm
