@@ -62,7 +62,7 @@ class LandForm
             switch ($button->getValue()) {
                 case 0:
                     $p->sendForm(new ModalForm('LandEdit -> Delete', "本当に$land->name を削除しますか?",
-                        function (Player $p, bool $result) use ($land) {
+                        function (Player $p, bool $result) use ($land): void {
                             if ($result) {
                                 SQLManager::$manager->deleteProtectLand($land, $p);
                             } else $p->sendForm(self::landEditForm($land));
