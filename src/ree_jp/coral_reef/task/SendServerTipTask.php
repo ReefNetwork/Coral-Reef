@@ -20,8 +20,8 @@ use ree_jp\coral_reef\sql\SettingConst;
 
 class SendServerTipTask extends Task
 {
-    const TIPS = ['ReefServerへようこそ', 'Discordサーバー(discord.gg/reef)に入ると最新の情報を受け取れます', 'reef.ree-jp.netで役立つヒントを確認できます',
-        'ウェブサイトでも操作方法を確認できます'];
+    const TIPS = ['ReefServerへようこそ', 'Discordサーバー(discord.gg/reef)に入ると最新の情報を受け取れます', '設定でヒントを表示しないようにできます',
+        'reef.ree-jp.netで役立つヒントを確認できます', 'ウェブサイトでも操作方法を確認できます', 'スニークをしている間、通常はスキルが無効になります'];
 
     public function onRun(int $currentTick)
     {
@@ -29,8 +29,8 @@ class SendServerTipTask extends Task
         foreach (Server::getInstance()->getOnlinePlayers() as $p) {
             $xuid = $p->getXuid();
             if (!AccountManager::hasValue($xuid, 'tip_cool_time') &&
-                SettingManager::isEnableOption($xuid, SettingConst::HIDE_SERVER_TIP)) {
-                $p->sendTip(TextFormat::DARK_GRAY . $tip);
+                !SettingManager::isEnableOption($xuid, SettingConst::HIDE_SERVER_TIP)) {
+                $p->sendTip(TextFormat::DARK_GRAY . "ヒント: $tip");
             }
         }
     }

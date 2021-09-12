@@ -66,7 +66,7 @@ class SettingManager
                 $bool = false;
                 if (isset($row['value'])) if ($row['value'] === 'true') $bool = true;
                 if (!isset(self::$settingCache[$p->getXuid()])) self::$settingCache[$p->getXuid()] = [];
-                self::$settingCache[$p->getXuid()][] = $bool;
+                self::$settingCache[$p->getXuid()][SettingConst::SNEAK_SKILL] = $bool;
             }, function (SqlError $error) use ($p) {
                 $p->sendMessage('スキルの設定を読み込み中にエラーが発生しました');
                 Server::getInstance()->getLogger()->warning("[setting showCoordinates]" . $error->getMessage());
@@ -81,7 +81,7 @@ class SettingManager
                 $bool = false;
                 if (isset($row['value'])) if ($row['value'] === 'true') $bool = true;
                 if (!isset(self::$settingCache[$p->getXuid()])) self::$settingCache[$p->getXuid()] = [];
-                self::$settingCache[$p->getXuid()][] = $bool;
+                self::$settingCache[$p->getXuid()][SettingConst::HIDE_SERVER_TIP] = $bool;
             }, function (SqlError $error) use ($p) {
                 $p->sendMessage('ヒントの設定を読み込み中にエラーが発生しました');
                 Server::getInstance()->getLogger()->warning("[setting serverTip]" . $error->getMessage());
