@@ -65,6 +65,7 @@ class AccountManager
         SQLManager::$manager->addLog($xuid, 'join', 'now', null, $p->getAddress());
         SettingManager::updateNickName($p);
         SettingManager::updateShowCoordinates($p);
+        SettingManager::updateSneakSkill($p);
     }
 
     static function userQuit(Player $p, string $reason): void
@@ -101,7 +102,8 @@ class AccountManager
         SQLManager::$manager->addLog($xuid, 'break', 'now', null, $logDetail);
         $user->addXp();
         if ($skill instanceof BreakSkill && $p->isSurvival()) {
-            if (!self::hasValue($xuid, 'skill_cool_time') && !self::hasValue($xuid, 'skill_active')) {
+            if (!self::hasValue($xuid, 'skill_cool_time') && !self::hasValue($xuid, 'skill_active') &&
+                !($p->isSneaking() && SettingManager::isSneakSkill($xuid))) {
                 AccountManager::setValue($xuid, 'skill_active');
                 $logDetail = $bl->x . ':' . $bl->y . ':' . $bl->z . '/' . $skill->id;
                 SQLManager::$manager->addLog($xuid, 'skill', 'now', null, $logDetail);

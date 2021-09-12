@@ -14,5 +14,6 @@ namespace ree_jp\coral_reef\sql;
 class SettingConst
 {
     const COORDINATES = 'hideCoordinates';
+    const SNEAK_SKILL = 'sneakSkill';
     const NICK_NAME = 'nickName';
 }

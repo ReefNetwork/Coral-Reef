@@ -22,6 +22,8 @@ use ree_jp\coral_reef\sql\SQLManager;
 
 class SettingManager
 {
+    static array $settingCache = [];
+
     static function updateNickName(Player $p): void
     {
         SQLManager::$manager->getValue($p->getXuid(), SQLConst::TYPE_SETTINGS, SettingConst::NICK_NAME,
@@ -54,5 +56,32 @@ class SettingManager
                 $p->sendMessage('座標の設定を読み込み中にエラーが発生しました');
                 Server::getInstance()->getLogger()->warning("[setting showCoordinates]" . $error->getMessage());
             });
+    }
+
+    static function updateSneakSkill(Player $p, bool $bool = null): void
+    {
+        SQLManager::$manager->getValue($p->getXuid(), SQLConst::TYPE_SETTINGS, SettingConst::SNEAK_SKILL,
+            function (array $rows) use ($p) {
+                $row = array_shift($rows);
+                $bool = false;
+                if (isset($row['value'])) {
+                    if ($row['value'] === 'true') $bool = true;
+                }
+                if (!isset(self::$settingCache[$p->getXuid()])) {
+                    self::$settingCache[$p->getXuid()] = [];
+                }
+                self::$settingCache[$p->getXuid()][] = $bool;
+            }, function (SqlError $error) use ($p) {
+                $p->sendMessage('スキルの設定を読み込み中にエラーが発生しました');
+                Server::getInstance()->getLogger()->warning("[setting showCoordinates]" . $error->getMessage());
+            });
+    }
+
+    static function isSneakSkill(string $xuid): bool
+    {
+        if (isset(self::$settingCache[$xuid]) && isset(self::$settingCache[$xuid][SettingConst::SNEAK_SKILL])) {
+            return self::$settingCache[$xuid][SettingConst::SNEAK_SKILL];
+        }
+        return false;
     }
 }

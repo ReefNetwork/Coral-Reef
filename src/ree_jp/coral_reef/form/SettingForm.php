@@ -32,7 +32,7 @@ class SettingForm
     static function settingForm(): MenuForm
     {
         return new MenuForm('Menu -> Setting', '変更したい設定を選択してください',
-            [new Button('座標の表示'), new Button('ニックネーム')],
+            [new Button('座標の表示'), new Button('スニーク中にスキル発動'), new Button('ニックネーム')],
             function (Player $p, Button $button): void {
                 $xuid = $p->getXuid();
                 switch ($button->getValue()) {
@@ -44,6 +44,13 @@ class SettingForm
                             });
                         break;
                     case 1:
+                        self::sendBoolForm($p, 'スニーク中にスキルを発動するかどうか変更出来ます', '発動しない / する',
+                            SettingConst::SNEAK_SKILL, function () use ($p) {
+                                $p->sendMessage('設定を保存しました');
+                                SettingManager::updateShowCoordinates($p);
+                            });
+                        break;
+                    case 2:
                         self::sendInputForm($p, "ニックネームを設定できます\n無効にするにはニックネームを空白に設定してください", 'ニックネーム',
                             'せいちのかみ', SettingConst::NICK_NAME, function () use ($p) {
                                 $p->sendMessage('設定を保存しました');
