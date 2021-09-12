@@ -16,17 +16,12 @@ use Exception;
 use pocketmine\block\Block;
 use pocketmine\item\Item;
 use pocketmine\level\Position;
-use pocketmine\network\mcpe\protocol\GameRulesChangedPacket;
 use pocketmine\Player;
 use pocketmine\scheduler\ClosureTask;
 use pocketmine\Server;
-use pocketmine\utils\TextFormat;
-use poggit\libasynql\SqlError;
 use ree_jp\coral_reef\CoralReefPlugin;
 use ree_jp\coral_reef\skill\BreakSkill;
 use ree_jp\coral_reef\skill\SkillManager;
-use ree_jp\coral_reef\sql\SettingConst;
-use ree_jp\coral_reef\sql\SQLConst;
 use ree_jp\coral_reef\sql\SQLManager;
 
 class AccountManager
@@ -68,8 +63,8 @@ class AccountManager
 
         SQLManager::$manager->setUser($xuid, $p->getName(), $p->getAddress());
         SQLManager::$manager->addLog($xuid, 'join', 'now', null, $p->getAddress());
-        self::updateNickName($p);
-        self::updateShowCoordinates($p);
+        SettingManager::updateNickName($p);
+        SettingManager::updateShowCoordinates($p);
     }
 
     static function userQuit(Player $p, string $reason): void
@@ -141,40 +136,5 @@ class AccountManager
             }
             $p->teleport($pos);
         }
-    }
-
-    static function updateNickName(Player $p): void
-    {
-        SQLManager::$manager->getValue($p->getXuid(), SQLConst::TYPE_SETTINGS, SettingConst::NICK_NAME,
-            function (array $rows) use ($p) {
-                $row = array_shift($rows);
-                if (!isset($row['value'])) return;
-                $nick = $row['value'];
-                $p->sendMessage(TextFormat::GRAY . "現在のユーザーネームは" . $nick . "に設定されています");
-                $p->setNameTag($nick);
-                $p->setDisplayName($nick);
-            }, function (SqlError $error) use ($p) {
-                $p->sendMessage('ニックネームを読み込み中にエラーが発生しました');
-                Server::getInstance()->getLogger()->warning("[setting nick]" . $error->getMessage());
-            });
-    }
-
-    static function updateShowCoordinates(Player $p, bool $bool = null): void
-    {
-
-        SQLManager::$manager->getValue($p->getXuid(), SQLConst::TYPE_SETTINGS, SettingConst::SHOW_COORDINATES,
-            function (array $rows) use ($p) {
-                $row = array_shift($rows);
-                if (!isset($row['value'])) return;
-                $value = $row['value'];
-                $bool = true;
-                if ($value === 'false') $bool = false;
-                $pk = new GameRulesChangedPacket();
-                $pk->gameRules["showCoordinates"] = [1, $bool, true];
-                $p->dataPacket($pk);
-            }, function (SqlError $error) use ($p) {
-                $p->sendMessage('座標の設定を読み込み中にエラーが発生しました');
-                Server::getInstance()->getLogger()->warning("[setting showCoordinates]" . $error->getMessage());
-            });
     }
 }

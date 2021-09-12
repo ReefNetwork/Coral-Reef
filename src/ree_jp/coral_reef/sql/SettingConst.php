@@ -13,6 +13,6 @@ namespace ree_jp\coral_reef\sql;
 
 class SettingConst
 {
-    const SHOW_COORDINATES = 'showCoordinates';
+    const COORDINATES = 'hideCoordinates';
     const NICK_NAME = 'nickName';
 }

@@ -22,7 +22,7 @@ use Frago9876543210\EasyForms\forms\MenuForm;
 use pocketmine\Player;
 use pocketmine\Server;
 use poggit\libasynql\SqlError;
-use ree_jp\coral_reef\account\AccountManager;
+use ree_jp\coral_reef\account\SettingManager;
 use ree_jp\coral_reef\sql\SettingConst;
 use ree_jp\coral_reef\sql\SQLConst;
 use ree_jp\coral_reef\sql\SQLManager;
@@ -37,17 +37,17 @@ class SettingForm
                 $xuid = $p->getXuid();
                 switch ($button->getValue()) {
                     case 0:
-                        self::sendBoolForm($p, '座標を表示するか隠すのを変更出来ます', '隠す / 表示',
-                            SettingConst::SHOW_COORDINATES, function () use ($p) {
+                        self::sendBoolForm($p, '座標を表示するか隠すのを変更出来ます', '表示 / 隠す',
+                            SettingConst::COORDINATES, function () use ($p) {
                                 $p->sendMessage('設定を保存しました');
-                                AccountManager::updateShowCoordinates($p);
+                                SettingManager::updateShowCoordinates($p);
                             });
                         break;
                     case 1:
                         self::sendInputForm($p, "ニックネームを設定できます\n無効にするにはニックネームを空白に設定してください", 'ニックネーム',
                             'せいちのかみ', SettingConst::NICK_NAME, function () use ($p) {
                                 $p->sendMessage('設定を保存しました');
-                                AccountManager::updateNickName($p);
+                                SettingManager::updateNickName($p);
                             });
                         break;
                     default:
