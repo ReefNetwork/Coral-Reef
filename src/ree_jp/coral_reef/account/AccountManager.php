@@ -63,7 +63,6 @@ class AccountManager
         $xuid = $p->getXuid();
 
         SQLManager::$manager->setUser($xuid, $p->getName(), $p->getAddress());
-        SQLManager::$manager->addLog($xuid, 'join', 'now', null, $p->getAddress());
         SettingManager::updateNickName($p);
         SettingManager::updateShowCoordinates($p);
         SettingManager::updateSneakSkill($p);
@@ -81,11 +80,6 @@ class AccountManager
         } catch (Exception $e) {
             Server::getInstance()->getLogger()->error($p->getName() . 'のセーブができませんでした' . $e->getMessage());
         }
-        try {
-            SQLManager::$manager->addLog($xuid, 'quit', 'now', null, $reason);
-        } catch (Exception $e) {
-            Server::getInstance()->getLogger()->error("[Log] {$p->getName()} の処理中に " . $e->getMessage());
-        }
         self::setValue($xuid, 'rejoin', 60 * 3 * 20);
     }
 
@@ -101,14 +95,12 @@ class AccountManager
         $user = SQLManager::$manager->getUser($xuid);
         $skill = $user->skill;
         $logDetail = $bl->x . ':' . $bl->y . ':' . $bl->z . '/' . $item->getVanillaName() . '/' . $bl->getName();
-        SQLManager::$manager->addLog($xuid, 'break', 'now', null, $logDetail);
         $user->addXp();
         if ($skill instanceof BreakSkill && $p->isSurvival()) {
             if (!self::hasValue($xuid, 'skill_cool_time') && !self::hasValue($xuid, 'skill_active') &&
                 !($p->isSneaking() && !SettingManager::isEnableOption($xuid, SettingConst::SNEAK_SKILL))) {
                 AccountManager::setValue($xuid, 'skill_active');
                 $logDetail = $bl->x . ':' . $bl->y . ':' . $bl->z . '/' . $skill->id;
-                SQLManager::$manager->addLog($xuid, 'skill', 'now', null, $logDetail);
                 SkillManager::skillActive($p, $bl);
                 AccountManager::setValue($xuid, 'skill_active', 0);
             }
