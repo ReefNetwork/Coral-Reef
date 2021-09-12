@@ -64,12 +64,8 @@ class SettingManager
             function (array $rows) use ($p) {
                 $row = array_shift($rows);
                 $bool = false;
-                if (isset($row['value'])) {
-                    if ($row['value'] === 'true') $bool = true;
-                }
-                if (!isset(self::$settingCache[$p->getXuid()])) {
-                    self::$settingCache[$p->getXuid()] = [];
-                }
+                if (isset($row['value'])) if ($row['value'] === 'true') $bool = true;
+                if (!isset(self::$settingCache[$p->getXuid()])) self::$settingCache[$p->getXuid()] = [];
                 self::$settingCache[$p->getXuid()][] = $bool;
             }, function (SqlError $error) use ($p) {
                 $p->sendMessage('スキルの設定を読み込み中にエラーが発生しました');
@@ -77,10 +73,25 @@ class SettingManager
             });
     }
 
-    static function isSneakSkill(string $xuid): bool
+    static function updateServerTip(Player $p, bool $bool = null): void
     {
-        if (isset(self::$settingCache[$xuid]) && isset(self::$settingCache[$xuid][SettingConst::SNEAK_SKILL])) {
-            return self::$settingCache[$xuid][SettingConst::SNEAK_SKILL];
+        SQLManager::$manager->getValue($p->getXuid(), SQLConst::TYPE_SETTINGS, SettingConst::HIDE_SERVER_TIP,
+            function (array $rows) use ($p) {
+                $row = array_shift($rows);
+                $bool = false;
+                if (isset($row['value'])) if ($row['value'] === 'true') $bool = true;
+                if (!isset(self::$settingCache[$p->getXuid()])) self::$settingCache[$p->getXuid()] = [];
+                self::$settingCache[$p->getXuid()][] = $bool;
+            }, function (SqlError $error) use ($p) {
+                $p->sendMessage('ヒントの設定を読み込み中にエラーが発生しました');
+                Server::getInstance()->getLogger()->warning("[setting serverTip]" . $error->getMessage());
+            });
+    }
+
+    static function isEnableOption(string $xuid, string $key): bool
+    {
+        if (isset(self::$settingCache[$xuid]) && isset(self::$settingCache[$xuid][$key])) {
+            return self::$settingCache[$xuid][$key];
         }
         return false;
     }

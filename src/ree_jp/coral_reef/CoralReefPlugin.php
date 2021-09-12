@@ -23,6 +23,7 @@ use ree_jp\coral_reef\discord\DiscordBot;
 use ree_jp\coral_reef\land\LandManager;
 use ree_jp\coral_reef\sql\SQLManager;
 use ree_jp\coral_reef\task\DataSaveTask;
+use ree_jp\coral_reef\task\SendServerTipTask;
 
 class CoralReefPlugin extends PluginBase
 {
@@ -45,6 +46,7 @@ class CoralReefPlugin extends PluginBase
         $this->getServer()->getPluginManager()->registerEvents(new EventListener(), $this);
         $this->getServer()->getCommandMap()->register('menu', new MenuCommand($this));
         $this->getScheduler()->scheduleRepeatingTask(new DataSaveTask(), 20);
+        $this->getScheduler()->scheduleRepeatingTask(new SendServerTipTask(), 100);
         $this->getScheduler()->scheduleRepeatingTask(new ClosureTask(function (int $currentTick): void {
             foreach (Server::getInstance()->getOnlinePlayers() as $p) ScoreBoardManager::sendScoreBoard($p);
         }), 10);

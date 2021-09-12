@@ -134,7 +134,7 @@ class EventListener implements Listener
             $p->setFood($p->getMaxFood());
             $p->teleport(Server::getInstance()->getDefaultLevel()->getSpawnLocation());
             Server::getInstance()->broadcastMessage(TextFormat::DARK_GRAY . '[死亡] ' . $p->getDisplayName());
-            $p->sendTip("死亡しました");
+            $p->sendTitle("死亡しました");
         }
     }
 

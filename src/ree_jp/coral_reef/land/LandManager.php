@@ -90,12 +90,14 @@ class LandManager
         if (in_array($p->getLevel()->getFolderName(), ['lobby', 'lobby2']) && !($p->isOp() && $p->isCreative())) {
             if (is_null($message)) return false;
             $p->sendTip($message);
+            AccountManager::setValue($p->getXuid(), 'tip_cool_time', 60);
         } else {
             $land = self::$instance->getLand($bl);
             if (is_null($land) || $land->xuid === $p->getXuid() || PartyForm::isParty($land->xuid, $p->getXuid())) return false;
 
             $name = AccountManager::getUserName($land->xuid);
             $p->sendTip("この土地は$name によって保護されています($land->name)");
+            AccountManager::setValue($p->getXuid(), 'tip_cool_time', 60);
             if ($p->isOp() && $p->isCreative()) return false;
         }
         if (!AccountManager::hasValue($p->getXuid(), 'protect_warning')) {

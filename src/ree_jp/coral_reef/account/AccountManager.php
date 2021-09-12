@@ -22,6 +22,7 @@ use pocketmine\Server;
 use ree_jp\coral_reef\CoralReefPlugin;
 use ree_jp\coral_reef\skill\BreakSkill;
 use ree_jp\coral_reef\skill\SkillManager;
+use ree_jp\coral_reef\sql\SettingConst;
 use ree_jp\coral_reef\sql\SQLManager;
 
 class AccountManager
@@ -66,6 +67,7 @@ class AccountManager
         SettingManager::updateNickName($p);
         SettingManager::updateShowCoordinates($p);
         SettingManager::updateSneakSkill($p);
+        SettingManager::updateServerTip($p);
     }
 
     static function userQuit(Player $p, string $reason): void
@@ -103,7 +105,7 @@ class AccountManager
         $user->addXp();
         if ($skill instanceof BreakSkill && $p->isSurvival()) {
             if (!self::hasValue($xuid, 'skill_cool_time') && !self::hasValue($xuid, 'skill_active') &&
-                !($p->isSneaking() && SettingManager::isSneakSkill($xuid))) {
+                !($p->isSneaking() && !SettingManager::isEnableOption($xuid, SettingConst::SNEAK_SKILL))) {
                 AccountManager::setValue($xuid, 'skill_active');
                 $logDetail = $bl->x . ':' . $bl->y . ':' . $bl->z . '/' . $skill->id;
                 SQLManager::$manager->addLog($xuid, 'skill', 'now', null, $logDetail);

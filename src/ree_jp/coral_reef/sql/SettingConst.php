@@ -15,5 +15,6 @@ class SettingConst
 {
     const COORDINATES = 'hideCoordinates';
     const SNEAK_SKILL = 'sneakSkill';
+    const HIDE_SERVER_TIP = 'hideServerTip';
     const NICK_NAME = 'nickName';
 }
