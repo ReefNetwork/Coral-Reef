@@ -27,11 +27,13 @@ class GatyaManager
         SQLManager::$manager->getLog($xuid, SQLConst::LOG_GATYA, function (array $rows) use ($number, $p, $xuid) {
             for ($i = 1; $i <= $number; $i++) {
                 $firstRand = mt_rand(1, 1000);
-                $isLimit = false;
-                for ($i = 0; ($i < 100) || $isLimit; $i++) { // 99回のガチャ履歴を調べてReefRareを引いてなかったら確定
+                $isLimit = true;
+                for ($i = 0; $i < 100; $i++) { // 99回のガチャ履歴を調べてReefRareを引いてなかったら確定
                     $resultLog = array_pop($rows);
-                    if (is_null($resultLog)) break;
-                    if ($resultLog['subtype'] === 'ReefRare') $isLimit = true;
+                    if (is_null($resultLog) || ($resultLog['subtype'] === 'ReefRare')) {
+                        $isLimit = false;
+                        break;
+                    }
                 }
 
                 switch (true) {
