@@ -12,6 +12,8 @@
 namespace ree_jp\coral_reef\gatya;
 
 use Closure;
+use pocketmine\item\Item;
+use pocketmine\item\ItemIds;
 use pocketmine\Player;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat;
@@ -39,8 +41,29 @@ class GatyaManager
 
             switch (true) {
                 case ($firstRand <= 5) || $isLimit:// 0.5% or 天井
-                    self::reduceTicket($p, SQLConst::TICKETS_NORMAL, 1, 'ReefRare', '', function () use ($number, $p) {
-                        $p->sendMessage('ガチャを引きました(レア度: ' . TextFormat::GREEN . 'REEFレア' . TextFormat::RESET . ')');
+                    switch (mt_rand(1, 4)) {
+                        case 1:
+                            $item = ReefTools::getReef($xuid, ReefTools::PICKAXE);
+                            $itemDescription = 'reef_pickaxe';
+                            break;
+                        case 2:
+                            $item = Item::get(ItemIds::GOLDEN_AXE, ReefTools::AXE);
+                            $itemDescription = 'reef_axe';
+                            break;
+                        case 3:
+                            $item = Item::get(ItemIds::GOLDEN_HOE, ReefTools::HOE);
+                            $itemDescription = 'reef_hoe';
+                            break;
+                        default:
+                            $p->sendMessage('エラーが発生しました');
+                            return;
+                    }
+
+                    self::reduceTicket($p, SQLConst::TICKETS_NORMAL, 1, 'ReefRare', $itemDescription, function () use ($item, $number, $p) {
+                        if ($p->getInventory()->canAddItem($item)) {
+                            $p->getInventory()->addItem($item);
+                        } else // TODO
+                            $p->sendMessage('ガチャを引きました(レア度: ' . TextFormat::GREEN . 'REEFレア' . TextFormat::RESET . ')');
                         $broadMessage = $p->getDisplayName() . 'さんが' . TextFormat::GREEN . 'REEFレア' . TextFormat::RESET . 'を引きました';
                         Server::getInstance()->broadcastMessage($broadMessage);
                         CoralReefPlugin::$plugin->discordBot->sendChat($broadMessage);
