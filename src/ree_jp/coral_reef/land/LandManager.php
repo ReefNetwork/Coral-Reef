@@ -12,7 +12,6 @@
 namespace ree_jp\coral_reef\land;
 
 use Exception;
-use pocketmine\block\Block;
 use pocketmine\level\particle\PortalParticle;
 use pocketmine\level\Position;
 use pocketmine\level\sound\GenericSound;
@@ -85,14 +84,14 @@ class LandManager
         return null;
     }
 
-    public function protect(Player $p, Block $bl, ?string $message): bool
+    public function protect(Player $p, Position $pos, ?string $message): bool
     {
         if (in_array($p->getLevel()->getFolderName(), ['lobby', 'lobby2']) && !($p->isOp() && $p->isCreative())) {
             if (is_null($message)) return false;
             $p->sendTip($message);
             AccountManager::setValue($p->getXuid(), 'tip_cool_time', 60);
         } else {
-            $land = self::$instance->getLand($bl);
+            $land = self::$instance->getLand($pos);
             if (is_null($land) || $land->xuid === $p->getXuid() || PartyForm::isParty($land->xuid, $p->getXuid())) return false;
 
             $name = AccountManager::getUserName($land->xuid);
@@ -102,8 +101,8 @@ class LandManager
         }
         if (!AccountManager::hasValue($p->getXuid(), 'protect_warning')) {
             AccountManager::setValue($p->getXuid(), 'protect_warning', 10);
-            $p->getLevelNonNull()->addSound(new GenericSound($bl, LevelEventPacket::EVENT_SOUND_PORTAL), [$p]);
-            $particleVec = $bl->add(0.5, 1.5, 0.5);
+            $p->getLevelNonNull()->addSound(new GenericSound($pos, LevelEventPacket::EVENT_SOUND_PORTAL), [$p]);
+            $particleVec = $pos->add(0.5, 1.5, 0.5);
             for ($count = 0; $count < 30; $count++) {
                 $p->getLevelNonNull()->addParticle(new PortalParticle(
                     $particleVec->add(mt_rand(-10, 10) * 0.1, 0, mt_rand(-10, 10) * 0.1)), [$p]);

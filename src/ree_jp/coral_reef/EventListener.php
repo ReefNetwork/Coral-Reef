@@ -25,8 +25,11 @@ use pocketmine\event\player\PlayerInteractEvent;
 use pocketmine\event\player\PlayerJoinEvent;
 use pocketmine\event\player\PlayerLoginEvent;
 use pocketmine\event\player\PlayerQuitEvent;
+use pocketmine\event\server\DataPacketReceiveEvent;
 use pocketmine\item\Item;
 use pocketmine\item\ItemIds;
+use pocketmine\level\Position;
+use pocketmine\network\mcpe\protocol\ItemFrameDropItemPacket;
 use pocketmine\Player;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat;
@@ -232,6 +235,16 @@ class EventListener implements Listener
             $p->setFlying(false);
             $p->setAllowFlight(false);
             $p->sendMessage('モードが変わったため飛行を無効化しました');
+        }
+    }
+
+    public function onReceived(DataPacketReceiveEvent $ev)
+    {
+        $pk = $ev->getPacket();
+        $p = $ev->getPlayer();
+        if ($pk instanceof ItemFrameDropItemPacket) {
+            $ev->setCancelled(LandManager::$instance->protect($p, new Position($pk->x, $pk->y, $pk->z, $p->getLevel()),
+                'このワールドで額縁を変更することはできません'));
         }
     }
 }
