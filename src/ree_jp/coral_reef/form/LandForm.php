@@ -58,7 +58,7 @@ class LandForm
         $aabb = $land->aabb;
         $space = (($aabb->maxX - $aabb->minX) + 1) * (($aabb->maxZ - $aabb->minZ) + 1);
         return new MenuForm('Land -> Edit', "土地保護の名前: $land->name\nワールド: $land->level\nX座標: $aabb->minX - $aabb->maxX\n
-        Z座標: $aabb->minZ - $aabb->maxZ\n大きさ: $space ブロック", [new Button('土地を削除する')], function (Player $p, Button $button) use ($land) {
+        Z座標: $aabb->minZ - $aabb->maxZ\n大きさ: $space ブロック", [new Button('土地を削除する')], function (Player $p, Button $button) use ($land): void {
             switch ($button->getValue()) {
                 case 0:
                     $p->sendForm(new ModalForm('LandEdit -> Delete', "本当に$land->name を削除しますか?",
