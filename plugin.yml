@@ -1,9 +1,9 @@
-name: CoralReef for Reef Server
+name: CoralReef
 main: ree_jp\coral_reef\CoralReefPlugin
 api: 3.0.0
 author: Ree-jp
 website: https://reef.ree-jp.net/
-version: 0.1
+version: 0.0.1
 depend:
   - EasyForms
   - StackStorage
