@@ -17,6 +17,9 @@ class SQLConst
     const TYPE_NULL = 'empty';
 
     const TYPE_SETTINGS = 'setting';
+    const TYPE_TICKETS = 'tickets';
+
+    const TICKETS_NORMAL = 'normal_tickets';
 
     const LOG_GATYA = 'gatya';
 }

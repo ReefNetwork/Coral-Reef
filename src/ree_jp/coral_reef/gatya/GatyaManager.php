@@ -11,6 +11,7 @@
 
 namespace ree_jp\coral_reef\gatya;
 
+use Closure;
 use pocketmine\Player;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat;
@@ -23,57 +24,89 @@ class GatyaManager
 {
     static function normalGatya(Player $p, int $number = 1): void
     {
+        if ($number <= 0) return;
         $xuid = $p->getXuid();
         SQLManager::$manager->getLog($xuid, SQLConst::LOG_GATYA, function (array $rows) use ($number, $p, $xuid) {
-            for ($i = 1; $i <= $number; $i++) {
-                $firstRand = mt_rand(1, 1000);
-                $isLimit = true;
-                for ($i = 0; $i < 100; $i++) { // 99回のガチャ履歴を調べてReefRareを引いてなかったら確定
-                    $resultLog = array_pop($rows);
-                    if (is_null($resultLog) || ($resultLog['subtype'] === 'ReefRare')) {
-                        $isLimit = false;
-                        break;
-                    }
+            $firstRand = mt_rand(1, 1000);
+            $isLimit = true;
+            for ($i = 0; $i < 100; $i++) { // 99回のガチャ履歴を調べてReefRareを引いてなかったら確定
+                $resultLog = array_pop($rows);
+                if (is_null($resultLog) || ($resultLog['subtype'] === 'ReefRare')) {
+                    $isLimit = false;
+                    break;
                 }
+            }
 
-                switch (true) {
-                    case ($firstRand <= 5) || $isLimit:// 0.5% or 天井
-                        $rows[] = ['subtype' => 'ReefRare'];
-                        SQLManager::$manager->addLog($xuid, SQLConst::LOG_GATYA, 'ReefRare', '', SQLConst::NOW_TIME);
+            switch (true) {
+                case ($firstRand <= 5) || $isLimit:// 0.5% or 天井
+                    self::reduceTicket($p, SQLConst::TICKETS_NORMAL, 1, 'ReefRare', '', function () use ($number, $p) {
                         $p->sendMessage('ガチャを引きました(レア度: ' . TextFormat::GREEN . 'REEFレア' . TextFormat::RESET . ')');
                         $broadMessage = $p->getDisplayName() . 'さんが' . TextFormat::GREEN . 'REEFレア' . TextFormat::RESET . 'を引きました';
                         Server::getInstance()->broadcastMessage($broadMessage);
                         CoralReefPlugin::$plugin->discordBot->sendChat($broadMessage);
-                        break;
+                        if ($number > 1) self::normalGatya($p, --$number);
+                    });
+                    break;
 
-                    case $firstRand <= (5 + 25):// 2.5%
-                        $rows[] = ['subtype' => 'UltimateRare'];
-                        SQLManager::$manager->addLog($xuid, SQLConst::LOG_GATYA, 'UltimateRare', '', SQLConst::NOW_TIME);
+                case $firstRand <= (5 + 25):// 2.5%
+                    self::reduceTicket($p, SQLConst::TICKETS_NORMAL, 1, 'UltimateRare', '', function () use ($number, $p) {
                         $p->sendMessage('ガチャを引きました(レア度: ' . TextFormat::GOLD . 'ウルトラレア[2.5%]' . TextFormat::RESET . ')');
-                        break;
+                        if ($number > 1) self::normalGatya($p, --$number);
+                    });
+                    break;
 
-                    case $firstRand <= (30 + 100):// 10%
-                        $rows[] = ['subtype' => 'SuperRare'];
-                        SQLManager::$manager->addLog($xuid, SQLConst::LOG_GATYA, 'SuperRare', '', SQLConst::NOW_TIME);
+                case $firstRand <= (30 + 100):// 10%
+                    self::reduceTicket($p, SQLConst::TICKETS_NORMAL, 1, 'SuperRare', '', function () use ($number, $p) {
                         $p->sendMessage('ガチャを引きました(レア度: ' . TextFormat::BLUE . 'スーパーレア[10%]' . TextFormat::RESET . ')');
-                        break;
+                        if ($number > 1) self::normalGatya($p, --$number);
+                    });
+                    break;
 
-                    case $firstRand <= (130 + 300):// 30%
-                        $rows[] = ['subtype' => 'Rare'];
-                        SQLManager::$manager->addLog($xuid, SQLConst::LOG_GATYA, 'Rare', '', SQLConst::NOW_TIME);
+                case $firstRand <= (130 + 300):// 30%
+                    self::reduceTicket($p, SQLConst::TICKETS_NORMAL, 1, 'Rare', '', function () use ($number, $p) {
                         $p->sendMessage('ガチャを引きました(レア度: ' . TextFormat::AQUA . 'レア[30%]' . TextFormat::RESET . ')');
-                        break;
+                        if ($number > 1) self::normalGatya($p, --$number);
+                    });
+                    break;
 
-                    default:// 残り
-                        $rows[] = ['subtype' => 'Normal'];
-                        SQLManager::$manager->addLog($xuid, SQLConst::LOG_GATYA, 'Normal', '', SQLConst::NOW_TIME);
+                default:// 残り
+                    self::reduceTicket($p, SQLConst::TICKETS_NORMAL, 1, 'Normal', '', function () use ($number, $p) {
                         $p->sendMessage('ガチャを引きました(レア度: ' . TextFormat::DARK_GRAY . 'ノーマル' . TextFormat::RESET . ')');
-                        break;
-                }
+                        if ($number > 1) self::normalGatya($p, --$number);
+                    });
+                    break;
             }
         }, function (SqlError $error) use ($p) {
             $p->sendMessage('エラーが発生しました');
-            Server::getInstance()->getLogger()->error('[Gatya] ' . $p->getName() . 'さんの処理中に' . $error->getErrorMessage());
+            Server::getInstance()->getLogger()->error('[GatyaCheckLimit] ' . $p->getName() . 'さんの処理中に' . $error->getErrorMessage());
         });
+    }
+
+    private static function reduceTicket(Player $p, string $subtype, int $need, string $rare, string $logValue, Closure $func): void
+    {
+        // ガチャチケットが足りるか確認
+        SQLManager::$manager->getValue($p->getXuid(), SQLConst::TYPE_TICKETS, $subtype,
+            function (array $rows) use ($logValue, $rare, $func, $subtype, $p, $need) {
+                $row = array_shift($rows);
+                if (isset($row['value']) && intval($row['value']) >= $need) {
+                    // ログに追加
+                    SQLManager::$manager->addLog($p->getXuid(), SQLConst::LOG_GATYA, $rare, $logValue, SQLConst::NOW_TIME,
+                        function (int $insertId, int $affectedRows) use ($func, $need, $row, $subtype, $p) {
+                            // ガチャチケットを減らす
+                            SQLManager::$manager->setValue($p->getXuid(), SQLConst::TYPE_TICKETS, $subtype, $row['value'] - $need, $func,
+                                function (SqlError $error) use ($p) {
+                                    $p->sendMessage('エラーが発生しました');
+                                    Server::getInstance()->getLogger()->error('[GatyaReduceTicket] ' . $p->getName() . 'さんの処理中に' . $error->getErrorMessage());
+                                });
+                        }, function (SqlError $error) use ($p) {
+                            $p->sendMessage('エラーが発生しました');
+                            Server::getInstance()->getLogger()->error('[GatyaLogAdd] ' . $p->getName() . 'さんの処理中に' . $error->getErrorMessage());
+                        });
+                }
+                $p->sendMessage('チケットが足りません');
+            }, function (SqlError $error) use ($p) {
+                $p->sendMessage('エラーが発生しました');
+                Server::getInstance()->getLogger()->error('[GatyaCheckTicket] ' . $p->getName() . 'さんの処理中に' . $error->getErrorMessage());
+            });
     }
 }
