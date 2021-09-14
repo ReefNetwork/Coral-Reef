@@ -208,18 +208,17 @@ class SQLManager
 
     public function deleteProtectLand(LandData $land, Player $p): void
     {
-        $this->db->executeGeneric('coral_reef.land.delete', ['xuid' => $land->xuid, 'name' => $land->name],
-            function (int $insertId, int $affectedRows) use ($p, $land) {
-                foreach (LandManager::$instance->lands as $key => $cacheLand) {
-                    if ($cacheLand->xuid === $land->xuid && $cacheLand->name === $land->name) {
-                        array_splice(LandManager::$instance->lands, $key, 1);
-                    }
+        $this->db->executeGeneric('coral_reef.land.delete', ['xuid' => $land->xuid, 'name' => $land->name], function () use ($p, $land) {
+            foreach (LandManager::$instance->lands as $key => $cacheLand) {
+                if ($cacheLand->xuid === $land->xuid && $cacheLand->name === $land->name) {
+                    array_splice(LandManager::$instance->lands, $key, 1);
                 }
-                $p->sendMessage('土地を削除しました');
-            }, function (SqlError $error) use ($p, $land) {
-                Server::getInstance()->getLogger()->error("[LandSQL] $land->name の削除中に" . $error->getErrorMessage());
-                $p->sendMessage('エラーが発生しました');
-            });
+            }
+            $p->sendMessage('土地を削除しました');
+        }, function (SqlError $error) use ($p, $land) {
+            Server::getInstance()->getLogger()->error("[LandSQL] $land->name の削除中に" . $error->getErrorMessage());
+            $p->sendMessage('エラーが発生しました');
+        });
     }
 
     public function addLog(string $xuid, string $type, ?string $subType, ?string $value, ?string $time, ?Closure $func, ?Closure $failure): void
