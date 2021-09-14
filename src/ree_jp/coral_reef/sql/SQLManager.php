@@ -17,9 +17,11 @@ use PDOException;
 use pocketmine\Player;
 use pocketmine\Server;
 use pocketmine\utils\Config;
+use pocketmine\utils\TextFormat;
 use poggit\libasynql\DataConnector;
 use poggit\libasynql\libasynql;
 use poggit\libasynql\SqlError;
+use ree_jp\coral_reef\account\AccountManager;
 use ree_jp\coral_reef\account\UserAccount;
 use ree_jp\coral_reef\CoralReefPlugin;
 use ree_jp\coral_reef\land\LandData;
@@ -47,7 +49,12 @@ class SQLManager
         ]);
         Server::getInstance()->getLogger()->info('[SQL] 準備しています');
         $this->createTable();
+
+        // BANデータを用意しとく
         $this->loadBan();
+        // サーバーアカウントを作成(初期スポーンの保護などに使う)
+        $this->setUser('0', TextFormat::GREEN . 'Reef ' . TextFormat::YELLOW . 'Server' . TextFormat::RESET, '0.0.0.0');
+
         $this->db->waitAll();
         Server::getInstance()->getLogger()->info('[SQL] complete');
     }
@@ -89,22 +96,24 @@ class SQLManager
 
     public function loadUser(string $xuid, string $name): void
     {
+        // ユーザーデータを読み込む
         $this->db->executeSelect('coral_reef.user.get', ['xuid' => intval($xuid)], function (array $rows) use ($name, $xuid) {
             $arrayAccount = array_shift($rows);
             if (isset($arrayAccount['xuid']) && isset($arrayAccount['name']) && isset($arrayAccount['experience'])) {
                 $skill = $arrayAccount['skill'] ?? null;
                 $account = new UserAccount($arrayAccount['xuid'], $arrayAccount['name'], intval($arrayAccount['experience']), $skill);
                 $this->users[$account->xuid] = $account;
-            } elseif (empty($arrayAccount)) {
+            } elseif (empty($arrayAccount)) { // データが存在しないとき新しくデータを作る
                 $this->users[$xuid] = new UserAccount($xuid, $name, 0, null);
-            } else {
+            } else { // データ壊れてるよ
                 Server::getInstance()->getLogger()->warning($xuid . 'のデータの読み込みに失敗しました');
                 return;
             }
             $p = Server::getInstance()->getPlayer($name);
             if (is_null($p)) return;
             $p->sendMessage('データを読み込みました');
-            if ($p->isImmobile()) $p->setImmobile(false);
+            // クライアント側の準備が整ったのにデータを読み込めてなかったら動けなくしているため解除する
+            if (AccountManager::hasValue($xuid, 'join_wait')) $p->setImmobile(false);
         });
         $this->db->executeSelect('coral_reef.values.get.all_subtype', ['xuid' => intval($xuid), 'type' => SQLConst::TYPE_SETTINGS],
             function (array $rows) use ($xuid) {
@@ -127,6 +136,7 @@ class SQLManager
     public function setUser(string $xuid, string $name, string $ip): void
     {
         $this->db->executeSelect('coral_reef.user.get_ip', ['xuid' => intval($xuid)], function (array $rows) use ($ip, $name, $xuid) {
+            // 新しいipアドレスからのログインだったら記録する
             $ips = [];
             if (isset($rows['ips'])) {
                 $ips = explode(':', $rows['ips']);
