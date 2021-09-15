@@ -53,7 +53,7 @@ CREATE TABLE IF NOT EXISTS VIRTUAL_VALUES
     xuid    BIGINT UNSIGNED NOT NULL,
     type    VARCHAR(99)     NOT NULL,
     subtype VARCHAR(99)     NOT NULL,
-    value   VARCHAR(99)
+    value VARCHAR(9999)
 );
 -- #        }
 -- #        { log
@@ -143,6 +143,16 @@ INSERT INTO VIRTUAL_VALUES
 VALUES (:xuid, :type, :subtype, :value)
 ON DUPLICATE KEY UPDATE value = :value;
 -- #        }
+-- #        { delete
+-- #        :xuid int
+-- #        :type string
+-- #        :subtype string
+DELETE
+FROM VIRTUAL_VALUES
+WHERE xuid = :xuid
+  AND type = :type
+  AND subtype = :subtype;
+-- #        }
 -- #    }
 -- #    { warp
 -- #        { get
@@ -178,6 +188,16 @@ WHERE xuid = :xuid
 -- #        { get
 SELECT *
 FROM LAND;
+/*
+ *  CCCCC                        lll RRRRRR                 fff
+ * CC    C  oooo  rr rr    aa aa lll RR   RR   eee    eee  ff
+ * CC      oo  oo rrr  r  aa aaa lll RRRRRR  ee   e ee   e ffff
+ * CC    C oo  oo rr     aa  aaa lll RR  RR  eeeee  eeeee  ff
+ *  CCCCC   oooo  rr      aaa aa lll RR   RR  eeeee  eeeee ff
+ *
+ * Copyright (c) 2021. Ree-jp(https://ree-jp.net)
+ */
+
 -- #        }
 -- #        { create
 -- #        :xuid int
@@ -189,16 +209,6 @@ FROM LAND;
 -- #        :sz int
 INSERT INTO LAND
 VALUES (:xuid, :name, :level, :mx, :sx, :mz, :sz);
-/*
- *  CCCCC                        lll RRRRRR                 fff
- * CC    C  oooo  rr rr    aa aa lll RR   RR   eee    eee  ff
- * CC      oo  oo rrr  r  aa aaa lll RRRRRR  ee   e ee   e ffff
- * CC    C oo  oo rr     aa  aaa lll RR  RR  eeeee  eeeee  ff
- *  CCCCC   oooo  rr      aaa aa lll RR   RR  eeeee  eeeee ff
- *
- * Copyright (c) 2021. Ree-jp(https://ree-jp.net)
- */
-
 -- #        }
 -- #        { delete
 -- #        :xuid int

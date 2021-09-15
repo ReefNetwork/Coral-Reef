@@ -115,16 +115,15 @@ class SQLManager
             // クライアント側の準備が整ったのにデータを読み込めてなかったら動けなくしているため解除する
             if (AccountManager::hasValue($xuid, 'join_wait')) $p->setImmobile(false);
         });
-        $this->db->executeSelect('coral_reef.values.get.all_subtype', ['xuid' => intval($xuid), 'type' => SQLConst::TYPE_SETTINGS],
-            function (array $rows) use ($xuid) {
-                foreach ($rows as $option) {
-                    if (array_key_exists('subtype', $option) && array_key_exists('value', $option)) {
-                        $this->setting[$xuid][$option['subtype']] = $option['value'];
-                    } elseif (!empty($rows)) {
-                        Server::getInstance()->getLogger()->warning($xuid . 'の設定の読み込みに失敗しました');
-                    }
+        $this->getAllSubtypeValue($xuid, SQLConst::TYPE_SETTINGS, function (array $rows) use ($xuid) {
+            foreach ($rows as $option) {
+                if (array_key_exists('subtype', $option) && array_key_exists('value', $option)) {
+                    $this->setting[$xuid][$option['subtype']] = $option['value'];
+                } elseif (!empty($rows)) {
+                    Server::getInstance()->getLogger()->warning($xuid . 'の設定の読み込みに失敗しました');
                 }
-            });
+            }
+        });
     }
 
     public function getUser(string $xuid): ?UserAccount
@@ -168,19 +167,31 @@ class SQLManager
             });
     }
 
-    public function getValue(string $xuid, string $type, string $subtype, callable $func, ?callable $failure = null): void
+    public function getValue(string $xuid, string $type, string $subtype, ?Closure $func, ?Closure $failure = null): void
     {
         $this->db->executeSelect('coral_reef.values.get.one', ['xuid' => intval($xuid), 'type' => strtolower($type), 'subtype' => strtolower($subtype)],
             $func, $failure);
     }
 
-    public function setValue(string $xuid, string $type, string $subtype, ?string $value, callable $func, ?callable $failure = null): void
+    public function getAllSubtypeValue(string $xuid, string $type, ?Closure $func, ?Closure $failure = null): void
+    {
+        $this->db->executeSelect('coral_reef.values.get.all_subtype', ['xuid' => $xuid, 'type' => strtolower($type)],
+            $func, $failure);
+    }
+
+    public function setValue(string $xuid, string $type, string $subtype, ?string $value, ?Closure $func, ?Closure $failure = null): void
     {
         $this->db->executeInsert('coral_reef.values.set',
             ['xuid' => intval($xuid), 'type' => strtolower($type), 'subtype' => strtolower($subtype), 'value' => $value], $func, $failure);
     }
 
-    public function getWarps(string $xuid, Closure $func): void
+    public function deleteValue(string $xuid, string $type, string $subtype, ?Closure $func, ?Closure $failure = null): void
+    {
+        $this->db->executeGeneric('coral_reef.value.delete', ['xuid' => intval($xuid), 'type' => strtolower($type), 'subtype' => strtolower($subtype)],
+            $func, $failure);
+    }
+
+    public function getWarps(string $xuid, ?Closure $func): void
     {
         $this->db->executeSelect('coral_reef.warp.get', ['xuid' => intval($xuid)], $func, $this->noticeByXUid($xuid, 'エラーが発生しました'));
     }
@@ -233,7 +244,7 @@ class SQLManager
 
     public function addLog(string $xuid, string $type, ?string $subType, ?string $value, ?string $time, ?Closure $func, ?Closure $failure): void
     {
-        if ($time === 'now') $time = date("Y-m-d H:i:s");
+        if ($time === 'now') $time = date(SQLConst::DATE_FORMAT);
         $this->db->executeInsert('coral_reef.log.add', ['xuid' => $xuid, 'type' => $type, 'subtype' => $subType, 'value' => $value, 'time' => $time],
             $func, $failure);
     }

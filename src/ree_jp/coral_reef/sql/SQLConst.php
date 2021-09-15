@@ -13,11 +13,14 @@ namespace ree_jp\coral_reef\sql;
 
 class SQLConst
 {
+    const DATE_FORMAT = 'Y-m-d H:i:s';
+
     const NOW_TIME = 'now';
     const TYPE_NULL = 'empty';
 
     const TYPE_SETTINGS = 'setting';
     const TYPE_TICKETS = 'tickets';
+    const TYPE_GIFT = 'gift';
 
     const TICKETS_NORMAL = 'normal_tickets';
 
