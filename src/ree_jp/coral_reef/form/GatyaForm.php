@@ -26,13 +26,13 @@ class GatyaForm
         SQLManager::$manager->getAllSubtypeValue($p->getXuid(), SQLConst::TYPE_TICKETS, function (array $rows) use ($p) {
             $normal = $rows[SQLConst::TICKETS_NORMAL] ?? 0;
             $p->sendForm(new MenuForm('Menu -> Gatya', "ノーマルガチャチケット: $normal 個", [new Button('ノーマルガチャ')],
-                function (Player $p, Button $button) use ($normal) {
+                function (Player $p, Button $button) use ($normal): void {
                     switch ($button->getValue()) {
                         case 0:
                             $after = -$normal;
                             $p->sendForm(new ModalForm('NormalGatya -> Confirm',
                                 "ノーマルガチャチケットを1個消費してノーマルガチャを回しますか？\n$normal -> $after",
-                                function (Player $p, bool $result) {
+                                function (Player $p, bool $result): void {
                                     if ($result) {
                                         GatyaManager::normalGatya($p);
                                     } else self::sendGatyaForm($p);

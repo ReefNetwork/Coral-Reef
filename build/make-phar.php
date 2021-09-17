@@ -41,9 +41,11 @@ foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($dir)) a
 }
 
 if (isset($argv[1])) {
+    date_default_timezone_set('Asia/Tokyo');
+    $time = date('ymdH');
     str_replace('master', 'dev', $argv[1]);
     $yaml = yaml_parse_file('plugin.yml');
-    $yaml['version'] = $yaml['version'] . '.' . $argv[1];
+    $yaml['version'] = $yaml['version'] . '.' . $time . '.' . $argv[1];
     yaml_emit_file('plugin.yml', $yaml);
 }
 
