@@ -148,8 +148,11 @@ class GatyaManager
                                         GiftManager::addGift($p->getXuid(), new GiftData('0', 'ノーマルガチャ',
                                             time() + (7 * 24 * 60 * 60), [$item]),
                                             function () use ($p) {
-                                                $p->sendMessage('インベントリに入れるスペースがなかったためプレゼントに送信しました');
-                                            }, null);
+                                                $p->sendMessage('ガチャの景品がインベントリに入れるスペースがなかったためプレゼントに送信しました');
+                                            }, function (SqlError $error) use ($item, $p) { // ギフト出来なければ落とす
+                                                $p->dropItem($item);
+                                                $p->sendMessage('ガチャの景品を地面にドロップしました');
+                                            });
                                     }
                                     $p->sendMessage('ガチャを引きました(レア度: ' . TextFormat::GREEN . $stringRare . TextFormat::RESET . ')');
                                     if ($isBroadcast) { // 一定のレア度以上は$isBroadcastをtrueにしてガチャを引いたことを全体に表示させる
