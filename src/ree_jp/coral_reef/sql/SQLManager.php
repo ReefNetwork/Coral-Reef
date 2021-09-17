@@ -251,7 +251,7 @@ class SQLManager
 
     public function getLog(string $xuid, string $type, Closure $func, Closure $failure): void
     {
-        $this->db->executeInsert('coral_reef.log.get.type', ['xuid' => $xuid, 'type' => $type], $func, $failure);
+        $this->db->executeSelect('coral_reef.log.get.type', ['xuid' => $xuid, 'type' => $type], $func, $failure);
     }
 
 
