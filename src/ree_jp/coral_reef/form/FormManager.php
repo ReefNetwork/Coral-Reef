@@ -49,14 +49,14 @@ class FormManager
             $fly_status = '有効';
         }
         $p->sendForm(new MenuForm('ReefServer Menu', "レベル : $level\nレベルアップまで : $necessaryExperience\n経験値 : $exp",
-            [new Button('ストレージ'), new Button("飛行を$fly_status にする"), new Button('ワープ地点'), new Button('ワールド移動'), new Button('スキル設定'), new Button('パーティー'), new Button('土地保護'), new Button('設定')],
+            [new Button('ストレージ'), new Button("飛行を$fly_status にする"), new Button('ワープ地点'), new Button('ワールド移動'),
+                new Button('スキル設定'), new Button('パーティー'), new Button('土地保護'), new Button('ガチャ'), new Button('設定')],
             function (Player $p, Button $button): void {
                 $xuid = $p->getXuid();
                 switch ($button->getValue()) {
                     case 0:
                         Server::getInstance()->dispatchCommand($p, 'stackstorage');
                         break;
-
                     case 1:
                         if (AccountManager::hasValue($xuid, 'fly')) {
                             AccountManager::setValue($xuid, 'fly', 0);
@@ -74,31 +74,27 @@ class FormManager
                             $p->sendMessage('飛行を有効にしました');
                         }
                         break;
-
                     case 2:
                         MyWarpForm::sendWarpForm($p);
                         break;
-
                     case 3:
                         $p->sendForm(self::worldTeleportForm());
                         break;
-
                     case 4:
                         $p->sendForm(self::skillSelectForm($p));
                         break;
-
                     case 5:
                         $p->sendForm(PartyForm::partyForm($xuid));
                         break;
-
                     case 6:
                         $p->sendForm(LandForm::landForm($xuid));
                         break;
-
                     case 7:
+                        GatyaForm::sendGatyaForm($p);
+                        break;
+                    case 8:
                         $p->sendForm(SettingForm::settingForm());
                         break;
-
                     default:
                         $p->sendMessage('ページを開けませんでした');
                 }
