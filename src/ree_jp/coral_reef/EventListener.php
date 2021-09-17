@@ -71,8 +71,10 @@ class EventListener implements Listener
     public function onJoin(PlayerJoinEvent $ev): void
     {
         $p = $ev->getPlayer();
+        $xuid = $p->getXuid();
 
-        if (is_null(SQLManager::$manager->getUser($p->getXuid()))) { // データをまだ読み込めてなかったら動きを止める
+        if (is_null(SQLManager::$manager->getUser($xuid))) { // データをまだ読み込めてなかったら動きを止める
+            AccountManager::setValue($xuid, 'join_wait');
             $p->sendMessage('データを確認しています...');
             $p->setImmobile();
         }
@@ -81,7 +83,7 @@ class EventListener implements Listener
         if (is_null($p->getLastPlayed())) {
             $ev->setJoinMessage($p->getDisplayName() . 'さんが初めて参加しました');
         } else {
-            if (AccountManager::hasValue($p->getXuid(), 'rejoin')) {
+            if (AccountManager::hasValue($xuid, 'rejoin')) {
                 $ev->setJoinMessage($p->getDisplayName() . 'さんが再参加しました');
             } else {
                 $ev->setJoinMessage($p->getDisplayName() . 'さんが参加しました');
