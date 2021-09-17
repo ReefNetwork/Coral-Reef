@@ -20,6 +20,7 @@ use pocketmine\utils\TextFormat;
 use ree_jp\coral_reef\account\ScoreBoardManager;
 use ree_jp\coral_reef\command\MenuCommand;
 use ree_jp\coral_reef\discord\DiscordBot;
+use ree_jp\coral_reef\gatya\ReefItems;
 use ree_jp\coral_reef\land\LandManager;
 use ree_jp\coral_reef\sql\SQLManager;
 use ree_jp\coral_reef\task\DataSaveTask;
@@ -67,6 +68,7 @@ class CoralReefPlugin extends PluginBase
             $this->getConfig()->get(ConfigConst::DISCORD_SERVER_ID),
             $this->getConfig()->get(ConfigConst::DISCORD_CHAT_CHANNEL_ID),
             $this->getConfig()->get(ConfigConst::DISCORD_LOG_CHANNEL_ID));
+        ReefItems::registerAll();
         $this->pluginInformation();
         $this->discordBot->sendStartMessage();
     }

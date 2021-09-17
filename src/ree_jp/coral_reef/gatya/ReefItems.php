@@ -19,26 +19,36 @@ use pocketmine\item\ItemIds;
 use pocketmine\nbt\tag\StringTag;
 use pocketmine\utils\TextFormat;
 
-class ReefTools
+class ReefItems
 {
+    const REEF_SP_ITEM = 'reef_special_item';
     const PICKAXE = 1;
-    const AXE = 2;
-    const HOE = 3;
+    const SHOVEL = 2;
+    const AXE = 3;
+    const HOE = 4;
 
-    static public function getReef(string $xuid, int $type): ?Item
+    static function getItem(string $xuid, int $type): ?Item
     {
         switch ($type) {
             case self::PICKAXE:
                 $item = Item::get(ItemIds::GOLDEN_PICKAXE);
-                $item->setCustomName(TextFormat::GREEN . 'Reef' . TextFormat::GOLD . 'PICKAXE');
+                $item->setNamedTagEntry(new StringTag(self::REEF_SP_ITEM, 'reef_pickaxe'));
+                $item->setCustomName(TextFormat::GREEN . 'Reef' . TextFormat::GOLD . 'Pickaxe');
+                break;
+            case self::SHOVEL:
+                $item = Item::get(ItemIds::GOLDEN_SHOVEL);
+                $item->setNamedTagEntry(new StringTag(self::REEF_SP_ITEM, 'reef_shovel'));
+                $item->setCustomName(TextFormat::GREEN . 'Reef' . TextFormat::GOLD . 'Shovel');
                 break;
             case self::AXE:
                 $item = Item::get(ItemIds::GOLDEN_AXE);
-                $item->setCustomName(TextFormat::GREEN . 'Reef' . TextFormat::GOLD . 'AXE');
+                $item->setNamedTagEntry(new StringTag(self::REEF_SP_ITEM, 'reef_axe'));
+                $item->setCustomName(TextFormat::GREEN . 'Reef' . TextFormat::GOLD . 'Axe');
                 break;
             case self::HOE:
                 $item = Item::get(ItemIds::GOLDEN_HOE);
-                $item->setCustomName(TextFormat::GREEN . 'Reef' . TextFormat::GOLD . 'HOE');
+                $item->setNamedTagEntry(new StringTag(self::REEF_SP_ITEM, 'reef_hoe'));
+                $item->setCustomName(TextFormat::GREEN . 'Reef' . TextFormat::GOLD . 'Hoe');
                 break;
             default:
                 return null;
@@ -50,5 +60,23 @@ class ReefTools
         $item->setNamedTagEntry(new StringTag('owner', $xuid));
         $item->setUnbreakable();
         return $item;
+    }
+
+    static function registerItems(): void
+    {
+        $key = 1;
+        while ($item = self::getItem(0, $key)) {
+            Item::addCreativeItem($item);
+            $key++;
+        }
+    }
+
+    static function registerAll(): void
+    {
+        self::registerItems();
+        UltimateItems::registerItems();
+        SuperItems::registerItems();
+        RareItems::registerItems();
+        NormalItems::registerItems();
     }
 }
