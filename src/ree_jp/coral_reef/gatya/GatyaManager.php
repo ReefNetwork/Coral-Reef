@@ -13,11 +13,12 @@ namespace ree_jp\coral_reef\gatya;
 
 use Closure;
 use pocketmine\item\Item;
-use pocketmine\item\ItemIds;
 use pocketmine\Player;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat;
 use poggit\libasynql\SqlError;
+use ree_jp\coral_reef\account\GiftData;
+use ree_jp\coral_reef\account\GiftManager;
 use ree_jp\coral_reef\CoralReefPlugin;
 use ree_jp\coral_reef\sql\SQLConst;
 use ree_jp\coral_reef\sql\SQLManager;
@@ -38,65 +39,87 @@ class GatyaManager
                     break;
                 }
             }
+            if ($number > 1) { // ガチャの処理が終了後に実行するClosure
+                $func = function () use ($number, $p) {
+                    self::normalGatya($p, --$number);
+                };
+            } else $func = null;
 
             switch (true) {
                 case ($firstRand <= 5) || $isLimit:// 0.5% or 天井
-                    switch (mt_rand(1, 4)) {
+                    switch (mt_rand(1, 3)) {
                         case 1:
-                            $item = ReefTools::getReef($xuid, ReefTools::PICKAXE);
-                            $itemDescription = 'reef_pickaxe';
+                            $item = ReefItems::getItem($xuid, ReefItems::PICKAXE);
                             break;
                         case 2:
-                            $item = Item::get(ItemIds::GOLDEN_AXE, ReefTools::AXE);
-                            $itemDescription = 'reef_axe';
+                            $item = ReefItems::getItem($xuid, ReefItems::AXE);
                             break;
                         case 3:
-                            $item = Item::get(ItemIds::GOLDEN_HOE, ReefTools::HOE);
-                            $itemDescription = 'reef_hoe';
+                            $item = ReefItems::getItem($xuid, ReefItems::HOE);
                             break;
                         default:
                             $p->sendMessage('エラーが発生しました');
                             return;
                     }
-
-                    self::reduceTicket($p, SQLConst::TICKETS_NORMAL, 1, 'ReefRare', $itemDescription, function () use ($item, $number, $p) {
-                        if ($p->getInventory()->canAddItem($item)) {
-                            $p->getInventory()->addItem($item);
-                        } else // TODO
-                            $p->sendMessage('ガチャを引きました(レア度: ' . TextFormat::GREEN . 'REEFレア' . TextFormat::RESET . ')');
-                        $broadMessage = $p->getDisplayName() . 'さんが' . TextFormat::GREEN . 'REEFレア' . TextFormat::RESET . 'を引きました';
-                        Server::getInstance()->broadcastMessage($broadMessage);
-                        CoralReefPlugin::$plugin->discordBot->sendChat($broadMessage);
-                        if ($number > 1) self::normalGatya($p, --$number);
-                    });
+                    self::reduceTicket($p, SQLConst::TICKETS_NORMAL, 1, $item, 'reef_rare',
+                        TextFormat::GREEN . 'REEFレア' . TextFormat::DARK_GRAY . '[0.5%]' . TextFormat::RESET, true, $func);
                     break;
 
                 case $firstRand <= (5 + 25):// 2.5%
-                    self::reduceTicket($p, SQLConst::TICKETS_NORMAL, 1, 'UltimateRare', '', function () use ($number, $p) {
-                        $p->sendMessage('ガチャを引きました(レア度: ' . TextFormat::GOLD . 'ウルトラレア[2.5%]' . TextFormat::RESET . ')');
-                        if ($number > 1) self::normalGatya($p, --$number);
-                    });
+                    switch (mt_rand(1, 3)) {
+                        case 1:
+                            $item = UltimateItems::getItem($xuid, ReefItems::PICKAXE);
+                            break;
+                        case 2:
+                            $item = UltimateItems::getItem($xuid, ReefItems::AXE);
+                            break;
+                        case 3:
+                            $item = UltimateItems::getItem($xuid, ReefItems::SHOVEL);
+                            break;
+                        default:
+                            $p->sendMessage('エラーが発生しました');
+                            return;
+                    }
+                    self::reduceTicket($p, SQLConst::TICKETS_NORMAL, 1, $item, 'ultimate_rare',
+                        TextFormat::GOLD . 'ウルトラレア' . TextFormat::DARK_GRAY . '[2.5%]' . TextFormat::RESET, false, $func);
                     break;
 
                 case $firstRand <= (30 + 100):// 10%
-                    self::reduceTicket($p, SQLConst::TICKETS_NORMAL, 1, 'SuperRare', '', function () use ($number, $p) {
-                        $p->sendMessage('ガチャを引きました(レア度: ' . TextFormat::BLUE . 'スーパーレア[10%]' . TextFormat::RESET . ')');
-                        if ($number > 1) self::normalGatya($p, --$number);
-                    });
+                    switch (mt_rand(1, 2)) {
+                        case 1:
+                            $item = SuperItems::getItem($xuid, ReefItems::PICKAXE);
+                            break;
+                        case 2:
+                            $item = SuperItems::getItem($xuid, ReefItems::SHOVEL);
+                            break;
+                        default:
+                            $p->sendMessage('エラーが発生しました');
+                            return;
+                    }
+                    self::reduceTicket($p, SQLConst::TICKETS_NORMAL, 1, $item, 'super_rare',
+                        TextFormat::BLUE . 'スーパーレア' . TextFormat::DARK_GRAY . '[10%]' . TextFormat::RESET, false, $func);
                     break;
 
                 case $firstRand <= (130 + 300):// 30%
-                    self::reduceTicket($p, SQLConst::TICKETS_NORMAL, 1, 'Rare', '', function () use ($number, $p) {
-                        $p->sendMessage('ガチャを引きました(レア度: ' . TextFormat::AQUA . 'レア[30%]' . TextFormat::RESET . ')');
-                        if ($number > 1) self::normalGatya($p, --$number);
-                    });
+                    switch (mt_rand(1, 2)) {
+                        case 1:
+                            $item = RareItems::getItem($xuid, ReefItems::PICKAXE);
+                            break;
+                        case 2:
+                            $item = RareItems::getItem($xuid, ReefItems::SHOVEL);
+                            break;
+                        default:
+                            $p->sendMessage('エラーが発生しました');
+                            return;
+                    }
+                    self::reduceTicket($p, SQLConst::TICKETS_NORMAL, 1, $item, 'rare',
+                        TextFormat::AQUA . 'レア' . TextFormat::DARK_GRAY . '[30%]' . TextFormat::RESET, false, $func);
                     break;
 
                 default:// 残り
-                    self::reduceTicket($p, SQLConst::TICKETS_NORMAL, 1, 'Normal', '', function () use ($number, $p) {
-                        $p->sendMessage('ガチャを引きました(レア度: ' . TextFormat::DARK_GRAY . 'ノーマル' . TextFormat::RESET . ')');
-                        if ($number > 1) self::normalGatya($p, --$number);
-                    });
+                    $item = NormalItems::getItem($xuid, mt_rand(1, 7));
+                    self::reduceTicket($p, SQLConst::TICKETS_NORMAL, 1, $item, 'normal',
+                        TextFormat::DARK_GRAY . 'ノーマル' . TextFormat::RESET, false, $func);
                     break;
             }
         }, function (SqlError $error) use ($p) {
@@ -105,19 +128,37 @@ class GatyaManager
         });
     }
 
-    private static function reduceTicket(Player $p, string $subtype, int $need, string $rare, string $logValue, Closure $func): void
+    private static function reduceTicket(Player $p, string $subtype, int $need, Item $item, string $rare, string $stringRare, bool $isBroadcast, ?Closure $func): void
     {
         // ガチャチケットが足りるか確認
         SQLManager::$manager->getValue($p->getXuid(), SQLConst::TYPE_TICKETS, $subtype,
-            function (array $rows) use ($logValue, $rare, $func, $subtype, $p, $need) {
+            function (array $rows) use ($stringRare, $func, $isBroadcast, $item, $rare, $subtype, $p, $need) {
                 $row = array_shift($rows);
                 if (isset($row['value']) && intval($row['value']) >= $need) {
                     // ログに追加
-                    SQLManager::$manager->addLog($p->getXuid(), SQLConst::LOG_GATYA, $rare, $logValue, SQLConst::NOW_TIME,
-                        function (int $insertId, int $affectedRows) use ($func, $need, $row, $subtype, $p) {
+                    SQLManager::$manager->addLog($p->getXuid(), SQLConst::LOG_GATYA, $rare,
+                        $item->getNamedTag()->getString(ReefItems::REEF_SP_ITEM, 'unknown'), SQLConst::NOW_TIME,
+                        function (int $insertId, int $affectedRows) use ($stringRare, $func, $rare, $isBroadcast, $item, $need, $row, $subtype, $p) {
                             // ガチャチケットを減らす
-                            SQLManager::$manager->setValue($p->getXuid(), SQLConst::TYPE_TICKETS, $subtype, $row['value'] - $need, $func,
-                                function (SqlError $error) use ($p) {
+                            SQLManager::$manager->setValue($p->getXuid(), SQLConst::TYPE_TICKETS, $subtype, $row['value'] - $need,
+                                function () use ($stringRare, $func, $isBroadcast, $item, $p) {
+                                    if ($p->getInventory()->canAddItem($item)) { // インベントリに空きがあれば追加
+                                        $p->getInventory()->addItem($item);
+                                    } else { // なければギフトに送信
+                                        GiftManager::addGift($p->getXuid(), new GiftData('0', 'ノーマルガチャ',
+                                            time() + (7 * 24 * 60 * 60), [$item]),
+                                            function () use ($p) {
+                                                $p->sendMessage('インベントリに入れるスペースがなかったためプレゼントに送信しました');
+                                            }, null);
+                                    }
+                                    $p->sendMessage('ガチャを引きました(レア度: ' . TextFormat::GREEN . $stringRare . TextFormat::RESET . ')');
+                                    if ($isBroadcast) { // 一定のレア度以上は$isBroadcastをtrueにしてガチャを引いたことを全体に表示させる
+                                        $broadMessage = $p->getDisplayName() . 'さんが' . TextFormat::GREEN . 'REEFレア' . TextFormat::RESET . 'を引きました';
+                                        Server::getInstance()->broadcastMessage($broadMessage);
+                                        CoralReefPlugin::$plugin->discordBot->sendChat($broadMessage);
+                                    }
+                                    $func();
+                                }, function (SqlError $error) use ($p) {
                                     $p->sendMessage('エラーが発生しました');
                                     Server::getInstance()->getLogger()->error('[GatyaReduceTicket] ' . $p->getName() . 'さんの処理中に' . $error->getErrorMessage());
                                 });
