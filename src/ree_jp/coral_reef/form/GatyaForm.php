@@ -32,13 +32,13 @@ class GatyaForm
                             $after = -$normal;
                             $p->sendForm(new ModalForm('NormalGatya -> Confirm',
                                 "ノーマルガチャチケットを1個消費してノーマルガチャを回しますか？\n$normal -> $after",
-                                function (Player $p, bool $result): void {
+                                function (Player $p, bool $result) use ($normal): void {
                                     if ($result) {
-                                        GatyaManager::normalGatya($p);
+                                        if ($normal >= 1) {
+                                            GatyaManager::normalGatya($p);
+                                        } else $p->sendMessage('チケットが足りません');
                                     } else self::sendGatyaForm($p);
                                 }));
-                            GatyaManager::normalGatya($p, 1);
-                            $p->sendMessage('');
                             break;
                         default:
                             $p->sendMessage('エラーが発生しました');
