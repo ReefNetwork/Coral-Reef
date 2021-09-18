@@ -12,7 +12,6 @@
 namespace ree_jp\coral_reef\skill;
 
 use Exception;
-use pocketmine\block\BlockIds;
 use pocketmine\math\Vector3;
 use pocketmine\Player;
 use ree_jp\coral_reef\account\AccountManager;
@@ -98,7 +97,9 @@ class BreakSkill
     {
         $hand = $p->getInventory()->getItemInHand();
         $level = $p->getLevel();
-        if ($level->getBlock($vec)->getId() === BlockIds::AIR) return;
+        $bl = $level->getBlock($vec);
+        if ($bl->getHardness() < 0) return;
+
         $p->getLevel()->useBreakOn($vec, $hand, $p);
     }
 
