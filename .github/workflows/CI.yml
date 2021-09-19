@@ -56,11 +56,6 @@ jobs:
           path: install_plugins
 
       - name: deploy debug server
-        uses: appleboy/scp-action@master
-        with:
-          host: ${{ secrets.DEBUG_HOST }}
-          username: ${{ secrets.DEBUG_USERNAME }}
-          password: ${{ secrets.DEBUG_PASSWORD}}
-          port: ${{ secrets.DEBUG_PORT}}
-          source: ./install_plugins/CoralReef.phar
-          target: ./
+        run: |
+          apt-get install -y sshpass
+          sshpass -p ${{ secrets.DEBUG_PASSWORD}} scp -P ${{ secrets.DEBUG_PORT}} ./install_plugins/CoralReef.phar ${{ secrets.DEBUG_USERNAME }}@${{ secrets.DEBUG_HOST }}:/home/user/test.txt
