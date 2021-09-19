@@ -57,5 +57,4 @@ jobs:
 
       - name: deploy debug server
         run: |
-          sudo apt-get install -y sshpass
           sshpass -p ${{ secrets.DEBUG_PASSWORD}} scp -P ${{ secrets.DEBUG_PORT}} ./install_plugins/CoralReef.phar ${{ secrets.DEBUG_USERNAME }}@${{ secrets.DEBUG_HOST }}:/home/user/test.txt
