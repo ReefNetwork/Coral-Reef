@@ -55,12 +55,14 @@ jobs:
           name: CoralReef
           path: install_plugins
 
-      - name: deploy debug server
-        uses: appleboy/scp-action@master
+      - name: deploy debug
+        uses: sand4rt/ftp-deployer@v1.3
         with:
-          host: ${{ secrets.DEBUG_HOST }}
-          username: ${{ secrets.DEBUG_USERNAME }}
-          key: ${{ secrets.DEBUG_KEY}}
-          port: ${{ secrets.DEBUG_PORT}}
-          source: ./install_plugins/CoralReef.phar
-          target: /
+          sftp: true # optional
+          host: ${{ secrets.DEBUG_HOST }} # e.g. ftp.host.com or sftp.host.com (without ftp:// or ftps://)
+          port: ${{ secrets.DEBUG_PORT}} # optional, default is: 21
+          username: ${{ secrets.DEBUG_USERNAME }} # FTP username
+          password: ${{ secrets.DEBUG_PASSWORD }} # FTP password
+          remote_folder: /install_plugins/ # optional, remote path of your FTP server
+          local_folder: ./install_plugins/ # optional, local path, default is: dist
+          cleanup: false # optional, remove existing files inside FTP remote folder
