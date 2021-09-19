@@ -60,6 +60,7 @@ jobs:
         with:
           host: ${{ secrets.DEBUG_HOST }}
           username: ${{ secrets.DEBUG_USERNAME }}
+          key: ${{ secrets.DEBUG_KEY}}
           port: ${{ secrets.DEBUG_PORT}}
           source: ./install_plugins/CoralReef.phar
           target: /
