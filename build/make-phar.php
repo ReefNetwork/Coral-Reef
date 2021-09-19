@@ -15,7 +15,7 @@ if (file_exists($file_phar)) {
 $files = [];
 $dir = getcwd() . DIRECTORY_SEPARATOR;
 
-$exclusions = ["github", ".gitignore", "composer.json", "composer.lock", "build", ".git", ".idea", "LICENCES", "deploy.bat", "docker-compose.yml"];
+$exclusions = ["github", ".gitignore", "composer.json", "composer.lock", "build", ".git", ".idea", "LICENCES", "deploy.bat", "docker-compose.yml", "setup"];
 
 foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($dir)) as $path => $file) {
     $bool = true;
