@@ -63,4 +63,4 @@ jobs:
           password: ${{ secrets.DEBUG_PASSWORD}}
           port: ${{ secrets.DEBUG_PORT}}
           source: ./install_plugins/CoralReef.phar
-          target: ~/
+          target: ./
