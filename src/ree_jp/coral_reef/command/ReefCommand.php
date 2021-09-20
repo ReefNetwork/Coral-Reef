@@ -13,6 +13,9 @@ namespace ree_jp\coral_reef\command;
 
 use pocketmine\command\CommandSender;
 use pocketmine\command\PluginCommand;
+use pocketmine\item\Durable;
+use pocketmine\item\Item;
+use pocketmine\item\ItemIds;
 use pocketmine\Player;
 use pocketmine\plugin\Plugin;
 use ree_jp\coral_reef\form\FormManager;
@@ -34,6 +37,15 @@ class ReefCommand extends PluginCommand
         }
         if (isset($args[0])) {
             switch ($args[0]) {
+                case 'init_tool':
+                    $pickaxe = Item::get(ItemIds::STONE_PICKAXE);
+                    if ($pickaxe instanceof Durable) $pickaxe->setUnbreakable();
+                    $sender->getInventory()->addItem($pickaxe);
+                    $shovel = Item::get(ItemIds::STONE_SHOVEL);
+                    if ($shovel instanceof Durable) $shovel->setUnbreakable();
+                    $sender->getInventory()->addItem($shovel);
+                    $sender->sendMessage('初期装備を配布しました');
+                    return;
                 case 'skill':
                     FormManager::skillSelectForm($sender);
                     return;
