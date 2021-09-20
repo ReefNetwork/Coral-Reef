@@ -14,6 +14,7 @@ namespace ree_jp\coral_reef\account;
 
 use Exception;
 use pocketmine\block\Block;
+use pocketmine\block\BlockIds;
 use pocketmine\item\Item;
 use pocketmine\level\Position;
 use pocketmine\Player;
@@ -67,6 +68,7 @@ class AccountManager
         SettingManager::updateShowCoordinates($p);
         SettingManager::updateSneakSkill($p);
         SettingManager::updateServerTip($p);
+        SettingManager::updateFreezeWater($p);
     }
 
     static function userQuit(Player $p, string $reason): void
@@ -94,13 +96,16 @@ class AccountManager
         $xuid = $p->getXuid();
         $user = SQLManager::$manager->getUser($xuid);
         $skill = $user->skill;
-        $logDetail = $bl->x . ':' . $bl->y . ':' . $bl->z . '/' . $item->getVanillaName() . '/' . $bl->getName();
         $user->addXp();
+        if (!SettingManager::isEnableOption($p->getXuid(), SettingConst::NO_FREEZE_WATER)) { // 水を掘ったら水が消えるように
+            if ($bl->getId() === BlockIds::WATER) {
+                $p->getLevelNonNull()->setBlock($bl, Block::get(BlockIds::AIR));
+            }
+        }
         if ($skill instanceof BreakSkill && $p->isSurvival()) {
             if (!self::hasValue($xuid, 'skill_cool_time') && !self::hasValue($xuid, 'skill_active') &&
                 !($p->isSneaking() && !SettingManager::isEnableOption($xuid, SettingConst::SNEAK_SKILL))) {
                 AccountManager::setValue($xuid, 'skill_active');
-                $logDetail = $bl->x . ':' . $bl->y . ':' . $bl->z . '/' . $skill->id;
                 SkillManager::skillActive($p, $bl);
                 AccountManager::setValue($xuid, 'skill_active', 0);
             }

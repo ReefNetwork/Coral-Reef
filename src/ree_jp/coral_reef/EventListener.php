@@ -147,7 +147,7 @@ class EventListener implements Listener
     /**
      * @priority LOW
      */
-    public function onBreak(BlockBreakEvent $ev): void
+    public function onBreakLow(BlockBreakEvent $ev): void
     {
         $p = $ev->getPlayer();
 

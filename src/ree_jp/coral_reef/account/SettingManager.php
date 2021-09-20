@@ -11,6 +11,7 @@
 
 namespace ree_jp\coral_reef\account;
 
+use Closure;
 use pocketmine\network\mcpe\protocol\GameRulesChangedPacket;
 use pocketmine\Player;
 use pocketmine\Server;
@@ -58,34 +59,28 @@ class SettingManager
             });
     }
 
-    static function updateSneakSkill(Player $p, bool $bool = null): void
+    static function updateSneakSkill(Player $p): void
     {
-        SQLManager::$manager->getValue($p->getXuid(), SQLConst::TYPE_SETTINGS, SettingConst::SNEAK_SKILL,
-            function (array $rows) use ($p) {
-                $row = array_shift($rows);
-                $bool = false;
-                if (isset($row['value'])) if ($row['value'] === 'true') $bool = true;
-                if (!isset(self::$settingCache[$p->getXuid()])) self::$settingCache[$p->getXuid()] = [];
-                self::$settingCache[$p->getXuid()][SettingConst::SNEAK_SKILL] = $bool;
-            }, function (SqlError $error) use ($p) {
-                $p->sendMessage('スキルの設定を読み込み中にエラーが発生しました');
-                Server::getInstance()->getLogger()->warning("[setting showCoordinates]" . $error->getMessage());
-            });
+        self::updateBoolOption($p->getXuid(), SettingConst::SNEAK_SKILL, function (SqlError $error) use ($p) {
+            $p->sendMessage('スキルの設定を読み込み中にエラーが発生しました');
+            Server::getInstance()->getLogger()->warning("[setting showCoordinates]" . $error->getMessage());
+        });
     }
 
-    static function updateServerTip(Player $p, bool $bool = null): void
+    static function updateServerTip(Player $p): void
     {
-        SQLManager::$manager->getValue($p->getXuid(), SQLConst::TYPE_SETTINGS, SettingConst::HIDE_SERVER_TIP,
-            function (array $rows) use ($p) {
-                $row = array_shift($rows);
-                $bool = false;
-                if (isset($row['value'])) if ($row['value'] === 'true') $bool = true;
-                if (!isset(self::$settingCache[$p->getXuid()])) self::$settingCache[$p->getXuid()] = [];
-                self::$settingCache[$p->getXuid()][SettingConst::HIDE_SERVER_TIP] = $bool;
-            }, function (SqlError $error) use ($p) {
-                $p->sendMessage('ヒントの設定を読み込み中にエラーが発生しました');
-                Server::getInstance()->getLogger()->warning("[setting serverTip]" . $error->getMessage());
-            });
+        self::updateBoolOption($p->getXuid(), SettingConst::HIDE_SERVER_TIP, function (SqlError $error) use ($p) {
+            $p->sendMessage('ヒントの設定を読み込み中にエラーが発生しました');
+            Server::getInstance()->getLogger()->warning("[setting serverTip]" . $error->getMessage());
+        });
+    }
+
+    static function updateFreezeWater(Player $p): void
+    {
+        self::updateBoolOption($p->getXuid(), SettingConst::NO_FREEZE_WATER, function (SqlError $error) use ($p) {
+            $p->sendMessage('ヒントの設定を読み込み中にエラーが発生しました');
+            Server::getInstance()->getLogger()->warning("[setting serverTip]" . $error->getMessage());
+        });
     }
 
     static function isEnableOption(string $xuid, string $key): bool
@@ -94,5 +89,17 @@ class SettingManager
             return self::$settingCache[$xuid][$key];
         }
         return false;
+    }
+
+    static function updateBoolOption(string $xuid, string $type, Closure $failure): void
+    {
+        SQLManager::$manager->getValue($xuid, SQLConst::TYPE_SETTINGS, $type,
+            function (array $rows) use ($xuid) {
+                $row = array_shift($rows);
+                $bool = false;
+                if (isset($row['value'])) if ($row['value'] === 'true') $bool = true;
+                if (!isset(self::$settingCache[$xuid])) self::$settingCache[$xuid] = [];
+                self::$settingCache[$xuid][SettingConst::HIDE_SERVER_TIP] = $bool;
+            }, $failure);
     }
 }

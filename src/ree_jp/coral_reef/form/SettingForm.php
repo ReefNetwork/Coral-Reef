@@ -32,7 +32,8 @@ class SettingForm
     static function settingForm(): MenuForm
     {
         return new MenuForm('Menu -> Setting', '変更したい設定を選択してください',
-            [new Button('座標の表示'), new Button('スニーク中にスキル発動'), new Button('ヒントを表示する'), new Button('ニックネーム')],
+            [new Button('座標の表示'), new Button('スニーク中にスキル発動'), new Button('ヒントを表示する'), new Button('水を凍らせる'),
+                new Button('ニックネーム')],
             function (Player $p, Button $button): void {
                 switch ($button->getValue()) {
                     case 0:
@@ -57,6 +58,14 @@ class SettingForm
                             });
                         break;
                     case 3:
+                        self::sendBoolForm($p, 'ブロックを掘った時に前が水だった場合、水を別のブロックに変化させますか?', '変化させる / させない',
+                            SettingConst::NO_FREEZE_WATER,
+                            function () use ($p) {
+                                $p->sendMessage('設定を保存しました');
+                                SettingManager::updateServerTip($p);
+                            });
+                        break;
+                    case 4:
                         self::sendInputForm($p, "ニックネームを設定できます\n無効にするにはニックネームを空白に設定してください", 'ニックネーム',
                             'せいちのかみ', SettingConst::NICK_NAME, function () use ($p) {
                                 $p->sendMessage('設定を保存しました');

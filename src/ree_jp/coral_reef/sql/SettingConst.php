@@ -16,5 +16,6 @@ class SettingConst
     const COORDINATES = 'hideCoordinates';
     const SNEAK_SKILL = 'sneakSkill';
     const HIDE_SERVER_TIP = 'hideServerTip';
+    const NO_FREEZE_WATER = 'freezeWater';
     const NICK_NAME = 'nickName';
 }

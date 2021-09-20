@@ -12,9 +12,12 @@
 namespace ree_jp\coral_reef\skill;
 
 use Exception;
+use pocketmine\block\Block;
+use pocketmine\block\BlockIds;
 use pocketmine\math\Vector3;
 use pocketmine\Player;
-use ree_jp\coral_reef\account\AccountManager;
+use ree_jp\coral_reef\account\SettingManager;
+use ree_jp\coral_reef\sql\SettingConst;
 
 class BreakSkill
 {
@@ -51,13 +54,9 @@ class BreakSkill
     public function runSkill(Vector3 $block, Player $p): void
     {
         $direction = $p->getDirection();
-        $isFly = AccountManager::hasValue($p->getXuid(), 'fly');
-        $isDirectUnder = ($p->getFloorX() === $block->getFloorX()) && ($p->getFloorZ() === $block->getFloorZ());
         $widthSide = intval(floor($this->width / 2));
         $depthSide = intval(floor($this->depth / 2));
-        if ($p->getFloorY() - 1 > $block->getFloorY() ||
-            ((!$isFly || $isDirectUnder) && ($p->getFloorY() > $block->getFloorY()))) {
-
+        if ($p->getFloorY() > $block->getFloorY()) {
             $depthCeil = ceil($this->depth / 2);
             for ($height = 0; $height <= $this->height; ++$height) {
                 for ($width = $widthSide; $width >= -$widthSide; --$width) {
@@ -101,6 +100,21 @@ class BreakSkill
         if ($bl->getHardness() < 0) return;
 
         $p->getLevel()->useBreakOn($vec, $hand, $p);
+        $this->frozeWater($p, $vec);
+    }
+
+    private function frozeWater(Player $p, Vector3 $vec): void
+    {
+        if (!SettingManager::isEnableOption($p->getXuid(), SettingConst::NO_FREEZE_WATER)) {
+            try {
+                $checkVec = $this->getSideFromUserView($vec, $p->getDirection(), self::FORWARD, 1);
+                if ($p->getLevelNonNull()->getBlock($checkVec)->getId() === BlockIds::WATER) { // 水を水色のガラスに変える
+                    $p->getLevelNonNull()->setBlock($checkVec, Block::get(BlockIds::STAINED_GLASS, 3));
+                }
+            } catch (Exception $e) {
+                $p->sendMessage('エラーが発生しました');
+            }
+        }
     }
 
     /**
