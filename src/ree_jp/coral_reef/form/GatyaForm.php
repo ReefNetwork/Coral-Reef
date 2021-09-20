@@ -24,7 +24,10 @@ class GatyaForm
     static function sendGatyaForm(Player $p): void
     {
         SQLManager::$manager->getAllSubtypeValue($p->getXuid(), SQLConst::TYPE_TICKETS, function (array $rows) use ($p) {
-            $normal = $rows[SQLConst::TICKETS_NORMAL] ?? 0;
+            $normal = 0;
+            foreach ($rows as $row) {
+                if ($row['subtype'] === SQLConst::TICKETS_NORMAL && isset($row['value'])) $normal = $row['value'];
+            }
             $p->sendForm(new MenuForm('Menu -> Gatya', "ノーマルガチャチケット: $normal 個", [new Button('ノーマルガチャ')],
                 function (Player $p, Button $button) use ($normal): void {
                     switch ($button->getValue()) {
