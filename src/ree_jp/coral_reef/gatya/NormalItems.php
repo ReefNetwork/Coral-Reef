@@ -59,7 +59,7 @@ class NormalItems extends ReefItems
                 $item->addEnchantment(new EnchantmentInstance(Enchantment::getEnchantment(Enchantment::EFFICIENCY), 2));
                 break;
             case 7:
-                $item = Item::get(ItemIds::STEAK, 4);
+                $item = Item::get(ItemIds::STEAK, 0, 4);
                 break;
             default:
                 return null;

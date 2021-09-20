@@ -6,7 +6,7 @@
  * CC    C oo  oo rr     aa  aaa lll RR  RR  eeeee  eeeee  ff
  *  CCCCC   oooo  rr      aaa aa lll RR   RR  eeeee  eeeee ff
  *
- * Copyright (c) 2021-2021. Ree-jp(https://ree-jp.net)
+ * Copyright (c) 2022-2021. Ree-jp(https://ree-jp.net)
  */
 
 namespace ree_jp\coral_reef\command;
@@ -16,14 +16,14 @@ use pocketmine\command\PluginCommand;
 use pocketmine\Player;
 use pocketmine\plugin\Plugin;
 use ree_jp\coral_reef\form\FormManager;
+use ree_jp\coral_reef\form\GatyaForm;
 
-class MenuCommand extends PluginCommand
+class ReefCommand extends PluginCommand
 {
     public function __construct(Plugin $owner)
     {
-        parent::__construct('menu', $owner);
-        $this->setUsage('/menu - Menuを表示します');
-        $this->setAliases(['m']);
+        parent::__construct('reef', $owner);
+        $this->setUsage('Reef Command');
     }
 
     public function execute(CommandSender $sender, string $commandLabel, array $args)
@@ -32,7 +32,19 @@ class MenuCommand extends PluginCommand
             $sender->sendMessage('このコマンドはプレイヤー専用です');
             return;
         }
-        if (!$this->testPermission($sender)) return;
-        FormManager::sendMenu($sender);
+        if (isset($args[0])) {
+            switch ($args[0]) {
+                case 'skill':
+                    FormManager::skillSelectForm($sender);
+                    return;
+                case 'gatya':
+                    GatyaForm::sendGatyaForm($sender);
+                    return;
+                case 'test':
+                    $sender->sendMessage('super test message yeah');
+                    break;
+            }
+        }
+        $sender->sendMessage('そのコマンドは間違っています');
     }
 }
