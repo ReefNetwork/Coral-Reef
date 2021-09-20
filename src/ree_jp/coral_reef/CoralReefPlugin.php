@@ -19,6 +19,7 @@ use pocketmine\Server;
 use pocketmine\utils\TextFormat;
 use ree_jp\coral_reef\account\ScoreBoardManager;
 use ree_jp\coral_reef\command\MenuCommand;
+use ree_jp\coral_reef\command\ReefCommand;
 use ree_jp\coral_reef\discord\DiscordBot;
 use ree_jp\coral_reef\gatya\ReefItems;
 use ree_jp\coral_reef\land\LandManager;
@@ -46,6 +47,7 @@ class CoralReefPlugin extends PluginBase
         date_default_timezone_set('Asia/Tokyo');
         $this->getServer()->getPluginManager()->registerEvents(new EventListener(), $this);
         $this->getServer()->getCommandMap()->register('menu', new MenuCommand($this));
+        $this->getServer()->getCommandMap()->register('reef', new ReefCommand($this));
         $this->getScheduler()->scheduleRepeatingTask(new DataSaveTask(), 20);
         $this->getScheduler()->scheduleRepeatingTask(new SendServerTipTask(), 15);
         $this->getScheduler()->scheduleRepeatingTask(new ClosureTask(function (int $currentTick): void {
