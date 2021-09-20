@@ -13,8 +13,10 @@ namespace ree_jp\coral_reef;
 
 
 use Exception;
+use pocketmine\block\BlockIds;
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\block\BlockPlaceEvent;
+use pocketmine\event\block\BlockUpdateEvent;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\event\entity\EntityTeleportEvent;
@@ -186,6 +188,14 @@ class EventListener implements Listener
         $p = $ev->getPlayer();
 
         $ev->setCancelled(LandManager::$instance->protect($p, $ev->getBlock(), 'このワールドでブロックを設置することはできません'));
+    }
+
+    public function onUpdate(BlockUpdateEvent $ev)
+    {
+        $blId = $ev->getBlock()->getId();
+        if (($blId === BlockIds::FLOWING_WATER) || ($blId === BlockIds::WATER)) {
+            $ev->setCancelled();
+        }
     }
 
     public function onTouch(PlayerInteractEvent $ev): void
