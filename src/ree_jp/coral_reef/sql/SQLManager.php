@@ -113,7 +113,10 @@ class SQLManager
             if (is_null($p)) return;
             $p->sendMessage('データを読み込みました');
             // クライアント側の準備が整ったのにデータを読み込めてなかったら動けなくしているため解除する
-            if (AccountManager::hasValue($xuid, 'join_wait')) $p->setImmobile(false);
+            if (AccountManager::hasValue($xuid, 'wait_action')) {
+                AccountManager::setValue($xuid, 'wait_action', 0);
+                $p->setImmobile(false);
+            }
         });
         $this->getAllSubtypeValue($xuid, SQLConst::TYPE_SETTINGS, function (array $rows) use ($xuid) {
             foreach ($rows as $option) {
@@ -151,17 +154,17 @@ class SQLManager
         });
     }
 
-    public function setXp(string $xuid, string $experience): void
+    public function setXp(string $xuid, string $experience, ?Closure $func): void
     {
-        $this->db->executeGeneric('coral_reef.user.set.xp', ['xuid' => intval($xuid), 'experience' => intval($experience)], null,
+        $this->db->executeGeneric('coral_reef.user.set.xp', ['xuid' => intval($xuid), 'experience' => intval($experience)], $func,
             function (SqlError $error) use ($xuid) {
                 Server::getInstance()->getLogger()->error("[SQL] $xuid のxp保存中に" . $error->getErrorMessage());
             });
     }
 
-    public function setSkill(string $xuid, ?string $skill): void
+    public function setSkill(string $xuid, ?string $skill, Closure $func): void
     {
-        $this->db->executeGeneric('coral_reef.user.set.skill', ['xuid' => intval($xuid), 'skill' => $skill], null,
+        $this->db->executeGeneric('coral_reef.user.set.skill', ['xuid' => intval($xuid), 'skill' => $skill], $func,
             function (SqlError $error) use ($xuid) {
                 Server::getInstance()->getLogger()->error("[SQL] $xuid のスキル保存中に" . $error->getErrorMessage());
             });

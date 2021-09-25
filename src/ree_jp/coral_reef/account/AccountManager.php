@@ -77,12 +77,16 @@ class AccountManager
     {
         $xuid = $p->getXuid();
 
-        try {
-            $account = SQLManager::$manager->getUser($xuid);
-            if (is_null($account)) throw new Exception('ユーザーデータがありません');
-            $account->save();
-        } catch (Exception $e) {
-            Server::getInstance()->getLogger()->error($p->getName() . 'のセーブができませんでした' . $e->getMessage());
+        if (AccountManager::hasValue($xuid, 'transfer_server')) {
+            AccountManager::setValue($xuid, 'transfer_server', 0);
+        } else {
+            try {
+                $account = SQLManager::$manager->getUser($xuid);
+                if (is_null($account)) throw new Exception('ユーザーデータがありません');
+                $account->save();
+            } catch (Exception $e) {
+                Server::getInstance()->getLogger()->error($p->getName() . 'のセーブができませんでした' . $e->getMessage());
+            }
         }
         self::setValue($xuid, 'rejoin', 60 * 3 * 20);
     }

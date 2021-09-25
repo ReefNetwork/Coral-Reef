@@ -78,9 +78,9 @@ class EventListener implements Listener
         $xuid = $p->getXuid();
 
         if (is_null(SQLManager::$manager->getUser($xuid))) { // データをまだ読み込めてなかったら動きを止める
-            AccountManager::setValue($xuid, 'join_wait');
-            $p->sendMessage('データを確認しています...');
+            AccountManager::setValue($xuid, 'wait_action');
             $p->setImmobile();
+            $p->sendMessage('データを確認しています...');
         }
         AccountManager::userJoin($p);
 
@@ -113,6 +113,10 @@ class EventListener implements Listener
      */
     public function onChat(PlayerChatEvent $ev): void
     {
+        if (AccountManager::hasValue($ev->getPlayer()->getXuid(), 'wait_action')) {
+            $ev->setCancelled();
+            return;
+        }
         $name = $ev->getPlayer()->getDisplayName();
         if (!$ev->isCancelled()) {
             CoralReefPlugin::$plugin->discordBot->sendChat("[$name] " . $ev->getMessage());
@@ -123,6 +127,11 @@ class EventListener implements Listener
     {
         $p = $ev->getEntity();
         if (!$p instanceof Player) return;
+        if (AccountManager::hasValue($p->getXuid(), 'wait_action')) {
+            $ev->setCancelled();
+            return;
+        }
+
         $health = $p->getHealth();
         if ($ev instanceof EntityDamageByEntityEvent && $ev->getDamager() instanceof Player) {
             $ev->setCancelled();
@@ -154,6 +163,10 @@ class EventListener implements Listener
     public function onBreakLow(BlockBreakEvent $ev): void
     {
         $p = $ev->getPlayer();
+        if (AccountManager::hasValue($p->getXuid(), 'wait_action')) {
+            $ev->setCancelled();
+            return;
+        }
 
         $ev->setCancelled(LandManager::$instance->protect($p, $ev->getBlock(), 'このワールドでブロックを掘ることはできません'));
         if (AccountManager::hasValue($p->getXuid(), 'skill_cool_time') &&
@@ -193,6 +206,10 @@ class EventListener implements Listener
     public function onPlace(BlockPlaceEvent $ev): void
     {
         $p = $ev->getPlayer();
+        if (AccountManager::hasValue($p, 'wait_action')) {
+            $ev->setCancelled();
+            return;
+        }
 
         $ev->setCancelled(LandManager::$instance->protect($p, $ev->getBlock(), 'このワールドでブロックを設置することはできません'));
     }
@@ -209,6 +226,10 @@ class EventListener implements Listener
     {
         $p = $ev->getPlayer();
         $xuid = $p->getXuid();
+        if (AccountManager::hasValue($xuid, 'wait_action')) {
+            $ev->setCancelled();
+            return;
+        }
 
         switch ($ev->getItem()->getId()) {
             case ItemIds::STICK:
@@ -232,6 +253,10 @@ class EventListener implements Listener
     {
         $p = $ev->getEntity();
         if (!$p instanceof Player) return;
+        if (AccountManager::hasValue($p->getXuid(), 'wait_action')) {
+            $ev->setCancelled();
+            return;
+        }
         $fromLevelName = $ev->getFrom()->getLevel()->getFolderName();
         $toLevelName = $ev->getTo()->getLevel()->getFolderName();
         $isWorldChange = $fromLevelName !== $toLevelName;

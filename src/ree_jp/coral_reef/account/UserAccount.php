@@ -12,6 +12,7 @@
 namespace ree_jp\coral_reef\account;
 
 
+use Closure;
 use Exception;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat;
@@ -42,7 +43,7 @@ class UserAccount
         $this->skill = SkillManager::getSkill($skill);
     }
 
-    public function save(): void
+    public function save(?Closure $func = null): void
     {
         if (is_null($this->skill)) {
             $skillId = null;
@@ -50,8 +51,8 @@ class UserAccount
             $skillId = $this->skill->id;
         }
         try {
-            SQLManager::$manager->setXp($this->xuid, $this->experience);
-            SQLManager::$manager->setSkill($this->xuid, $skillId);
+            SQLManager::$manager->setXp($this->xuid, $this->experience, $func);
+            SQLManager::$manager->setSkill($this->xuid, $skillId, $func);
         } catch (Exception $e) {
             Server::getInstance()->getLogger()->error($this->name . 'のデータ保存に失敗しました' . $e->getMessage());
         }
