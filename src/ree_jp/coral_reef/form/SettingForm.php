@@ -33,7 +33,7 @@ class SettingForm
     {
         return new MenuForm('Menu -> Setting', '変更したい設定を選択してください',
             [new Button('座標の表示'), new Button('スニーク中にスキル発動'), new Button('ヒントを表示する'), new Button('水を凍らせる'),
-                new Button('ニックネーム')],
+                new Button('地面のブロックにスキルを発動させない'), new Button('クールタイム中にブロックを掘れなくする'), new Button('ニックネーム')],
             function (Player $p, Button $button): void {
                 switch ($button->getValue()) {
                     case 0:
@@ -54,7 +54,7 @@ class SettingForm
                         self::sendBoolForm($p, 'ヒントを表示しますか?', '表示する / しない', SettingConst::HIDE_SERVER_TIP,
                             function () use ($p) {
                                 $p->sendMessage('設定を保存しました');
-                                SettingManager::updateServerTip($p);
+                                SettingManager::updateOption($p, SettingConst::HIDE_SERVER_TIP);
                             });
                         break;
                     case 3:
@@ -62,10 +62,28 @@ class SettingForm
                             SettingConst::NO_FREEZE_WATER,
                             function () use ($p) {
                                 $p->sendMessage('設定を保存しました');
-                                SettingManager::updateServerTip($p);
+                                SettingManager::updateOption($p, SettingConst::NO_FREEZE_WATER);
                             });
                         break;
                     case 4:
+                        self::sendBoolForm($p, "地面のブロックを掘った場所が自分の真下を含めた周りの1ブロックではない時でも、スキルを発動させますか?\n発動させないを選んだ場合、勢いで地面を掘ってしまうことを防げます",
+                            '発動させる / させない',
+                            SettingConst::BREAK_UNDER_GROUND,
+                            function () use ($p) {
+                                $p->sendMessage('設定を保存しました');
+                                SettingManager::updateOption($p, SettingConst::BREAK_UNDER_GROUND);
+                            });
+                        break;
+                    case 5:
+                        self::sendBoolForm($p, "スキルのクールタイム中でもブロックを掘れるようにしますか?",
+                            '掘れるようにしない / する',
+                            SettingConst::ALLOW_COOL_TIME_DIG,
+                            function () use ($p) {
+                                $p->sendMessage('設定を保存しました');
+                                SettingManager::updateOption($p, SettingConst::ALLOW_COOL_TIME_DIG);
+                            });
+                        break;
+                    case 6:
                         self::sendInputForm($p, "ニックネームを設定できます\n無効にするにはニックネームを空白に設定してください", 'ニックネーム',
                             'せいちのかみ', SettingConst::NICK_NAME, function () use ($p) {
                                 $p->sendMessage('設定を保存しました');

@@ -66,9 +66,11 @@ class AccountManager
         SQLManager::$manager->setUser($xuid, $p->getName(), $p->getAddress());
         SettingManager::updateNickName($p);
         SettingManager::updateShowCoordinates($p);
-        SettingManager::updateSneakSkill($p);
-        SettingManager::updateServerTip($p);
-        SettingManager::updateFreezeWater($p);
+        SettingManager::updateOption($p, SettingConst::SNEAK_SKILL);
+        SettingManager::updateOption($p, SettingConst::HIDE_SERVER_TIP);
+        SettingManager::updateOption($p, SettingConst::NO_FREEZE_WATER);
+        SettingManager::updateOption($p, SettingConst::BREAK_UNDER_GROUND);
+        SettingManager::updateOption($p, SettingConst::ALLOW_COOL_TIME_DIG);
     }
 
     static function userQuit(Player $p, string $reason): void
@@ -105,6 +107,10 @@ class AccountManager
         if ($skill instanceof BreakSkill && $p->isSurvival()) {
             if (!self::hasValue($xuid, 'skill_cool_time') && !self::hasValue($xuid, 'skill_active') &&
                 !($p->isSneaking() && !SettingManager::isEnableOption($xuid, SettingConst::SNEAK_SKILL))) {
+                if (($p->getY() - 1 === $bl->getY()) && ($p->getX()) && SettingManager::isEnableOption($xuid, SettingConst::BREAK_UNDER_GROUND)) {
+                    $p->sendPopup("地面にスキルをは発動できません\n設定で変更できます");
+                    return;
+                }
                 AccountManager::setValue($xuid, 'skill_active');
                 SkillManager::skillActive($p, $bl);
                 AccountManager::setValue($xuid, 'skill_active', 0);

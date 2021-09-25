@@ -36,9 +36,11 @@ use pocketmine\Player;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat;
 use ree_jp\coral_reef\account\AccountManager;
+use ree_jp\coral_reef\account\SettingManager;
 use ree_jp\coral_reef\form\FormManager;
 use ree_jp\coral_reef\form\LandForm;
 use ree_jp\coral_reef\land\LandManager;
+use ree_jp\coral_reef\sql\SettingConst;
 use ree_jp\coral_reef\sql\SQLManager;
 use ree_jp\stackStorage\api\StackStorageAPI;
 use Throwable;
@@ -154,6 +156,11 @@ class EventListener implements Listener
         $p = $ev->getPlayer();
 
         $ev->setCancelled(LandManager::$instance->protect($p, $ev->getBlock(), 'このワールドでブロックを掘ることはできません'));
+        if (AccountManager::hasValue($p->getXuid(), 'skill_cool_time') &&
+            !SettingManager::isEnableOption($p->getXuid(), SettingConst::ALLOW_COOL_TIME_DIG)) {
+            $p->sendPopup("クールタイム中はブロックを掘ることはできません");
+            $ev->setCancelled();
+        }
     }
 
     /**

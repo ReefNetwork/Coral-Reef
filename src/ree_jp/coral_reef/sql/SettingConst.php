@@ -17,5 +17,7 @@ class SettingConst
     const SNEAK_SKILL = 'sneakSkill';
     const HIDE_SERVER_TIP = 'hideServerTip';
     const NO_FREEZE_WATER = 'freezeWater';
+    const BREAK_UNDER_GROUND = 'breakUnderGround';
+    const ALLOW_COOL_TIME_DIG = 'allowCoolTimeDig';
     const NICK_NAME = 'nickName';
 }

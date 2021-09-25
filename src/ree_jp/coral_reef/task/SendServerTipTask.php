@@ -19,8 +19,11 @@ use ree_jp\coral_reef\sql\SettingConst;
 
 class SendServerTipTask extends Task
 {
-    const TIPS = ['ReefServerへようこそ', 'Discordサーバー(discord.gg/reef)に入ると最新の情報を受け取れます', '設定でヒントを表示しないようにできます',
-        'reef.ree-jp.netで役立つヒントを確認できます', 'ウェブサイトでも操作方法を確認できます', 'スニークをしている間、通常はスキルが無効になります'];
+    const TIPS = ['ReefServerへようこそ', 'Discordサーバー(discord.gg/reef)に入ると最新の情報を受け取れます',
+        'reef.ree-jp.netで役立つヒントを確認できます', 'ウェブサイトでも操作方法を確認できます',
+        '通常、クールタイム中はブロックが掘れません', '通常、スニークをしている間はスキルが無効になります',
+        '設定でヒントを表示しないようにできます', '設定でスキルの暴発を防ぐことができます', '設定でクールタイム中でもブロックが掘れるように出来ます',
+        '設定で地面のブロックを間違えて掘った時にスキルを発動させないように出来ます'];
 
     private int $timer = 99;
     private int $key;

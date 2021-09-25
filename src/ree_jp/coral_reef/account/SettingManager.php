@@ -59,27 +59,11 @@ class SettingManager
             });
     }
 
-    static function updateSneakSkill(Player $p): void
+    static function updateOption(Player $p, string $type): void
     {
-        self::updateBoolOption($p->getXuid(), SettingConst::SNEAK_SKILL, function (SqlError $error) use ($p) {
-            $p->sendMessage('スキルの設定を読み込み中にエラーが発生しました');
-            Server::getInstance()->getLogger()->warning("[setting showCoordinates]" . $error->getMessage());
-        });
-    }
-
-    static function updateServerTip(Player $p): void
-    {
-        self::updateBoolOption($p->getXuid(), SettingConst::HIDE_SERVER_TIP, function (SqlError $error) use ($p) {
-            $p->sendMessage('ヒントの設定を読み込み中にエラーが発生しました');
-            Server::getInstance()->getLogger()->warning("[setting serverTip]" . $error->getMessage());
-        });
-    }
-
-    static function updateFreezeWater(Player $p): void
-    {
-        self::updateBoolOption($p->getXuid(), SettingConst::NO_FREEZE_WATER, function (SqlError $error) use ($p) {
-            $p->sendMessage('ヒントの設定を読み込み中にエラーが発生しました');
-            Server::getInstance()->getLogger()->warning("[setting serverTip]" . $error->getMessage());
+        self::updateBoolOption($p->getXuid(), $type, function (SqlError $error) use ($p) {
+            $p->sendMessage('設定を読み込み中にエラーが発生しました');
+            Server::getInstance()->getLogger()->warning("[setting]" . $error->getMessage());
         });
     }
 
