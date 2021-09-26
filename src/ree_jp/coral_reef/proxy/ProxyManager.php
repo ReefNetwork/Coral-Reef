@@ -45,6 +45,7 @@ class ProxyManager
                     $xuid = $p->getXuid();
                     if (AccountManager::hasValue($xuid, 'transfer_server')) {
                         AccountManager::setValue($xuid, 'transfer_server', 0);
+                        AccountManager::setValue($p->getXuid(), 'wait_action', 0);
                         $p->setImmobile(false);
                         $p->sendMessage('サーバーを移動出来ませんでした');
                     }
