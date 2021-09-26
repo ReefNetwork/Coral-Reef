@@ -22,12 +22,10 @@ jobs:
         run: composer install -n --no-ansi
 
       - name: build
-        run: php -d phar.readonly=0 ./build/make-phar.php ${{ github.run_number }}-${GITHUB_REF##*/} "use poggit\libasynql\" "use ree_jp\coral_reef\libs\poggit\libasynql\"
-
-      - name: virion install
         run: |
-          wget https://poggit.pmmp.io/r/137205/libasynql_dev-146.phar -O libasynql.phar
-          php -d phar.readonly=0 libasynql.phar ./build/CoralReef.phar "ree_jp\\coral_reef\\libs\\"
+          git clone https://github.com/poggit/libasynql.git
+          mv ./libasynql/libasynql/src/ ./src/ree_jp/coral_reef/libs/
+          php -d phar.readonly=0 ./build/make-phar.php ${{ github.run_number }}-${GITHUB_REF##*/} "use poggit\libasynql\" "use ree_jp\coral_reef\libs\poggit\libasynql\"
 
       - name: upload
         uses: actions/upload-artifact@v2
