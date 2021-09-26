@@ -13,7 +13,9 @@ namespace ree_jp\coral_reef\proxy;
 
 use pocketmine\network\mcpe\protocol\TransferPacket;
 use pocketmine\Player;
+use pocketmine\scheduler\ClosureTask;
 use ree_jp\coral_reef\account\AccountManager;
+use ree_jp\coral_reef\CoralReefPlugin;
 use ree_jp\coral_reef\sql\SQLManager;
 
 class ProxyManager
@@ -33,8 +35,16 @@ class ProxyManager
                 $pk = new TransferPacket();
                 $pk->address = $server;
                 $pk->port = 0;
-                $p->sendDataPacket($pk);
                 $p->sendMessage('サーバーを移動しています');
+                $p->sendDataPacket($pk);
+                CoralReefPlugin::$plugin->getScheduler()->scheduleDelayedTask(new ClosureTask(function (int $currentTick) use ($p) {
+                    $xuid = $p->getXuid();
+                    if (AccountManager::hasValue($xuid, 'transfer_server')) {
+                        AccountManager::setValue($xuid, 'transfer_server', 0);
+                        $p->setImmobile(false);
+                        $p->sendMessage('サーバーを移動出来ませんでした');
+                    }
+                }), 20 * 3);
             } else AccountManager::setValue($xuid, 'player_data_save');
         });
     }

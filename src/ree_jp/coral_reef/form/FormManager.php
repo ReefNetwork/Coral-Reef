@@ -50,7 +50,8 @@ class FormManager
         }
         $p->sendForm(new MenuForm('ReefServer Menu', "レベル : $level\nレベルアップまで : $necessaryExperience\n経験値 : $exp",
             [new Button('ストレージ'), new Button("飛行を$fly_status にする"), new Button('ワープ地点'), new Button('ワールド移動'),
-                new Button('スキル設定'), new Button('パーティー'), new Button('土地保護'), new Button('ガチャ'), new Button('設定')],
+                new Button('サーバー移動'), new Button('スキル設定'), new Button('パーティー'), new Button('土地保護'), new Button('ガチャ'),
+                new Button('設定')],
             function (Player $p, Button $button): void {
                 $xuid = $p->getXuid();
                 switch ($button->getValue()) {
@@ -81,18 +82,21 @@ class FormManager
                         $p->sendForm(self::worldTeleportForm());
                         break;
                     case 4:
-                        $p->sendForm(self::skillSelectForm($p));
+                        ServerSelectForm::sendServerSelectForm($p);
                         break;
                     case 5:
-                        $p->sendForm(PartyForm::partyForm($xuid));
+                        $p->sendForm(self::skillSelectForm($p));
                         break;
                     case 6:
-                        $p->sendForm(LandForm::landForm($xuid));
+                        $p->sendForm(PartyForm::partyForm($xuid));
                         break;
                     case 7:
-                        GatyaForm::sendGatyaForm($p);
+                        $p->sendForm(LandForm::landForm($xuid));
                         break;
                     case 8:
+                        GatyaForm::sendGatyaForm($p);
+                        break;
+                    case 9:
                         $p->sendForm(SettingForm::settingForm());
                         break;
                     default:
