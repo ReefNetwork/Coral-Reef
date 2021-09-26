@@ -18,7 +18,7 @@ use ree_jp\coral_reef\proxy\ProxyManager;
 
 class ServerSelectForm
 {
-    const SERVERS = ['server_1,server_2,server_3'];
+    const SERVERS = ['server_1', 'server_2', 'server_3'];
 
     static function sendServerSelectForm(Player $p): void
     {

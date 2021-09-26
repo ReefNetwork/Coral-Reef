@@ -38,6 +38,7 @@ class ProxyManager
                 $p->sendMessage('サーバーを移動しています');
                 $p->sendDataPacket($pk);
                 CoralReefPlugin::$plugin->getScheduler()->scheduleDelayedTask(new ClosureTask(function (int $currentTick) use ($p) {
+                    if ($p->isClosed()) return;
                     $xuid = $p->getXuid();
                     if (AccountManager::hasValue($xuid, 'transfer_server')) {
                         AccountManager::setValue($xuid, 'transfer_server', 0);
