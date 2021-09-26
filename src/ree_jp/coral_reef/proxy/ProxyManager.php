@@ -14,6 +14,7 @@ namespace ree_jp\coral_reef\proxy;
 use pocketmine\network\mcpe\protocol\TransferPacket;
 use pocketmine\Player;
 use pocketmine\scheduler\ClosureTask;
+use pocketmine\Server;
 use ree_jp\coral_reef\account\AccountManager;
 use ree_jp\coral_reef\CoralReefPlugin;
 use ree_jp\coral_reef\sql\SQLManager;
@@ -29,6 +30,7 @@ class ProxyManager
         $user = SQLManager::$manager->getUser($p->getXuid());
         $user->save(function () use ($server, $p) {
             $xuid = $p->getXuid();
+            $name = $p->getName();
             if (AccountManager::hasValue($xuid, 'player_data_save')) {
                 AccountManager::setValue($xuid, 'player_data_save', 0);
                 AccountManager::setValue($xuid, 'transfer_server');
@@ -37,8 +39,9 @@ class ProxyManager
                 $pk->port = 0;
                 $p->sendMessage('サーバーを移動しています');
                 $p->sendDataPacket($pk);
-                CoralReefPlugin::$plugin->getScheduler()->scheduleDelayedTask(new ClosureTask(function (int $currentTick) use ($p) {
-                    if ($p->isClosed()) return;
+                CoralReefPlugin::$plugin->getScheduler()->scheduleDelayedTask(new ClosureTask(function (int $currentTick) use ($name): void {
+                    $p = Server::getInstance()->getPlayer($name);
+                    if (is_null($p)) return;
                     $xuid = $p->getXuid();
                     if (AccountManager::hasValue($xuid, 'transfer_server')) {
                         AccountManager::setValue($xuid, 'transfer_server', 0);
