@@ -26,7 +26,7 @@ class ServerSelectForm
         foreach (self::SERVERS as $server) {
             $buttons[] = new Button($server);
         }
-        $p->sendForm(new MenuForm('Menu -> Server', 'サーバーを移動できます', $buttons, function (Player $p, Button $button) {
+        $p->sendForm(new MenuForm('Menu -> Server', 'サーバーを移動できます', $buttons, function (Player $p, Button $button): void {
             ProxyManager::transferServer($p, $button->getText());
         }));
     }
