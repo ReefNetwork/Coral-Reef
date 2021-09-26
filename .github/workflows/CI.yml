@@ -21,11 +21,13 @@ jobs:
       - name: composer install
         run: composer install -n --no-ansi
 
-      - name: build
+      - name: libasynql
         run: |
           git clone https://github.com/poggit/libasynql.git
           mv ./libasynql/libasynql/src/ ./src/ree_jp/coral_reef/libs/
-          php -d phar.readonly=0 ./build/make-phar.php ${{ github.run_number }}-${GITHUB_REF##*/} "use poggit\\libasynql\\" "use ree_jp\\coral_reef\\libs\\poggit\\libasynql\\"
+
+      - name: build
+        run: php -d phar.readonly=0 ./build/make-phar.php ${{ github.run_number }}-${GITHUB_REF##*/}
 
       - name: upload
         uses: actions/upload-artifact@v2
