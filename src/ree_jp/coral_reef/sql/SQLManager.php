@@ -162,7 +162,7 @@ class SQLManager
             });
     }
 
-    public function setSkill(string $xuid, ?string $skill, Closure $func): void
+    public function setSkill(string $xuid, ?string $skill, ?Closure $func): void
     {
         $this->db->executeGeneric('coral_reef.user.set.skill', ['xuid' => intval($xuid), 'skill' => $skill], $func,
             function (SqlError $error) use ($xuid) {
