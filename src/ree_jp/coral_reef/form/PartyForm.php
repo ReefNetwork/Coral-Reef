@@ -33,7 +33,7 @@ class PartyForm
 
         if (isset(self::$members[$xuid])) {
             $members = self::$members[$xuid];
-            foreach ($members as $member => $value) {
+            foreach ($members as $member) {
                 $button = new Button(AccountManager::getUserName($member));
                 array_push($buttons, $button);
             }
@@ -77,7 +77,7 @@ class PartyForm
                 $p->sendForm(new ModalForm('PartyAdd -> Confirm', $member->getName() . 'さんをパーティーに追加しますか?',
                     function (Player $p, bool $result) use ($member): void {
                         if ($result) {
-                            self::$members[$p->getXuid()][$member->getXuid()] = true;
+                            self::$members[$p->getXuid()][] = $member->getXuid();
                             $p->sendMessage($member->getName() . 'さんをパーティーに追加しました');
                             $member->sendMessage($p->getName() . 'さんのパーティーに追加されました');
                         } else $p->sendForm(self::partyAddForm());
