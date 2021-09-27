@@ -23,6 +23,7 @@ use ree_jp\coral_reef\command\ReefCommand;
 use ree_jp\coral_reef\discord\DiscordBot;
 use ree_jp\coral_reef\gatya\ReefItems;
 use ree_jp\coral_reef\land\LandManager;
+use ree_jp\coral_reef\proxy\ProxyManager;
 use ree_jp\coral_reef\sql\SQLManager;
 use ree_jp\coral_reef\task\DataSaveTask;
 use ree_jp\coral_reef\task\SendServerTipTask;
@@ -78,7 +79,8 @@ class CoralReefPlugin extends PluginBase
     public function onDisable()
     {
         foreach (Server::getInstance()->getOnlinePlayers() as $p) {
-            $p->kick(TextFormat::GREEN . 'Reef ' . TextFormat::YELLOW . 'Server' . TextFormat::RESET . "\n\nサーバーが停止しました", false, '停止');
+            $p->sendMessage(TextFormat::DARK_GRAY . 'サーバーを停止しています');
+            ProxyManager::transferServer($p, 'lobby');
         }
         $this->discordBot->close();
         if (!is_null(SQLManager::$manager)) SQLManager::$manager->close();
