@@ -19,6 +19,7 @@ use pocketmine\math\AxisAlignedBB;
 use pocketmine\math\Vector3;
 use pocketmine\network\mcpe\protocol\LevelEventPacket;
 use pocketmine\Player;
+use pocketmine\utils\TextFormat;
 use poggit\libasynql\SqlError;
 use ree_jp\coral_reef\account\AccountManager;
 use ree_jp\coral_reef\CoralReefPlugin;
@@ -119,12 +120,12 @@ class LandManager
                 $aabb = $this->getAabb($vec1->getFloorX(), $vec1->getFloorZ(), $vec2->getFloorX(), $vec2->getFloorZ());
                 $aabb->minY = $p->getFloorY();
                 $aabb->maxY = $p->getFloorY() + 3;
-                $p->sendMessage("指定されている範囲を表示しています");
-                for ($x = $aabb->minX; $x <= $aabb->maxX; $x += 0.3) {
+                $p->sendMessage(TextFormat::DARK_GRAY . "指定されている範囲を表示しています");
+                for ($x = $aabb->minX; $x <= $aabb->maxX; $x += 0.6) {
                     $this->sendCheckSpaceEffect($p, $aabb, $x, $aabb->minZ);
                     $this->sendCheckSpaceEffect($p, $aabb, $x, $aabb->maxZ);
                 }
-                for ($z = $aabb->minZ; $z <= $aabb->maxZ; $z += 0.3) {
+                for ($z = $aabb->minZ; $z <= $aabb->maxZ; $z += 0.6) {
                     $this->sendCheckSpaceEffect($p, $aabb, $aabb->minX, $z);
                     $this->sendCheckSpaceEffect($p, $aabb, $aabb->maxX, $z);
                 }
@@ -134,7 +135,7 @@ class LandManager
 
     private function sendCheckSpaceEffect(Player $p, AxisAlignedBB $aabb, int $x, int $z): void
     {
-        for ($y = $aabb->minY; $y <= $aabb->maxY; $y += 0.3) {
+        for ($y = $aabb->minY; $y <= $aabb->maxY; $y += 0.6) {
             $p->getLevelNonNull()->addParticle(new PortalParticle(
                 new Vector3($x + 0.5, $y, $z + 0.5)), [$p]);
             $p->getLevelNonNull()->addParticle(new PortalParticle(

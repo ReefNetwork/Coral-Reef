@@ -238,6 +238,8 @@ class EventListener implements Listener
 
             case ItemIds::CLOCK:
                 if ($p->isSneaking()) {
+                    if (AccountManager::hasValue($xuid, 'particle_cool_time')) return;
+                    AccountManager::setValue($xuid, 'particle_cool_time', 10);
                     LandManager::$instance->checkSpace($p);
                 } else {
                     if (AccountManager::hasValue($xuid, 'form_cool_time')) return;
