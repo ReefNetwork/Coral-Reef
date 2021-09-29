@@ -38,10 +38,12 @@ class ReefCommand extends PluginCommand
         if (isset($args[0])) {
             switch ($args[0]) {
                 case 'init_tool':
-                    $pickaxe = Item::get(ItemIds::STONE_PICKAXE);
+                    $pickaxe = Item::get(ItemIds::WOODEN_PICKAXE);
+                    $pickaxe->setCustomName('初期装備(ツルハシ)');
                     if ($pickaxe instanceof Durable) $pickaxe->setUnbreakable();
                     $sender->getInventory()->addItem($pickaxe);
-                    $shovel = Item::get(ItemIds::STONE_SHOVEL);
+                    $shovel = Item::get(ItemIds::WOODEN_SHOVEL);
+                    $shovel->setCustomName('初期装備(シャベル)');
                     if ($shovel instanceof Durable) $shovel->setUnbreakable();
                     $sender->getInventory()->addItem($shovel);
                     $sender->sendMessage('初期装備を配布しました');

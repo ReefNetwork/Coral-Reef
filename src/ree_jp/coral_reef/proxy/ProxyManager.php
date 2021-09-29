@@ -36,7 +36,6 @@ class ProxyManager
                 AccountManager::setValue($xuid, 'transfer_server');
                 $pk = new TransferPacket();
                 $pk->address = $server;
-                $pk->port = 0;
                 $p->sendMessage('サーバーを移動しています');
                 $p->sendDataPacket($pk);
                 CoralReefPlugin::$plugin->getScheduler()->scheduleDelayedTask(new ClosureTask(function (int $currentTick) use ($name): void {
@@ -52,5 +51,12 @@ class ProxyManager
                 }), 20 * 3);
             } else AccountManager::setValue($xuid, 'player_data_save');
         });
+    }
+
+    static function transferServerNoSafe(Player $p, string $server): void
+    {
+        $pk = new TransferPacket();
+        $pk->address = $server;
+        $p->sendDataPacket($pk);
     }
 }

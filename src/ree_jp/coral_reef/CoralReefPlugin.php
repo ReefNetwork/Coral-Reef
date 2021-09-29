@@ -80,7 +80,7 @@ class CoralReefPlugin extends PluginBase
     {
         foreach (Server::getInstance()->getOnlinePlayers() as $p) {
             $p->sendMessage(TextFormat::DARK_GRAY . 'サーバーを停止しています');
-            ProxyManager::transferServer($p, 'lobby');
+            ProxyManager::transferServerNoSafe($p, 'lobby');
         }
         $this->discordBot->close();
         if (!is_null(SQLManager::$manager)) SQLManager::$manager->close();

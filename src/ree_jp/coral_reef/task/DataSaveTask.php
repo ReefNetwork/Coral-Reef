@@ -11,14 +11,15 @@
 
 namespace ree_jp\coral_reef\task;
 
-use Exception;
 use pocketmine\entity\object\ExperienceOrb;
 use pocketmine\entity\object\ItemEntity;
 use pocketmine\scheduler\ClosureTask;
 use pocketmine\scheduler\Task;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat;
+use ree_jp\coral_reef\account\UserAccount;
 use ree_jp\coral_reef\CoralReefPlugin;
+use ree_jp\coral_reef\proxy\ProxyManager;
 use ree_jp\coral_reef\sql\SQLManager;
 
 class DataSaveTask extends Task
@@ -72,7 +73,8 @@ class DataSaveTask extends Task
         if ($this->timer < 0) {
             Server::getInstance()->broadcastMessage(TextFormat::DARK_RED . '再起動中...');
             foreach (Server::getInstance()->getOnlinePlayers() as $p) {
-                $p->kick(TextFormat::GREEN . 'Reef ' . TextFormat::YELLOW . 'Server' . TextFormat::RESET . "\n\n再起動しています", false, '再起動');
+                $p->sendMessage(TextFormat::DARK_GRAY . 'サーバーを再起動しています');
+                ProxyManager::transferServerNoSafe($p, 'lobby');
             }
             Server::getInstance()->shutdown();
         }
@@ -84,11 +86,8 @@ class DataSaveTask extends Task
             $level->save(true);
         }
         foreach (Server::getInstance()->getOnlinePlayers() as $p) {
-            try {
-                SQLManager::$manager->getUser($p->getXuid())->save();
-            } catch (Exception $e) {
-                Server::getInstance()->getLogger()->error("[autoSave] {$p->getName()} の処理中に" . $e->getMessage());
-            }
+            $user = SQLManager::$manager->getUser($p->getXuid());
+            if ($user instanceof UserAccount) $user->save();
         }
     }
 
