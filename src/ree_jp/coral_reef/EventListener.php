@@ -278,6 +278,7 @@ class EventListener implements Listener
     {
         $p = $ev->getPlayer();
         if (AccountManager::hasValue($p->getXuid(), 'fly')) {
+            AccountManager::setValue($p->getXuid(), 'fly', 0);
             $p->setFlying(false);
             $p->setAllowFlight(false);
             $p->sendMessage('モードが変わったため飛行を無効化しました');

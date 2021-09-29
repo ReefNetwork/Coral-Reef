@@ -88,6 +88,11 @@ class AccountManager
                 Server::getInstance()->getLogger()->error($p->getName() . 'のセーブができませんでした' . $e->getMessage());
             }
         }
+        if (AccountManager::hasValue($p->getXuid(), 'fly')) { // フライを無効にする
+            AccountManager::setValue($p->getXuid(), 'fly', 0);
+            $p->setFlying(false);
+            $p->setAllowFlight(false);
+        }
         self::setValue($xuid, 'rejoin', 60 * 3 * 20);
     }
 
