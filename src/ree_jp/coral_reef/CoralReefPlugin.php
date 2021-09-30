@@ -56,7 +56,7 @@ class CoralReefPlugin extends PluginBase
         }), 10);
 
         try {
-            SQLManager::$manager = new SQLManager($this->getDataFolder());
+            SQLManager::$manager = new SQLManager($this->getDataFolder(), $this->getConfig()->get(ConfigConst::SERVER_NAME));
         } catch (PDOException $e) {
             $this->getLogger()->critical("[SQL]" . $e->getMessage());
         }
@@ -78,11 +78,12 @@ class CoralReefPlugin extends PluginBase
 
     public function onDisable()
     {
-        foreach (Server::getInstance()->getOnlinePlayers() as $p) {
+        foreach ($this->getServer()->getOnlinePlayers() as $p) {
             $p->sendMessage(TextFormat::DARK_GRAY . 'サーバーを停止しています');
             ProxyManager::transferServerNoSafe($p, 'lobby');
         }
         $this->discordBot->close();
+        if (!empty($this->getServer()->getOnlinePlayers())) sleep(1);
         if (!is_null(SQLManager::$manager)) SQLManager::$manager->close();
     }
 

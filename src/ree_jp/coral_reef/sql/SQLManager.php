@@ -36,11 +36,12 @@ class SQLManager
     public array $users = [];
     public array $ban = [];
     public array $setting = [];
+    private string $server;
 
     /**
      * @throws PDOException
      */
-    public function __construct(string $path)
+    public function __construct(string $path, string $server)
     {
         $config = new Config($path . 'sql.yml');
         Server::getInstance()->getLogger()->info('[SQL] サーバーに接続中...');
@@ -57,6 +58,7 @@ class SQLManager
 
         $this->db->waitAll();
         Server::getInstance()->getLogger()->info('[SQL] complete');
+        $this->server = $server;
     }
 
     public function close(): void
@@ -196,31 +198,32 @@ class SQLManager
 
     public function getWarps(string $xuid, ?Closure $func): void
     {
-        $this->db->executeSelect('coral_reef.warp.get', ['xuid' => intval($xuid)], $func, $this->noticeByXUid($xuid, 'エラーが発生しました'));
+        $this->db->executeSelect('coral_reef.warp.get', ['xuid' => intval($xuid), 'server' => $this->server],
+            $func, $this->noticeByXUid($xuid, 'エラーが発生しました'));
     }
 
     public function addWarp(string $xuid, string $name, string $level, int $x, int $y, int $z): void
     {
         $this->db->executeInsert('coral_reef.warp.create',
-            ['xuid' => intval($xuid), 'name' => $name, 'level' => $level, 'x' => $x, 'y' => $y, 'z' => $z],
+            ['xuid' => intval($xuid), 'name' => $name, 'server' => $this->server, 'level' => $level, 'x' => $x, 'y' => $y, 'z' => $z],
             $this->noticeByXUid($xuid, 'ワード地点を作成しました'), $this->noticeByXUid($xuid, 'エラーが発生しました'));
     }
 
     public function deleteWarp(string $xuid, string $name): void
     {
-        $this->db->executeGeneric('coral_reef.warp.delete', ['xuid' => intval($xuid), 'name' => $name],
+        $this->db->executeGeneric('coral_reef.warp.delete', ['xuid' => intval($xuid), 'name' => $name, 'server' => $this->server],
             $this->noticeByXUid($xuid, 'ワード地点を削除しました'), $this->noticeByXUid($xuid, 'エラーが発生しました'));
     }
 
     public function loadProtectLand(Closure $func, Closure $failure): void
     {
-        $this->db->executeSelect('coral_reef.land.get', [], $func, $failure);
+        $this->db->executeSelect('coral_reef.land.get', ['server' => $this->server], $func, $failure);
     }
 
     public function addProtectLand(LandData $land, Player $p): void
     {
-        $this->db->executeInsert('coral_reef.land.create', ['xuid' => $land->xuid, 'name' => $land->name, 'level' => $land->level,
-            'mx' => $land->aabb->maxX, 'sx' => $land->aabb->minX, 'mz' => $land->aabb->maxZ, 'sz' => $land->aabb->minZ],
+        $this->db->executeInsert('coral_reef.land.create', ['xuid' => $land->xuid, 'name' => $land->name, 'server' => $this->server,
+            'level' => $land->level, 'mx' => $land->aabb->maxX, 'sx' => $land->aabb->minX, 'mz' => $land->aabb->maxZ, 'sz' => $land->aabb->minZ],
             function (int $insertId, int $affectedRows) use ($p, $land) {
                 array_push(LandManager::$instance->lands, $land);
                 $p->sendMessage($land->name . 'を作成しました');
@@ -232,17 +235,18 @@ class SQLManager
 
     public function deleteProtectLand(LandData $land, Player $p): void
     {
-        $this->db->executeGeneric('coral_reef.land.delete', ['xuid' => $land->xuid, 'name' => $land->name], function () use ($p, $land) {
-            foreach (LandManager::$instance->lands as $key => $cacheLand) {
-                if ($cacheLand->xuid === $land->xuid && $cacheLand->name === $land->name) {
-                    array_splice(LandManager::$instance->lands, $key, 1);
+        $this->db->executeGeneric('coral_reef.land.delete', ['xuid' => $land->xuid, 'name' => $land->name, 'server' => $this->server],
+            function () use ($p, $land) {
+                foreach (LandManager::$instance->lands as $key => $cacheLand) {
+                    if ($cacheLand->xuid === $land->xuid && $cacheLand->name === $land->name) {
+                        array_splice(LandManager::$instance->lands, $key, 1);
+                    }
                 }
-            }
-            $p->sendMessage('土地を削除しました');
-        }, function (SqlError $error) use ($p, $land) {
-            Server::getInstance()->getLogger()->error("[LandSQL] $land->name の削除中に" . $error->getErrorMessage());
-            $p->sendMessage('エラーが発生しました');
-        });
+                $p->sendMessage('土地を削除しました');
+            }, function (SqlError $error) use ($p, $land) {
+                Server::getInstance()->getLogger()->error("[LandSQL] $land->name の削除中に" . $error->getErrorMessage());
+                $p->sendMessage('エラーが発生しました');
+            });
     }
 
     public function addLog(string $xuid, string $type, ?string $subType, ?string $value, ?string $time, ?Closure $func, ?Closure $failure): void

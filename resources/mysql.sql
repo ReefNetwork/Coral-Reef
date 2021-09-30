@@ -25,25 +25,27 @@ CREATE TABLE IF NOT EXISTS BAN
 CREATE TABLE IF NOT EXISTS WARP
 (
     PRIMARY KEY (xuid, name),
-    xuid  BIGINT UNSIGNED NOT NULL,
-    name  VARCHAR(99)     NOT NULL,
-    level VARCHAR(99)     NOT NULL,
-    x     INT             NOT NULL,
-    y     int             not null,
-    z     int             not null
+    xuid   BIGINT UNSIGNED NOT NULL,
+    name   VARCHAR(99)     NOT NULL,
+    server VARCHAR(99)     NOT NULL,
+    level  VARCHAR(99)     NOT NULL,
+    x      INT             NOT NULL,
+    y      INT             not null,
+    z      INT             not null
 );
 -- #        }
 -- #        { land
 CREATE TABLE IF NOT EXISTS LAND
 (
     PRIMARY KEY (xuid, name),
-    xuid  BIGINT UNSIGNED NOT NULL,
-    name  VARCHAR(99)     NOT NULL,
-    level VARCHAR(99)     NOT NULL,
-    mx    INT             NOT NULL,
-    sx    INT             NOT NULL,
-    mz    INT             NOT NULL,
-    sz    INT             NOT NULL
+    xuid   BIGINT UNSIGNED NOT NULL,
+    name   VARCHAR(99)     NOT NULL,
+    server VARCHAR(99)     NOT NULL,
+    level  VARCHAR(99)     NOT NULL,
+    mx     INT             NOT NULL,
+    sx     INT             NOT NULL,
+    mz     INT             NOT NULL,
+    sz     INT             NOT NULL
 );
 -- #        }
 -- #        { virtual_value
@@ -157,19 +159,22 @@ WHERE xuid = :xuid
 -- #    { warp
 -- #        { get
 -- #        :xuid int
+-- #        :server string
 SELECT name, level, x, y, z
 FROM WARP
-WHERE xuid = :xuid;
+WHERE xuid = :xuid
+  AND server = :server;
 -- #        }
 -- #        { create
 -- #        :xuid int
 -- #        :name string
+-- #        :server string
 -- #        :level string
 -- #        :x int
 -- #        :y int
 -- #        :z int
 INSERT INTO WARP
-VALUES (:xuid, :name, :level, :x, :y, :z)
+VALUES (:xuid, :name, :server, :level, :x, :y, :z)
 ON DUPLICATE KEY UPDATE level = :level,
                         x     = :x,
                         y     = :y,
@@ -178,35 +183,42 @@ ON DUPLICATE KEY UPDATE level = :level,
 -- #        { delete
 -- #        :xuid int
 -- #        :name string
+-- #        :server string
 DELETE
 FROM WARP
 WHERE xuid = :xuid
-  AND name = :name;
+  AND name = :name
+  AND server = :server;
 -- #        }
 -- #    }
 -- #    { land
 -- #        { get
+-- #        :server string
 SELECT *
-FROM LAND;
+FROM LAND
+WHERE server = :server;
 -- #        }
 -- #        { create
 -- #        :xuid int
 -- #        :name string
+-- #        :server string
 -- #        :level string
 -- #        :mx int
 -- #        :sx int
 -- #        :mz int
 -- #        :sz int
 INSERT INTO LAND
-VALUES (:xuid, :name, :level, :mx, :sx, :mz, :sz);
+VALUES (:xuid, :name, :server, :level, :mx, :sx, :mz, :sz);
 -- #        }
 -- #        { delete
 -- #        :xuid int
 -- #        :name string
+-- #        :server string
 DELETE
 FROM LAND
 WHERE xuid = :xuid
-  AND name = :name;
+  AND name = :name
+  AND server = :server;
 -- #        }
 -- #    }
 -- #    { log

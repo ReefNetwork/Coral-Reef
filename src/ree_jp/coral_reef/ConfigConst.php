@@ -14,8 +14,7 @@ namespace ree_jp\coral_reef;
 
 class ConfigConst
 {
-    const MYSQL_HOST = "mysqlHost";
-    const MYSQL_PASSWORD = "mysqlPassword";
+    const SERVER_NAME = "server_0";
     const DISCORD_TOKEN = "discordToken";
     const DISCORD_SERVER_ID = "discordServerId";
     const DISCORD_CHAT_CHANNEL_ID = "chatChannelId";
