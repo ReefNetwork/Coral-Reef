@@ -16,8 +16,10 @@ use Frago9876543210\EasyForms\elements\Button;
 use Frago9876543210\EasyForms\forms\Form;
 use Frago9876543210\EasyForms\forms\MenuForm;
 use Frago9876543210\EasyForms\forms\ModalForm;
+use pocketmine\math\Vector3;
 use pocketmine\Player;
 use pocketmine\Server;
+use pocketmine\utils\TextFormat;
 use ree_jp\coral_reef\account\AccountManager;
 use ree_jp\coral_reef\skill\SkillManager;
 use ree_jp\coral_reef\sql\SQLManager;
@@ -51,7 +53,7 @@ class FormManager
         $p->sendForm(new MenuForm('ReefServer Menu', "レベル : $level\nレベルアップまで : $necessaryExperience\n経験値 : $exp",
             [new Button('ストレージ'), new Button("飛行を$fly_status にする"), new Button('ワープ地点'), new Button('ワールド移動'),
                 new Button('サーバー移動'), new Button('スキル設定'), new Button('パーティー'), new Button('土地保護'), new Button('ガチャ'),
-                new Button('設定')],
+                new Button('ランダムワープ'), new Button('設定')],
             function (Player $p, Button $button): void {
                 $xuid = $p->getXuid();
                 switch ($button->getValue()) {
@@ -97,6 +99,16 @@ class FormManager
                         GatyaForm::sendGatyaForm($p);
                         break;
                     case 9:
+                        $p->sendForm(new ModalForm('Menu -> RandomWarp', "ランダムな場所にワープしますか?\n
+                            ※同じ場所にもう一度ランダムワープすることはできません.ランダムワープ後はワープ地点を設定することをおすすめします",
+                            function (Player $p, bool $result): void {
+                                if ($result) {
+                                    $p->sendMessage('ランダムな場所にワープしています');
+                                    $p->teleport(new Vector3(mt_rand(-10000, 10000), mt_rand(-10000, 10000), mt_rand(-10000, 10000)));
+                                } else FormManager::sendMenu($p);
+                            }));
+                        break;
+                    case 10:
                         $p->sendForm(SettingForm::settingForm());
                         break;
                     default:
@@ -124,12 +136,8 @@ class FormManager
 
     static function skillSelectForm(Player $p): Form
     {
-        try {
-            $user = SQLManager::$manager->getUser($p->getXuid());
-        } catch (Exception $e) {
-            Server::getInstance()->getLogger()->error('[SkillSelect]' . $p->getName() . 'の処理中に' . $e->getMessage());
-            return FormManager::messageForm('エラーが発生しました');
-        }
+        $user = SQLManager::$manager->getUser($p->getXuid());
+        if (is_null($user)) FormManager::messageForm('エラーが発生しました');
         $nowSkill = is_null($user->skill) ? 'なし' : $user->skill->name;
         $buttons = [new Button('スキルなし')];
         $skills = [null];
@@ -139,7 +147,9 @@ class FormManager
                 array_push($buttons, new Button('エラーが発生しました'));
                 array_push($skills, null);
             } else {
-                array_push($buttons, new Button($skill->name));
+                if ($skill->needLevel <= $user->level) { // レベルが足りれば緑色にする
+                    array_push($buttons, new Button(TextFormat::GREEN . $skill->name));
+                } else array_push($buttons, new Button(TextFormat::DARK_GRAY . $skill->name));
                 array_push($skills, $skill);
             }
         }
@@ -152,14 +162,9 @@ class FormManager
                     $p->sendForm(new ModalForm('Skill -> Confirm', "スキルを$skillName に変更しますか?",
                         function (Player $p, bool $result) use ($skill): void {
                             if ($result) {
-                                try {
-                                    $user = SQLManager::$manager->getUser($p->getXuid());
-                                    $user->skill = $skill;
-                                    $p->sendMessage('スキルを変更しました');
-                                } catch (Exception $e) {
-                                    $p->sendMessage('エラーが発生しました');
-                                    Server::getInstance()->getLogger()->error('[SkillConfirm]' . $p->getName() . 'の処理中に' . $e->getMessage());
-                                }
+                                $user = SQLManager::$manager->getUser($p->getXuid());
+                                $user->skill = $skill;
+                                $p->sendMessage('スキルを変更しました');
                             } else $p->sendForm(self::skillSelectForm($p));
                         }));
                 } else {

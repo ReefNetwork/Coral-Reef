@@ -37,8 +37,9 @@ class BreakSkill
     public int $height; //縦 (掘ったブロックを含めず) ex: 5*5*5 A:4
     public int $width; //横 heightと同じ
     public int $depth; //奥行 heightと同じ
+    public int $needLevel;
 
-    public function __construct(string $name, string $id, int $cool_time, int $height, int $width, int $depth)
+    public function __construct(string $name, string $id, int $cool_time, int $height, int $width, int $depth, int $needLevel = 0)
     {
         $this->name = $name;
         $this->id = $id;
@@ -46,6 +47,7 @@ class BreakSkill
         $this->height = $height;
         $this->width = $width;
         $this->depth = $depth;
+        $this->needLevel = $needLevel;
     }
 
     /**

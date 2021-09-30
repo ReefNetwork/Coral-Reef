@@ -22,16 +22,28 @@ use ree_jp\coral_reef\sql\SQLManager;
 
 class SkillManager
 {
-    const SKILLS = ['double', 'triple', 'test'];
+    const SKILLS = ['first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'test'];
 
     static function getSkill(?string $skill): ?BreakSkill
-    {
+    { // https://en.wikipedia.org/wiki/List_of_reefs
         switch ($skill) {
-            case 'double':
-                return new BreakSkill('ダブル', $skill, 0, 1, 0, 0);
+            case 'first': // https://en.wikipedia.org/wiki/Angria_Bank
+                return new BreakSkill('アングリア', $skill, 0, 1, 0, 0, 1);
 
-            case 'triple':
-                return new BreakSkill('トリプル', $skill, 0, 2, 2, 2);
+            case 'second': // https://en.wikipedia.org/wiki/Apo_Reef
+                return new BreakSkill('アポ', $skill, 0, 1, 0, 1, 3);
+
+            case 'third': // https://en.wikipedia.org/wiki/Arrecifes_de_Cozumel_National_Park
+                return new BreakSkill('パランカー', $skill, 0, 1, 2, 0, 5);
+
+            case 'fourth': // https://en.wikipedia.org/wiki/Bar_Reef
+                return new BreakSkill('パー', $skill, 0, 2, 2, 0, 8);
+
+            case 'fifth': // https://en.wikipedia.org/wiki/Belize_Barrier_Reef
+                return new BreakSkill('ベリーズバリア', $skill, 10, 2, 2, 1, 10);
+
+            case 'sixth': // https://en.wikipedia.org/wiki/Benares_Shoals
+                return new BreakSkill('ベナレスショールス', $skill, 15, 2, 2, 2, 13);
 
             case 'test':
                 return new BreakSkill('てすと', $skill, 10, 9, 2, 2);

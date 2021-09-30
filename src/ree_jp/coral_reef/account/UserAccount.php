@@ -24,7 +24,7 @@ use ree_jp\coral_reef\sql\SQLManager;
 class UserAccount
 {
     const LEVEL_EXPERIMENT = [
-        1 => 1, 2 => 100, 3 => 1000, 4 => 5000, 5 => 10000,
+        1 => 1, 2 => 1000, 3 => 5000, 4 => 10000, 5 => 25000, 6 => 50000, 7 => 100000, 8 => 170000, 9 => 250000
     ];
 
     public string $xuid;
