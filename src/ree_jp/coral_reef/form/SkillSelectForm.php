@@ -27,7 +27,7 @@ class SkillSelectForm
         $user = SQLManager::$manager->getUser($xuid);
         if (is_null($user)) FormManager::messageForm('エラーが発生しました');
         $nowSkill = is_null($user->skill) ? 'なし' : $user->skill->name;
-        $buttons = [new Button('スキルなし')];
+        $buttons = [new Button(TextFormat::GREEN . 'スキルなし')];
         $skills = [null];
         foreach (SkillManager::SKILLS as $skillId) {
             $skill = SkillManager::getSkill($skillId);
@@ -73,7 +73,7 @@ class SkillSelectForm
                     $user = SQLManager::$manager->getUser($p->getXuid());
                     $user->skill = $skill;
                     $p->sendMessage('スキルを変更しました');
-                } else $p->sendForm(self::skillSelectForm($p));
+                } else $p->sendForm(self::skillSelectForm($p->getXuid()));
             });
     }
 }
