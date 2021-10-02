@@ -52,11 +52,4 @@ class ProxyManager
             } else AccountManager::setValue($xuid, 'player_data_save');
         });
     }
-
-    static function transferServerNoSafe(Player $p, string $server): void
-    {
-        $pk = new TransferPacket();
-        $pk->address = $server;
-        $p->sendDataPacket($pk);
-    }
 }

@@ -16,14 +16,12 @@ use PDOException;
 use pocketmine\plugin\PluginBase;
 use pocketmine\scheduler\ClosureTask;
 use pocketmine\Server;
-use pocketmine\utils\TextFormat;
 use ree_jp\coral_reef\account\ScoreBoardManager;
 use ree_jp\coral_reef\command\MenuCommand;
 use ree_jp\coral_reef\command\ReefCommand;
 use ree_jp\coral_reef\discord\DiscordBot;
 use ree_jp\coral_reef\gatya\ReefItems;
 use ree_jp\coral_reef\land\LandManager;
-use ree_jp\coral_reef\proxy\ProxyManager;
 use ree_jp\coral_reef\sql\SQLManager;
 use ree_jp\coral_reef\task\DataSaveTask;
 use ree_jp\coral_reef\task\SendServerTipTask;
@@ -79,8 +77,7 @@ class CoralReefPlugin extends PluginBase
     public function onDisable()
     {
         foreach ($this->getServer()->getOnlinePlayers() as $p) {
-            $p->sendMessage(TextFormat::DARK_GRAY . 'サーバーを停止しています');
-            ProxyManager::transferServerNoSafe($p, 'lobby');
+            $p->kick("サーバーを停止します", false);
         }
         $this->discordBot->close();
         if (!empty($this->getServer()->getOnlinePlayers())) sleep(1);
