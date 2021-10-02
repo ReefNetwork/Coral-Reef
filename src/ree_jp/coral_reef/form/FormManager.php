@@ -13,15 +13,12 @@ namespace ree_jp\coral_reef\form;
 
 use Exception;
 use Frago9876543210\EasyForms\elements\Button;
-use Frago9876543210\EasyForms\forms\Form;
 use Frago9876543210\EasyForms\forms\MenuForm;
 use Frago9876543210\EasyForms\forms\ModalForm;
 use pocketmine\math\Vector3;
 use pocketmine\Player;
 use pocketmine\Server;
-use pocketmine\utils\TextFormat;
 use ree_jp\coral_reef\account\AccountManager;
-use ree_jp\coral_reef\skill\SkillManager;
 use ree_jp\coral_reef\sql\SQLManager;
 
 class FormManager
@@ -87,7 +84,7 @@ class FormManager
                         ServerSelectForm::sendServerSelectForm($p);
                         break;
                     case 5:
-                        $p->sendForm(self::skillSelectForm($p));
+                        $p->sendForm(SkillSelectForm::SkillSelectForm($xuid));
                         break;
                     case 6:
                         $p->sendForm(PartyForm::partyForm($xuid));
@@ -130,45 +127,6 @@ class FormManager
                         break;
                     default:
                         $p->sendMessage('エラーが発生しました');
-                }
-            });
-    }
-
-    static function skillSelectForm(Player $p): Form
-    {
-        $user = SQLManager::$manager->getUser($p->getXuid());
-        if (is_null($user)) FormManager::messageForm('エラーが発生しました');
-        $nowSkill = is_null($user->skill) ? 'なし' : $user->skill->name;
-        $buttons = [new Button('スキルなし')];
-        $skills = [null];
-        foreach (SkillManager::SKILLS as $skillId) {
-            $skill = SkillManager::getSkill($skillId);
-            if (is_null($skill)) {
-                array_push($buttons, new Button('エラーが発生しました'));
-                array_push($skills, null);
-            } else {
-                if ($skill->needLevel <= $user->level) { // レベルが足りれば緑色にする
-                    array_push($buttons, new Button(TextFormat::GREEN . $skill->name));
-                } else array_push($buttons, new Button(TextFormat::DARK_GRAY . $skill->name));
-                array_push($skills, $skill);
-            }
-        }
-        return new MenuForm('Menu -> Skill', "現在のスキルは$nowSkill です", [
-            new Button('なし'), new Button('ダブル'), new Button('トリプル'), new Button('てすと')],
-            function (Player $p, Button $button) use ($skills): void {
-                if (array_key_exists($button->getValue(), $skills)) {
-                    $skill = $skills[$button->getValue()];
-                    $skillName = is_null($skill) ? 'なし' : $skill->name;
-                    $p->sendForm(new ModalForm('Skill -> Confirm', "スキルを$skillName に変更しますか?",
-                        function (Player $p, bool $result) use ($skill): void {
-                            if ($result) {
-                                $user = SQLManager::$manager->getUser($p->getXuid());
-                                $user->skill = $skill;
-                                $p->sendMessage('スキルを変更しました');
-                            } else $p->sendForm(self::skillSelectForm($p));
-                        }));
-                } else {
-                    $p->sendMessage('エラーが発生しました');
                 }
             });
     }
