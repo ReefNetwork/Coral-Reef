@@ -104,7 +104,7 @@ class FormManager
                             function (Player $p, bool $result): void {
                                 if ($result) {
                                     $p->sendMessage('ランダムな場所にワープしています');
-                                    $p->teleport(new Vector3(mt_rand(-10000, 10000), mt_rand(-10000, 10000), mt_rand(-10000, 10000)));
+                                    $p->teleport(new Vector3(mt_rand(-10000, 10000), 100, mt_rand(-10000, 10000)));
                                 } else FormManager::sendMenu($p);
                             }));
                         break;
