@@ -16,7 +16,6 @@ use Closure;
 use Exception;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat;
-use ree_jp\coral_reef\CoralReefPlugin;
 use ree_jp\coral_reef\skill\BreakSkill;
 use ree_jp\coral_reef\skill\SkillManager;
 use ree_jp\coral_reef\sql\SQLManager;
@@ -76,7 +75,6 @@ class UserAccount
             }
             $message = $name . "さんのレベルが$this->level になりました";
             Server::getInstance()->broadcastMessage($message);
-            CoralReefPlugin::$plugin->discordBot->sendChat($message);
         }
     }
 

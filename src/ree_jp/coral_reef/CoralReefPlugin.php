@@ -19,7 +19,6 @@ use pocketmine\Server;
 use ree_jp\coral_reef\account\ScoreBoardManager;
 use ree_jp\coral_reef\command\MenuCommand;
 use ree_jp\coral_reef\command\ReefCommand;
-use ree_jp\coral_reef\discord\DiscordBot;
 use ree_jp\coral_reef\gatya\ReefItems;
 use ree_jp\coral_reef\land\LandManager;
 use ree_jp\coral_reef\sql\SQLManager;
@@ -30,7 +29,6 @@ class CoralReefPlugin extends PluginBase
 {
     static CoralReefPlugin $plugin;
 
-    public DiscordBot $discordBot;
     public bool $isDev = false;
 
     private array $errors = [];
@@ -63,15 +61,8 @@ class CoralReefPlugin extends PluginBase
         } catch (Exception $e) {
             $this->getLogger()->critical("[LandManager]" . $e->getMessage());
         }
-        $this->discordBot = new DiscordBot(
-            $this->getFile(),
-            $this->getConfig()->get(ConfigConst::DISCORD_TOKEN),
-            $this->getConfig()->get(ConfigConst::DISCORD_SERVER_ID),
-            $this->getConfig()->get(ConfigConst::DISCORD_CHAT_CHANNEL_ID),
-            $this->getConfig()->get(ConfigConst::DISCORD_LOG_CHANNEL_ID));
         ReefItems::registerAll();
         $this->pluginInformation();
-        $this->discordBot->sendStartMessage();
     }
 
     public function onDisable()
@@ -79,7 +70,6 @@ class CoralReefPlugin extends PluginBase
         foreach ($this->getServer()->getOnlinePlayers() as $p) {
             $p->kick("サーバーを停止します", false);
         }
-        $this->discordBot->close();
         if (!empty($this->getServer()->getOnlinePlayers())) sleep(1);
         if (!is_null(SQLManager::$manager)) SQLManager::$manager->close();
     }

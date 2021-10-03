@@ -46,7 +46,6 @@ class DataSaveTask extends Task
                 $this->save();
                 $message = 'データをセーブしました(' . round(microtime(true) - $start, 2) . '秒)';
                 Server::getInstance()->broadcastMessage(TextFormat::GRAY . $message);
-                CoralReefPlugin::$plugin->discordBot->sendChat($message);
                 self::startClearItem();
         }
         switch ($this->timer) {

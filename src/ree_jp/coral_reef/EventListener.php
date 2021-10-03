@@ -21,7 +21,6 @@ use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\event\entity\EntityTeleportEvent;
 use pocketmine\event\Listener;
-use pocketmine\event\player\PlayerChatEvent;
 use pocketmine\event\player\PlayerGameModeChangeEvent;
 use pocketmine\event\player\PlayerInteractEvent;
 use pocketmine\event\player\PlayerJoinEvent;
@@ -93,7 +92,6 @@ class EventListener implements Listener
                 $ev->setJoinMessage($p->getDisplayName() . 'さんが参加しました');
             }
         }
-        CoralReefPlugin::$plugin->discordBot->sendChat($ev->getJoinMessage());
         $p->sendTitle(TextFormat::GREEN . 'Reef ' . TextFormat::YELLOW . 'Server');
         if (!$p->getInventory()->contains(Item::get(ItemIds::STICK)))
             $p->getInventory()->addItem(Item::get(ItemIds::STICK)->setLore(['メニューを開きます']));
@@ -105,22 +103,6 @@ class EventListener implements Listener
 
         AccountManager::userQuit($p, $ev->getQuitReason());
         $ev->setQuitMessage(TextFormat::GRAY . $p->getDisplayName() . 'さんが' . $ev->getQuitReason() . 'で退出しました');
-        CoralReefPlugin::$plugin->discordBot->sendChat($p->getDisplayName() . 'さんが' . $ev->getQuitReason() . 'で退出しました');
-    }
-
-    /**
-     * @priority MONITOR
-     */
-    public function onChat(PlayerChatEvent $ev): void
-    {
-        if (AccountManager::hasValue($ev->getPlayer()->getXuid(), 'wait_action')) {
-            $ev->setCancelled();
-            return;
-        }
-        $name = $ev->getPlayer()->getDisplayName();
-        if (!$ev->isCancelled()) {
-            CoralReefPlugin::$plugin->discordBot->sendChat("[$name] " . $ev->getMessage());
-        }
     }
 
     public function onDamage(EntityDamageEvent $ev)

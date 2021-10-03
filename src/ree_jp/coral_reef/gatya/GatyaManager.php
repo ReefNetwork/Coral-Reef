@@ -19,7 +19,6 @@ use pocketmine\utils\TextFormat;
 use poggit\libasynql\SqlError;
 use ree_jp\coral_reef\account\GiftData;
 use ree_jp\coral_reef\account\GiftManager;
-use ree_jp\coral_reef\CoralReefPlugin;
 use ree_jp\coral_reef\sql\SQLConst;
 use ree_jp\coral_reef\sql\SQLManager;
 
@@ -159,7 +158,6 @@ class GatyaManager
                                             if ($isBroadcast) { // 一定のレア度以上は$isBroadcastをtrueにしてガチャを引いたことを全体に表示させる
                                                 $broadMessage = $p->getDisplayName() . 'さんが' . TextFormat::GREEN . 'REEFレア' . TextFormat::RESET . 'を引きました';
                                                 Server::getInstance()->broadcastMessage($broadMessage);
-                                                CoralReefPlugin::$plugin->discordBot->sendChat($broadMessage);
                                             }
                                             $func();
                                         }, function (SqlError $error) use ($p) {

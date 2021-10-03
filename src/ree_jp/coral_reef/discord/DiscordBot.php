@@ -17,7 +17,7 @@ use pocketmine\Thread;
 use pocketmine\utils\TextFormat;
 use ree_jp\coral_reef\CoralReefPlugin;
 
-class DiscordBot extends Thread
+class DiscordBot extends Thread // DiscordBotはプロキシ側で動かすことにした
 {
     private discordThread $client;
     private string $chat_id;
