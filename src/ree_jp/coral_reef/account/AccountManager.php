@@ -73,7 +73,7 @@ class AccountManager
         SettingManager::updateOption($p, SettingConst::ALLOW_COOL_TIME_DIG);
     }
 
-    static function userQuit(Player $p, string $reason): void
+    static function userQuit(Player $p): void
     {
         $xuid = $p->getXuid();
 
@@ -93,7 +93,6 @@ class AccountManager
             $p->setFlying(false);
             $p->setAllowFlight(false);
         }
-        self::setValue($xuid, 'rejoin', 60 * 3 * 20);
     }
 
     /**

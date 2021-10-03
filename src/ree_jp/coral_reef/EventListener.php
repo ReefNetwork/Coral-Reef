@@ -83,26 +83,18 @@ class EventListener implements Listener
         }
         AccountManager::userJoin($p);
 
-        if (is_null($p->getLastPlayed())) {
-            $ev->setJoinMessage($p->getDisplayName() . 'さんが初めて参加しました');
-        } else {
-            if (AccountManager::hasValue($xuid, 'rejoin')) {
-                $ev->setJoinMessage($p->getDisplayName() . 'さんが再参加しました');
-            } else {
-                $ev->setJoinMessage($p->getDisplayName() . 'さんが参加しました');
-            }
-        }
+        $ev->setJoinMessage(""); // プロキシ側で参加メッセージを流す
         $p->sendTitle(TextFormat::GREEN . 'Reef ' . TextFormat::YELLOW . 'Server');
         if (!$p->getInventory()->contains(Item::get(ItemIds::STICK)))
-            $p->getInventory()->addItem(Item::get(ItemIds::STICK)->setLore(['メニューを開きます']));
+            $p->getInventory()->addItem(Item::get(ItemIds::STICK)->setCustomName('メニューを開く'));
     }
 
     public function onQuit(PlayerQuitEvent $ev): void
     {
         $p = $ev->getPlayer();
 
-        AccountManager::userQuit($p, $ev->getQuitReason());
-        $ev->setQuitMessage(TextFormat::GRAY . $p->getDisplayName() . 'さんが' . $ev->getQuitReason() . 'で退出しました');
+        AccountManager::userQuit($p);
+        $ev->setQuitMessage(""); // プロキシ側で退出メッセージを流す
     }
 
     public function onDamage(EntityDamageEvent $ev)
