@@ -11,7 +11,6 @@
 
 namespace ree_jp\coral_reef\form;
 
-use Exception;
 use Frago9876543210\EasyForms\elements\Button;
 use Frago9876543210\EasyForms\forms\MenuForm;
 use Frago9876543210\EasyForms\forms\ModalForm;
@@ -30,17 +29,10 @@ class FormManager
         if (AccountManager::hasValue($xuid, 'form_cool_time')) return;
         AccountManager::setValue($xuid, 'form_cool_time', 10);
 
-        $level = 'loading';
-        $necessaryExperience = 'loading';
-        $exp = 'xp';
-        try {
-            $user = SQLManager::$manager->getUser($xuid);
-            $level = $user->level;
-            $necessaryExperience = $user->necessaryExperience;
-            $exp = $user->experience;
-        } catch (Exception $e) {
-            Server::getInstance()->getLogger()->error('ユーザーデータの取得中に' . $e->getMessage());
-        }
+        $user = SQLManager::$manager->getUser($xuid);
+        $level = is_null($user) ? 'error' : $user->level;
+        $necessaryExperience = is_null($user) ? 'error' : $user->necessaryExperience;
+        $exp = is_null($user) ? 'error' : $user->experience;
 
         if (AccountManager::hasValue($xuid, 'fly')) {
             $fly_status = '無効';
