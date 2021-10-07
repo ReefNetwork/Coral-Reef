@@ -21,9 +21,11 @@ use ree_jp\coral_reef\command\MenuCommand;
 use ree_jp\coral_reef\command\ReefCommand;
 use ree_jp\coral_reef\gatya\ReefItems;
 use ree_jp\coral_reef\land\LandManager;
+use ree_jp\coral_reef\quest\QuestListener;
 use ree_jp\coral_reef\sql\SQLManager;
 use ree_jp\coral_reef\task\DataSaveTask;
 use ree_jp\coral_reef\task\SendServerTipTask;
+use ree_jp\coral_reef\task\ServerUpdateTask;
 
 class CoralReefPlugin extends PluginBase
 {
@@ -46,6 +48,7 @@ class CoralReefPlugin extends PluginBase
         $this->getServer()->getCommandMap()->register('menu', new MenuCommand($this));
         $this->getServer()->getCommandMap()->register('reef', new ReefCommand($this));
         $this->getScheduler()->scheduleRepeatingTask(new DataSaveTask(), 20);
+        $this->getScheduler()->scheduleRepeatingTask(new ServerUpdateTask(), 200);
         $this->getScheduler()->scheduleRepeatingTask(new SendServerTipTask(), 15);
         $this->getScheduler()->scheduleRepeatingTask(new ClosureTask(function (int $currentTick): void {
             foreach (Server::getInstance()->getOnlinePlayers() as $p) ScoreBoardManager::sendScoreBoard($p);

@@ -20,6 +20,7 @@ use pocketmine\Player;
 use pocketmine\utils\TextFormat;
 use ree_jp\coral_reef\CoralReefPlugin;
 use ree_jp\coral_reef\sql\SQLManager;
+use ree_jp\coral_reef\task\ServerUpdateTask;
 
 class ScoreBoardManager
 {
@@ -51,8 +52,14 @@ class ScoreBoardManager
         $skillName = is_null($user->skill) ? 'なし' : $user->skill->name;
         self::setScore($pk, 1, '現在のスキル : ' . $skillName);
         self::setScore($pk, 2, '次のレベルまで : ' . $user->necessaryExperience);
-        self::setScore($pk, 14, TextFormat::DARK_GRAY . $p->getDisplayName());
-        self::setScore($pk, 15, TextFormat::DARK_GRAY . date("Y/m/d H:i:s"));
+        if (ServerUpdateTask::$exp_buff > 1) {
+            self::setScore($pk, 3, '経験値ボーナス : ' . ServerUpdateTask::$exp_buff . "倍");
+        }
+        if (ServerUpdateTask::$haste_effect >= 0) {
+            self::setScore($pk, 4, '採掘速度アップ : ' . (ServerUpdateTask::$haste_effect + 1) . "倍");
+        }
+        self::setScore($pk, 8, TextFormat::DARK_GRAY . $p->getDisplayName());
+        self::setScore($pk, 9, TextFormat::DARK_GRAY . date("Y/m/d H:i:s"));
 
         if (CoralReefPlugin::$plugin->isDev) {
             self::setScore($pk, 13, CoralReefPlugin::$plugin->getDescription()->getVersion());

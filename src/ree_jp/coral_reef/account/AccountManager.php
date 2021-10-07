@@ -25,6 +25,7 @@ use ree_jp\coral_reef\skill\BreakSkill;
 use ree_jp\coral_reef\skill\SkillManager;
 use ree_jp\coral_reef\sql\SettingConst;
 use ree_jp\coral_reef\sql\SQLManager;
+use ree_jp\coral_reef\task\ServerUpdateTask;
 
 class AccountManager
 {
@@ -106,7 +107,7 @@ class AccountManager
         $xuid = $p->getXuid();
         $user = SQLManager::$manager->getUser($xuid);
         $skill = $user->skill;
-        $user->addXp();
+        $user->addXp(ServerUpdateTask::$exp_buff);
         if (!SettingManager::isEnableOption($p->getXuid(), SettingConst::NO_FREEZE_WATER)) { // 水を掘ったら水が消えるように
             if ($bl->getId() === BlockIds::WATER) {
                 $p->getLevelNonNull()->setBlock($bl, Block::get(BlockIds::AIR));
