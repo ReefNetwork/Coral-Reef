@@ -41,7 +41,6 @@ use ree_jp\coral_reef\form\LandForm;
 use ree_jp\coral_reef\land\LandManager;
 use ree_jp\coral_reef\sql\SettingConst;
 use ree_jp\coral_reef\sql\SQLManager;
-use ree_jp\stackStorage\api\StackStorageAPI;
 use Throwable;
 
 class EventListener implements Listener
@@ -165,11 +164,15 @@ class EventListener implements Listener
         }
         try {
             foreach ($ev->getDrops() as $dropItem) {
-                /** @noinspection PhpUndefinedClassInspection */
-                StackStorageAPI::$instance->add($p->getXuid(), $dropItem);
+                /**
+                 * @noinspection PhpUndefinedNamespaceInspection
+                 * @noinspection PhpUndefinedClassInspection
+                 * @noinspection PhpFullyQualifiedNameUsageInspection
+                 */
+                \ree_jp\stackStorage\api\StackStorageAPI::$instance->add($p->getXuid(), $dropItem);
             }
             $ev->setDrops([]);
-        } catch (Throwable $e) {
+        } catch (Throwable $e) { // StackStorageAPIが見つからなかった場合
             $p->sendMessage('ストレージにアクセスできませんでした');
         }
     }
