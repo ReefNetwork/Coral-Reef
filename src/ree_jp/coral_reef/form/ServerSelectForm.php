@@ -27,7 +27,7 @@ class ServerSelectForm
             $buttons[] = new Button($server);
         }
         $p->sendForm(new MenuForm('Menu -> Server', 'サーバーを移動できます', $buttons, function (Player $p, Button $button): void {
-            ProxyManager::transferServer($p, $button->getText());
+            ProxyManager::transferServerWithSave($p, $button->getText());
         }));
     }
 }

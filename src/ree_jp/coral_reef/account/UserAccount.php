@@ -16,6 +16,7 @@ use Closure;
 use Exception;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat;
+use ree_jp\coral_reef\quest\QuestManager;
 use ree_jp\coral_reef\skill\BreakSkill;
 use ree_jp\coral_reef\skill\SkillManager;
 use ree_jp\coral_reef\sql\SQLManager;
@@ -33,7 +34,7 @@ class UserAccount
     public int $necessaryExperience;
     public ?BreakSkill $skill;
 
-    public function __construct(string $xuid, string $name, int $experience, ?string $skill)
+    function __construct(string $xuid, string $name, int $experience, ?string $skill)
     {
         $this->xuid = $xuid;
         $this->name = $name;
@@ -42,7 +43,7 @@ class UserAccount
         $this->skill = SkillManager::getSkill($skill);
     }
 
-    public function save(?Closure $func = null): void
+    function save(?Closure $xpFunc = null, ?Closure $skillFunc = null, ?Closure $questFunc = null): void
     {
         if (is_null($this->skill)) {
             $skillId = null;
@@ -50,14 +51,15 @@ class UserAccount
             $skillId = $this->skill->id;
         }
         try {
-            SQLManager::$manager->setXp($this->xuid, $this->experience, $func);
-            SQLManager::$manager->setSkill($this->xuid, $skillId, $func);
+            SQLManager::$manager->setXp($this->xuid, $this->experience, $xpFunc);
+            SQLManager::$manager->setSkill($this->xuid, $skillId, $skillFunc);
+            QuestManager::save($this->xuid, $questFunc);
         } catch (Exception $e) {
             Server::getInstance()->getLogger()->error($this->name . 'のデータ保存に失敗しました' . $e->getMessage());
         }
     }
 
-    public function addXp(int $xp = 1): void
+    function addXp(int $xp = 1): void
     {
         $this->experience = $xp + $this->experience;
         $this->necessaryExperience -= $xp;

@@ -45,6 +45,7 @@ class CoralReefPlugin extends PluginBase
     {
         date_default_timezone_set('Asia/Tokyo');
         $this->getServer()->getPluginManager()->registerEvents(new EventListener(), $this);
+        $this->getServer()->getPluginManager()->registerEvents(new QuestListener(), $this); // クエスト用
         $this->getServer()->getCommandMap()->register('menu', new MenuCommand($this));
         $this->getServer()->getCommandMap()->register('reef', new ReefCommand($this));
         $this->getScheduler()->scheduleRepeatingTask(new DataSaveTask(), 20);
