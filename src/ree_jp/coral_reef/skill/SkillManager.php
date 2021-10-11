@@ -73,11 +73,11 @@ class SkillManager
         if (is_null($skill)) throw new Exception('スキルが設定されていません');
 
         $skill->runSkill($bl, $p);
-        if ($skill->cool_time !== 0) {
-            $cool_time = $skill->cool_time;
-            if (isset(self::$reduceCoolTime[$xuid])) { // クールタイム減らすのを反映
-                $cool_time -= self::$reduceCoolTime[$xuid];
-            }
+        $cool_time = $skill->cool_time;
+        if (isset(self::$reduceCoolTime[$xuid])) { // クールタイム減らすのを反映
+            $cool_time -= self::$reduceCoolTime[$xuid];
+        }
+        if ($cool_time > 0) { // クールタイムが0以上のときクールタイムの処理をする
             AccountManager::setValue($xuid, 'skill_cool_time', $cool_time);
             CoralReefPlugin::$plugin->getScheduler()->scheduleDelayedTask(new ClosureTask(function (int $currentTick) use ($p): void {
                 $p->sendPopup('スキルのクールタイムが終了しました');
