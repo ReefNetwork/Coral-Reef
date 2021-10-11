@@ -14,6 +14,8 @@ namespace ree_jp\coral_reef\skill;
 use Exception;
 use pocketmine\block\Block;
 use pocketmine\block\BlockIds;
+use pocketmine\block\Liquid;
+use pocketmine\level\Level;
 use pocketmine\math\Vector3;
 use pocketmine\Player;
 use ree_jp\coral_reef\account\SettingManager;
@@ -96,26 +98,36 @@ class BreakSkill
 
     private function breakBrockBySkill(Player $p, Vector3 $vec): void
     {
+        $this->frozeWater($p, $vec);
+
+        $bl = $p->getLevel()->getBlock($vec);
         $hand = $p->getInventory()->getItemInHand();
-        $level = $p->getLevel();
-        $bl = $level->getBlock($vec);
-        if ($bl->getHardness() < 0) return;
+        if ($bl->getHardness() < 0 || $bl instanceof Liquid) return;
 
         $p->getLevel()->useBreakOn($vec, $hand, $p);
-        $this->frozeWater($p, $vec);
     }
 
     private function frozeWater(Player $p, Vector3 $vec): void
     {
         if (!SettingManager::isEnableOption($p->getXuid(), SettingConst::NO_FREEZE_WATER)) {
             try {
-                $checkVec = $this->getSideFromUserView($vec, $p->getDirection(), self::FORWARD, 1);
-                if ($p->getLevelNonNull()->getBlock($checkVec)->getId() === BlockIds::WATER) { // 水を水色のガラスに変える
-                    $p->getLevelNonNull()->setBlock($checkVec, Block::get(BlockIds::STAINED_GLASS, 3));
-                }
-            } catch (Exception $e) {
-                $p->sendMessage('エラーが発生しました');
+                $this->changeWater($p->getLevel(), $vec);
+                $this->changeWater($p->getLevel(), $vec->add(0, 1));
+                $this->changeWater($p->getLevel(), $vec->add(0, -1));
+                $this->changeWater($p->getLevel(), $this->getSideFromUserView($vec, $p->getDirection(), self::FORWARD, 1));
+                $this->changeWater($p->getLevel(), $this->getSideFromUserView($vec, $p->getDirection(), self::RIGHT, 1));
+                $this->changeWater($p->getLevel(), $this->getSideFromUserView($vec, $p->getDirection(), self::LEFT, 1));
+            } catch (Exception $ex) {
+                $p->sendMessage("エラーが発生しました");
             }
+        }
+    }
+
+    private function changeWater(?Level $level, Vector3 $vec3): void // 水を水色のガラスに変える
+    {
+        if (is_null($level)) return;
+        if ($level->getBlock($vec3)->getId() === BlockIds::WATER) { // 水を水色のガラスに変える
+            $level->setBlock($vec3, Block::get(BlockIds::STAINED_GLASS, 3));
         }
     }
 
