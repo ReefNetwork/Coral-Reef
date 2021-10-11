@@ -41,4 +41,11 @@ class RareItems extends ReefItems
         $item->addEnchantment(new EnchantmentInstance(Enchantment::getEnchantment(Enchantment::UNBREAKING), 1));
         return $item;
     }
+
+    static function registerItems(): void
+    {
+        foreach ([1, 2] as $key) {
+            Item::addCreativeItem(self::getItem(0, $key));
+        }
+    }
 }

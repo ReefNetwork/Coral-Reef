@@ -137,10 +137,8 @@ class ReefItems
 
     static function registerItems(): void
     {
-        $key = 1;
-        while ($item = self::getItem(0, $key)) {
-            Item::addCreativeItem($item);
-            $key++;
+        foreach ([1, 2, 3, 4, 11, 12, 13, 14] as $key) {
+            Item::addCreativeItem(self::getItem(0, $key));
         }
     }
 
