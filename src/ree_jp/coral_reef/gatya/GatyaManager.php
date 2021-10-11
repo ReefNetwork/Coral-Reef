@@ -162,45 +162,43 @@ class GatyaManager
         SQLManager::$manager->getValue($p->getXuid(), SQLConst::TYPE_TICKETS, $subtype,
             function (array $rows) use ($stringRare, $func, $isBroadcast, $item, $rare, $subtype, $p, $need) {
                 foreach ($rows as $row) {
-                    if ($row['subtype'] == $subtype) {
-                        if (isset($row['value']) && intval($row['value']) >= $need) {
-                            // ログに追加
-                            SQLManager::$manager->addLog($p->getXuid(), SQLConst::LOG_GATYA, $rare,
-                                $item->getNamedTag()->getString(ReefItems::REEF_SP_ITEM, 'unknown'), SQLConst::NOW_TIME,
-                                function (int $insertId, int $affectedRows) use ($stringRare, $func, $rare, $isBroadcast, $item, $need, $row, $subtype, $p) {
-                                    // ガチャチケットを減らす
-                                    SQLManager::$manager->setValue($p->getXuid(), SQLConst::TYPE_TICKETS, $subtype, $row['value'] - $need,
-                                        function () use ($stringRare, $func, $isBroadcast, $item, $p) {
-                                            if ($p->getInventory()->canAddItem($item)) { // インベントリに空きがあれば追加
-                                                $p->getInventory()->addItem($item);
-                                            } else { // なければギフトに送信
-                                                GiftManager::addGift($p->getXuid(), new GiftData('0', 'ノーマルガチャ',
-                                                    time() + (7 * 24 * 60 * 60), [$item]),
-                                                    function () use ($p) {
-                                                        $p->sendMessage('ガチャの景品がインベントリに入れるスペースがなかったためプレゼントに送信しました');
-                                                    }, function (SqlError $error) use ($item, $p) { // ギフト出来なければ落とす
-                                                        $p->dropItem($item);
-                                                        $p->sendMessage('ガチャの景品を地面にドロップしました');
-                                                    });
-                                            }
-                                            $p->sendMessage('ガチャを引きました(レア度: ' . TextFormat::GREEN . $stringRare . TextFormat::RESET . ')');
-                                            if ($isBroadcast) { // 一定のレア度以上は$isBroadcastをtrueにしてガチャを引いたことを全体に表示させる
-                                                $broadMessage = $p->getDisplayName() . 'さんが' . TextFormat::GREEN . 'REEFレア' . TextFormat::RESET . 'を引きました';
-                                                Server::getInstance()->broadcastMessage($broadMessage);
-                                            }
-                                            $func();
-                                        }, function (SqlError $error) use ($p) {
-                                            $p->sendMessage('エラーが発生しました');
-                                            Server::getInstance()->getLogger()->error('[GatyaReduceTicket] ' . $p->getName() . 'さんの処理中に' . $error->getErrorMessage());
-                                        });
-                                }, function (SqlError $error) use ($p) {
-                                    $p->sendMessage('エラーが発生しました');
-                                    Server::getInstance()->getLogger()->error('[GatyaLogAdd] ' . $p->getName() . 'さんの処理中に' . $error->getErrorMessage());
-                                });
-                        }
-                        $p->sendMessage('チケットが足りません');
-                        return;
+                    if (isset($row['value']) && intval($row['value']) >= $need) {
+                        // ログに追加
+                        SQLManager::$manager->addLog($p->getXuid(), SQLConst::LOG_GATYA, $rare,
+                            $item->getNamedTag()->getString(ReefItems::REEF_SP_ITEM, 'unknown'), SQLConst::NOW_TIME,
+                            function (int $insertId, int $affectedRows) use ($stringRare, $func, $rare, $isBroadcast, $item, $need, $row, $subtype, $p) {
+                                // ガチャチケットを減らす
+                                SQLManager::$manager->setValue($p->getXuid(), SQLConst::TYPE_TICKETS, $subtype, $row['value'] - $need,
+                                    function () use ($stringRare, $func, $isBroadcast, $item, $p) {
+                                        if ($p->getInventory()->canAddItem($item)) { // インベントリに空きがあれば追加
+                                            $p->getInventory()->addItem($item);
+                                        } else { // なければギフトに送信
+                                            GiftManager::addGift($p->getXuid(), new GiftData('0', 'ノーマルガチャ',
+                                                time() + (7 * 24 * 60 * 60), [$item]),
+                                                function () use ($p) {
+                                                    $p->sendMessage('ガチャの景品がインベントリに入れるスペースがなかったためプレゼントに送信しました');
+                                                }, function (SqlError $error) use ($item, $p) { // ギフト出来なければ落とす
+                                                    $p->dropItem($item);
+                                                    $p->sendMessage('ガチャの景品を地面にドロップしました');
+                                                });
+                                        }
+                                        $p->sendMessage('ガチャを引きました(レア度: ' . TextFormat::GREEN . $stringRare . TextFormat::RESET . ')');
+                                        if ($isBroadcast) { // 一定のレア度以上は$isBroadcastをtrueにしてガチャを引いたことを全体に表示させる
+                                            $broadMessage = $p->getDisplayName() . 'さんが' . TextFormat::GREEN . 'REEFレア' . TextFormat::RESET . 'を引きました';
+                                            Server::getInstance()->broadcastMessage($broadMessage);
+                                        }
+                                        $func();
+                                    }, function (SqlError $error) use ($p) {
+                                        $p->sendMessage('エラーが発生しました');
+                                        Server::getInstance()->getLogger()->error('[GatyaReduceTicket] ' . $p->getName() . 'さんの処理中に' . $error->getErrorMessage());
+                                    });
+                            }, function (SqlError $error) use ($p) {
+                                $p->sendMessage('エラーが発生しました');
+                                Server::getInstance()->getLogger()->error('[GatyaLogAdd] ' . $p->getName() . 'さんの処理中に' . $error->getErrorMessage());
+                            });
                     }
+                    $p->sendMessage('チケットが足りません');
+                    return;
                 }
             }, function (SqlError $error) use ($p) {
                 $p->sendMessage('エラーが発生しました');

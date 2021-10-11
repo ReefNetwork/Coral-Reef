@@ -28,17 +28,30 @@ class GatyaForm
             foreach ($rows as $row) {
                 if ($row['subtype'] === SQLConst::TICKETS_NORMAL && isset($row['value'])) $normal = $row['value'];
             }
-            $p->sendForm(new MenuForm('Menu -> Gatya', "ノーマルガチャチケット: $normal 個", [new Button('ノーマルガチャ')],
+            $p->sendForm(new MenuForm('Menu -> Gatya', "ノーマルガチャチケット: $normal 個", [new Button('ノーマルガチャ'),
+                new Button('ノーマルガチャ 10連続')],
                 function (Player $p, Button $button) use ($normal): void {
                     switch ($button->getValue()) {
                         case 0:
-                            $after = -$normal;
+                            $after = $normal - 1;
                             $p->sendForm(new ModalForm('NormalGatya -> Confirm',
                                 "ノーマルガチャチケットを1個消費してノーマルガチャを回しますか？\n$normal -> $after",
                                 function (Player $p, bool $result) use ($normal): void {
                                     if ($result) {
                                         if ($normal >= 1) {
                                             GatyaManager::normalGatya($p);
+                                        } else $p->sendMessage('チケットが足りません');
+                                    } else self::sendGatyaForm($p);
+                                }));
+                            break;
+                        case 1:
+                            $after = $normal - 10;
+                            $p->sendForm(new ModalForm('NormalGatya -> Confirm',
+                                "ノーマルガチャチケットを10個消費してノーマルガチャを回しますか？\n$normal -> $after",
+                                function (Player $p, bool $result) use ($normal): void {
+                                    if ($result) {
+                                        if ($normal >= 10) {
+                                            GatyaManager::normalGatya($p, 10);
                                         } else $p->sendMessage('チケットが足りません');
                                     } else self::sendGatyaForm($p);
                                 }));
