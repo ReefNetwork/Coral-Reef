@@ -24,6 +24,8 @@ class SkillManager
 {
     const SKILLS = ['first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'test'];
 
+    static array $reduceCoolTime = [];
+
     static function getSkill(?string $skill): ?BreakSkill
     { // https://en.wikipedia.org/wiki/List_of_reefs
         switch ($skill) {
@@ -53,6 +55,13 @@ class SkillManager
         }
     }
 
+    static function reduceCoolTime(string $xuid, int $tick): void // マイナス入れるとクールタイムが増える
+    {
+        if ($tick === 0 && isset(self::$reduceCoolTime[$xuid])) {
+            unset(self::$reduceCoolTime[$xuid]);
+        } elseif ($tick !== 0) self::$reduceCoolTime[$xuid] = $tick;
+    }
+
     /**
      * @throws Exception
      */
@@ -65,7 +74,11 @@ class SkillManager
 
         $skill->runSkill($bl, $p);
         if ($skill->cool_time !== 0) {
-            AccountManager::setValue($xuid, 'skill_cool_time', $skill->cool_time);
+            $cool_time = $skill->cool_time;
+            if (isset(self::$reduceCoolTime[$xuid])) { // クールタイム減らすのを反映
+                $cool_time -= self::$reduceCoolTime[$xuid];
+            }
+            AccountManager::setValue($xuid, 'skill_cool_time', $cool_time);
             CoralReefPlugin::$plugin->getScheduler()->scheduleDelayedTask(new ClosureTask(function (int $currentTick) use ($p): void {
                 $p->sendPopup('スキルのクールタイムが終了しました');
                 $volume = 0x10000000 * (min(30, $currentTick) / 5);

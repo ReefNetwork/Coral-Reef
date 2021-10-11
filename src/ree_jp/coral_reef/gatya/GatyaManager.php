@@ -46,19 +46,48 @@ class GatyaManager
 
             switch (true) {
                 case ($firstRand <= 5) || $isLimit:// 0.5% or 天井
-                    switch (mt_rand(1, 3)) {
-                        case 1:
-                            $item = ReefItems::getItem($xuid, ReefItems::PICKAXE);
-                            break;
-                        case 2:
-                            $item = ReefItems::getItem($xuid, ReefItems::AXE);
-                            break;
-                        case 3:
-                            $item = ReefItems::getItem($xuid, ReefItems::HOE);
-                            break;
-                        default:
-                            $p->sendMessage('エラーが発生しました');
-                            return;
+                    if (mt_rand(10) < 5) { // 40%の確率でTool
+                        switch (mt_rand(1, 10)) {
+                            case 1:
+                            case 2:
+                            case 3:
+                                $item = ReefItems::getItem($xuid, ReefItems::PICKAXE);
+                                break;
+                            case 4:
+                            case 5:
+                            case 6:
+                                $item = ReefItems::getItem($xuid, ReefItems::SHOVEL);
+                                break;
+                            case 7:
+                            case 8:
+                            case 9:
+                                $item = ReefItems::getItem($xuid, ReefItems::AXE);
+                                break;
+                            case 10:
+                                $item = ReefItems::getItem($xuid, ReefItems::HOE);
+                                break;
+                            default:
+                                $p->sendMessage('エラーが発生しました');
+                                return;
+                        }
+                    } else { // 60%の確率で防具
+                        switch (mt_rand(1, 4)) {
+                            case 1:
+                                $item = ReefItems::getItem($xuid, ReefItems::HELMET);
+                                break;
+                            case 2:
+                                $item = ReefItems::getItem($xuid, ReefItems::CHEST_PLATE);
+                                break;
+                            case 3:
+                                $item = ReefItems::getItem($xuid, ReefItems::LEGGINGS);
+                                break;
+                            case 4:
+                                $item = ReefItems::getItem($xuid, ReefItems::BOOTS);
+                                break;
+                            default:
+                                $p->sendMessage('エラーが発生しました');
+                                return;
+                        }
                     }
                     self::reduceTicket($p, SQLConst::TICKETS_NORMAL, 1, $item, 'reef_rare',
                         TextFormat::GREEN . 'REEFレア' . TextFormat::DARK_GRAY . '[0.5%]' . TextFormat::RESET, true, $func);
