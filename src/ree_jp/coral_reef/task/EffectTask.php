@@ -28,22 +28,27 @@ class EffectTask extends Task
     public function onRun(int $currentTick)
     {
         foreach (Server::getInstance()->getOnlinePlayers() as $p) {
-            $contexts = [];
-            for ($slot = 0; $slot <= 3; $slot++) {
-                $item = $p->getArmorInventory()->getItem($slot);
-                $effectTag = $item->getNamedTagEntry(ReefItems::SPECIAL_EFFECT);
-                if (!$effectTag instanceof CompoundTag) continue;
-                $contexts = $this->checkContext($effectTag, $contexts);
-                $this->setEffect($p, Effect::NIGHT_VISION, $effectTag->getInt("night_vision", -1));
-                $this->setEffect($p, Effect::SATURATION, $effectTag->getInt("saturation", -1));
-                $this->setEffect($p, Effect::JUMP_BOOST, $effectTag->getInt("jump_boost", -1));
-                $this->setEffect($p, Effect::SPEED, $effectTag->getInt("speed", -1));
-            }
-            $this->contextReflect($p, $contexts);
+            self::updateEffect($p);
         }
     }
 
-    private function checkContext(CompoundTag $tag, array $contexts): array // 属性をチェック
+    static function updateEffect(Player $p): void
+    {
+        $contexts = [];
+        for ($slot = 0; $slot <= 3; $slot++) {
+            $item = $p->getArmorInventory()->getItem($slot);
+            $effectTag = $item->getNamedTagEntry(ReefItems::SPECIAL_EFFECT);
+            if (!$effectTag instanceof CompoundTag) continue;
+            $contexts = self::checkContext($effectTag, $contexts);
+            self::setEffect($p, Effect::NIGHT_VISION, $effectTag->getInt("night_vision", -1));
+            self::setEffect($p, Effect::SATURATION, $effectTag->getInt("saturation", -1));
+            self::setEffect($p, Effect::JUMP_BOOST, $effectTag->getInt("jump_boost", -1));
+            self::setEffect($p, Effect::SPEED, $effectTag->getInt("speed", -1));
+        }
+        self::contextReflect($p, $contexts);
+    }
+
+    private static function checkContext(CompoundTag $tag, array $contexts): array // 属性をチェック
     {
         $context = $tag->getString("context", "");
         if (!empty($context)) {
@@ -54,13 +59,13 @@ class EffectTask extends Task
         return $contexts;
     }
 
-    private function setEffect(Player $p, int $effect, int $level): void
+    private static function setEffect(Player $p, int $effect, int $level): void
     {
         if ($level < 0) return;
-        $p->addEffect(new EffectInstance(Effect::getEffect($effect), 10 * 20, $level));
+        $p->addEffect(new EffectInstance(Effect::getEffect($effect), 30 * 20, $level));
     }
 
-    private function contextReflect(Player $p, array $contexts): void // 属性を反映させる
+    private static function contextReflect(Player $p, array $contexts): void // 属性を反映させる
     {
         $xuid = $p->getXuid();
         SkillManager::reduceCoolTime($xuid, 0);

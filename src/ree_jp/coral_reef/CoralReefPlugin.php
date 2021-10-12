@@ -49,10 +49,10 @@ class CoralReefPlugin extends PluginBase
         $this->getServer()->getPluginManager()->registerEvents(new QuestListener(), $this); // クエスト用
         $this->getServer()->getCommandMap()->register('menu', new MenuCommand($this));
         $this->getServer()->getCommandMap()->register('reef', new ReefCommand($this));
-        $this->getScheduler()->scheduleRepeatingTask(new DataSaveTask(), 20);
-        $this->getScheduler()->scheduleRepeatingTask(new EffectTask(), 100);
-        $this->getScheduler()->scheduleRepeatingTask(new ServerUpdateTask(), 200);
         $this->getScheduler()->scheduleRepeatingTask(new SendServerTipTask(), 15);
+        $this->getScheduler()->scheduleRepeatingTask(new DataSaveTask(), 20);
+        $this->getScheduler()->scheduleRepeatingTask(new EffectTask(), 200);
+        $this->getScheduler()->scheduleRepeatingTask(new ServerUpdateTask(), 1200);
         $this->getScheduler()->scheduleRepeatingTask(new ClosureTask(function (int $currentTick): void {
             foreach (Server::getInstance()->getOnlinePlayers() as $p) ScoreBoardManager::sendScoreBoard($p);
         }), 10);

@@ -20,6 +20,7 @@ use pocketmine\event\block\BlockUpdateEvent;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\event\entity\EntityTeleportEvent;
+use pocketmine\event\inventory\InventoryTransactionEvent;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerGameModeChangeEvent;
 use pocketmine\event\player\PlayerInteractEvent;
@@ -27,11 +28,13 @@ use pocketmine\event\player\PlayerJoinEvent;
 use pocketmine\event\player\PlayerLoginEvent;
 use pocketmine\event\player\PlayerQuitEvent;
 use pocketmine\event\server\DataPacketReceiveEvent;
+use pocketmine\inventory\ArmorInventory;
 use pocketmine\item\Item;
 use pocketmine\item\ItemIds;
 use pocketmine\level\Position;
 use pocketmine\network\mcpe\protocol\ItemFrameDropItemPacket;
 use pocketmine\Player;
+use pocketmine\scheduler\ClosureTask;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat;
 use ree_jp\coral_reef\account\AccountManager;
@@ -41,11 +44,12 @@ use ree_jp\coral_reef\form\LandForm;
 use ree_jp\coral_reef\land\LandManager;
 use ree_jp\coral_reef\sql\SettingConst;
 use ree_jp\coral_reef\sql\SQLManager;
+use ree_jp\coral_reef\task\EffectTask;
 use Throwable;
 
 class EventListener implements Listener
 {
-    public function onPreLogin(PlayerLoginEvent $ev): void
+    function onPreLogin(PlayerLoginEvent $ev): void
     {
         $p = $ev->getPlayer();
         $xuid = $p->getXuid();
@@ -70,7 +74,7 @@ class EventListener implements Listener
         }
     }
 
-    public function onJoin(PlayerJoinEvent $ev): void
+    function onJoin(PlayerJoinEvent $ev): void
     {
         $p = $ev->getPlayer();
         $xuid = $p->getXuid();
@@ -88,7 +92,7 @@ class EventListener implements Listener
             $p->getInventory()->addItem(Item::get(ItemIds::STICK)->setCustomName('メニューを開く'));
     }
 
-    public function onQuit(PlayerQuitEvent $ev): void
+    function onQuit(PlayerQuitEvent $ev): void
     {
         $p = $ev->getPlayer();
 
@@ -96,7 +100,7 @@ class EventListener implements Listener
         $ev->setQuitMessage(""); // プロキシ側で退出メッセージを流す
     }
 
-    public function onDamage(EntityDamageEvent $ev)
+    function onDamage(EntityDamageEvent $ev)
     {
         $p = $ev->getEntity();
         if (!$p instanceof Player) return;
@@ -133,7 +137,7 @@ class EventListener implements Listener
     /**
      * @priority LOW
      */
-    public function onBreakLow(BlockBreakEvent $ev): void
+    function onBreakLow(BlockBreakEvent $ev): void
     {
         $p = $ev->getPlayer();
         if (AccountManager::hasValue($p->getXuid(), 'wait_action')) {
@@ -152,7 +156,7 @@ class EventListener implements Listener
     /**
      * @priority MONITOR
      */
-    public function onBreakMonitor(BlockBreakEvent $ev): void
+    function onBreakMonitor(BlockBreakEvent $ev): void
     {
         $p = $ev->getPlayer();
         if ($ev->isCancelled()) return;
@@ -180,7 +184,7 @@ class EventListener implements Listener
     /**
      * @priority LOW
      */
-    public function onPlace(BlockPlaceEvent $ev): void
+    function onPlace(BlockPlaceEvent $ev): void
     {
         $p = $ev->getPlayer();
         if (AccountManager::hasValue($p, 'wait_action')) {
@@ -191,7 +195,7 @@ class EventListener implements Listener
         $ev->setCancelled(LandManager::$instance->protect($p, $ev->getBlock(), 'このワールドでブロックを設置することはできません'));
     }
 
-    public function onUpdate(BlockUpdateEvent $ev)
+    function onUpdate(BlockUpdateEvent $ev)
     {
         $blId = $ev->getBlock()->getId();
         if (($blId === BlockIds::FLOWING_WATER) || ($blId === BlockIds::WATER)) {
@@ -199,7 +203,7 @@ class EventListener implements Listener
         }
     }
 
-    public function onTouch(PlayerInteractEvent $ev): void
+    function onTouch(PlayerInteractEvent $ev): void
     {
         $p = $ev->getPlayer();
         $xuid = $p->getXuid();
@@ -228,7 +232,7 @@ class EventListener implements Listener
         $ev->setCancelled(LandManager::$instance->protect($p, $ev->getBlock(), null));
     }
 
-    public function onTeleport(EntityTeleportEvent $ev): void
+    function onTeleport(EntityTeleportEvent $ev): void
     {
         $p = $ev->getEntity();
         if (!$p instanceof Player) return;
@@ -251,7 +255,26 @@ class EventListener implements Listener
         }
     }
 
-    public function onModeChange(PlayerGameModeChangeEvent $ev): void
+    /**
+     * @priority MONITOR
+     */
+    function onTransactionMonitor(InventoryTransactionEvent $ev): void
+    {
+        $transaction = $ev->getTransaction();
+        foreach ($transaction->getInventories() as $inv) {
+            if ($inv instanceof ArmorInventory) { // 防具を動かしたとき、エフェクトの更新をする
+                CoralReefPlugin::$plugin->getScheduler()->scheduleDelayedTask(new ClosureTask(function (int $currentTick) use ($transaction): void {
+                    EffectTask::updateEffect($transaction->getSource());
+                }), 3);
+                return;
+            }
+        }
+    }
+
+    /**
+     * @priority MONITOR
+     */
+    function onModeChangeMonitor(PlayerGameModeChangeEvent $ev): void
     {
         $p = $ev->getPlayer();
         if (AccountManager::hasValue($p->getXuid(), 'fly')) {
@@ -262,7 +285,7 @@ class EventListener implements Listener
         }
     }
 
-    public function onReceived(DataPacketReceiveEvent $ev)
+    function onReceived(DataPacketReceiveEvent $ev)
     {
         $pk = $ev->getPacket();
         $p = $ev->getPlayer();
