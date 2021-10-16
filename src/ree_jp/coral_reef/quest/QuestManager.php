@@ -12,6 +12,8 @@
 namespace ree_jp\coral_reef\quest;
 
 use Closure;
+use ree_jp\coral_reef\quest\data\LevelUpQuest;
+use ree_jp\coral_reef\quest\data\QuestData;
 use ree_jp\coral_reef\sql\SQLConst;
 use ree_jp\coral_reef\sql\SQLManager;
 
@@ -22,18 +24,46 @@ class QuestManager
     static function updateQuests(string $xuid, ?Closure $func = null): void
     {
         SQLManager::$manager->getAllSubtypeValue($xuid, SQLConst::TYPE_QUEST, function (array $rows) use ($func, $xuid) {
-            self::$quests[$xuid] = $rows;
+            if (isset(self::$quests[$xuid])) unset(self::$quests[$xuid]);
+            foreach ($rows as $row) {
+                self::$quests[$xuid] = self::getQuest($row['subtype'], $row['value']);
+            }
             if ($func instanceof Closure) $func($rows);
         });
     }
 
-    static function getQuests(string $xuid): array
+    static function getQuest(string $questID, string $value): ?QuestData
     {
-        return isset(self::$quests[$xuid]) ? [] : self::$quests[$xuid];
+        switch ($questID) {
+            case LevelUpQuest::ID:
+                return new LevelUpQuest($value);
+            default:
+                return null;
+        }
+    }
+
+    static function getUserQuests(string $xuid): array
+    {
+        return isset(self::$quests[$xuid]) ? [] : clone self::$quests[$xuid];
     }
 
     static function save(string $xuid, ?Closure $func = null): void
     {
+        $quests = self::getUserQuests($xuid);
+        self::saveQuestLoop($xuid, $quests, $func);
+    }
 
+    private static function saveQuestLoop(string $xuid, array $quests, ?Closure $lastFunc): void
+    {
+        $quest = array_shift($quests);
+        if (empty($quest)) {
+            $func = $lastFunc;
+        } else {
+            $func = function () use ($lastFunc, $quests, $xuid): void {
+                self::saveQuestLoop($xuid, $quests, $lastFunc);
+            };
+        }
+        if (!$quest instanceof QuestData) self::saveQuestLoop($xuid, $quests, $func);
+        SQLManager::$manager->setValue($xuid, SQLConst::TYPE_QUEST, $quest::ID, $quest->outputData(), $func, $func);
     }
 }

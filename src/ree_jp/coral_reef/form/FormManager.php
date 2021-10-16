@@ -41,8 +41,8 @@ class FormManager
         }
         $p->sendForm(new MenuForm('ReefServer Menu', "レベル : $level\nレベルアップまで : $necessaryExperience\n経験値 : $exp",
             [new Button('ストレージ'), new Button("飛行を$fly_status にする"), new Button('ワープ地点'), new Button('ワールド移動'),
-                new Button('サーバー移動'), new Button('スキル設定'), new Button('パーティー'), new Button('土地保護'), new Button('ガチャ'),
-                new Button('ランダムワープ'), new Button('設定')],
+                new Button('サーバー移動'), new Button('スキル設定'), new Button('パーティー'), new Button('土地保護'),
+                new Button("クエスト"), new Button('ガチャ'), new Button('ランダムワープ'), new Button('設定')],
             function (Player $p, Button $button): void {
                 $xuid = $p->getXuid();
                 switch ($button->getValue()) {
@@ -85,9 +85,12 @@ class FormManager
                         $p->sendForm(LandForm::landForm($xuid));
                         break;
                     case 8:
-                        GatyaForm::sendGatyaForm($p);
+                        $p->sendForm(QuestForm::questForm($p));
                         break;
                     case 9:
+                        GatyaForm::sendGatyaForm($p);
+                        break;
+                    case 10:
                         $p->sendForm(new ModalForm('Menu -> RandomWarp', "ランダムな場所にワープしますか?\n
                             ※同じ場所にもう一度ランダムワープすることはできません.ランダムワープ後はワープ地点を設定することをおすすめします",
                             function (Player $p, bool $result): void {
@@ -97,7 +100,7 @@ class FormManager
                                 } else FormManager::sendMenu($p);
                             }));
                         break;
-                    case 10:
+                    case 11:
                         $p->sendForm(SettingForm::settingForm());
                         break;
                     default:

@@ -21,6 +21,7 @@ use pocketmine\Player;
 use pocketmine\scheduler\ClosureTask;
 use pocketmine\Server;
 use ree_jp\coral_reef\CoralReefPlugin;
+use ree_jp\coral_reef\quest\QuestManager;
 use ree_jp\coral_reef\skill\BreakSkill;
 use ree_jp\coral_reef\skill\SkillManager;
 use ree_jp\coral_reef\sql\SettingConst;
@@ -65,6 +66,7 @@ class AccountManager
         $xuid = $p->getXuid();
 
         SQLManager::$manager->setUser($xuid, $p->getName(), $p->getAddress());
+        QuestManager::updateQuests($xuid);
         SettingManager::updateNickName($p);
         SettingManager::updateShowCoordinates($p);
         SettingManager::updateOption($p, SettingConst::SNEAK_SKILL);
