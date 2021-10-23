@@ -118,9 +118,8 @@ class AccountManager
         if ($skill instanceof BreakSkill && $p->isSurvival()) {
             if (!self::hasValue($xuid, 'skill_cool_time') && !self::hasValue($xuid, 'skill_active') &&
                 !($p->isSneaking() && !SettingManager::isEnableOption($xuid, SettingConst::SNEAK_SKILL))) {
-                /** @noinspection PhpConditionCheckedByNextConditionInspection */
-                /** @noinspection PhpConditionAlreadyCheckedInspection */
-                if ((($p->getX() - 1 === $bl->getX()) || ($p->getX() + 1 === $bl->getX())) && (($p->getZ() - 1 === $bl->getZ()) || ($p->getZ() + 1 === $bl->getZ()))
+                if (((($p->getX() - 1) === $bl->getX()) || (($p->getX() + 1) === $bl->getX())) && ((($p->getZ() - 1) === $bl->getZ()) ||
+                        (($p->getZ() + 1) === $bl->getZ()))
                     && ($p->getY() - 1 === $bl->getY()) && SettingManager::isEnableOption($xuid, SettingConst::BREAK_UNDER_GROUND)) {
                     $p->sendPopup("地面にスキルをは発動できません\n設定で変更できます");
                     return;
