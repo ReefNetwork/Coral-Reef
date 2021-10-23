@@ -13,6 +13,7 @@ namespace ree_jp\coral_reef;
 
 use Exception;
 use PDOException;
+use pocketmine\level\generator\GeneratorManager;
 use pocketmine\plugin\PluginBase;
 use pocketmine\scheduler\ClosureTask;
 use pocketmine\Server;
@@ -56,6 +57,13 @@ class CoralReefPlugin extends PluginBase
         $this->getScheduler()->scheduleRepeatingTask(new ClosureTask(function (int $currentTick): void {
             foreach (Server::getInstance()->getOnlinePlayers() as $p) ScoreBoardManager::sendScoreBoard($p);
         }), 10);
+
+        $this->getServer()->generateLevel("lobby", time(), GeneratorManager::getGenerator("flat"));
+        $this->getServer()->generateLevel("main_1", time(), generatorManager::getGenerator("default"));
+        $this->getServer()->generateLevel("main_2", time(), generatorManager::getGenerator("default"));
+        $this->getServer()->loadLevel("lobby");
+        $this->getServer()->loadLevel("main_1");
+        $this->getServer()->loadLevel("main_2");
 
         try {
             SQLManager::$manager = new SQLManager($this->getDataFolder(), $this->getConfig()->get(ConfigConst::SERVER_NAME));

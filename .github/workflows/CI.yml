@@ -39,7 +39,7 @@ jobs:
           name: LICENSES
           path: ./LICENSES/
 
-  deploy:
+  deploy_debug:
     environment: deploy debug
     runs-on: ubuntu-latest
     needs: build
@@ -61,6 +61,34 @@ jobs:
           port: ${{ secrets.DEBUG_PORT}} # optional, default is: 21
           username: ${{ secrets.DEBUG_USERNAME }} # FTP username
           password: ${{ secrets.DEBUG_PASSWORD }} # FTP password
+          remote_folder: /install_plugins/ # optional, remote path of your FTP server
+          local_folder: ./install_plugins/ # optional, local path, default is: dist
+          cleanup: false # optional, remove existing files inside FTP remote folder
+
+  deploy_stable:
+    environment: deploy seichi
+    runs-on: ubuntu-latest
+    needs: build
+    if: |
+      github.ref == 'refs/heads/stable'
+      "!contains(github.event.head_commit.message, '[deploy skip]')"
+    steps:
+      - uses: actions/checkout@v2
+      - run: mkdir ~/install_plugins
+      - name: download
+        uses: actions/download-artifact@v2
+        with:
+          name: CoralReef
+          path: install_plugins
+
+      - name: deploy seichi_1
+        uses: sand4rt/ftp-deployer@v1.3
+        with:
+          sftp: true # optional
+          host: ${{ secrets.SEICHI_1_HOST }} # e.g. ftp.host.com or sftp.host.com (without ftp:// or ftps://)
+          port: ${{ secrets.SEICHI_1_PORT}} # optional, default is: 21
+          username: ${{ secrets.SEICHI_1_USERNAME }} # FTP username
+          password: ${{ secrets.SEICHI_1_PASSWORD }} # FTP password
           remote_folder: /install_plugins/ # optional, remote path of your FTP server
           local_folder: ./install_plugins/ # optional, local path, default is: dist
           cleanup: false # optional, remove existing files inside FTP remote folder

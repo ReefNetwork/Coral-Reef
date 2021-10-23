@@ -111,7 +111,8 @@ class FormManager
 
     static function worldTeleportForm(): MenuForm
     {
-        return new MenuForm('Menu -> World', '移動するワールドを選択してください', [new Button('ロビー'), new Button('整地ワールド1')],
+        return new MenuForm('Menu -> World', '移動するワールドを選択してください', [new Button('ロビー'), new Button('整地ワールド1'),
+            new Button("整地ワールド2")],
             function (Player $p, Button $button): void {
                 switch ($button->getValue()) {
                     case 0:
@@ -119,6 +120,9 @@ class FormManager
                         break;
                     case 1:
                         AccountManager::teleport($p, 'main_1');
+                        break;
+                    case 2:
+                        AccountManager::teleport($p, 'main_2');
                         break;
                     default:
                         $p->sendMessage('エラーが発生しました');
