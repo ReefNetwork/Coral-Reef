@@ -69,9 +69,7 @@ jobs:
     environment: deploy seichi
     runs-on: ubuntu-latest
     needs: build
-    if: |
-      github.ref == 'refs/heads/stable'
-      "!contains(github.event.head_commit.message, '[deploy skip]')"
+    if: github.ref == 'refs/heads/stable' && "!contains(github.event.head_commit.message, '[deploy skip]')"
     steps:
       - uses: actions/checkout@v2
       - run: mkdir ~/install_plugins
