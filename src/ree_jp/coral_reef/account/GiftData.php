@@ -18,30 +18,39 @@ class GiftData
     public string $from;
     public string $message;
     public int $expiry;
-    public array $items;
+    public array $items = [];
+    public array $receivedItems = [];
+    public ?string $uniqueID;
 
-    public function __construct(string $fromXuid, string $message, int $expiry, array $items)
+    public function __construct(string $fromXuid, string $message, int $expiry, array $items, ?string $id = null, array $receivedItems = [])
     {
         $this->from = $fromXuid;
         $this->message = $message;
         $this->expiry = $expiry;
+        $this->uniqueID = $id;
+        $this->receivedItems = $receivedItems;
 
         foreach ($items as $item) {
             if ($item instanceof Item) {
                 $jsonItem = json_encode($item);
-                $this->items[] = $jsonItem;
+                $key = array_search($jsonItem, $this->items, true);
+                if (is_null($key)) {
+                    $this->items[] = $jsonItem;
+                } else {
+                    $this->items[$key]["count"] += $jsonItem["count"];
+                }
             } else $this->items[] = $item;
         }
     }
 
-    static function jsonDeserialize(array $arrayItems): GiftData
+    static function jsonDeserialize(array $arrayItems, ?string $id = null): GiftData
     {
-        return new GiftData($arrayItems['from'], $arrayItems['message'], strtotime($arrayItems['expiry']), $arrayItems['items']);
+        return new GiftData($arrayItems['from'], $arrayItems['message'], strtotime($arrayItems['expiry']), $arrayItems['items'], $id, $arrayItems['receivedItems']);
     }
 
     public function jsonSerialize(): array
     {
-        return ['from' => $this->from, 'message' => $this->message, 'expiry' => $this->expiry, 'items' => $this->items];
+        return ['from' => $this->from, 'message' => $this->message, 'expiry' => $this->expiry, 'items' => $this->items, 'receivedItems' => $this->receivedItems];
     }
 
     public function getItems(): array
@@ -51,6 +60,22 @@ class GiftData
             $items[] = Item::jsonDeserialize(json_decode($jsonItem, true));
         }
         return $items;
+    }
+
+    public function isMarkReceived($item): bool
+    {
+        if ($item instanceof Item) $item = json_encode($item);
+        if (!is_string($item)) return false;
+        return in_array($item, $this->receivedItems);
+    }
+
+    public function markReceived(Item $item): bool
+    {
+        $jsonItem = json_encode($item);
+        if ($this->isMarkReceived($jsonItem)) return false;
+
+        $this->receivedItems[] = $jsonItem;
+        return true;
     }
 
     public function isExpired(): bool

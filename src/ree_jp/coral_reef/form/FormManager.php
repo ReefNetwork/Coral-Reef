@@ -14,6 +14,7 @@ namespace ree_jp\coral_reef\form;
 use Frago9876543210\EasyForms\elements\Button;
 use Frago9876543210\EasyForms\forms\MenuForm;
 use Frago9876543210\EasyForms\forms\ModalForm;
+use pocketmine\block\BlockIds;
 use pocketmine\math\Vector3;
 use pocketmine\Player;
 use pocketmine\Server;
@@ -42,7 +43,7 @@ class FormManager
         $p->sendForm(new MenuForm('ReefServer Menu', "レベル : $level\nレベルアップまで : $necessaryExperience\n経験値 : $exp",
             [new Button('ストレージ'), new Button("飛行を$fly_status にする"), new Button('ワープ地点'), new Button('ワールド移動'),
                 new Button('サーバー移動'), new Button('スキル設定'), new Button('パーティー'), new Button('土地保護'),
-                new Button("クエスト"), new Button('ガチャ'), new Button('ランダムワープ'), new Button('設定')],
+                new Button("クエスト"), new Button('ガチャ'), new Button("ギフト"), new Button('ランダムワープ'), new Button('設定')],
             function (Player $p, Button $button): void {
                 $xuid = $p->getXuid();
                 switch ($button->getValue()) {
@@ -91,16 +92,35 @@ class FormManager
                         GatyaForm::sendGatyaForm($p);
                         break;
                     case 10:
-                        $p->sendForm(new ModalForm('Menu -> RandomWarp', "ランダムな場所にワープしますか?\n
-                            ※同じ場所にもう一度ランダムワープすることはできません.ランダムワープ後はワープ地点を設定することをおすすめします",
+                        GiftForm::sendGiftForm($p);
+                        break;
+                    case 11:
+                        $p->sendForm(new ModalForm('Menu -> RandomWarp', "ランダムな場所にワープしますか?\n" .
+                            "※同じ場所にもう一度ランダムワープすることはできません。ランダムワープ後はワープ地点を設定することをおすすめします。",
                             function (Player $p, bool $result): void {
                                 if ($result) {
-                                    $p->sendMessage('ランダムな場所にワープしています');
-                                    $p->teleport(new Vector3(mt_rand(-10000, 10000), 100, mt_rand(-10000, 10000)));
+                                    if (AccountManager::hasValue($p->getXuid(), "random_warp_cool_time")) { // 30秒のクールタイム
+                                        $p->sendMessage("連続で使用するには30秒お待ちください");
+                                        return;
+                                    }
+                                    AccountManager::setValue($p->getXuid(), "random_warp_cool_time", 20 * 30);
+                                    $p->sendMessage("ランダムな場所にワープしています\nワールドの読み込みに時間がかかる場合があります");
+                                    $vec = new Vector3(mt_rand(-10000, 10000), 100, mt_rand(-10000, 10000));
+                                    if ($p->getLevelNonNull()->getBlockIdAt($vec->x, $vec->y, $vec->z) === BlockIds::AIR) { // 地面にワープ出来るように調整
+                                        while ($p->getLevelNonNull()->getBlockIdAt($vec->x, $vec->y, $vec->z) !== BlockIds::AIR && $vec->y > 0) {
+                                            $vec = $vec->subtract(0, 1);
+                                        }
+                                        $vec = $vec->add(0, 1);
+                                    } else {
+                                        while ($p->getLevelNonNull()->getBlockIdAt($vec->x, $vec->y, $vec->z) === BlockIds::AIR && $vec->y < 300) {
+                                            $vec = $vec->add(0, 1);
+                                        }
+                                    }
+                                    $p->teleport($vec);
                                 } else FormManager::sendMenu($p);
                             }));
                         break;
-                    case 11:
+                    case 12:
                         $p->sendForm(SettingForm::settingForm());
                         break;
                     default:
