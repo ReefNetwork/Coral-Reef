@@ -15,7 +15,7 @@ use Frago9876543210\EasyForms\elements\Button;
 use Frago9876543210\EasyForms\forms\MenuForm;
 use Frago9876543210\EasyForms\forms\ModalForm;
 use pocketmine\Player;
-use ree_jp\coral_reef\gatya\GatyaManager;
+use ree_jp\coral_reef\gatya\NormalGatya;
 use ree_jp\coral_reef\sql\SQLConst;
 use ree_jp\coral_reef\sql\SQLManager;
 
@@ -39,7 +39,7 @@ class GatyaForm
                                 function (Player $p, bool $result) use ($normal): void {
                                     if ($result) {
                                         if ($normal >= 1) {
-                                            GatyaManager::normalGatya($p);
+                                            NormalGatya::gatya($p);
                                         } else $p->sendMessage('チケットが足りません');
                                     } else self::sendGatyaForm($p);
                                 }));
@@ -51,7 +51,7 @@ class GatyaForm
                                 function (Player $p, bool $result) use ($normal): void {
                                     if ($result) {
                                         if ($normal >= 10) {
-                                            GatyaManager::normalGatya($p, 10);
+                                            NormalGatya::gatya($p, 10);
                                         } else $p->sendMessage('チケットが足りません');
                                     } else self::sendGatyaForm($p);
                                 }));

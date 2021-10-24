@@ -16,6 +16,7 @@ use Closure;
 use Exception;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat;
+use ree_jp\coral_reef\quest\QuestListener;
 use ree_jp\coral_reef\quest\QuestManager;
 use ree_jp\coral_reef\skill\BreakSkill;
 use ree_jp\coral_reef\skill\SkillManager;
@@ -68,14 +69,14 @@ class UserAccount
             $this->setLevelAndNecessaryExperience();
 
             $p = Server::getInstance()->getPlayer($this->name);
-            $name = "";
             if (!is_null($p)) {
-                $name = $p->getName();
+                QuestListener::callSubscribedQuest($p->getXuid(), QuestListener::LEVEL_UP, $this->level);
                 $p->sendTitle(
-                    TextFormat::BLUE . 'L' . TextFormat::GREEN . 'e' . TextFormat::AQUA . 'v' . TextFormat::GREEN . 'e' . TextFormat::BLUE . 'L ' . TextFormat::RED . 'U' . TextFormat::LIGHT_PURPLE . 'P',
-                    TextFormat::YELLOW . $beforeLevel . TextFormat::RESET . ' -> ' . TextFormat::GOLD . $this->level);
+                    TextFormat::BLUE . 'L' . TextFormat::GREEN . 'e' . TextFormat::AQUA . 'v' . TextFormat::GREEN . 'e' . TextFormat::BLUE . 'L ' .
+                    TextFormat::RED . 'U' . TextFormat::LIGHT_PURPLE . 'P', TextFormat::YELLOW . $beforeLevel . TextFormat::RESET . ' -> ' .
+                    TextFormat::GOLD . $this->level);
             }
-            $message = $name . "さんのレベルが$this->level になりました";
+            $message = $this->name . "さんのレベルが$this->level になりました";
             Server::getInstance()->broadcastMessage($message);
         }
     }

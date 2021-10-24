@@ -20,7 +20,7 @@ use pocketmine\Server;
 use ree_jp\coral_reef\account\ScoreBoardManager;
 use ree_jp\coral_reef\command\MenuCommand;
 use ree_jp\coral_reef\command\ReefCommand;
-use ree_jp\coral_reef\gatya\ReefItems;
+use ree_jp\coral_reef\gatya\items\ReefItems;
 use ree_jp\coral_reef\land\LandManager;
 use ree_jp\coral_reef\quest\QuestListener;
 use ree_jp\coral_reef\sql\SQLManager;

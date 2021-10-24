@@ -9,7 +9,7 @@
  * Copyright (c) 2021-2021. Ree-jp(https://ree-jp.net)
  */
 
-namespace ree_jp\coral_reef\gatya;
+namespace ree_jp\coral_reef\gatya\items;
 
 use pocketmine\item\Durable;
 use pocketmine\item\enchantment\Enchantment;
@@ -18,33 +18,40 @@ use pocketmine\item\Item;
 use pocketmine\item\ItemIds;
 use pocketmine\nbt\tag\StringTag;
 
-class RareItems extends ReefItems
+class UltimateItems extends ReefItems
 {
     static function getItem(string $xuid, int $type): ?Item
     {
         switch ($type) {
             case self::PICKAXE:
                 $item = Item::get(ItemIds::DIAMOND_PICKAXE);
-                $item->setNamedTagEntry(new StringTag(self::REEF_SP_ITEM, 'rare_pickaxe'));
-                $item->setCustomName('レアツルハシ');
+                $item->setNamedTagEntry(new StringTag(self::REEF_SP_ITEM, 'ultimate_pickaxe'));
+                $item->setCustomName('うるとらツルハシ');
                 break;
             case self::SHOVEL:
                 $item = Item::get(ItemIds::DIAMOND_SHOVEL);
-                $item->setNamedTagEntry(new StringTag(self::REEF_SP_ITEM, 'rare_axe'));
-                $item->setCustomName('レアシャベル');
+                $item->setNamedTagEntry(new StringTag(self::REEF_SP_ITEM, 'ultimate_shovel'));
+                $item->setCustomName('ウルトラしゃべる');
+                break;
+            case self::AXE:
+                $item = Item::get(ItemIds::DIAMOND_AXE);
+                $item->setNamedTagEntry(new StringTag(self::REEF_SP_ITEM, 'ultimate_axe'));
+                $item->setCustomName('うるとらツルハシ');
                 break;
             default:
                 return null;
         }
         if (!$item instanceof Durable) return null;
 
-        $item->addEnchantment(new EnchantmentInstance(Enchantment::getEnchantment(Enchantment::UNBREAKING), 1));
+        $item->addEnchantment(new EnchantmentInstance(Enchantment::getEnchantment(Enchantment::UNBREAKING), 10));
+        $item->addEnchantment(new EnchantmentInstance(Enchantment::getEnchantment(Enchantment::EFFICIENCY), 3));
+        $item->addEnchantment(new EnchantmentInstance(Enchantment::getEnchantment(Enchantment::SILK_TOUCH), 1));
         return $item;
     }
 
     static function registerItems(): void
     {
-        foreach ([1, 2] as $key) {
+        foreach ([1, 2, 3] as $key) {
             Item::addCreativeItem(self::getItem(0, $key));
         }
     }

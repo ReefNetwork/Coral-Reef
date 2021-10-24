@@ -17,7 +17,7 @@ use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\Player;
 use pocketmine\scheduler\Task;
 use pocketmine\Server;
-use ree_jp\coral_reef\gatya\ReefItems;
+use ree_jp\coral_reef\gatya\items\ReefItems;
 use ree_jp\coral_reef\skill\SkillManager;
 
 class EffectTask extends Task

@@ -9,7 +9,7 @@
  * Copyright (c) 2021-2021. Ree-jp(https://ree-jp.net)
  */
 
-namespace ree_jp\coral_reef\gatya;
+namespace ree_jp\coral_reef\gatya\items;
 
 use pocketmine\item\enchantment\Enchantment;
 use pocketmine\item\enchantment\EnchantmentInstance;
