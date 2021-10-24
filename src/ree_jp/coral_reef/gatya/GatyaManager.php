@@ -187,7 +187,7 @@ class GatyaManager
                                             $broadMessage = $p->getDisplayName() . 'さんが' . TextFormat::GREEN . 'REEFレア' . TextFormat::RESET . 'を引きました';
                                             Server::getInstance()->broadcastMessage($broadMessage);
                                         }
-                                        $func();
+                                        if (!is_null($func)) $func();
                                     }, function (SqlError $error) use ($p) {
                                         $p->sendMessage('エラーが発生しました');
                                         Server::getInstance()->getLogger()->error('[GatyaReduceTicket] ' . $p->getName() . 'さんの処理中に' . $error->getErrorMessage());
