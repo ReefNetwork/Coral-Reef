@@ -19,6 +19,8 @@ use pocketmine\item\ItemIds;
 use pocketmine\Player;
 use pocketmine\plugin\Plugin;
 use ree_jp\coral_reef\form\GatyaForm;
+use ree_jp\coral_reef\sql\SQLConst;
+use ree_jp\coral_reef\sql\SQLManager;
 
 class ReefCommand extends PluginCommand
 {
@@ -36,8 +38,8 @@ class ReefCommand extends PluginCommand
         }
         if (isset($args[0])) {
             switch ($args[0]) {
-                case 'init_tool':
-                    $pickaxe = Item::get(ItemIds::WOODEN_PICKAXE);
+                case "init_tool":
+                    $pickaxe = Item::get(ItemIds::STONE_PICKAXE);
                     $pickaxe->setCustomName('初期装備(ツルハシ)');
                     if ($pickaxe instanceof Durable) $pickaxe->setUnbreakable();
                     $sender->getInventory()->addItem($pickaxe);
@@ -47,11 +49,31 @@ class ReefCommand extends PluginCommand
                     $sender->getInventory()->addItem($shovel);
                     $sender->sendMessage('初期装備を配布しました');
                     return;
-                case 'gatya':
+                case "gatya":
                     GatyaForm::sendGatyaForm($sender);
                     return;
-                case 'test':
+                case "test":
                     $sender->sendMessage('super test message yeah');
+                    break;
+                case "admin":
+                    if (!$sender->isOp() || !isset($args[1])) {
+                        $sender->sendMessage("yhe_eee_eeeee_eeeee_eeeee_eeeee_eeeee");
+                        return;
+                    }
+                    switch ($args[1]) {
+                        case SQLConst::ENV_EXP_BUF:
+                        case SQLConst::ENV_HASTE_EFFECT:
+                            if (!isset($args[2]) || !is_numeric($args[2])) {
+                                $sender->sendMessage("引数が間違ってる");
+                                return;
+                            }
+                            SQLManager::$manager->setValue(0, SQLConst::TYPE_ENV, $args[1], $args[2], null);
+                            $sender->sendMessage("反映には最大1分かかります");
+                            break;
+                        default:
+                            $sender->sendMessage("そのadminコマンドはない!!!!!!!!");
+                            break;
+                    }
                     break;
             }
         }
