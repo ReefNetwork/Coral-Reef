@@ -222,7 +222,7 @@ class SQLManager
 
     public function addProtectLand(LandData $land, Player $p): void
     {
-        $this->db->executeInsert('coral_reef.land.create', ['xuid' => $land->xuid, 'name' => $land->name, 'server' => $this->server,
+        $this->db->executeInsert('coral_reef.land.create', ['xuid' => intval($land->xuid), 'name' => $land->name, 'server' => $this->server,
             'level' => $land->level, 'mx' => $land->aabb->maxX, 'sx' => $land->aabb->minX, 'mz' => $land->aabb->maxZ, 'sz' => $land->aabb->minZ],
             function (int $insertId, int $affectedRows) use ($p, $land) {
                 array_push(LandManager::$instance->lands, $land);
@@ -235,7 +235,7 @@ class SQLManager
 
     public function deleteProtectLand(LandData $land, Player $p): void
     {
-        $this->db->executeGeneric('coral_reef.land.delete', ['xuid' => $land->xuid, 'name' => $land->name, 'server' => $this->server],
+        $this->db->executeGeneric('coral_reef.land.delete', ['xuid' => intval($land->xuid), 'name' => $land->name, 'server' => $this->server],
             function () use ($p, $land) {
                 foreach (LandManager::$instance->lands as $key => $cacheLand) {
                     if ($cacheLand->xuid === $land->xuid && $cacheLand->name === $land->name) {
@@ -252,13 +252,13 @@ class SQLManager
     public function addLog(string $xuid, string $type, ?string $subType, ?string $value, ?string $time, ?Closure $func, ?Closure $failure): void
     {
         if ($time === 'now') $time = date(SQLConst::DATE_FORMAT);
-        $this->db->executeInsert('coral_reef.log.add', ['xuid' => $xuid, 'type' => $type, 'subtype' => $subType, 'value' => $value, 'time' => $time],
-            $func, $failure);
+        $this->db->executeInsert('coral_reef.log.add', ['xuid' => intval($xuid), 'type' => $type, 'subtype' => $subType, 'value' => $value,
+            'time' => $time], $func, $failure);
     }
 
     public function getLog(string $xuid, string $type, Closure $func, Closure $failure): void
     {
-        $this->db->executeSelect('coral_reef.log.get.type', ['xuid' => $xuid, 'type' => $type], $func, $failure);
+        $this->db->executeSelect('coral_reef.log.get.type', ['xuid' => intval($xuid), 'type' => $type], $func, $failure);
     }
 
 
