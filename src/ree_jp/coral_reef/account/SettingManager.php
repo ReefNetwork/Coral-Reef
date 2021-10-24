@@ -33,8 +33,7 @@ class SettingManager
                 if (!isset($row['value'])) return;
                 $nick = $row['value'];
                 $p->sendMessage(TextFormat::GRAY . "現在のユーザーネームは" . $nick . "に設定されています");
-                $p->setNameTag($nick);
-                $p->setDisplayName($nick);
+                $p->setDisplayName($nick . TextFormat::DARK_GRAY . "(" . $p->getName() . ")" . TextFormat::RESET);
             }, function (SqlError $error) use ($p) {
                 $p->sendMessage('ニックネームを読み込み中にエラーが発生しました');
                 Server::getInstance()->getLogger()->warning("[setting nick]" . $error->getMessage());
