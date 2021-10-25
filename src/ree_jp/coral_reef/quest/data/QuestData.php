@@ -18,18 +18,30 @@ abstract class QuestData
     const SHORT_DETAILS = "unknown";
     const EXPLANATION = "unknown";
 
-    private string $value;
+    public string $xuid;
+    protected string $value;
 
-    function __construct(string $value)
+    function __construct(string $xuid, string $value)
     {
+        $this->xuid = $xuid;
         $this->value = $value;
+    }
+
+    function onEvent(string $type, $value): void
+    {
     }
 
     abstract function getRewardDetails(): string;
 
-    abstract function outputData(): string;
+    function outputData(): string
+    {
+        return $this->value;
+    }
 
-    abstract function isExpired(): bool;
+    function isExpired(): bool
+    {
+        return false;
+    }
 
     abstract function isComplete(): bool;
 }

@@ -26,17 +26,26 @@ class QuestManager
         SQLManager::$manager->getAllSubtypeValue($xuid, SQLConst::TYPE_QUEST, function (array $rows) use ($func, $xuid) {
             if (isset(self::$quests[$xuid])) unset(self::$quests[$xuid]);
             foreach ($rows as $row) {
-                self::$quests[$xuid] = self::getQuest($row['subtype'], $row['value']);
+                self::$quests[$xuid][] = self::getQuest($xuid, $row['subtype'], $row['value']);
             }
+            self::registerQuest($xuid, LevelUpQuest::ID, 0);
             if ($func instanceof Closure) $func($rows);
         });
     }
 
-    static function getQuest(string $questID, string $value): ?QuestData
+    static function registerQuest(string $xuid, string $questID, string $value): void // クエストがなかったら与える
+    {
+        foreach (QuestManager::getUserQuests($xuid) as $alreadyQuest) {
+            if ($questID === $alreadyQuest::ID) return;
+        }
+        self::$quests[$xuid][] = self::getQuest($xuid, $questID, $value);
+    }
+
+    static function getQuest(string $xuid, string $questID, string $value): ?QuestData
     {
         switch ($questID) {
             case LevelUpQuest::ID:
-                return new LevelUpQuest($value);
+                return new LevelUpQuest($xuid, $value);
             default:
                 return null;
         }
@@ -44,7 +53,7 @@ class QuestManager
 
     static function getUserQuests(string $xuid): array
     {
-        return isset(self::$quests[$xuid]) ? [] : clone self::$quests[$xuid];
+        return isset(self::$quests[$xuid]) ? clone self::$quests[$xuid] : [];
     }
 
     static function save(string $xuid, ?Closure $func = null): void
@@ -57,7 +66,8 @@ class QuestManager
     {
         $quest = array_shift($quests);
         if (empty($quest)) {
-            $func = $lastFunc;
+            $lastFunc();
+            return;
         } else {
             $func = function () use ($lastFunc, $quests, $xuid): void {
                 self::saveQuestLoop($xuid, $quests, $lastFunc);

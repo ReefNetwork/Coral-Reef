@@ -13,6 +13,8 @@ namespace ree_jp\coral_reef\quest;
 
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerJoinEvent;
+use pocketmine\event\player\PlayerQuitEvent;
+use ree_jp\coral_reef\quest\data\QuestData;
 
 class QuestListener implements Listener
 {
@@ -21,10 +23,67 @@ class QuestListener implements Listener
      * イベントの値は絶対に変更しないように
      */
 
+    const JOIN = "join";
+    const LEVEL_UP = "level_up";
+
+    static array $subscribeQuest = [];
+
     /**
      * @priority MONITOR
      */
     function onJoin(PlayerJoinEvent $ev): void
     {
+        self::callSubscribedQuest($ev->getPlayer()->getXuid(), self::JOIN, null);
+    }
+
+    /**
+     * @priority MONITOR
+     */
+    function onQuit(PlayerQuitEvent $ev): void
+    {
+        $xuid = $ev->getPlayer()->getXuid();
+        // 抜けたらすべてのクエストをunsubscribe
+        $quests = [];
+        foreach (self::$subscribeQuest as $type => $xuidArray) {
+            if (isset($xuidArray[$xuid])) {
+                unset($xuidArray[$xuid]);
+            }
+            $quests[$type] = $xuidArray;
+        }
+        self::$subscribeQuest = $quests;
+    }
+
+    static function callSubscribedQuest(string $xuid, string $type, $value): void
+    {
+        foreach (self::getSubscribedQuest($xuid, $type) as $quests) {
+            foreach ($quests as $quest) {
+                if (!$quest instanceof QuestData) continue;
+                $quest->onEvent($type, $value);
+            }
+        }
+    }
+
+    static function subscribeQuest(string $xuid, string $type, QuestData $quest): void
+    {
+        self::$subscribeQuest[$type][$xuid][] = $quest;
+    }
+
+    static function unsubscribeQuest(string $xuid, string $type, QuestData $quest): void
+    {
+        if (isset(self::$subscribeQuest[$type]) && isset(self::$subscribeQuest[$type][$xuid])) {
+            foreach (self::$subscribeQuest[$type][$xuid] as $key => $subscribedQuest) {
+                if ($quest::ID === $subscribedQuest::ID) unset(self::$subscribeQuest[$type][$xuid][$key]);
+            }
+        }
+    }
+
+    static private function getSubscribedQuest(string $xuid, string $type): array
+    {
+        if (isset(self::$subscribeQuest[$type])) {
+            foreach (self::$subscribeQuest[$type] as $xuidArray) {
+                if (isset($xuidArray[$xuid])) return $xuidArray[$xuid];
+            }
+        }
+        return [];
     }
 }
