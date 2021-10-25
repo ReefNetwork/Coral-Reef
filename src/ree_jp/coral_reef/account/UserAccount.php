@@ -90,7 +90,7 @@ class UserAccount
                 return;
             }
         }
-        $this->level = PHP_INT_MAX;
-        $this->necessaryExperience = PHP_INT_MAX;
+        $this->level = array_key_last(self::LEVEL_EXPERIMENT);
+        $this->necessaryExperience = 99999;
     }
 }
