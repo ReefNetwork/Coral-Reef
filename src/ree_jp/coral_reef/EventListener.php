@@ -24,6 +24,7 @@ use pocketmine\event\inventory\InventoryTransactionEvent;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerGameModeChangeEvent;
 use pocketmine\event\player\PlayerInteractEvent;
+use pocketmine\event\player\PlayerItemConsumeEvent;
 use pocketmine\event\player\PlayerJoinEvent;
 use pocketmine\event\player\PlayerLoginEvent;
 use pocketmine\event\player\PlayerQuitEvent;
@@ -252,6 +253,21 @@ class EventListener implements Listener
         }
         if ($isWorldChange) {
             unset(LandManager::$pos[$p->getXuid()]);
+        }
+    }
+
+    /**
+     * @priority MONITOR
+     */
+    function onEat(PlayerItemConsumeEvent $ev): void
+    {
+        $p = $ev->getPlayer();
+        $food = $ev->getItem();
+        $tag = $food->getNamedTagEntry("reef_infinite_food");
+        if (!is_null($tag)) {
+            CoralReefPlugin::$plugin->getScheduler()->scheduleDelayedTask(new ClosureTask(function (int $currentTick) use ($food, $p): void {
+                $p->getInventory()->addItem($food);
+            }), 3);
         }
     }
 

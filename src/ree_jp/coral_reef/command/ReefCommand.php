@@ -16,6 +16,7 @@ use pocketmine\command\PluginCommand;
 use pocketmine\item\Durable;
 use pocketmine\item\Item;
 use pocketmine\item\ItemIds;
+use pocketmine\nbt\tag\ByteTag;
 use pocketmine\Player;
 use pocketmine\plugin\Plugin;
 use ree_jp\coral_reef\form\GatyaForm;
@@ -48,6 +49,12 @@ class ReefCommand extends PluginCommand
                     if ($shovel instanceof Durable) $shovel->setUnbreakable();
                     $sender->getInventory()->addItem($shovel);
                     $sender->sendMessage('初期装備を配布しました');
+                    return;
+                case "food":
+                    $food = Item::get(ItemIds::MELON)->setCustomName("無限すいか")->setLore(["食べても食べても減らない不思議なすいか"]);
+                    $food->setNamedTagEntry(new ByteTag("reef_infinite_food"));
+                    $sender->getInventory()->addItem($food);
+                    $sender->sendMessage("無限スイカを配布しました");
                     return;
                 case "gatya":
                     GatyaForm::sendGatyaForm($sender);
