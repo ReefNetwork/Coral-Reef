@@ -21,14 +21,7 @@ class GiftManager
 {
     static function addGift(string $target, GiftData $gift, ?Closure $func, ?Closure $failure): void
     {
-        $id = uniqid();
-        // 同じidのギフトがないか確認
-        SQLManager::$manager->getValue($target, SQLConst::TYPE_GIFT, $id, function (array $rows) use ($func, $failure, $id, $gift, $target) {
-            $row = array_shift($rows);
-            if (empty($row)) {
-                SQLManager::$manager->setValue($target, SQLConst::TYPE_GIFT, $id, json_encode($gift), $func, $failure);
-            } else self::addGift($target, $gift, $func, $failure); // あったら最初からもう一回やる
-        });
+        $gift->save($target, $func, $failure);
     }
 
     static function checkAllExpired(string $xuid): void

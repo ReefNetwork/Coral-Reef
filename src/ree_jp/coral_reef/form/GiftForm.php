@@ -104,11 +104,11 @@ class GiftForm
                 $p->sendMessage(TextFormat::DARK_GRAY . $item->getName() . "を受け取りました");
                 $p->getInventory()->addItem($item);
             } else {
-                SQLManager::$manager->setValue($p->getXuid(), SQLConst::TYPE_GIFT, $gift->uniqueID, json_encode($gift), null);
+                $gift->save($p->getXuid(), null, null);
                 return false;
             }
         }
-        SQLManager::$manager->setValue($p->getXuid(), SQLConst::TYPE_GIFT, $gift->uniqueID, json_encode($gift), null);
+        $gift->save($p->getXuid(), null, null);
         return true;
     }
 }

@@ -11,7 +11,10 @@
 
 namespace ree_jp\coral_reef\account;
 
+use Closure;
 use pocketmine\item\Item;
+use ree_jp\coral_reef\sql\SQLConst;
+use ree_jp\coral_reef\sql\SQLManager;
 
 class GiftData
 {
@@ -81,5 +84,21 @@ class GiftData
     public function isExpired(): bool
     {
         return ($this->expiry - time()) < 0;
+    }
+
+    public function save(string $xuid, ?Closure $func, ?Closure $failure): void
+    {
+        if (is_null($this->uniqueID)) {
+            $id = uniqid();
+            // 同じidのギフトがないか確認
+            SQLManager::$manager->getValue($xuid, SQLConst::TYPE_GIFT, $id, function (array $rows) use ($func, $failure, $id, $xuid) {
+                $row = array_shift($rows);
+                if (empty($row)) {
+                    SQLManager::$manager->setValue($xuid, SQLConst::TYPE_GIFT, $id, json_encode($this), $func, $failure);
+                } else $this->save($xuid, $func, $failure); // あったら最初からもう一回やる
+            });
+        } else {
+            SQLManager::$manager->setValue($xuid, SQLConst::TYPE_GIFT, $this->uniqueID, json_encode($this), $func, $failure);
+        }
     }
 }

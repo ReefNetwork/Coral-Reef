@@ -66,15 +66,15 @@ class LevelUpQuest extends QuestData
                     break;
                 case 2:
                     GatyaManager::addTicket($this->xuid, SQLConst::TICKETS_NORMAL, 2);
-                    $this->sendGift($questLevel, [Item::get(ItemIds::APPLE, 8)]);
+                    $this->sendGift($questLevel, [Item::get(ItemIds::APPLE, 0, 8)]);
                     break;
                 case 3:
                     GatyaManager::addTicket($this->xuid, SQLConst::TICKETS_NORMAL, 2);
-                    $this->sendGift($questLevel, [Item::get(ItemIds::APPLE, 16)]);
+                    $this->sendGift($questLevel, [Item::get(ItemIds::APPLE, 0, 16)]);
                     break;
                 case 4:
                     GatyaManager::addTicket($this->xuid, SQLConst::TICKETS_NORMAL, 2);
-                    $this->sendGift($questLevel, [Item::get(ItemIds::APPLE, 32)]);
+                    $this->sendGift($questLevel, [Item::get(ItemIds::APPLE, 0, 32)]);
                     break;
                 case 5:
                     $item = Item::get(ItemIds::IRON_PICKAXE);
