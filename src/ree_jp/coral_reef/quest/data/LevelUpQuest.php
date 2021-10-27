@@ -32,9 +32,9 @@ class LevelUpQuest extends QuestData
 
     function __construct(string $xuid, string $value)
     {
+        parent::__construct($xuid, $value);
         QuestListener::subscribeQuest($xuid, QuestListener::LEVEL_UP, $this);
         $this->check();
-        parent::__construct($xuid, $value);
     }
 
     function onEvent(string $type, $value): void
