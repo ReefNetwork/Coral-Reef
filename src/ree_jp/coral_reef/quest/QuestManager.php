@@ -53,7 +53,7 @@ class QuestManager
 
     static function getUserQuests(string $xuid): array
     {
-        return isset(self::$quests[$xuid]) ? clone self::$quests[$xuid] : [];
+        return self::$quests[$xuid] ?? [];
     }
 
     static function save(string $xuid, ?Closure $func = null): void
