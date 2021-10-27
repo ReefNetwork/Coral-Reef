@@ -32,14 +32,14 @@ class GiftData
 
         foreach ($items as $item) {
             if ($item instanceof Item) {
-                $jsonItem = json_encode($item);
-                $key = array_search($jsonItem, $this->items, true);
-                if (is_null($key)) {
-                    $this->items[] = $jsonItem;
-                } else {
-                    $this->items[$key]["count"] += $jsonItem["count"];
-                }
-            } else $this->items[] = $item;
+                $item = json_encode($item);
+            }
+            $key = array_search($item, $this->items, true);
+            if ($key === false) {
+                $this->items[] = $item;
+            } else {
+                $this->items[$key]["count"] += $item["count"];
+            }
         }
     }
 
