@@ -66,7 +66,7 @@ class QuestManager
     {
         $quest = array_shift($quests);
         if (empty($quest)) {
-            $lastFunc();
+            if (!is_null($lastFunc)) $lastFunc();
             return;
         } else {
             $func = function () use ($lastFunc, $quests, $xuid): void {

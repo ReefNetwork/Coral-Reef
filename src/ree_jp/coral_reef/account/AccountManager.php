@@ -67,6 +67,7 @@ class AccountManager
 
         SQLManager::$manager->setUser($xuid, $p->getName(), $p->getAddress());
         QuestManager::updateQuests($xuid);
+        GiftManager::checkAllExpired($xuid);
         SettingManager::updateNickName($p);
         SettingManager::updateShowCoordinates($p);
         SettingManager::updateOption($p, SettingConst::SNEAK_SKILL);

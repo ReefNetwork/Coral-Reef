@@ -59,9 +59,10 @@ class GiftForm
 
     static function giftDetailForm(GiftData $gift): MenuForm
     {
-        $itemString = "";
+        $itemString = "\n";
         foreach ($gift->getItems() as $item) {
-            $itemString = $itemString . $item->getName() . "(" . $item->getCount() . "個)" . "\n";
+            $color = $gift->isMarkReceived($item) ? TextFormat::DARK_GRAY : TextFormat::GREEN; // 受け取り済みは灰色
+            $itemString = $itemString . $color . $item->getName() . "(" . $item->getCount() . "個)" . TextFormat::RESET . "\n";
         }
         return new MenuForm("Gift -> Detail", "送り主: " . AccountManager::getUserName($gift->from) .
             "\n有効期限: " . date("y年m月d日 H時i分") . "\nアイテム(受け取り済みのアイテムは灰色です): " . $itemString .
@@ -103,9 +104,11 @@ class GiftForm
                 $p->sendMessage(TextFormat::DARK_GRAY . $item->getName() . "を受け取りました");
                 $p->getInventory()->addItem($item);
             } else {
+                SQLManager::$manager->setValue($p->getXuid(), SQLConst::TYPE_GIFT, $gift->uniqueID, json_encode($gift), null);
                 return false;
             }
         }
+        SQLManager::$manager->setValue($p->getXuid(), SQLConst::TYPE_GIFT, $gift->uniqueID, json_encode($gift), null);
         return true;
     }
 }

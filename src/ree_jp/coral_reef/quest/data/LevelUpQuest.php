@@ -52,7 +52,7 @@ class LevelUpQuest extends QuestData
         if (is_null($user)) return;
         $p = Server::getInstance()->getPlayer($user->name);
         $questLevel = intval($this->value);
-        if ($user->level > $questLevel) {
+        if ($user->level > $questLevel && !empty($this->getRewardInfo($user->level))) {
             $questLevel++;
             $this->value = $questLevel;
 
@@ -115,7 +115,7 @@ class LevelUpQuest extends QuestData
             case 6:
                 return "ガチャ券×3枚";
         }
-        return "エラー";
+        return "";
     }
 
     function getRewardDetails(): string
