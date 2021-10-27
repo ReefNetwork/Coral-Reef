@@ -35,7 +35,7 @@ class GiftManager
     {
         SQLManager::$manager->getAllSubtypeValue($xuid, SQLConst::TYPE_GIFT, function (array $rows) use ($xuid) {
             foreach ($rows as $row) {
-                $gift = GiftData::jsonDeserialize(json_decode($row['value'], false));
+                $gift = GiftData::jsonDeserialize(json_decode($row['value'], true));
                 if ($gift->isExpired()) {
                     SQLManager::$manager->deleteValue($xuid, SQLConst::TYPE_GIFT, $gift['subtype'], null, function (SqlError $error) use ($xuid) {
                         Server::getInstance()->getLogger()->error("[CheckExpired] $xuid の削除中に" . $error->getErrorMessage());

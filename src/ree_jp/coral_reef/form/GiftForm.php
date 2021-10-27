@@ -29,7 +29,7 @@ class GiftForm
             $gifts = [];
             $buttons = [];
             foreach ($rows as $row) {
-                $gift = GiftData::jsonDeserialize($row["value"], $row["subtype"]);
+                $gift = GiftData::jsonDeserialize(json_decode($row["value"], true), $row["subtype"]);
                 $buttons[] = new Button("送り主: " . AccountManager::getUserName($gift->from) . "(有効期限: " . date("y年m月d日 H時i分") .
                     ")\n" . $gift->message);
                 $gifts[] = $gift;
