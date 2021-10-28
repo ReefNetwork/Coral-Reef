@@ -19,7 +19,7 @@ abstract class DailyQuest extends QuestData
     {
         $array = json_decode($value, true);
 
-        if (is_null($array) && $array["limit"] === $this->getDeadTime()) {
+        if (!is_null($array) && $array["limit"] === $this->getDeadTime()) {
             $this->limit = $array["limit"];
             parent::__construct($xuid, $array["value"]);
         } else {
