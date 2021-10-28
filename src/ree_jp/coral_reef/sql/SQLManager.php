@@ -192,7 +192,7 @@ class SQLManager
 
     public function deleteValue(string $xuid, string $type, string $subtype, ?Closure $func, ?Closure $failure = null): void
     {
-        $this->db->executeGeneric('coral_reef.value.delete', ['xuid' => intval($xuid), 'type' => strtolower($type), 'subtype' => strtolower($subtype)],
+        $this->db->executeGeneric('coral_reef.values.delete', ['xuid' => intval($xuid), 'type' => strtolower($type), 'subtype' => strtolower($subtype)],
             $func, $failure);
     }
 
