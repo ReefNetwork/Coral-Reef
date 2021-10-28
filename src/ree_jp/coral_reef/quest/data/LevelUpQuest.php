@@ -30,8 +30,9 @@ class LevelUpQuest extends QuestData
     const SHORT_DETAILS = "レベルアップしよう!";
     const EXPLANATION = "ブロックを掘ると経験値を入手できます。経験値を一定量集めてサーバーのレベルを上げましょう。";
 
-    function __construct(string $xuid, string $value)
+    function __construct(string $xuid, ?string $value)
     {
+        if (is_null($value)) $value = "0";
         parent::__construct($xuid, $value);
         QuestListener::subscribeQuest($xuid, QuestListener::LEVEL_UP, $this);
         $this->check();
@@ -54,7 +55,7 @@ class LevelUpQuest extends QuestData
         $questLevel = intval($this->value);
         if ($user->level > $questLevel && !empty($this->getRewardInfo($user->level))) {
             $questLevel++;
-            $this->value = $questLevel;
+            $this->value = strval($questLevel);
 
             SQLManager::$manager->addLog($this->xuid, "quest", self::ID, $questLevel, SQLConst::NOW_TIME, null, null);
             switch ($questLevel) {
@@ -87,8 +88,7 @@ class LevelUpQuest extends QuestData
                     break;
             }
             $p->sendMessage("レベルアップ報酬として" . $this->getRewardInfo($questLevel) .
-                "を受け取りました\n報酬にアイテムが含まれている場合はギフトから1週間以内に受け取れます\n忘れずにお受けとりください");
-
+                "を受け取りました\n報酬にアイテムが含まれている場合はギフトから1週間以内に受け取れます");
             $this->check();
         }
     }

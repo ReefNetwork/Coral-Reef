@@ -13,6 +13,7 @@ namespace ree_jp\coral_reef\quest;
 
 use Closure;
 use ree_jp\coral_reef\quest\data\LevelUpQuest;
+use ree_jp\coral_reef\quest\data\LoginQuest;
 use ree_jp\coral_reef\quest\data\QuestData;
 use ree_jp\coral_reef\sql\SQLConst;
 use ree_jp\coral_reef\sql\SQLManager;
@@ -28,12 +29,13 @@ class QuestManager
             foreach ($rows as $row) {
                 self::$quests[$xuid][] = self::getQuest($xuid, $row['subtype'], $row['value']);
             }
-            self::registerQuest($xuid, LevelUpQuest::ID, 0);
+            self::registerQuest($xuid, LevelUpQuest::ID, null);
+            self::registerQuest($xuid, LoginQuest::ID, null);
             if ($func instanceof Closure) $func($rows);
         });
     }
 
-    static function registerQuest(string $xuid, string $questID, string $value): void // クエストがなかったら与える
+    static function registerQuest(string $xuid, string $questID, ?string $value): void // クエストがなかったら与える
     {
         foreach (QuestManager::getUserQuests($xuid) as $alreadyQuest) {
             if ($questID === $alreadyQuest::ID) return;
@@ -41,11 +43,13 @@ class QuestManager
         self::$quests[$xuid][] = self::getQuest($xuid, $questID, $value);
     }
 
-    static function getQuest(string $xuid, string $questID, string $value): ?QuestData
+    static function getQuest(string $xuid, string $questID, ?string $value): ?QuestData
     {
         switch ($questID) {
             case LevelUpQuest::ID:
                 return new LevelUpQuest($xuid, $value);
+            case LoginQuest::ID:
+                return new LoginQuest($xuid, $value);
             default:
                 return null;
         }
