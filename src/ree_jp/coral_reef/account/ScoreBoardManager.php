@@ -56,7 +56,7 @@ class ScoreBoardManager
             self::setScore($pk, 3, '経験値ボーナス : ' . ServerUpdateTask::$exp_buff . "倍");
         }
         if (ServerUpdateTask::$haste_effect >= 0) {
-            self::setScore($pk, 4, '採掘速度アップ : ' . (ServerUpdateTask::$haste_effect + 1) . "倍");
+            self::setScore($pk, 4, '採掘速度アップ : ' . (ServerUpdateTask::$haste_effect + 2) . "倍");
         }
         self::setScore($pk, 8, TextFormat::DARK_GRAY . $p->getDisplayName());
         self::setScore($pk, 9, TextFormat::DARK_GRAY . date("Y/m/d H:i:s"));

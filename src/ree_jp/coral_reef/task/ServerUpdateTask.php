@@ -26,7 +26,7 @@ class ServerUpdateTask extends Task
     public function onRun(int $currentTick)
     {
         if (self::$haste_effect >= 0) {
-            $hasteEffect = new EffectInstance(Effect::getEffect(Effect::HASTE), 300, self::$haste_effect);
+            $hasteEffect = new EffectInstance(Effect::getEffect(Effect::HASTE), 1300, self::$haste_effect);
             foreach (Server::getInstance()->getOnlinePlayers() as $p) $p->addEffect($hasteEffect);
         }
         if (empty(Server::getInstance()->getOnlinePlayers())) return; // プレイヤーがいなかったら更新しない

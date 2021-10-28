@@ -56,7 +56,7 @@ class CoralReefPlugin extends PluginBase
         $this->getScheduler()->scheduleRepeatingTask(new ServerUpdateTask(), 1200);
         $this->getScheduler()->scheduleRepeatingTask(new ClosureTask(function (int $currentTick): void {
             foreach (Server::getInstance()->getOnlinePlayers() as $p) ScoreBoardManager::sendScoreBoard($p);
-        }), 10);
+        }), 15);
 
         $this->getServer()->generateLevel("lobby", time(), GeneratorManager::getGenerator("flat"));
         $this->getServer()->generateLevel("main_1", time(), generatorManager::getGenerator("default"));
