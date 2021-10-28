@@ -31,9 +31,8 @@ class ServerUpdateTask extends Task
         }
         if (empty(Server::getInstance()->getOnlinePlayers())) return; // プレイヤーがいなかったら更新しない
 
-        SQLManager::$manager->getAllSubtypeValue(0, SQLConst::TYPE_ENV, function ($rows) { // serverENVを更新する
+        SQLManager::$manager->getAllSubtypeValue(0, SQLConst::TYPE_ENV, function (array $rows): void { // serverENVを更新する
             foreach ($rows as $row) {
-                if (!isset($rows['subtype']) || !isset($rows['value'])) continue;
                 switch ($row['subtype']) {
                     case SQLConst::ENV_HASTE_EFFECT:
                         self::$haste_effect = intval($row['value']);

@@ -57,6 +57,8 @@ class BreakSkill
      */
     public function runSkill(Vector3 $block, Player $p): void
     {
+        $this->frozeWater($p, $block);
+
         $direction = $p->getDirection();
         $widthSide = intval(floor($this->width / 2));
         $depthSide = intval(floor($this->depth / 2));
@@ -114,9 +116,10 @@ class BreakSkill
                 $this->changeWater($p->getLevel(), $vec);
                 $this->changeWater($p->getLevel(), $vec->add(0, 1));
                 $this->changeWater($p->getLevel(), $vec->add(0, -1));
-                $this->changeWater($p->getLevel(), $this->getSideFromUserView($vec, $p->getDirection(), self::FORWARD, 1));
-                $this->changeWater($p->getLevel(), $this->getSideFromUserView($vec, $p->getDirection(), self::RIGHT, 1));
-                $this->changeWater($p->getLevel(), $this->getSideFromUserView($vec, $p->getDirection(), self::LEFT, 1));
+                $this->changeWater($p->getLevel(), $vec->add(1));
+                $this->changeWater($p->getLevel(), $vec->add(-1));
+                $this->changeWater($p->getLevel(), $vec->add(0, 0, 1));
+                $this->changeWater($p->getLevel(), $vec->add(0, 0, -1));
             } catch (Exception $ex) {
                 $p->sendMessage("エラーが発生しました");
             }

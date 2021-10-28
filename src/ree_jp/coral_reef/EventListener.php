@@ -266,7 +266,7 @@ class EventListener implements Listener
         $tag = $food->getNamedTagEntry("reef_infinite_food");
         if (!is_null($tag)) {
             CoralReefPlugin::$plugin->getScheduler()->scheduleDelayedTask(new ClosureTask(function (int $currentTick) use ($food, $p): void {
-                $p->getInventory()->addItem($food);
+                $p->getInventory()->addItem($food->setCount(1));
             }), 3);
         }
     }
