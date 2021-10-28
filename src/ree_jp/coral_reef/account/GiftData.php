@@ -48,7 +48,7 @@ class GiftData
 
     static function jsonDeserialize(array $arrayItems, ?string $id = null): GiftData
     {
-        return new GiftData($arrayItems['from'], $arrayItems['message'], strtotime($arrayItems['expiry']), $arrayItems['items'], $id, $arrayItems['receivedItems']);
+        return new GiftData($arrayItems['from'], $arrayItems['message'], $arrayItems['expiry'], $arrayItems['items'], $id, $arrayItems['receivedItems']);
     }
 
     public function jsonSerialize(): array
