@@ -22,7 +22,7 @@ use ree_jp\coral_reef\sql\SQLManager;
 
 class SkillManager
 {
-    const SKILLS = ['first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'test'];
+    const SKILLS = ['first', 'second', 'third', 'fourth', 'fifth', 'sixth'];
 
     static array $reduceCoolTime = [];
 

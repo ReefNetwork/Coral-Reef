@@ -80,11 +80,11 @@ class EventListener implements Listener
         $p = $ev->getPlayer();
         $xuid = $p->getXuid();
 
-        if (is_null(SQLManager::$manager->getUser($xuid))) { // データをまだ読み込めてなかったら動きを止める
-            AccountManager::setValue($xuid, 'wait_action');
-            $p->setImmobile();
-            $p->sendMessage('データを確認しています...');
-        }
+//        if (is_null(SQLManager::$manager->getUser($xuid))) { // データをまだ読み込めてなかったら動きを止める
+//            AccountManager::setValue($xuid, 'wait_action');
+//            $p->setImmobile();
+//            $p->sendMessage('データを確認しています...');
+//        }
         AccountManager::userJoin($p);
 
         $ev->setJoinMessage(""); // プロキシ側で参加メッセージを流す
