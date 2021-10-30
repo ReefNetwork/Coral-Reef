@@ -28,7 +28,7 @@ use ree_jp\coral_reef\sql\SQLManager;
 
 class LandManager
 {
-    const CAN_CREATE_LAND = array('main_1');
+    const CAN_CREATE_LAND = array('main_2');
 
     static LandManager $instance;
     static array $pos;
@@ -87,7 +87,7 @@ class LandManager
 
     public function protect(Player $p, Position $pos, ?string $message): bool
     {
-        if (in_array($p->getLevel()->getFolderName(), ['lobby', 'lobby2']) && !($p->isOp() && $p->isCreative())) {
+        if (in_array($p->getLevel()->getFolderName(), ['lobby']) && !($p->isOp() && $p->isCreative())) {
             if (is_null($message)) return false;
             $p->sendPopup($message);
         } else {

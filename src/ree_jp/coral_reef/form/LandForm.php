@@ -121,7 +121,7 @@ class LandForm
             new Input('x座標2', '10', $x2),
             new Input('z座標2', '10', $z2),
         ], function (Player $p, CustomFormResponse $response): void {
-            if (!in_array($p->getLevelNonNull()->getFolderName(), LandManager::CAN_CREATE_LAND)) {
+            if (!in_array($p->getLevelNonNull()->getFolderName(), LandManager::CAN_CREATE_LAND) && !$p->isOp()) {
                 $p->sendMessage('このワールドでは土地保護が出来ません');
                 return;
             }
