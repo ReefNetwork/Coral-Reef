@@ -11,6 +11,18 @@
   "require": {
     "ext-pdo": "*",
     "ext-yaml": "*",
-    "ext-json": "*"
-  }
+    "ext-json": "*",
+    "pocketmine/pocketmine-mp": "3.*",
+    "bbo51dog/bboform": "1.2.1"
+  },
+  "repositories": [
+    {
+      "type": "git",
+      "url": "https://github.com/pmmp/PocketMine-MP.git"
+    },
+    {
+      "type": "git",
+      "url": "https://github.com/bbo51dog/BboForm"
+    }
+  ]
 }
