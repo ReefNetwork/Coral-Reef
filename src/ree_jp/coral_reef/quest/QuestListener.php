@@ -79,10 +79,8 @@ class QuestListener implements Listener
 
     static private function getSubscribedQuest(string $xuid, string $type): array
     {
-        if (isset(self::$subscribeQuest[$type])) {
-            foreach (self::$subscribeQuest[$type] as $xuidArray) {
-                if (isset($xuidArray[$xuid])) return $xuidArray[$xuid];
-            }
+        if (isset(self::$subscribeQuest[$type]) && isset(self::$subscribeQuest[$type][$xuid])) {
+            return self::$subscribeQuest[$type][$xuid];
         }
         return [];
     }
