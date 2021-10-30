@@ -34,6 +34,7 @@ class AccountManager
     const STOP_FLY_WORLD = array('lobby');
 
     static array $values = array();
+    static array $xuid = array();
 
     static function setValue(string $xuid, string $value, int $tick = null): void
     {
@@ -59,6 +60,17 @@ class AccountManager
     {
         $key = $xuid . ':' . $value;
         return array_key_exists($key, self::$values);
+    }
+
+    static function setUp(): void
+    {
+        SQLManager::$manager->getAllUser(function (array $rows): void {
+            $list = [];
+            foreach ($rows as $row) {
+                $list[$row["xuid"]] = $row["name"];
+            }
+            self::$xuid = $list;
+        });
     }
 
     static function userJoin(Player $p): void
@@ -135,11 +147,13 @@ class AccountManager
     static function getUserName(string $xuid): string
     {
         $name = "";
-        try {
-            $user = SQLManager::$manager->getUser($xuid);
-            if (!is_null($user)) $name = $user->name;
-        } catch (Exception $e) {
-            Server::getInstance()->getLogger()->critical("[GETUserName]" . $e->getMessage());
+        $user = SQLManager::$manager->getUser($xuid);
+        if (is_null($user)) {
+            if (isset(self::$xuid[$xuid])) {
+                $name = self::$xuid[$xuid];
+            }
+        } else {
+            $name = $user->name;
         }
         return $name;
     }

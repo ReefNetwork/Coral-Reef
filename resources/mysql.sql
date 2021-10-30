@@ -70,9 +70,13 @@ CREATE TABLE IF NOT EXISTS LOG
 -- #        }
 -- #    }
 -- #    { user
+-- #        { all
+-- #        :xuid int
+SELECT *
+FROM USER;
+-- #        }
 -- #        { get
 -- #        :xuid int
-
 SELECT *
 FROM USER
 WHERE xuid = :xuid;

@@ -131,6 +131,11 @@ class SQLManager
         });
     }
 
+    public function getAllUser(Closure $func): void
+    {
+        $this->db->executeSelect("coral_reef.user.all", [], $func);
+    }
+
     public function getUser(string $xuid): ?UserAccount
     {
         if (array_key_exists($xuid, $this->users)) return $this->users[$xuid];

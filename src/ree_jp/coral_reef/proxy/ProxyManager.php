@@ -43,7 +43,7 @@ class ProxyManager
     {
         $xuid = $p->getXuid();
         // isCheckSafeの場合すべてセーブされたか確認する
-        if ($isCheckSafe && AccountManager::hasValue($xuid, 'save_xp') &&
+        if (!$isCheckSafe || AccountManager::hasValue($xuid, 'save_xp') &&
             AccountManager::hasValue($xuid, 'save_skill') && AccountManager::hasValue($xuid, 'save_quest')) {
             if ($isCheckSafe) {
                 AccountManager::setValue($p->getXuid(), 'save_xp', 0);

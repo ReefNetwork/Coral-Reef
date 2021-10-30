@@ -23,14 +23,20 @@ class ServerUpdateTask extends Task
     static int $haste_effect = -1; // 効率エフェクト 0がレベル1 0未満はなし
     static int $exp_buff = 1; // 一回掘ると手に入るxp量
 
+    private int $count = 0;
+
     public function onRun(int $currentTick)
     {
         if (self::$haste_effect >= 0) {
-            $hasteEffect = new EffectInstance(Effect::getEffect(Effect::HASTE), 1300, self::$haste_effect);
+            $hasteEffect = new EffectInstance(Effect::getEffect(Effect::HASTE), 400, self::$haste_effect);
             foreach (Server::getInstance()->getOnlinePlayers() as $p) $p->addEffect($hasteEffect);
         }
-        if (empty(Server::getInstance()->getOnlinePlayers())) return; // プレイヤーがいなかったら更新しない
+        if ($this->count < 60) {
+            $this->count++;
+            return;
+        }
 
+        $this->count = 0;
         SQLManager::$manager->getAllSubtypeValue(0, SQLConst::TYPE_ENV, function (array $rows): void { // serverENVを更新する
             foreach ($rows as $row) {
                 switch ($row['subtype']) {

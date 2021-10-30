@@ -17,6 +17,7 @@ use pocketmine\level\generator\GeneratorManager;
 use pocketmine\plugin\PluginBase;
 use pocketmine\scheduler\ClosureTask;
 use pocketmine\Server;
+use ree_jp\coral_reef\account\AccountManager;
 use ree_jp\coral_reef\account\ScoreBoardManager;
 use ree_jp\coral_reef\command\MenuCommand;
 use ree_jp\coral_reef\command\ReefCommand;
@@ -46,25 +47,6 @@ class CoralReefPlugin extends PluginBase
     public function onEnable()
     {
         date_default_timezone_set('Asia/Tokyo');
-        $this->getServer()->getPluginManager()->registerEvents(new EventListener(), $this);
-        $this->getServer()->getPluginManager()->registerEvents(new QuestListener(), $this); // クエスト用
-        $this->getServer()->getCommandMap()->register('menu', new MenuCommand($this));
-        $this->getServer()->getCommandMap()->register('reef', new ReefCommand($this));
-        $this->getScheduler()->scheduleRepeatingTask(new SendServerTipTask(), 15);
-        $this->getScheduler()->scheduleRepeatingTask(new DataSaveTask(), 20);
-        $this->getScheduler()->scheduleRepeatingTask(new EffectTask(), 200);
-        $this->getScheduler()->scheduleRepeatingTask(new ServerUpdateTask(), 1200);
-        $this->getScheduler()->scheduleRepeatingTask(new ClosureTask(function (int $currentTick): void {
-            foreach (Server::getInstance()->getOnlinePlayers() as $p) ScoreBoardManager::sendScoreBoard($p);
-        }), 15);
-
-        $this->getServer()->generateLevel("lobby", time(), GeneratorManager::getGenerator("flat"));
-        $this->getServer()->generateLevel("main_1", time(), generatorManager::getGenerator("default"));
-        $this->getServer()->generateLevel("main_2", time(), generatorManager::getGenerator("default"));
-        $this->getServer()->loadLevel("lobby");
-        $this->getServer()->loadLevel("main_1");
-        $this->getServer()->loadLevel("main_2");
-
         try {
             SQLManager::$manager = new SQLManager($this->getDataFolder(), $this->getConfig()->get(ConfigConst::SERVER_NAME));
         } catch (PDOException $e) {
@@ -75,6 +57,27 @@ class CoralReefPlugin extends PluginBase
         } catch (Exception $e) {
             $this->getLogger()->critical("[LandManager]" . $e->getMessage());
         }
+
+        $this->getServer()->generateLevel("lobby", time(), GeneratorManager::getGenerator("flat"));
+        $this->getServer()->generateLevel("main_1", time(), generatorManager::getGenerator("default"));
+        $this->getServer()->generateLevel("main_2", time(), generatorManager::getGenerator("default"));
+        $this->getServer()->loadLevel("lobby");
+        $this->getServer()->loadLevel("main_1");
+        $this->getServer()->loadLevel("main_2");
+
+        $this->getServer()->getPluginManager()->registerEvents(new EventListener(), $this);
+        $this->getServer()->getPluginManager()->registerEvents(new QuestListener(), $this); // クエスト用
+        $this->getServer()->getCommandMap()->register('menu', new MenuCommand($this));
+        $this->getServer()->getCommandMap()->register('reef', new ReefCommand($this));
+        $this->getScheduler()->scheduleRepeatingTask(new SendServerTipTask(), 15);
+        $this->getScheduler()->scheduleRepeatingTask(new DataSaveTask(), 20);
+        $this->getScheduler()->scheduleRepeatingTask(new EffectTask(), 200);
+        $this->getScheduler()->scheduleRepeatingTask(new ServerUpdateTask(), 20);
+        $this->getScheduler()->scheduleRepeatingTask(new ClosureTask(function (int $currentTick): void {
+            foreach (Server::getInstance()->getOnlinePlayers() as $p) ScoreBoardManager::sendScoreBoard($p);
+        }), 15);
+
+        AccountManager::setUp();
         ReefItems::registerAll();
         $this->pluginInformation();
     }
