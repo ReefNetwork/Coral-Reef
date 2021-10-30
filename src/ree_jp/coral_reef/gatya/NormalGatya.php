@@ -47,7 +47,7 @@ class NormalGatya
 
             switch (true) {
                 case ($firstRand <= 5) || $isLimit:// 0.5% or 天井
-                    if (mt_rand(10) < 5) { // 40%の確率でTool
+                    if (mt_rand(1, 10) < 5) { // 40%の確率でTool
                         switch (mt_rand(1, 10)) {
                             case 1:
                             case 2:
