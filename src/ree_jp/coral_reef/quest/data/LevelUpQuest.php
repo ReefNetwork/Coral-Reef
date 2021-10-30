@@ -62,7 +62,7 @@ class LevelUpQuest extends QuestData
                 case 1:
                     $item = Item::get(ItemIds::IRON_PICKAXE);
                     $item->addEnchantment(new EnchantmentInstance(Enchantment::getEnchantment(Enchantment::UNBREAKING), 3));
-                    GatyaManager::addTicket($this->xuid, SQLConst::TICKETS_NORMAL, 1);
+                    GatyaManager::addTicket($this->xuid, SQLConst::TICKETS_NORMAL, 10);
                     $this->sendGift($questLevel, [$item]);
                     break;
                 case 2:
@@ -103,7 +103,7 @@ class LevelUpQuest extends QuestData
     {
         switch ($level) {
             case 1:
-                return "ガチャ券×1枚と鉄のツルハシ(耐久3)×1個";
+                return "ガチャ券×10枚と鉄のツルハシ(耐久3)×1個";
             case 2:
                 return "ガチャ券×2枚とりんご×8個";
             case 3:
