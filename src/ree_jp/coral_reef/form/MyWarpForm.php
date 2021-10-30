@@ -18,7 +18,7 @@ use Frago9876543210\EasyForms\forms\CustomForm;
 use Frago9876543210\EasyForms\forms\CustomFormResponse;
 use Frago9876543210\EasyForms\forms\MenuForm;
 use Frago9876543210\EasyForms\forms\ModalForm;
-use pocketmine\level\Position;
+use pocketmine\math\Vector3;
 use pocketmine\Player;
 use pocketmine\utils\TextFormat;
 use ree_jp\coral_reef\account\AccountManager;
@@ -46,7 +46,7 @@ class MyWarpForm
                     if (array_key_exists($button->getValue(), $rows)) {
                         $warpPoint = $rows[$button->getValue()];
                         $p->sendMessage($warpPoint['name'] . 'にワープしています...');
-                        AccountManager::teleport($p, $warpPoint['level'], new Position($warpPoint['x'], $warpPoint['y'], $warpPoint['z']));
+                        AccountManager::teleport($p, $warpPoint['level'], new Vector3($warpPoint['x'], $warpPoint['y'], $warpPoint['z']));
                     } elseif ($button->getValue() === $editValue) {
                         $p->sendForm(self::myWarpEditForm($rows, $warpButtons));
                     } else $p->sendMessage('エラーが発生しました');

@@ -17,6 +17,7 @@ use pocketmine\block\Block;
 use pocketmine\block\BlockIds;
 use pocketmine\item\Item;
 use pocketmine\level\Position;
+use pocketmine\math\Vector3;
 use pocketmine\Player;
 use pocketmine\scheduler\ClosureTask;
 use pocketmine\Server;
@@ -158,16 +159,16 @@ class AccountManager
         return $name;
     }
 
-    static function teleport(Player $p, string $levelName, Position $pos = null): void
+    static function teleport(Player $p, string $levelName, Vector3 $pos = null): void
     {
         $level = Server::getInstance()->getLevelByName($levelName);
         if (is_null($level)) {
             $p->sendMessage('ワールドが見つかりませんでした');
         } else {
             if (is_null($pos)) {
-                $pos = $level->getSpawnLocation();
+                $pos = $level->getSafeSpawn();
             } else {
-                $pos = $pos->setLevel($level);
+                $pos = Position::fromObject($pos, $level);
             }
             $p->teleport($pos);
         }
