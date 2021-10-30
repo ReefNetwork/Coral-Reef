@@ -47,9 +47,6 @@ class SkillManager
             case 'sixth': // https://en.wikipedia.org/wiki/Benares_Shoals
                 return new BreakSkill('ベナレスショールス', $skill, 15, 2, 2, 2, 13);
 
-            case 'test':
-                return new BreakSkill('てすと', $skill, 10, 9, 2, 2);
-
             default:
                 return null;
         }
