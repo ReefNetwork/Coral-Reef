@@ -5,5 +5,5 @@ author: Ree-jp
 website: https://reef.ree-jp.net/
 version: 0.0.1
 depend:
-  - EasyForms
+  - BboForm
   - StackStorage
