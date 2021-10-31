@@ -64,9 +64,18 @@ class BreakSkill
         $depthSide = intval(floor($this->depth / 2));
         if ($p->getFloorY() > $block->getFloorY()) {
             $depthCeil = ceil($this->depth / 2);
-            for ($height = 0; $height <= $this->height; ++$height) {
-                for ($width = $widthSide; $width >= -$widthSide; --$width) {
-                    for ($depth = $depthCeil; $depth >= -$depthSide; --$depth) {
+
+            for ($width = $widthSide; $width >= -$widthSide; --$width) {
+                for ($depth = $depthCeil; $depth >= -$depthSide; --$depth) {
+
+                    $checkVec = $this->getSideFromUserView($block, $direction, self::RIGHT, $width);
+                    $checkVec = $this->getSideFromUserView($checkVec, $direction, self::FORWARD, $depth);
+                    if ($p->getLevel()->getBlock($checkVec)->getId() !== BlockIds::AIR) {
+                        $p->sendPopup("上から掘ってください");
+                        continue;
+                    }
+
+                    for ($height = 0; $height <= $this->height; ++$height) {
                         if (!($height === 0 && $width === 0 && $depth === 0)) {
                             $vec = $this->getSideFromUserView($block->add(0, -$height), $direction, self::RIGHT, $width);
                             $vec = $this->getSideFromUserView($vec, $direction, self::FORWARD, $depth);
@@ -78,9 +87,23 @@ class BreakSkill
         } else {
             $isSkillHigh = ($block->getFloorY() - $p->getFloorY()) <= $this->height;
             $playerY = $p->getFloorY();
-            for ($height = 0; $height <= $this->height; ++$height) {
-                for ($width = $widthSide; $width >= -$widthSide; --$width) {
-                    for ($depth = 0; $depth <= $this->depth; ++$depth) {
+
+            for ($width = $widthSide; $width >= -$widthSide; --$width) {
+                for ($depth = 0; $depth <= $this->depth; ++$depth) {
+
+                    if ($isSkillHigh) {
+                        $checkVec = new Vector3($block->x, $this->height + $playerY, $block->z);
+                    } else {
+                        $checkVec = $block->add(0, $this->height);
+                    }
+                    $checkVec = $this->getSideFromUserView($checkVec, $direction, self::RIGHT, $width);
+                    $checkVec = $this->getSideFromUserView($checkVec, $direction, self::FORWARD, $depth);
+                    if ($p->getLevel()->getBlock($checkVec)->getId() !== BlockIds::AIR) {
+                        $p->sendPopup("上から掘ってください");
+                        continue;
+                    }
+
+                    for ($height = 0; $height <= $this->height; ++$height) {
                         if ($isSkillHigh) {
                             $baseY = intval($height + $playerY);
                             if ($baseY === $block->getFloorY() && $width === 0 && $depth === 0) continue;

@@ -92,11 +92,19 @@ class LandManager
             $p->sendPopup($message);
         } else {
             $land = self::$instance->getLand($pos);
-            if (is_null($land) || $land->xuid === $p->getXuid() || PartyForm::isParty($land->xuid, $p->getXuid())) return false;
-
-            $name = AccountManager::getUserName($land->xuid);
-            $p->sendPopup("この土地は$name によって保護されています($land->name)");
-            if ($p->isOp() && $p->isCreative()) return false;
+            if (is_null($land)) {
+                if (in_array($p->getLevel()->getFolderName(), ['main_2'])) { // 土地保護しないと掘れないワールド
+                    $p->sendPopup("このワールドは土地保護が必要です");
+                    if ($p->isOp() && $p->isCreative()) return false;
+                } else {
+                    return false;
+                }
+            } else {
+                if ($land->xuid === $p->getXuid() || PartyForm::isParty($land->xuid, $p->getXuid())) return false;
+                $name = AccountManager::getUserName($land->xuid);
+                $p->sendPopup("この土地は$name によって保護されています($land->name)");
+                if ($p->isOp() && $p->isCreative()) return false;
+            }
         }
         if (!AccountManager::hasValue($p->getXuid(), 'protect_warning')) {
             AccountManager::setValue($p->getXuid(), 'protect_warning', 10);
