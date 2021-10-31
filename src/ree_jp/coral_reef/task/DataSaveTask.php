@@ -24,7 +24,7 @@ use ree_jp\coral_reef\sql\SQLManager;
 class DataSaveTask extends Task
 {
     const SHUTDOWN = 10800;
-    const SAVE_INTERVAL = 900;
+    const SAVE_INTERVAL = 300;
     private int $timer = self::SHUTDOWN;
 
     public function onRun(int $currentTick)
