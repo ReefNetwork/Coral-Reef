@@ -25,7 +25,8 @@ use ree_jp\coral_reef\sql\SQLManager;
 class UserAccount
 {
     const LEVEL_EXPERIMENT = [
-        1 => 1, 2 => 1000, 3 => 2500, 4 => 6500, 5 => 11500, 6 => 20500, 7 => 31000, 8 => 43000, 9 => 63250
+        1 => 1, 2 => 1000, 3 => 2500, 4 => 6500, 5 => 11500, 6 => 20500, 7 => 31000, 8 => 43000, 9 => 63250, 10 => 85750,
+        11 => 135250, 12 => 189250, 13 => 247750
     ];
 
     public string $xuid;
@@ -64,7 +65,7 @@ class UserAccount
     {
         $this->experience = $xp + $this->experience;
         $this->necessaryExperience -= $xp;
-        if ($this->necessaryExperience <= 0) {
+        if ($this->necessaryExperience <= 0 && $this->necessaryExperience === -999) {
             $beforeLevel = $this->level;
             $this->setLevelAndNecessaryExperience();
 
@@ -91,6 +92,6 @@ class UserAccount
             }
         }
         $this->level = array_key_last(self::LEVEL_EXPERIMENT);
-        $this->necessaryExperience = 99999;
+        $this->necessaryExperience = -999;
     }
 }
