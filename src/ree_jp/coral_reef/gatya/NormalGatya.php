@@ -34,7 +34,7 @@ class NormalGatya
             $isLimit = true;
             for ($i = 0; $i < 100; $i++) { // 99回のガチャ履歴を調べてReefRareを引いてなかったら確定
                 $resultLog = array_pop($rows);
-                if (is_null($resultLog) || ($resultLog['subtype'] === 'ReefRare')) {
+                if (is_null($resultLog) || ($resultLog['subtype'] === 'reef_rare')) {
                     $isLimit = false;
                     break;
                 }

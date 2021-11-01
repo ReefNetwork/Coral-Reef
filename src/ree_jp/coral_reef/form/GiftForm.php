@@ -33,7 +33,7 @@ class GiftForm
             foreach ($rows as $row) {
                 $gift = GiftData::jsonDeserialize(json_decode($row["value"], true), $row["subtype"]);
                 $buttons[] = new ClosureButton(
-                    "送り主: " . AccountManager::getUserName($gift->from) . "(有効期限: " . date("y年m月d日 H時i分") .
+                    "送り主: " . AccountManager::getUserName($gift->from) . "(有効期限: " . date("y年m月d日 H時i分", $gift->expiry) .
                     ")\n" . $gift->message,
                     null,
                     function (Player $p, ClosureButton $button) use ($gift) {
@@ -47,10 +47,7 @@ class GiftForm
                 null,
                 function (Player $p, ClosureButton $button) use ($gifts) {
                     foreach ($gifts as $gift) {
-                        if (!self::receiveItems($p, $gift)) {
-                            $p->sendMessage("インベントリが満杯ため一部のアイテムが受け取れませんでした");
-                            return;
-                        }
+                        self::receiveItems($p, $gift);
                     }
                     $p->sendMessage("全てのアイテムを受け取りました");
                 }
@@ -76,7 +73,7 @@ class GiftForm
         return (new SimpleForm())
             ->setTitle("Gift -> Detail")
             ->setText("送り主: " . AccountManager::getUserName($gift->from) .
-                "\n有効期限: " . date("y年m月d日 H時i分") . "\nアイテム(受け取り済みのアイテムは灰色です): " . $itemString .
+                "\n有効期限: " . date("y年m月d日 H時i分", $gift->expiry) . "\nアイテム(受け取り済みのアイテムは灰色です): " . $itemString .
                 "\nメッセージ: " . $gift->message . TextFormat::DARK_GRAY . "\nギフトID: " . $gift->uniqueID)
             ->addElements(
                 new ClosureButton(
@@ -86,7 +83,7 @@ class GiftForm
                         if (self::receiveItems($p, $gift)) {
                             $p->sendMessage("全てのアイテムを受け取りました");
                         } else {
-                            $p->sendMessage("インベントリが満杯ため一部のアイテムが受け取れませんでした");
+                            $p->sendMessage("受け取り済みです");
                         }
                     }
                 ),
