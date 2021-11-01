@@ -86,8 +86,6 @@ class GatyaManager
                                 Server::getInstance()->getLogger()->error('[GatyaLogAdd] ' . $p->getName() . 'さんの処理中に' . $error->getErrorMessage());
                             });
                     }
-                    $p->sendMessage('チケットが足りません');
-                    return;
                 }
             }, function (SqlError $error) use ($p) {
                 $p->sendMessage('エラーが発生しました');

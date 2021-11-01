@@ -11,14 +11,13 @@
 
 namespace ree_jp\coral_reef\form;
 
+use bbo51dog\bboform\element\ClosureButton;
+use bbo51dog\bboform\element\Input;
+use bbo51dog\bboform\element\Label;
+use bbo51dog\bboform\element\Toggle;
+use bbo51dog\bboform\form\ClosureCustomForm;
+use bbo51dog\bboform\form\SimpleForm;
 use Closure;
-use Frago9876543210\EasyForms\elements\Button;
-use Frago9876543210\EasyForms\elements\Input;
-use Frago9876543210\EasyForms\elements\Label;
-use Frago9876543210\EasyForms\elements\Toggle;
-use Frago9876543210\EasyForms\forms\CustomForm;
-use Frago9876543210\EasyForms\forms\CustomFormResponse;
-use Frago9876543210\EasyForms\forms\MenuForm;
 use pocketmine\Player;
 use pocketmine\Server;
 use poggit\libasynql\SqlError;
@@ -29,43 +28,61 @@ use ree_jp\coral_reef\sql\SQLManager;
 
 class SettingForm
 {
-    static function settingForm(): MenuForm
+    static function settingForm(): SimpleForm
     {
-        return new MenuForm('Menu -> Setting', '変更したい設定を選択してください',
-            [new Button('座標の表示'), new Button('スニーク中にスキル発動'), new Button('ヒントを表示する'), new Button('水を凍らせる'),
-                new Button('地面のブロックにスキルを発動させない'), new Button('クールタイム中にブロックを掘れなくする'), new Button('ニックネーム')],
-            function (Player $p, Button $button): void {
-                switch ($button->getValue()) {
-                    case 0:
-                        self::sendBoolForm($p, '座標を表示するしますか?', '表示 / 隠す',
+        return (new SimpleForm())
+            ->setTitle("Menu -> Setting")
+            ->setText("変更したい設定を選択してください")
+            ->addElements(
+                new ClosureButton(
+                    "座標の表示",
+                    null,
+                    function (Player $p, ClosureButton $button) {
+                        self::sendBoolForm($p, '座標を表示しますか?', '隠す / 表示',
                             SettingConst::COORDINATES, function () use ($p) {
                                 $p->sendMessage('設定を保存しました');
                                 SettingManager::updateShowCoordinates($p);
                             });
-                        break;
-                    case 1:
+                    }
+                ),
+                new ClosureButton(
+                    "スニーク中にスキル発動",
+                    null,
+                    function (Player $p, ClosureButton $button) {
                         self::sendBoolForm($p, 'スニーク中はスキルを無効にしますか?', '無効にする / しない',
                             SettingConst::SNEAK_SKILL, function () use ($p) {
                                 $p->sendMessage('設定を保存しました');
                                 SettingManager::updateShowCoordinates($p);
                             });
-                        break;
-                    case 2:
+                    }
+                ),
+                new ClosureButton(
+                    "ヒントを表示する",
+                    null,
+                    function (Player $p, ClosureButton $button) {
                         self::sendBoolForm($p, 'ヒントを表示しますか?', '表示する / しない', SettingConst::HIDE_SERVER_TIP,
                             function () use ($p) {
                                 $p->sendMessage('設定を保存しました');
                                 SettingManager::updateOption($p, SettingConst::HIDE_SERVER_TIP);
                             });
-                        break;
-                    case 3:
+                    }
+                ),
+                new ClosureButton(
+                    "水を凍らせる",
+                    null,
+                    function (Player $p, ClosureButton $button) {
                         self::sendBoolForm($p, 'ブロックを掘った時に前が水だった場合、水を別のブロックに変化させますか?', '変化させる / させない',
                             SettingConst::NO_FREEZE_WATER,
                             function () use ($p) {
                                 $p->sendMessage('設定を保存しました');
                                 SettingManager::updateOption($p, SettingConst::NO_FREEZE_WATER);
                             });
-                        break;
-                    case 4:
+                    }
+                ),
+                new ClosureButton(
+                    "地面のブロックにスキルを発動させない",
+                    null,
+                    function (Player $p, ClosureButton $button) {
                         self::sendBoolForm($p, "地面のブロックを掘った場所が自分の真下を含めた周りの1ブロックではない時でも、スキルを発動させますか?\n発動させないを選んだ場合、勢いで地面を掘ってしまうことを防げます",
                             '発動させる / させない',
                             SettingConst::BREAK_UNDER_GROUND,
@@ -73,8 +90,12 @@ class SettingForm
                                 $p->sendMessage('設定を保存しました');
                                 SettingManager::updateOption($p, SettingConst::BREAK_UNDER_GROUND);
                             });
-                        break;
-                    case 5:
+                    }
+                ),
+                new ClosureButton(
+                    "クールタイム中にブロックを掘れなくする",
+                    null,
+                    function (Player $p, ClosureButton $button) {
                         self::sendBoolForm($p, "スキルのクールタイム中でもブロックを掘れるようにしますか?",
                             '掘れるようにしない / する',
                             SettingConst::ALLOW_COOL_TIME_DIG,
@@ -82,18 +103,20 @@ class SettingForm
                                 $p->sendMessage('設定を保存しました');
                                 SettingManager::updateOption($p, SettingConst::ALLOW_COOL_TIME_DIG);
                             });
-                        break;
-                    case 6:
+                    }
+                ),
+                new ClosureButton(
+                    "ニックネーム",
+                    null,
+                    function (Player $p, ClosureButton $button) {
                         self::sendInputForm($p, "ニックネームを設定できます\n無効にするにはニックネームを空白に設定してください", 'ニックネーム',
                             'せいちのかみ', SettingConst::NICK_NAME, function () use ($p) {
                                 $p->sendMessage('設定を保存しました');
                                 SettingManager::updateNickName($p);
                             });
-                        break;
-                    default:
-                        $p->sendMessage('エラーが発生しました');
-                }
-            });
+                    }
+                ),
+            );
     }
 
     static function sendBoolForm(Player $p, string $label, string $toggleMessage, string $settingType, ?Closure $func = null): void
@@ -102,20 +125,24 @@ class SettingForm
         SQLManager::$manager->getValue($xuid, SQLConst::TYPE_SETTINGS, $settingType, function (array $rows)
         use ($toggleMessage, $label, $func, $settingType, $p) {
             $row = array_shift($rows);
-            $defaultToggle = false;
-            $resultIsNull = false;
-            if (isset($row['value']) && $row['value'] === 'true') $defaultToggle = true;
-            $p->sendForm(new CustomForm('Setting -> ' . $settingType, [new Label($label), new Toggle($toggleMessage, $defaultToggle)],
-                function (Player $p, CustomFormResponse $response) use ($settingType, $func, $resultIsNull): void {
-                    $toggle = $response->getToggle();
-                    if (!($toggle->hasChanged() || $resultIsNull)) return;
+            $defaultToggle = isset($row['value']) && $row['value'] === 'true';
+            $toggle = new Toggle($toggleMessage, $defaultToggle);
+            $p->sendForm((new ClosureCustomForm(
+                function (Player $p, ClosureCustomForm $form) use ($func, $settingType, $toggle) {
                     $result = $toggle->getValue() ? 'true' : 'false';
                     SQLManager::$manager->setValue($p->getXuid(), SQLConst::TYPE_SETTINGS, $settingType, $result, $func,
                         function (SqlError $error) use ($p, $settingType) {
                             $p->sendMessage('エラーが発生しました');
                             Server::getInstance()->getLogger()->critical("[SettingSave $settingType]" . $error->getMessage());
                         });
-                }));
+                }
+            ))
+                ->setTitle('Setting -> ' . $settingType)
+                ->addElements(
+                    new Label($label),
+                    $toggle,
+                )
+            );
         });
     }
 
@@ -125,18 +152,25 @@ class SettingForm
         SQLManager::$manager->getValue($xuid, SQLConst::TYPE_SETTINGS, $settingType, function (array $rows)
         use ($p, $func, $holder, $inputMessage, $label, $settingType) {
             $row = array_shift($rows);
-            $default = "";
-            if (isset($row['value'])) $default = $row['value'];
-            $p->sendForm(new CustomForm('Setting -> ' . $settingType, [new Label($label), new Input($inputMessage, $holder, $default)],
-                function (Player $p, CustomFormResponse $response) use ($settingType, $func): void {
-                    $result = $response->getInput()->getValue();
+            $default = $row['value'] ?? "";
+            $input = new Input($inputMessage, $holder, $default);
+            $p->sendForm((new ClosureCustomForm(
+                function (Player $p, ClosureCustomForm $form) use ($func, $settingType, $input) {
+                    $result = $input->getValue();
                     if (empty($result)) $result = null;
                     SQLManager::$manager->setValue($p->getXuid(), SQLConst::TYPE_SETTINGS, $settingType, $result, $func,
                         function (SqlError $error) use ($p, $settingType) {
                             $p->sendMessage('エラーが発生しました');
                             Server::getInstance()->getLogger()->critical("[SettingSave $settingType]" . $error->getMessage());
                         });
-                }));
+                }
+            ))
+                ->setTitle('Setting -> ' . $settingType)
+                ->addElements(
+                    new Label($label),
+                    $input,
+                )
+            );
         });
     }
 }

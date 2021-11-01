@@ -11,13 +11,14 @@
 
 namespace ree_jp\coral_reef\form;
 
-use Frago9876543210\EasyForms\elements\Button;
-use Frago9876543210\EasyForms\elements\Input;
-use Frago9876543210\EasyForms\elements\Label;
-use Frago9876543210\EasyForms\forms\CustomForm;
-use Frago9876543210\EasyForms\forms\CustomFormResponse;
-use Frago9876543210\EasyForms\forms\MenuForm;
-use Frago9876543210\EasyForms\forms\ModalForm;
+use bbo51dog\bboform\element\Button;
+use bbo51dog\bboform\element\ClosureButton;
+use bbo51dog\bboform\element\Input;
+use bbo51dog\bboform\element\Label;
+use bbo51dog\bboform\form\ClosureCustomForm;
+use bbo51dog\bboform\form\CustomForm;
+use bbo51dog\bboform\form\ModalForm;
+use bbo51dog\bboform\form\SimpleForm;
 use pocketmine\math\Vector3;
 use pocketmine\Player;
 use pocketmine\utils\TextFormat;
@@ -30,59 +31,115 @@ class MyWarpForm
     {
         $xuid = $p->getXuid();
         SQLManager::$manager->getWarps($xuid, function (array $rows) use ($p) {
-            $buttons = [];
+            $form = (new SimpleForm())
+                ->setTitle("Menu -> MyWarp")
+                ->setText("自分だけのワープ地点を設定できます");
             foreach ($rows as $warpPoint) {
-                if (array_key_exists('name', $warpPoint) && array_key_exists('level', $warpPoint) && array_key_exists('x', $warpPoint)
-                    && array_key_exists('y', $warpPoint) && array_key_exists('z', $warpPoint)) {
-                    array_push($buttons, new Button($warpPoint['name'] . "\n" . $warpPoint['x'] . ':' . $warpPoint['y'] . ':' . $warpPoint['z']));
-                } else {
-                    array_push($buttons, new Button('エラーが発生しました'));
-                }
+                $form->addElement(
+                    self::createWarpButton(
+                        $warpPoint,
+                        function (Player $p, ClosureButton $button) use ($warpPoint) {
+                            $p->sendMessage($warpPoint['name'] . 'にワープしています...');
+                            AccountManager::teleport($p, $warpPoint['level'], new Vector3($warpPoint['x'], $warpPoint['y'], $warpPoint['z']));
+                        }
+                    )
+                );
             }
-            $warpButtons = $buttons;
-            $editValue = array_push($buttons, new Button('ワープ地点を 作成/削除 する')) - 1;
-            $p->sendForm(new MenuForm('Menu -> MyWarp', '自分だけのワープ地点を設定できます', $buttons,
-                function (Player $p, Button $button) use ($rows, $warpButtons, $editValue): void {
-                    if (array_key_exists($button->getValue(), $rows)) {
-                        $warpPoint = $rows[$button->getValue()];
-                        $p->sendMessage($warpPoint['name'] . 'にワープしています...');
-                        AccountManager::teleport($p, $warpPoint['level'], new Vector3($warpPoint['x'], $warpPoint['y'], $warpPoint['z']));
-                    } elseif ($button->getValue() === $editValue) {
-                        $p->sendForm(self::myWarpEditForm($rows, $warpButtons));
-                    } else $p->sendMessage('エラーが発生しました');
-                }));
+            $form->addElement(new ClosureButton(
+                "ワープ地点を 作成/削除 する",
+                null,
+                function (Player $p, ClosureButton $button) {
+                    $p->sendForm(self::myWarpEditForm($p));
+                }
+            ));
+            $p->sendForm($form);
         });
     }
 
-    static function myWarpEditForm(array $warps, array $warpButtons): MenuForm
+    static function myWarpEditForm(Player $p): SimpleForm
     {
-        $createValue = array_push($warpButtons, new Button('ワープ地点を作成する')) - 1;
-        return new MenuForm('MyWarp -> edit', 'ワープ地点を作成するか削除したいワープ地点を選択してください', $warpButtons,
-            function (Player $p, Button $button) use ($warps, $createValue): void {
-                if (array_key_exists($button->getValue(), $warps)) {
-                    $warpPoint = $warps[$button->getValue()];
-                    $p->sendForm(new ModalForm('MyWarpEdit -> delete', TextFormat::DARK_RED . $warpPoint['name'] . 'を本当に削除しますか?',
-                        function (Player $p, bool $result) use ($warpPoint): void {
-                            if ($result) {
-                                SQLManager::$manager->deleteWarp($p->getXuid(), $warpPoint['name']);
-                            } else self::sendWarpForm($p);
-                        }));
-                } elseif ($button->getValue() === $createValue) {
+        $form = (new SimpleForm())
+            ->setTitle("MyWarp -> Edit")
+            ->setText("ワープ地点を作成するか削除したいワープ地点を選択してください");
+        SQLManager::$manager->getWarps($p->getXuid(), function (array $rows) use ($p, $form) {
+            foreach ($rows as $warpPoint) {
+                $form->addElement(
+                    self::createWarpButton(
+                        $warpPoint,
+                        function (Player $p, ClosureButton $button) use ($warpPoint) {
+                            $p->sendForm(
+                                (new ModalForm(
+                                    new ClosureButton(
+                                        "はい",
+                                        null,
+                                        function (Player $p, ClosureButton $button) use ($warpPoint) {
+                                            SQLManager::$manager->deleteWarp($p->getXuid(), $warpPoint['name']);
+                                        }
+                                    ),
+                                    new ClosureButton(
+                                        "いいえ",
+                                        null,
+                                        function (Player $p, ClosureButton $button) use ($warpPoint) {
+                                            self::sendWarpForm($p);
+                                        }
+                                    )
+                                ))
+                                    ->setTitle("MyWarpEdit -> Delete")
+                                    ->setText(TextFormat::DARK_RED . $warpPoint["name"] . "を本当に削除しますか?")
+                            );
+                        }
+                    )
+                );
+            }
+        });
+        $form->addElement(
+            new ClosureButton(
+                "ワープ地点を作成する",
+                null,
+                function (Player $p, ClosureButton $button) {
                     $p->sendForm(self::myWarpCreateForm());
-                } else $p->sendMessage('エラーが発生しました');
-            });
+                }
+            )
+        );
+        return $form;
     }
 
     static function myWarpCreateForm(): CustomForm
     {
-        return new CustomForm('MyWarpEdit -> Create', [
-            new Label("現在の位置にワープ地点を作成します\n重複する名前の場合上書きされます"),
-            new Input('作成したいワープ地点の名前を入力してください', '新しいワープ地点')
-        ], function (Player $p, CustomFormResponse $result): void {
-            $input = $result->getInput()->getValue();
-            if (mb_strlen($input) < 1) {
-                $p->sendMessage('ワープ地点の名前が短すぎます');
-            } else SQLManager::$manager->addWarp($p->getXuid(), $input, $p->getLevel()->getFolderName(), $p->getFloorX(), $p->getFloorY(), $p->getFloorZ());
-        });
+        $nameInput = new Input('作成したいワープ地点の名前を入力してください', '新しいワープ地点');
+        return (new ClosureCustomForm(
+            function (Player $p, ClosureCustomForm $form) use ($nameInput) {
+                if (mb_strlen($nameInput->getValue()) < 1) {
+                    $p->sendMessage('ワープ地点の名前が短すぎます');
+                } else {
+                    SQLManager::$manager->addWarp(
+                        $p->getXuid(),
+                        $nameInput->getValue(),
+                        $p->getLevel()->getFolderName(),
+                        $p->getFloorX(), $p->getFloorY(),
+                        $p->getFloorZ()
+                    );
+                }
+            }
+        ))
+            ->setTitle("MyWarpEdit -> Create")
+            ->addElements(
+                new Label("現在の位置にワープ地点を作成します\n重複する名前の場合上書きされます"),
+                $nameInput
+            );
+    }
+
+    private static function createWarpButton(array $warpPoint, \Closure $closure): Button
+    {
+        if (array_key_exists('name', $warpPoint) && array_key_exists('level', $warpPoint) && array_key_exists('x', $warpPoint)
+            && array_key_exists('y', $warpPoint) && array_key_exists('z', $warpPoint)) {
+            return new ClosureButton(
+                $warpPoint['name'] . "\n" . $warpPoint['x'] . ':' . $warpPoint['y'] . ':' . $warpPoint['z'],
+                null,
+                $closure
+            );
+        } else {
+            return new Button("エラーが発生しました");
+        }
     }
 }

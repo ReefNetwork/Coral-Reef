@@ -11,8 +11,8 @@
 
 namespace ree_jp\coral_reef\form;
 
-use Frago9876543210\EasyForms\elements\Button;
-use Frago9876543210\EasyForms\forms\MenuForm;
+use bbo51dog\bboform\element\ClosureButton;
+use bbo51dog\bboform\form\SimpleForm;
 use pocketmine\Player;
 use pocketmine\utils\TextFormat;
 use poggit\libasynql\SqlError;
@@ -26,61 +26,81 @@ class GiftForm
     static function sendGiftForm(Player $p): void
     {
         SQLManager::$manager->getAllSubtypeValue($p->getXuid(), SQLConst::TYPE_GIFT, function (array $rows) use ($p): void {
+            /** @var GiftData[] $gifts */
             $gifts = [];
+            /** @var ClosureButton[] $buttons */
             $buttons = [];
             foreach ($rows as $row) {
                 $gift = GiftData::jsonDeserialize(json_decode($row["value"], true), $row["subtype"]);
-                $buttons[] = new Button("送り主: " . AccountManager::getUserName($gift->from) . "(有効期限: " . date("y年m月d日 H時i分") .
-                    ")\n" . $gift->message);
+                $buttons[] = new ClosureButton(
+                    "送り主: " . AccountManager::getUserName($gift->from) . "(有効期限: " . date("y年m月d日 H時i分") .
+                    ")\n" . $gift->message,
+                    null,
+                    function (Player $p, ClosureButton $button) use ($gift) {
+                        $p->sendForm(self::giftDetailForm($gift));
+                    }
+                );
                 $gifts[] = $gift;
             }
-            $allReceive = array_push($buttons, new Button("受け取れるすべてのアイテムを受け取る"));
-            $p->sendForm(new MenuForm("Menu -> Gift", "受け取れるプレゼント一覧です", $buttons,
-                function (Player $p, Button $button) use ($allReceive, $gifts): void {
-                    if (isset($gifts[$button->getValue()])) {
-                        $gift = $gifts[$button->getValue()];
-                        $p->sendForm(self::giftDetailForm($gift));
-                    } elseif ($button->getValue() === $allReceive) {
-                        foreach ($gifts as $gift) {
-                            if (!self::receiveItems($p, $gift)) {
-                                $p->sendMessage("インベントリが満杯ため一部のアイテムが受け取れませんでした");
-                                return;
-                            }
+            $allReceiveButton = new ClosureButton(
+                "受け取れるすべてのアイテムを受け取る",
+                null,
+                function (Player $p, ClosureButton $button) use ($gifts) {
+                    foreach ($gifts as $gift) {
+                        if (!self::receiveItems($p, $gift)) {
+                            $p->sendMessage("インベントリが満杯ため一部のアイテムが受け取れませんでした");
+                            return;
                         }
-                        $p->sendMessage("全てのアイテムを受け取りました");
-                    } else {
-                        $p->sendMessage("エラーが発生しました");
                     }
-                }));
+                    $p->sendMessage("全てのアイテムを受け取りました");
+                }
+            );
+            $form = (new SimpleForm())
+                ->setTitle("Menu -> Gift")
+                ->setText("受け取れるプレゼント一覧です")
+                ->addElements(...$buttons)
+                ->addElement($allReceiveButton);
+            $p->sendForm($form);
         }, function (SqlError $error) use ($p): void {
             $p->sendMessage("エラーが発生しました");
         });
     }
 
-    static function giftDetailForm(GiftData $gift): MenuForm
+    static function giftDetailForm(GiftData $gift): SimpleForm
     {
         $itemString = "\n";
         foreach ($gift->getItems() as $item) {
             $color = $gift->isMarkReceived($item) ? TextFormat::DARK_GRAY : TextFormat::GREEN; // 受け取り済みは灰色
             $itemString = $itemString . $color . $item->getName() . "(" . $item->getCount() . "個)" . TextFormat::RESET . "\n";
         }
-        return new MenuForm("Gift -> Detail", "送り主: " . AccountManager::getUserName($gift->from) .
-            "\n有効期限: " . date("y年m月d日 H時i分") . "\nアイテム(受け取り済みのアイテムは灰色です): " . $itemString .
-            "\nメッセージ: " . $gift->message . TextFormat::DARK_GRAY . "\nギフトID: " . $gift->uniqueID,
-            [new Button("アイテムを受け取る"), new Button("戻る"), new Button("ギフトを削除する")],
-            function (Player $p, Button $button) use ($gift): void {
-                switch ($button->getValue()) {
-                    case 0:
+        return (new SimpleForm())
+            ->setTitle("Gift -> Detail")
+            ->setText("送り主: " . AccountManager::getUserName($gift->from) .
+                "\n有効期限: " . date("y年m月d日 H時i分") . "\nアイテム(受け取り済みのアイテムは灰色です): " . $itemString .
+                "\nメッセージ: " . $gift->message . TextFormat::DARK_GRAY . "\nギフトID: " . $gift->uniqueID)
+            ->addElements(
+                new ClosureButton(
+                    "アイテムを受け取る",
+                    null,
+                    function (Player $p, ClosureButton $button) use ($gift) {
                         if (self::receiveItems($p, $gift)) {
                             $p->sendMessage("全てのアイテムを受け取りました");
                         } else {
                             $p->sendMessage("インベントリが満杯ため一部のアイテムが受け取れませんでした");
                         }
-                        break;
-                    case 1:
+                    }
+                ),
+                new ClosureButton(
+                    "戻る",
+                    null,
+                    function (Player $p, ClosureButton $button) {
                         self::sendGiftForm($p);
-                        break;
-                    case 2:
+                    }
+                ),
+                new ClosureButton(
+                    "ギフトを削除する",
+                    null,
+                    function (Player $p, ClosureButton $button) use ($gift) {
                         if (is_null($gift->uniqueID)) {
                             $p->sendMessage("ギフトIDが不明なため削除出来ませんでした");
                             return;
@@ -90,11 +110,9 @@ class GiftForm
                         }, function (SqlError $error) use ($p): void {
                             $p->sendMessage("エラーが発生しました");
                         });
-                        break;
-                    default:
-                        $p->sendMessage("エラーが発生しました");
-                }
-            });
+                    }
+                ),
+            );
     }
 
     static private function receiveItems(Player $p, GiftData $gift): bool

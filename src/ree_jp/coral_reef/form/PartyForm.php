@@ -11,13 +11,13 @@
 
 namespace ree_jp\coral_reef\form;
 
-use Frago9876543210\EasyForms\elements\Button;
-use Frago9876543210\EasyForms\elements\Input;
-use Frago9876543210\EasyForms\elements\Label;
-use Frago9876543210\EasyForms\forms\CustomForm;
-use Frago9876543210\EasyForms\forms\CustomFormResponse;
-use Frago9876543210\EasyForms\forms\MenuForm;
-use Frago9876543210\EasyForms\forms\ModalForm;
+use bbo51dog\bboform\element\ClosureButton;
+use bbo51dog\bboform\element\Input;
+use bbo51dog\bboform\element\Label;
+use bbo51dog\bboform\form\ClosureCustomForm;
+use bbo51dog\bboform\form\CustomForm;
+use bbo51dog\bboform\form\ModalForm;
+use bbo51dog\bboform\form\SimpleForm;
 use pocketmine\Player;
 use pocketmine\Server;
 use ree_jp\coral_reef\account\AccountManager;
@@ -26,38 +26,60 @@ class PartyForm
 {
     static array $members = [];
 
-    static function partyForm(string $xuid): MenuForm
+    static function partyForm(string $xuid): SimpleForm
     {
         $buttons = [];
         $members = [];
-
+        $form = (new SimpleForm())
+            ->setTitle("Menu -> Party")
+            ->setText("パーティーメンバーを追加するか削除したいメンバーを選択してください");
         if (isset(self::$members[$xuid])) {
             $members = self::$members[$xuid];
             foreach ($members as $member) {
-                $button = new Button(AccountManager::getUserName($member));
-                array_push($buttons, $button);
+                $name = AccountManager::getUserName($member);
+                $form->addElement(
+                    new ClosureButton(
+                        $name,
+                        null,
+                        function (Player $p, ClosureButton $button) use ($name, $member) {
+                            $p->sendForm(
+                                (new ModalForm(
+                                    new ClosureButton(
+                                        "はい",
+                                        null,
+                                        function (Player $p, ClosureButton $button) use ($name, $member) {
+                                            if (self::isParty($p->getXuid(), $member)) {
+                                                array_splice(self::$members[$p->getXuid()], $member);
+                                                $p->sendMessage($name . 'さんをパーティーから削除しました');
+                                            } else $p->sendMessage('エラーが発生しました');
+                                        }
+                                    ),
+                                    new ClosureButton(
+                                        "いいえ",
+                                        null,
+                                        function (Player $p, ClosureButton $button) {
+                                            $p->sendForm(self::partyForm($p->getXuid()));
+                                        }
+                                    )
+                                ))
+                                    ->setTitle("Party -> Delete")
+                                    ->setText("本当に$name さんをパーティーから削除しますか?\nいつでもパーティーに再参加させることができます")
+                            );
+                        }
+                    )
+                );
             }
         }
-        $createValue = array_push($buttons, new Button('メンバーを追加する')) - 1;
-        return new MenuForm('Menu -> Party', 'パーティーメンバーを追加するか削除したいメンバーを選択してください', $buttons,
-            function (Player $p, Button $button) use ($members, $createValue): void {
-                if (isset($members[$button->getValue()])) {
-                    $member = $members[$button->getValue()];
-                    $name = AccountManager::getUserName($member);
-                    $p->sendForm(new ModalForm('Party -> Delete', "本当に$name さんをパーティーから削除しますか?\nいつでもパーティーに再参加させることができます",
-                        function (Player $p, bool $result) use ($member, $name): void {
-                            $xuid = $p->getXuid();
-                            if ($result) {
-                                if (self::isParty($xuid, $member)) {
-                                    array_splice(self::$members[$xuid], $member);
-                                    $p->sendMessage($name . 'さんをパーティーから削除しました');
-                                } else $p->sendMessage('エラーが発生しました');
-                            } else $p->sendForm(self::partyForm($xuid));
-                        }));
-                } elseif ($button->getValue() === $createValue) {
-                    $p->sendForm(self::partyAddForm());
-                } else $p->sendMessage('エラーが発生しました');
-            });
+        $form->addElement(
+            new ClosureButton(
+                "メンバーを追加する",
+                null,
+                function (Player $p, ClosureButton $button) {
+                    $p->sendForm(self::partyAddForm($p->getXuid()));
+                }
+            )
+        );
+        return $form;
     }
 
     static function isParty(string $party, string $xuid): bool
@@ -67,24 +89,46 @@ class PartyForm
 
     static function partyAddForm(): CustomForm
     {
-        return new CustomForm('Party -> Add', [
-            new Label("パーティーメンバーを追加します"),
-            new Input('追加したメンバーの名前を入力してください', '名前')
-        ], function (Player $p, CustomFormResponse $result): void {
-            $input = mb_strtolower($result->getInput()->getValue());
-            $member = Server::getInstance()->getPlayer($input);
-            if ($member instanceof Player) {
-                $p->sendForm(new ModalForm('PartyAdd -> Confirm', $member->getName() . 'さんをパーティーに追加しますか?',
-                    function (Player $p, bool $result) use ($member): void {
-                        if ($result) {
-                            self::$members[$p->getXuid()][] = $member->getXuid();
-                            $p->sendMessage($member->getName() . 'さんをパーティーに追加しました');
-                            $member->sendMessage($p->getName() . 'さんのパーティーに追加されました');
-                        } else $p->sendForm(self::partyAddForm());
-                    }));
-            } else {
-                $p->sendMessage($input . "さんはサーバーにいないためパーティーに追加出来ませんでした");
+        $memberNameInput = new Input('追加したいメンバーの名前を入力してください', '名前');
+        return (new ClosureCustomForm(
+            function (Player $p, ClosureCustomForm $form) use ($memberNameInput) {
+                $member = Server::getInstance()->getPlayer($memberNameInput->getValue());
+                if ($member instanceof Player) {
+                    if ($member->getName() === $p->getName()) {
+                        $p->sendMessage("パーティーに自分を追加することはできません");
+                    } else {
+                        $confirm = (new ModalForm(
+                            new ClosureButton(
+                                "はい",
+                                null,
+                                function (Player $p, ClosureButton $button) use ($member) {
+                                    self::$members[$p->getXuid()][] = $member->getXuid();
+                                    $p->sendMessage($member->getName() . 'さんをパーティーに追加しました');
+                                    $member->sendMessage($p->getName() . 'さんのパーティーに追加されました');
+                                }
+                            ),
+                            new ClosureButton(
+                                "いいえ",
+                                null,
+                                function (Player $p, ClosureButton $button) use ($member) {
+                                    $p->sendForm(self::partyAddForm());
+                                }
+                            )
+                        ))
+                            ->setTitle("PartyAdd -> Confirm")
+                            ->setText($member->getName() . "さんをパーティーに追加しますか?");
+                        $p->sendForm($confirm);
+                    }
+
+                } else {
+                    $p->sendMessage($memberNameInput->getValue() . "さんはサーバーにいないためパーティーに追加出来ませんでした");
+                }
             }
-        });
+        ))
+            ->setTitle("Party -> Add")
+            ->addElements(
+                new Label("パーティーメンバーを追加します"),
+                $memberNameInput
+            );
     }
 }

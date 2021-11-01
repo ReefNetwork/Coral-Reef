@@ -11,59 +11,68 @@
 
 namespace ree_jp\coral_reef\form;
 
-use Frago9876543210\EasyForms\elements\Button;
-use Frago9876543210\EasyForms\forms\MenuForm;
+use bbo51dog\bboform\element\ClosureButton;
+use bbo51dog\bboform\form\SimpleForm;
 use pocketmine\Player;
 use ree_jp\coral_reef\quest\data\QuestData;
 use ree_jp\coral_reef\quest\QuestManager;
 
 class QuestForm
 {
-    static function questForm(Player $p): MenuForm
+    static function questForm(Player $p): SimpleForm
     {
-        $buttons = [];
-        $nowQuest = [];
-        $finishQuest = [];
+        $form = (new SimpleForm())
+            ->setTitle("Menu -> Quest")
+            ->setText("クエスト一覧です\進行状況を確認できます");
+        $finishedForm = (new SimpleForm())
+            ->setTitle("Quest -> Finished")
+            ->setText("終了したクエスト一覧です");
         foreach (QuestManager::getUserQuests($p->getXuid()) as $quest) {
             if (!$quest instanceof QuestData) continue;
             if ($quest->isComplete() || $quest->isExpired()) {
-                $finishQuest[] = $quest;
+                $finishedForm->addElement(new ClosureButton(
+                    $quest::NAME . "\n" . $quest::SHORT_DETAILS,
+                    null,
+                    function (Player $p, ClosureButton $button) use ($quest) {
+                        $p->sendForm(self::questDetail($quest));
+                    }
+                ));
             } else {
-                $buttons[] = new Button($quest::NAME . "\n" . $quest::SHORT_DETAILS);
-                $nowQuest[] = $quest;
+                $form->addElement(new ClosureButton(
+                    $quest::NAME . "\n" . $quest::SHORT_DETAILS,
+                    null,
+                    function (Player $p, ClosureButton $button) use ($quest) {
+                        if (!$quest instanceof QuestData) {
+                            $p->sendMessage("エラーが発生しました");
+                        }
+                        $p->sendForm(self::questDetail($quest));
+                    }
+                ));
             }
         }
-        $buttons[] = new Button("過去のクエスト一覧");
-        return new MenuForm("Menu -> Quest", "クエスト一覧です\進行状況を確認できます", $buttons,
-            function (Player $p, Button $button) use ($finishQuest, $nowQuest): void {
-                if (isset($nowQuest[$button->getValue()])) {
-                    $quest = $nowQuest[$button->getValue()];
-                    if (!$quest instanceof QuestData) {
-                        $p->sendMessage("エラーが発生しました");
-                    }
-                    $p->sendForm(self::questDetail($quest));
-                } else {
-                    $buttons = [];
-                    foreach ($finishQuest as $quest) {
-                        $buttons[] = new Button($quest::NAME . "\n" . $quest::SHORT_DETAILS);
-                    }
-                    $p->sendForm(new MenuForm("Quest -> Finished", "終了したクエスト一覧です", $buttons,
-                        function (Player $p, Button $button) use ($finishQuest, $nowQuest): void {
-                            if (isset($nowQuest[$button->getValue()])) {
-                                $quest = $nowQuest[$button->getValue()];
-                                if (!$quest instanceof QuestData) {
-                                    $p->sendMessage("エラーが発生しました");
-                                }
-                                $p->sendForm(self::questDetail($quest));
-                            } else $p->sendMessage("エラーが発生しました");
-                        }));
-                }
-            });
+        $form->addElement(new ClosureButton(
+            "過去のクエスト一覧",
+            null,
+            function (Player $p, ClosureButton $button) use ($finishedForm) {
+                $p->sendForm($finishedForm);
+            }
+        ));
+        return $form;
     }
 
-    private static function questDetail(QuestData $quest): MenuForm // クエストの詳細を表示する
+    private static function questDetail(QuestData $quest): SimpleForm // クエストの詳細を表示する
     {
-        return new MenuForm("Quest : " . $quest::NAME, "クエスト詳細: " . $quest::EXPLANATION . "\n報酬: " . $quest->getRewardDetails()
-            . "\n期限: " . "");
+        return (new SimpleForm())
+            ->setTitle("Quest : " . $quest::NAME)
+            ->setText("クエスト詳細: " . $quest::EXPLANATION . "\n報酬: " . $quest->getRewardDetails() . "\n期限: " . "")
+            ->addElement(
+                new ClosureButton(
+                    "戻る",
+                    null,
+                    function (Player $p, ClosureButton $button) {
+                        $p->sendForm(self::questForm($p));
+                    }
+                )
+            );
     }
 }
