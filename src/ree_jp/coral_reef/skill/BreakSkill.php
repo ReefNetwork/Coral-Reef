@@ -92,7 +92,7 @@ class BreakSkill
                 for ($depth = 0; $depth <= $this->depth; ++$depth) {
 
                     if ($isSkillHigh) {
-                        $checkVec = new Vector3($block->x, $this->height + $playerY, $block->z);
+                        $checkVec = new Vector3($block->x, $this->height + $playerY + 1, $block->z);
                     } else {
                         $checkVec = $block->add(0, $this->height + 1);
                     }
