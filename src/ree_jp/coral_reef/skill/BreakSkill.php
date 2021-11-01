@@ -68,7 +68,7 @@ class BreakSkill
             for ($width = $widthSide; $width >= -$widthSide; --$width) {
                 for ($depth = $depthCeil; $depth >= -$depthSide; --$depth) {
 
-                    $checkVec = $this->getSideFromUserView($block, $direction, self::RIGHT, $width);
+                    $checkVec = $this->getSideFromUserView($block->add(0, 1), $direction, self::RIGHT, $width);
                     $checkVec = $this->getSideFromUserView($checkVec, $direction, self::FORWARD, $depth);
                     if ($p->getLevel()->getBlock($checkVec)->getId() !== BlockIds::AIR) {
                         $p->sendPopup("上から掘ってください");
@@ -94,7 +94,7 @@ class BreakSkill
                     if ($isSkillHigh) {
                         $checkVec = new Vector3($block->x, $this->height + $playerY, $block->z);
                     } else {
-                        $checkVec = $block->add(0, $this->height);
+                        $checkVec = $block->add(0, $this->height + 1);
                     }
                     $checkVec = $this->getSideFromUserView($checkVec, $direction, self::RIGHT, $width);
                     $checkVec = $this->getSideFromUserView($checkVec, $direction, self::FORWARD, $depth);

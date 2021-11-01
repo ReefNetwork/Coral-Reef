@@ -18,6 +18,7 @@ use pocketmine\block\BlockIds;
 use pocketmine\math\Vector3;
 use pocketmine\Player;
 use pocketmine\Server;
+use pocketmine\utils\TextFormat;
 use ree_jp\coral_reef\account\AccountManager;
 use ree_jp\coral_reef\sql\SQLManager;
 
@@ -49,6 +50,7 @@ class FormManager
                 switch ($button->getValue()) {
                     case 0:
                         Server::getInstance()->dispatchCommand($p, 'stackstorage');
+                        $p->sendMessage(TextFormat::DARK_GRAY . "ストレージを開いています(数秒かかることがあります)");
                         break;
                     case 1:
                         if (AccountManager::hasValue($xuid, 'fly')) {
