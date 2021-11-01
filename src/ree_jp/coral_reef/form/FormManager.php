@@ -19,6 +19,7 @@ use pocketmine\block\BlockIds;
 use pocketmine\math\Vector3;
 use pocketmine\Player;
 use pocketmine\Server;
+use pocketmine\utils\TextFormat;
 use ree_jp\coral_reef\account\AccountManager;
 use ree_jp\coral_reef\sql\SQLManager;
 
@@ -50,6 +51,7 @@ class FormManager
                     null,
                     function (Player $p, ClosureButton $button) {
                         Server::getInstance()->dispatchCommand($p, 'stackstorage');
+                        $p->sendMessage(TextFormat::DARK_GRAY . "ストレージを開いています(数秒かかることがあります)");
                     }
                 ),
                 new ClosureButton(
