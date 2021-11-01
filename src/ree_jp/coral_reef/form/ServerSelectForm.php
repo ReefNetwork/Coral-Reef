@@ -11,8 +11,8 @@
 
 namespace ree_jp\coral_reef\form;
 
-use Frago9876543210\EasyForms\elements\Button;
-use Frago9876543210\EasyForms\forms\MenuForm;
+use bbo51dog\bboform\element\ClosureButton;
+use bbo51dog\bboform\form\SimpleForm;
 use pocketmine\Player;
 use ree_jp\coral_reef\proxy\ProxyManager;
 
@@ -22,12 +22,18 @@ class ServerSelectForm
 
     static function sendServerSelectForm(Player $p): void
     {
-        $buttons = [];
+        $form = (new SimpleForm())
+            ->setTitle("Menu -> Server")
+            ->setText("サーバーを移動できます");
         foreach (self::SERVERS as $server) {
-            $buttons[] = new Button($server);
+            $form->addElement(new ClosureButton(
+                $server,
+                null,
+                function (Player $p, ClosureButton $button) use ($server) {
+                    ProxyManager::transferServerWithSave($p, $server);
+                }
+            ));
         }
-        $p->sendForm(new MenuForm('Menu -> Server', 'サーバーを移動できます', $buttons, function (Player $p, Button $button): void {
-            ProxyManager::transferServerWithSave($p, $button->getText());
-        }));
+        $p->sendForm($form);
     }
 }

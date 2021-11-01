@@ -13,7 +13,8 @@
     "ext-yaml": "*",
     "ext-json": "*",
     "pocketmine/pocketmine-mp": "3.*",
-    "bbo51dog/bboform": "1.2.1"
+    "bbo51dog/bboform": "1.2.1",
+    "ext-mbstring": "*"
   },
   "repositories": [
     {

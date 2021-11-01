@@ -11,9 +11,10 @@
 
 namespace ree_jp\coral_reef\form;
 
-use Frago9876543210\EasyForms\elements\Button;
-use Frago9876543210\EasyForms\forms\MenuForm;
-use Frago9876543210\EasyForms\forms\ModalForm;
+use bbo51dog\bboform\element\Button;
+use bbo51dog\bboform\element\ClosureButton;
+use bbo51dog\bboform\form\ModalForm;
+use bbo51dog\bboform\form\SimpleForm;
 use pocketmine\block\BlockIds;
 use pocketmine\math\Vector3;
 use pocketmine\Player;
@@ -40,17 +41,21 @@ class FormManager
         } else {
             $fly_status = '有効';
         }
-        $p->sendForm(new MenuForm('ReefServer Menu', "レベル : $level\nレベルアップまで : $necessaryExperience\n経験値 : $exp",
-            [new Button('ストレージ'), new Button("飛行を$fly_status にする"), new Button('ワープ地点'), new Button('ワールド移動'),
-                new Button('サーバー移動'), new Button('スキル設定'), new Button('パーティー'), new Button('土地保護'),
-                new Button("クエスト"), new Button('ガチャ'), new Button("ギフト"), new Button('ランダムワープ'), new Button('設定')],
-            function (Player $p, Button $button): void {
-                $xuid = $p->getXuid();
-                switch ($button->getValue()) {
-                    case 0:
+        $form = (new SimpleForm())
+            ->setTitle("ReefServer Menu")
+            ->setText("レベル : $level\nレベルアップまで : $necessaryExperience\n経験値 : $exp")
+            ->addElements(
+                new ClosureButton(
+                    "ストレージ",
+                    null,
+                    function (Player $p, ClosureButton $button) {
                         Server::getInstance()->dispatchCommand($p, 'stackstorage');
-                        break;
-                    case 1:
+                    }
+                ),
+                new ClosureButton(
+                    "飛行を$fly_status にする",
+                    null,
+                    function (Player $p, ClosureButton $button) use ($xuid) {
                         if (AccountManager::hasValue($xuid, 'fly')) {
                             AccountManager::setValue($xuid, 'fly', 0);
                             $p->setFlying(false);
@@ -66,94 +71,167 @@ class FormManager
                             $p->setFlying(true);
                             $p->sendMessage('飛行を有効にしました');
                         }
-                        break;
-                    case 2:
+                    }
+                ),
+                new ClosureButton(
+                    "ワープ地点",
+                    null,
+                    function (Player $p, ClosureButton $button) {
                         MyWarpForm::sendWarpForm($p);
-                        break;
-                    case 3:
+                    }
+                ),
+                new ClosureButton(
+                    "ワールド移動",
+                    null,
+                    function (Player $p, ClosureButton $button) {
                         $p->sendForm(self::worldTeleportForm());
-                        break;
-                    case 4:
+                    }
+                ),
+                new ClosureButton(
+                    "サーバー移動",
+                    null,
+                    function (Player $p, ClosureButton $button) {
                         ServerSelectForm::sendServerSelectForm($p);
-                        break;
-                    case 5:
+                    }
+                ),
+                new ClosureButton(
+                    "スキル設定",
+                    null,
+                    function (Player $p, ClosureButton $button) use ($xuid) {
                         $p->sendForm(SkillSelectForm::SkillSelectForm($xuid));
-                        break;
-                    case 6:
+                    }
+                ),
+                new ClosureButton(
+                    "パーティー",
+                    null,
+                    function (Player $p, ClosureButton $button) use ($xuid) {
                         $p->sendForm(PartyForm::partyForm($xuid));
-                        break;
-                    case 7:
+                    }
+                ),
+                new ClosureButton(
+                    "土地保護",
+                    null,
+                    function (Player $p, ClosureButton $button) use ($xuid) {
                         $p->sendForm(LandForm::landForm($xuid));
-                        break;
-                    case 8:
+                    }
+                ),
+                new ClosureButton(
+                    "クエスト",
+                    null,
+                    function (Player $p, ClosureButton $button) {
                         $p->sendForm(QuestForm::questForm($p));
-                        break;
-                    case 9:
+                    }
+                ),
+                new ClosureButton(
+                    "ガチャ",
+                    null,
+                    function (Player $p, ClosureButton $button) {
                         GatyaForm::sendGatyaForm($p);
-                        break;
-                    case 10:
+                    }
+                ),
+                new ClosureButton(
+                    "ギフト",
+                    null,
+                    function (Player $p, ClosureButton $button) {
                         GiftForm::sendGiftForm($p);
-                        break;
-                    case 11:
-                        $p->sendForm(new ModalForm('Menu -> RandomWarp', "ランダムな場所にワープしますか?\n" .
-                            "※同じ場所にもう一度ランダムワープすることはできません。ランダムワープ後はワープ地点を設定することをおすすめします。",
-                            function (Player $p, bool $result): void {
-                                if ($result) {
-                                    if (AccountManager::hasValue($p->getXuid(), "random_warp_cool_time")) { // 30秒のクールタイム
-                                        $p->sendMessage("連続で使用するには30秒お待ちください");
-                                        return;
-                                    }
-                                    AccountManager::setValue($p->getXuid(), "random_warp_cool_time", 20 * 30);
-                                    $p->sendMessage("ランダムな場所にワープしています\nワールドの読み込みに時間がかかる場合があります");
-                                    $vec = new Vector3(mt_rand(-10000, 10000), 100, mt_rand(-10000, 10000));
-                                    if ($p->getLevelNonNull()->getBlockIdAt($vec->x, $vec->y, $vec->z) === BlockIds::AIR) { // 地面にワープ出来るように調整
-                                        while ($p->getLevelNonNull()->getBlockIdAt($vec->x, $vec->y, $vec->z) !== BlockIds::AIR && $vec->y > 0) {
-                                            $vec = $vec->subtract(0, 1);
-                                        }
-                                        $vec = $vec->add(0, 1);
-                                    } else {
-                                        while ($p->getLevelNonNull()->getBlockIdAt($vec->x, $vec->y, $vec->z) === BlockIds::AIR && $vec->y < 300) {
-                                            $vec = $vec->add(0, 1);
-                                        }
-                                    }
-                                    $p->teleport($vec);
-                                } else FormManager::sendMenu($p);
-                            }));
-                        break;
-                    case 12:
+                    }
+                ),
+                new ClosureButton(
+                    "ランダムワープ",
+                    null,
+                    function (Player $p, ClosureButton $button) {
+                        $p->sendForm(self::randomWarpModalForm());
+                    }
+                ),
+                new ClosureButton(
+                    "設定",
+                    null,
+                    function (Player $p, ClosureButton $button) {
                         $p->sendForm(SettingForm::settingForm());
-                        break;
-                    default:
-                        $p->sendMessage('ページを開けませんでした');
-                }
-            }));
+                    }
+                ),
+
+            );
+        $p->sendForm($form);
     }
 
-    static function worldTeleportForm(): MenuForm
+    static function worldTeleportForm(): SimpleForm
     {
-        return new MenuForm('Menu -> World', '移動するワールドを選択してください', [new Button('ロビー'), new Button('整地ワールド1'),
-            new Button("整地ワールド2")],
-            function (Player $p, Button $button): void {
-                switch ($button->getValue()) {
-                    case 0:
+        return (new SimpleForm())
+            ->setTitle("Menu -> World")
+            ->setText("移動するワールドを選択してください")
+            ->addElements(
+                new ClosureButton(
+                    "ロビー",
+                    null,
+                    function (Player $p, ClosureButton $button) {
                         AccountManager::teleport($p, 'lobby');
-                        break;
-                    case 1:
+                    }
+                ),
+                new ClosureButton(
+                    "整地ワールド1",
+                    null,
+                    function (Player $p, ClosureButton $button) {
                         AccountManager::teleport($p, 'main_1');
-                        break;
-                    case 2:
+                    }
+                ),
+                new ClosureButton(
+                    "整地ワールド2",
+                    null,
+                    function (Player $p, ClosureButton $button) {
                         AccountManager::teleport($p, 'main_2');
-                        break;
-                    default:
-                        $p->sendMessage('エラーが発生しました');
-                }
-            });
+                    }
+                ),
+            );
     }
 
 
     static function messageForm(string $label): ModalForm
     {
-        return new ModalForm('メッセージ', $label, function (): void {
-        }, 'ok', 'ok');
+        return (new ModalForm(
+            new Button("ok"),
+            new Button("ok")
+        ))
+            ->setTitle("メッセージ")
+            ->setText($label);
+    }
+
+    private static function randomWarpModalForm(): ModalForm
+    {
+        return (new ModalForm(
+            new ClosureButton(
+                "はい",
+                null,
+                function (Player $p, ClosureButton $button) {
+                    if (AccountManager::hasValue($p->getXuid(), "random_warp_cool_time")) { // 30秒のクールタイム
+                        $p->sendMessage("連続で使用するには30秒お待ちください");
+                        return;
+                    }
+                    AccountManager::setValue($p->getXuid(), "random_warp_cool_time", 20 * 30);
+                    $p->sendMessage("ランダムな場所にワープしています\nワールドの読み込みに時間がかかる場合があります");
+                    $vec = new Vector3(mt_rand(-10000, 10000), 100, mt_rand(-10000, 10000));
+                    if ($p->getLevelNonNull()->getBlockIdAt($vec->x, $vec->y, $vec->z) === BlockIds::AIR) { // 地面にワープ出来るように調整
+                        while ($p->getLevelNonNull()->getBlockIdAt($vec->x, $vec->y, $vec->z) !== BlockIds::AIR && $vec->y > 0) {
+                            $vec = $vec->subtract(0, 1);
+                        }
+                        $vec = $vec->add(0, 1);
+                    } else {
+                        while ($p->getLevelNonNull()->getBlockIdAt($vec->x, $vec->y, $vec->z) === BlockIds::AIR && $vec->y < 300) {
+                            $vec = $vec->add(0, 1);
+                        }
+                    }
+                    $p->teleport($vec);
+                }
+            ),
+            new ClosureButton(
+                "いいえ",
+                null,
+                function (Player $p, ClosureButton $button) {
+                    FormManager::sendMenu($p);
+                }
+            )
+        ))
+            ->setTitle("Menu -> RandomWarp")
+            ->setText("※同じ場所にもう一度ランダムワープすることはできません。ランダムワープ後はワープ地点を設定することをおすすめします。");
     }
 }

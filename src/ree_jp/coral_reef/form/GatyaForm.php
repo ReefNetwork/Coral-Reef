@@ -11,9 +11,9 @@
 
 namespace ree_jp\coral_reef\form;
 
-use Frago9876543210\EasyForms\elements\Button;
-use Frago9876543210\EasyForms\forms\MenuForm;
-use Frago9876543210\EasyForms\forms\ModalForm;
+use bbo51dog\bboform\element\ClosureButton;
+use bbo51dog\bboform\form\ModalForm;
+use bbo51dog\bboform\form\SimpleForm;
 use pocketmine\Player;
 use ree_jp\coral_reef\gatya\NormalGatya;
 use ree_jp\coral_reef\sql\SQLConst;
@@ -28,38 +28,55 @@ class GatyaForm
             foreach ($rows as $row) {
                 if ($row['subtype'] === SQLConst::TICKETS_NORMAL && isset($row['value'])) $normal = $row['value'];
             }
-            $p->sendForm(new MenuForm('Menu -> Gatya', "ノーマルガチャチケット: $normal 個", [new Button('ノーマルガチャ'),
-                new Button('ノーマルガチャ 10連続')],
-                function (Player $p, Button $button) use ($normal): void {
-                    switch ($button->getValue()) {
-                        case 0:
-                            $after = $normal - 1;
-                            $p->sendForm(new ModalForm('NormalGatya -> Confirm',
-                                "ノーマルガチャチケットを1個消費してノーマルガチャを回しますか？\n$normal -> $after",
-                                function (Player $p, bool $result) use ($normal): void {
-                                    if ($result) {
-                                        if ($normal >= 1) {
-                                            NormalGatya::gatya($p);
-                                        } else $p->sendMessage('チケットが足りません');
-                                    } else self::sendGatyaForm($p);
-                                }));
-                            break;
-                        case 1:
-                            $after = $normal - 10;
-                            $p->sendForm(new ModalForm('NormalGatya -> Confirm',
-                                "ノーマルガチャチケットを10個消費してノーマルガチャを回しますか？\n$normal -> $after",
-                                function (Player $p, bool $result) use ($normal): void {
-                                    if ($result) {
-                                        if ($normal >= 10) {
-                                            NormalGatya::gatya($p, 10);
-                                        } else $p->sendMessage('チケットが足りません');
-                                    } else self::sendGatyaForm($p);
-                                }));
-                            break;
-                        default:
-                            $p->sendMessage('エラーが発生しました');
-                    }
-                }));
+            $form = (new SimpleForm())
+                ->setTitle("Menu -> Gatya")
+                ->setText("ノーマルガチャチケット: $normal 個")
+                ->addElements(
+                    new ClosureButton(
+                        "ノーマルガチャ",
+                        null,
+                        function (Player $p, ClosureButton $button) use ($normal) {
+                            self::sendGatyaConfirmForm($p, 1, $normal);
+                        }
+                    ),
+                    new ClosureButton(
+                        "ノーマルガチャ 10連続",
+                        null,
+                        function (Player $p, ClosureButton $button) use ($normal) {
+                            self::sendGatyaConfirmForm($p, 10, $normal);
+                        }
+                    ),
+                );
+            $p->sendForm($form);
         });
+    }
+
+    private static function sendGatyaConfirmForm(Player $p, int $num, int $tickets)
+    {
+        $after = $tickets - $num;
+        $p->sendForm(
+            (new ModalForm(
+                new ClosureButton(
+                    "はい",
+                    null,
+                    function (Player $p, ClosureButton $button) use ($num, $tickets) {
+                        if ($tickets >= $num) {
+                            NormalGatya::gatya($p, $num);
+                        } else {
+                            $p->sendMessage('チケットが足りません');
+                        }
+                    }
+                ),
+                new ClosureButton(
+                    "いいえ",
+                    null,
+                    function (Player $p, ClosureButton $button) {
+                        self::sendGatyaForm($p);
+                    }
+                )
+            ))
+                ->setTitle("NormalGatya -> Confirm")
+                ->setText("ノーマルガチャチケットを10個消費してノーマルガチャを回しますか？\n$tickets -> $after")
+        );
     }
 }
