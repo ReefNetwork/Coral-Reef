@@ -14,6 +14,7 @@ namespace ree_jp\coral_reef\account;
 
 use Closure;
 use Exception;
+use pocketmine\Player;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat;
 use ree_jp\coral_reef\quest\QuestListener;
@@ -80,6 +81,12 @@ class UserAccount
             $message = $this->name . "さんのレベルが$this->level になりました";
             Server::getInstance()->broadcastMessage($message);
         }
+    }
+
+    public function setXp(int $xp): void
+    {
+        $this->experience = $xp;
+        $this->setLevelAndNecessaryExperience();
     }
 
     private function setLevelAndNecessaryExperience(): void
