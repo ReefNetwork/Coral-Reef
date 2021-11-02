@@ -25,7 +25,7 @@ class RankingForm
             foreach ($rows as $row) {
                 $list[$row["experience"]][] = $row["name"] . "さん(" . $row["experience"] . ")";
             }
-            rsort($list, SORT_NUMERIC);
+            krsort($list, SORT_NUMERIC);
             $string = "";
             $ranking = 1;
             foreach ($list as $exp => $users) {

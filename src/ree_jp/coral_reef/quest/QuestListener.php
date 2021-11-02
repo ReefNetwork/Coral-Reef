@@ -55,11 +55,9 @@ class QuestListener implements Listener
 
     static function callSubscribedQuest(string $xuid, string $type, $value): void
     {
-        foreach (self::getSubscribedQuest($xuid, $type) as $quests) {
-            foreach ($quests as $quest) {
-                if (!$quest instanceof QuestData) continue;
-                $quest->onEvent($type, $value);
-            }
+        foreach (self::getSubscribedQuest($xuid, $type) as $quest) {
+            if (!$quest instanceof QuestData) continue;
+            $quest->onEvent($type, $value);
         }
     }
 
