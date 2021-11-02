@@ -32,7 +32,7 @@ class RankingForm
                 $equal = 0;
                 foreach ($users as $user) {
                     $equal++;
-                    $string = $ranking . "位: " . $user . "\n";
+                    $string = $string . $ranking . "位: " . $user . "\n";
                 }
                 $ranking += $equal;
             }
