@@ -146,13 +146,19 @@ class FormManager
                     }
                 ),
                 new ClosureButton(
+                    "ランキング",
+                    null,
+                    function (Player $p, ClosureButton $button) {
+                        RankingForm::sendForm($p);
+                    }
+                ),
+                new ClosureButton(
                     "設定",
                     null,
                     function (Player $p, ClosureButton $button) {
                         $p->sendForm(SettingForm::settingForm());
                     }
                 ),
-
             );
         $p->sendForm($form);
     }
