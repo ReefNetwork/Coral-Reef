@@ -12,8 +12,10 @@
 namespace ree_jp\coral_reef\skill;
 
 use Exception;
+use pocketmine\block\Air;
 use pocketmine\block\Block;
 use pocketmine\block\BlockIds;
+use pocketmine\block\Flowable;
 use pocketmine\block\Liquid;
 use pocketmine\level\Level;
 use pocketmine\math\Vector3;
@@ -70,9 +72,13 @@ class BreakSkill
 
                     $checkVec = $this->getSideFromUserView($block->add(0, 1), $direction, self::RIGHT, $width);
                     $checkVec = $this->getSideFromUserView($checkVec, $direction, self::FORWARD, $depth);
-                    if ($p->getLevel()->getBlock($checkVec)->getId() !== BlockIds::AIR) {
-                        $p->sendPopup("上から掘ってください");
-                        continue;
+                    $checkBl = $p->getLevel()->getBlock($checkVec);
+                    if (!$checkBl instanceof Flowable && !$checkBl instanceof Air) {
+                        $checkBl2 = $checkBl->add(0, 1);
+                        if (!$checkBl2 instanceof Flowable && !$checkBl2 instanceof Air) {
+                            $p->sendPopup("上から掘ってください");
+                            continue;
+                        }
                     }
 
                     for ($height = 0; $height <= $this->height; ++$height) {
@@ -98,11 +104,14 @@ class BreakSkill
                     }
                     $checkVec = $this->getSideFromUserView($checkVec, $direction, self::RIGHT, $width);
                     $checkVec = $this->getSideFromUserView($checkVec, $direction, self::FORWARD, $depth);
-                    if ($p->getLevel()->getBlock($checkVec)->getId() !== BlockIds::AIR) {
-                        $p->sendPopup("上から掘ってください");
-                        continue;
+                    $checkBl = $p->getLevel()->getBlock($checkVec);
+                    if (!$checkBl instanceof Flowable && !$checkBl instanceof Air) {
+                        $checkBl2 = $checkBl->add(0, 1);
+                        if (!$checkBl2 instanceof Flowable && !$checkBl2 instanceof Air) {
+                            $p->sendPopup("上から掘ってください");
+                            continue;
+                        }
                     }
-
                     for ($height = 0; $height <= $this->height; ++$height) {
                         if ($isSkillHigh) {
                             $baseY = intval($height + $playerY);
