@@ -23,7 +23,7 @@ class RankingForm
         SQLManager::$manager->getAllUser(function (array $rows) use ($p): void {
             $list[] = [];
             foreach ($rows as $row) {
-                $list[$row[""]] = $row["name"] . "さん(" . $row["experience"] . ")";
+                $list[$row["experience"]] = $row["name"] . "さん(" . $row["experience"] . ")";
             }
             rsort($list, SORT_NUMERIC);
             $string = "";
