@@ -162,7 +162,7 @@ class EventListener implements Listener
         $p = $ev->getPlayer();
         if ($ev->isCancelled()) return;
         try {
-            AccountManager::brockBroken($p, $ev->getBlock(), $ev->getItem());
+            AccountManager::blockBroken($p, $ev->getBlock(), $ev->getItem());
         } catch (Exception $e) {
             $p->sendMessage('エラーが発生しました');
             Server::getInstance()->getLogger()->error('[blockBroke]' . $p->getName() . 'の処理中に' . $e->getMessage());

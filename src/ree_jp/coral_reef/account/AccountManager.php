@@ -118,7 +118,7 @@ class AccountManager
      * @param Item $item
      * @throws Exception
      */
-    static function brockBroken(Player $p, Block $bl, Item $item): void
+    static function blockBroken(Player $p, Block $bl, Item $item): void
     {
         $xuid = $p->getXuid();
         $user = SQLManager::$manager->getUser($xuid);

@@ -85,7 +85,7 @@ class BreakSkill
                         if (!($height === 0 && $width === 0 && $depth === 0)) {
                             $vec = $this->getSideFromUserView($block->add(0, -$height), $direction, self::RIGHT, $width);
                             $vec = $this->getSideFromUserView($vec, $direction, self::FORWARD, $depth);
-                            $this->breakBrockBySkill($p, $vec);
+                            $this->breakBlockBySkill($p, $vec);
                         }
                     }
                 }
@@ -123,14 +123,14 @@ class BreakSkill
                         }
                         $vec = $this->getSideFromUserView($base, $direction, self::RIGHT, $width);
                         $vec = $this->getSideFromUserView($vec, $direction, self::FORWARD, $depth);
-                        $this->breakBrockBySkill($p, $vec);
+                        $this->breakBlockBySkill($p, $vec);
                     }
                 }
             }
         }
     }
 
-    private function breakBrockBySkill(Player $p, Vector3 $vec): void
+    private function breakBlockBySkill(Player $p, Vector3 $vec): void
     {
         $this->frozeWater($p, $vec);
 
