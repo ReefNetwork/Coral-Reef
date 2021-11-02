@@ -28,7 +28,6 @@ class SkillSelectForm
         $user = SQLManager::$manager->getUser($xuid);
         if (is_null($user)) FormManager::messageForm('エラーが発生しました');
         $nowSkill = is_null($user->skill) ? 'なし' : $user->skill->name;
-        $buttons = [new Button(TextFormat::GREEN . 'スキルなし')];
         $skills = [null];
         $form = (new SimpleForm())
             ->setTitle("Menu -> Skill")
@@ -37,7 +36,7 @@ class SkillSelectForm
                 TextFormat::GREEN . "スキルなし",
                 null,
                 function (Player $p, ClosureButton $button) {
-
+                    $p->sendForm(self::SkillConfirmForm(null));
                 }
             ));
         foreach (SkillManager::SKILLS as $skillId) {
@@ -51,7 +50,7 @@ class SkillSelectForm
                     $color . $skill->name,
                     null,
                     function (Player $p, ClosureButton $button) use ($user, $skill) {
-                        if (is_null($skill) || $skill->needLevel <= $user->level) { // スキル無し or レベルが足りる場合
+                        if ($skill->needLevel <= $user->level) { // レベルが足りる場合
                             $p->sendForm(self::SkillConfirmForm($skill));
                         } else { // レベルが足りない場合
                             $p->sendForm((new ModalForm(
