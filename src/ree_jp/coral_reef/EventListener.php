@@ -230,7 +230,7 @@ class EventListener implements Listener
                 }
                 break;
         }
-        $ev->setCancelled(LandManager::$instance->protect($p, $ev->getBlock(), null));
+        $ev->setCancelled(LandManager::$instance->protect($p, $ev->getBlock(), null, false));
     }
 
     function onTeleport(EntityTeleportEvent $ev): void

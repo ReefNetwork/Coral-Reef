@@ -85,7 +85,7 @@ class LandManager
         return null;
     }
 
-    public function protect(Player $p, Position $pos, ?string $message): bool
+    public function protect(Player $p, Position $pos, ?string $message, bool $isTouch = false): bool
     {
         if (in_array($p->getLevel()->getFolderName(), ['lobby']) && !($p->isOp() && $p->isCreative())) {
             if (is_null($message)) return false;
@@ -94,6 +94,7 @@ class LandManager
             $land = self::$instance->getLand($pos);
             if (is_null($land)) {
                 if (in_array($p->getLevel()->getFolderName(), ['main_2'])) { // 土地保護しないと掘れないワールド
+                    if ($isTouch) return false;
                     $p->sendPopup("このワールドは土地保護が必要です");
                     if ($p->isOp() && $p->isCreative()) return false;
                 } else {
