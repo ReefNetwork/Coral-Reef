@@ -19,6 +19,7 @@ use bbo51dog\bboform\form\ClosureCustomForm;
 use bbo51dog\bboform\form\CustomForm;
 use bbo51dog\bboform\form\ModalForm;
 use bbo51dog\bboform\form\SimpleForm;
+use Closure;
 use pocketmine\math\Vector3;
 use pocketmine\Player;
 use pocketmine\utils\TextFormat;
@@ -48,50 +49,49 @@ class MyWarpForm
             $form->addElement(new ClosureButton(
                 "ワープ地点を 作成/削除 する",
                 null,
-                function (Player $p, ClosureButton $button) {
-                    $p->sendForm(self::myWarpEditForm($p));
+                function (Player $p, ClosureButton $button) use ($rows) {
+                    $p->sendForm(self::myWarpEditForm($p, $rows));
                 }
             ));
             $p->sendForm($form);
         });
     }
 
-    static function myWarpEditForm(Player $p): SimpleForm
+    static function myWarpEditForm(Player $p, array $warpPoints): SimpleForm
     {
         $form = (new SimpleForm())
             ->setTitle("MyWarp -> Edit")
             ->setText("ワープ地点を作成するか削除したいワープ地点を選択してください");
-        SQLManager::$manager->getWarps($p->getXuid(), function (array $rows) use ($p, $form) {
-            foreach ($rows as $warpPoint) {
-                $form->addElement(
-                    self::createWarpButton(
-                        $warpPoint,
-                        function (Player $p, ClosureButton $button) use ($warpPoint) {
-                            $p->sendForm(
-                                (new ModalForm(
-                                    new ClosureButton(
-                                        "はい",
-                                        null,
-                                        function (Player $p, ClosureButton $button) use ($warpPoint) {
-                                            SQLManager::$manager->deleteWarp($p->getXuid(), $warpPoint['name']);
-                                        }
-                                    ),
-                                    new ClosureButton(
-                                        "いいえ",
-                                        null,
-                                        function (Player $p, ClosureButton $button) use ($warpPoint) {
-                                            self::sendWarpForm($p);
-                                        }
-                                    )
-                                ))
-                                    ->setTitle("MyWarpEdit -> Delete")
-                                    ->setText(TextFormat::DARK_RED . $warpPoint["name"] . "を本当に削除しますか?")
-                            );
-                        }
-                    )
-                );
-            }
-        });
+        foreach ($warpPoints as $warpPoint) {
+            $form->addElement(
+                self::createWarpButton(
+                    $warpPoint,
+                    function (Player $p, ClosureButton $button) use ($warpPoint) {
+                        $p->sendForm(
+                            (new ModalForm(
+                                new ClosureButton(
+                                    "はい",
+                                    null,
+                                    function (Player $p, ClosureButton $button) use ($warpPoint) {
+                                        SQLManager::$manager->deleteWarp($p->getXuid(), $warpPoint['name']);
+                                    }
+                                ),
+                                new ClosureButton(
+                                    "いいえ",
+                                    null,
+                                    function (Player $p, ClosureButton $button) use ($warpPoint) {
+                                        self::sendWarpForm($p);
+                                    }
+                                )
+                            ))
+                                ->setTitle("MyWarpEdit -> Delete")
+                                ->setText(TextFormat::DARK_RED . $warpPoint["name"] . "を本当に削除しますか?")
+                        );
+                    }
+                )
+            );
+
+        }
         $form->addElement(
             new ClosureButton(
                 "ワープ地点を作成する",
@@ -129,7 +129,7 @@ class MyWarpForm
             );
     }
 
-    private static function createWarpButton(array $warpPoint, \Closure $closure): Button
+    private static function createWarpButton(array $warpPoint, Closure $closure): Button
     {
         if (array_key_exists('name', $warpPoint) && array_key_exists('level', $warpPoint) && array_key_exists('x', $warpPoint)
             && array_key_exists('y', $warpPoint) && array_key_exists('z', $warpPoint)) {
