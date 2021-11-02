@@ -65,7 +65,7 @@ class UserAccount
     {
         $this->experience = $xp + $this->experience;
         $this->necessaryExperience -= $xp;
-        if ($this->necessaryExperience <= 0 && $this->necessaryExperience === -999) {
+        if ($this->necessaryExperience <= 0 && $this->necessaryExperience !== -999) {
             $beforeLevel = $this->level;
             $this->setLevelAndNecessaryExperience();
 
