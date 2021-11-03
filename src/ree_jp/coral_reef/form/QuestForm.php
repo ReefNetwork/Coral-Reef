@@ -14,6 +14,7 @@ namespace ree_jp\coral_reef\form;
 use bbo51dog\bboform\element\ClosureButton;
 use bbo51dog\bboform\form\SimpleForm;
 use pocketmine\Player;
+use ree_jp\coral_reef\quest\data\DailyQuest;
 use ree_jp\coral_reef\quest\data\QuestData;
 use ree_jp\coral_reef\quest\QuestManager;
 
@@ -62,9 +63,13 @@ class QuestForm
 
     private static function questDetail(QuestData $quest): SimpleForm // クエストの詳細を表示する
     {
+        $postScript = "";
+        if ($quest instanceof DailyQuest) {
+            $postScript = $postScript . "\n期限: " . date("y年m月d日 H時i分", $quest->limit);
+        }
         return (new SimpleForm())
             ->setTitle("Quest : " . $quest::NAME)
-            ->setText("クエスト詳細: " . $quest::EXPLANATION . "\n進捗: " . $quest->getProgress() . "\n報酬: " . $quest->getRewardDetails() . "\n期限: " . "")
+            ->setText("クエスト詳細: " . $quest::EXPLANATION . "\n進捗: " . $quest->getProgress() . "\n報酬: " . $quest->getRewardDetails() . $postScript)
             ->addElement(
                 new ClosureButton(
                     "戻る",

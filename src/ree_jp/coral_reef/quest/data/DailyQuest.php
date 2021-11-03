@@ -13,7 +13,7 @@ namespace ree_jp\coral_reef\quest\data;
 
 abstract class DailyQuest extends QuestData
 {
-    protected int $limit;
+    public int $limit;
 
     function __construct(string $xuid, ?string $value)
     {
