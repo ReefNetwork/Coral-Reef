@@ -18,6 +18,7 @@ use pocketmine\Player;
 use pocketmine\scheduler\ClosureTask;
 use ree_jp\coral_reef\account\AccountManager;
 use ree_jp\coral_reef\CoralReefPlugin;
+use ree_jp\coral_reef\quest\QuestListener;
 use ree_jp\coral_reef\sql\SQLManager;
 
 class SkillManager
@@ -69,6 +70,7 @@ class SkillManager
         $skill = $user->skill;
         if (is_null($skill)) throw new Exception('スキルが設定されていません');
 
+        QuestListener::callSubscribedQuest($p->getXuid(), QuestListener::USE_SKILL, $skill);
         $skill->runSkill($bl, $p);
         $cool_time = $skill->cool_time;
         if (isset(self::$reduceCoolTime[$xuid])) { // クールタイム減らすのを反映

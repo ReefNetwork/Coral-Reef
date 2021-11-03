@@ -25,6 +25,7 @@ class QuestListener implements Listener
 
     const JOIN = "join";
     const LEVEL_UP = "level_up";
+    const USE_SKILL = "user_skill";
 
     static array $subscribeQuest = [];
 

@@ -159,6 +159,14 @@ class AccountManager
         return $name;
     }
 
+    static function getPlayerByXuid(string $xuid): ?Player
+    {
+        foreach (Server::getInstance()->getOnlinePlayers() as $p) {
+            if ($p->getXuid() === $xuid) return $p;
+        }
+        return null;
+    }
+
     static function teleport(Player $p, string $levelName, Vector3 $pos = null): void
     {
         $level = Server::getInstance()->getLevelByName($levelName);

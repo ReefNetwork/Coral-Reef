@@ -53,7 +53,7 @@ class LevelUpQuest extends QuestData
         if (is_null($user)) return;
         $p = Server::getInstance()->getPlayer($user->name);
         $questLevel = intval($this->value);
-        if ($user->level > $questLevel && !empty($this->getRewardInfo($user->level))) {
+        if ($user->level > $questLevel && !empty($this->getRewardDetails($user->level))) {
             $questLevel++;
             $this->value = strval($questLevel);
 
@@ -87,7 +87,7 @@ class LevelUpQuest extends QuestData
                     GatyaManager::addTicket($this->xuid, SQLConst::TICKETS_NORMAL, 2);
                     break;
             }
-            $p->sendMessage("レベルアップ報酬として" . $this->getRewardInfo($questLevel) .
+            $p->sendMessage("レベルアップ報酬として" . $this->getRewardDetails($questLevel) .
                 "を受け取りました\n報酬にアイテムが含まれている場合はギフトから1週間以内に受け取れます");
             $this->check();
         }
@@ -99,8 +99,14 @@ class LevelUpQuest extends QuestData
             time() + (7 * 24 * 60 * 60), $items), null, null);
     }
 
-    private function getRewardInfo(int $level): string
+    function getProgress(): string
     {
+        return (intval($this->value) + 1) . "レベルにレベルアップしよう";
+    }
+
+    function getRewardDetails(?int $level = null): string
+    {
+        if (is_null($level)) $level = intval($this->value) + 1;
         switch ($level) {
             case 1:
                 return "ガチャ券×10枚と鉄のツルハシ(耐久3)×1個";
@@ -115,13 +121,7 @@ class LevelUpQuest extends QuestData
             case 6:
                 return "ガチャ券×3枚";
         }
-        return "";
-    }
-
-    function getRewardDetails(): string
-    {
-        $nextLevel = intval($this->value) + 1;
-        return "次は" . $nextLevel . "レベルになると" . $this->getRewardInfo($nextLevel) . "が受け取れます";
+        return "実装をお待ちください";
     }
 
     function isComplete(): bool

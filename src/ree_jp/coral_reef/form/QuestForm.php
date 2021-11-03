@@ -64,7 +64,7 @@ class QuestForm
     {
         return (new SimpleForm())
             ->setTitle("Quest : " . $quest::NAME)
-            ->setText("クエスト詳細: " . $quest::EXPLANATION . "\n報酬: " . $quest->getRewardDetails() . "\n期限: " . "")
+            ->setText("クエスト詳細: " . $quest::EXPLANATION . "\n進捗: " . $quest->getProgress() . "\n報酬: " . $quest->getRewardDetails() . "\n期限: " . "")
             ->addElement(
                 new ClosureButton(
                     "戻る",

@@ -31,6 +31,11 @@ abstract class QuestData
     {
     }
 
+    function getProgress(): string
+    {
+        return "完了";
+    }
+
     abstract function getRewardDetails(): string;
 
     function outputData(): string
