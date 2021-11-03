@@ -50,6 +50,8 @@ class QuestManager
         switch ($questID) {
             case LevelUpQuest::ID:
                 return new LevelUpQuest($xuid, $value);
+            case DigQuest::ID:
+                return new DigQuest($xuid, $value);
             case LoginQuest::ID:
                 return new LoginQuest($xuid, $value);
             default:
