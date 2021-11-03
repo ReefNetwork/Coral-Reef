@@ -28,14 +28,11 @@ class PartyForm
 
     static function partyForm(string $xuid): SimpleForm
     {
-        $buttons = [];
-        $members = [];
         $form = (new SimpleForm())
             ->setTitle("Menu -> Party")
             ->setText("パーティーメンバーを追加するか削除したいメンバーを選択してください");
         if (isset(self::$members[$xuid])) {
-            $members = self::$members[$xuid];
-            foreach ($members as $member) {
+            foreach (self::$members[$xuid] as $member) {
                 $name = AccountManager::getUserName($member);
                 $form->addElement(
                     new ClosureButton(
@@ -75,7 +72,7 @@ class PartyForm
                 "メンバーを追加する",
                 null,
                 function (Player $p, ClosureButton $button) {
-                    $p->sendForm(self::partyAddForm($p->getXuid()));
+                    $p->sendForm(self::partyAddForm());
                 }
             )
         );
@@ -84,7 +81,7 @@ class PartyForm
 
     static function isParty(string $party, string $xuid): bool
     {
-        return isset(self::$members[$party]) && isset(self::$members[$party][$xuid]);
+        return !empty(self::$members[$party]) && in_array($xuid, self::$members[$party]);
     }
 
     static function partyAddForm(): CustomForm
