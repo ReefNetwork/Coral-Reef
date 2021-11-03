@@ -53,7 +53,7 @@ class LevelUpQuest extends QuestData
         if (is_null($user)) return;
         $p = Server::getInstance()->getPlayer($user->name);
         $questLevel = intval($this->value);
-        if ($user->level > $questLevel && $this->getRewardDetails($user->level) !== "実装をお待ちください") {
+        if ($user->level > $questLevel && $this->getRewardDetails($questLevel + 1) !== "実装をお待ちください") {
             $questLevel++;
             $this->value = strval($questLevel);
 
