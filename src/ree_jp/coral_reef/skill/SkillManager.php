@@ -81,7 +81,7 @@ class SkillManager
             CoralReefPlugin::$plugin->getScheduler()->scheduleDelayedTask(new ClosureTask(function (int $currentTick) use ($xuid, $p): void {
                 $p->sendPopup('スキルのクールタイムが終了しました');
                 AccountManager::setValue($xuid, 'skill_cool_time', 0);
-                $p->getLevel()->broadcastLevelSoundEvent($p, LevelSoundEventPacket::SOUND_LEVELUP, 1);
+                $p->getLevel()->broadcastLevelSoundEvent($p, LevelSoundEventPacket::SOUND_LEVELUP);
             }), $cool_time);
         }
     }
