@@ -110,7 +110,7 @@ class SettingForm
                     null,
                     function (Player $p, ClosureButton $button) {
                         self::sendInputForm($p, "ニックネームを設定できます\n無効にするにはニックネームを空白に設定してください", 'ニックネーム',
-                            'せいちのかみ', SettingConst::NICK_NAME, function () use ($p) {
+                            'せいちのかみ', SettingConst::NICK_NAME, 10, function () use ($p) {
                                 $p->sendMessage('設定を保存しました');
                                 SettingManager::updateNickName($p);
                             });
@@ -146,17 +146,21 @@ class SettingForm
         });
     }
 
-    static function sendInputForm(Player $p, string $label, string $inputMessage, string $holder, string $settingType, ?Closure $func = null): void
+    static function sendInputForm(Player $p, string $label, string $inputMessage, string $holder, string $settingType, int $limit, ?Closure $func = null): void
     {
         $xuid = $p->getXuid();
         SQLManager::$manager->getValue($xuid, SQLConst::TYPE_SETTINGS, $settingType, function (array $rows)
-        use ($p, $func, $holder, $inputMessage, $label, $settingType) {
+        use ($limit, $p, $func, $holder, $inputMessage, $label, $settingType) {
             $row = array_shift($rows);
             $default = $row['value'] ?? "";
             $input = new Input($inputMessage, $holder, $default);
             $p->sendForm((new ClosureCustomForm(
-                function (Player $p, ClosureCustomForm $form) use ($func, $settingType, $input) {
+                function (Player $p, ClosureCustomForm $form) use ($limit, $func, $settingType, $input) {
                     $result = $input->getValue();
+                    if (mb_strlen($result) > $limit) {
+                        $p->sendMessage($limit . "文字以下にしてください");
+                        return;
+                    }
                     if (empty($result)) $result = null;
                     SQLManager::$manager->setValue($p->getXuid(), SQLConst::TYPE_SETTINGS, $settingType, $result, $func,
                         function (SqlError $error) use ($p, $settingType) {
