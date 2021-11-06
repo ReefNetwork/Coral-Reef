@@ -29,8 +29,8 @@ jobs:
 
       - name: LICENSES
         run: |
-          mkdir build/libs/LICENSES
-          mv LICENSES/* build/libs/LICENSES/
+          mkdir ./build/LICENSES
+          mv LICENSES/* ./build/LICENSES/
 
       - name: upload
         uses: actions/upload-artifact@v2
