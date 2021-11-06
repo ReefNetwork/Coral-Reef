@@ -23,18 +23,17 @@ class ReefAdminForm
         $form = (new SimpleForm())
             ->setTitle("Admin")
             ->setText("OP用サーバー管理ツール");
-        SQLManager::$manager->getAllUser(function (array $rows) use ($p, $form) {
-            foreach ($rows as $row) {
-                $form->addElement(new ClosureButton(
-                    $row["name"],
-                    null,
-                    function (Player $p, ClosureButton $button) use ($row) {
-                        self::sendUserAdminForm($p, SQLManager::$manager->getUser($row["xuid"]));
-                    }
-                ));
-            }
-            $p->sendForm($form);
-        });
+        foreach (Server::getInstance()->getOnlinePlayers() as $onlinePlayer) {
+            if (!$onlinePlayer instanceof Player) return;
+            $form->addElement(new ClosureButton(
+                $onlinePlayer->getName(),
+                null,
+                function (Player $p, ClosureButton $button) use ($onlinePlayer) {
+                    self::sendUserAdminForm($p, SQLManager::$manager->getUser($onlinePlayer->getXuid()));
+                }
+            ));
+        }
+        $p->sendForm($form);
     }
 
     private static function sendUserAdminForm(Player $p, UserAccount $user)

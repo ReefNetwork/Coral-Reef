@@ -136,7 +136,7 @@ class SQLManager
         $this->db->executeSelect("coral_reef.user.all", [], $func);
     }
 
-    public function getUser(string $xuid): ?UserAccount
+    public function getUser(string $xuid): ?UserAccount // 今サーバーに参加してるプレイヤーのみ取得できる
     {
         if (array_key_exists($xuid, $this->users)) return $this->users[$xuid];
         return null;
