@@ -47,7 +47,7 @@ class DigQuest extends DailyQuest
                     case 1000:
                         QuestListener::unsubscribeQuest($this->xuid, QuestListener::USE_SKILL, $this);
                     case 100:
-                        SQLManager::$manager->addLog($this->xuid, SQLConst::LOG_QUEST, self::ID, $$this->value,
+                        SQLManager::$manager->addLog($this->xuid, SQLConst::LOG_QUEST, self::ID, $this->value,
                             SQLConst::NOW_TIME, null, null);
                         GatyaManager::addTicket($this->xuid, SQLConst::TICKETS_NORMAL, 1);
                         $p = AccountManager::getPlayerByXuid($this->xuid);
