@@ -23,6 +23,7 @@ interface SQLConst
     const TYPE_TICKETS = 'tickets';
     const TYPE_GIFT = 'gift';
     const TYPE_QUEST = 'quest';
+    const TYPE_BONUS = "bonus";
 
     const ENV_HASTE_EFFECT = "haste_effect";
     const ENV_EXP_BUF = "experience_buff";

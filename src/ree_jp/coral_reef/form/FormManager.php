@@ -153,6 +153,13 @@ class FormManager
                     }
                 ),
                 new ClosureButton(
+                    "ボーナスコード",
+                    null,
+                    function (Player $p, ClosureButton $button) {
+                        BonusCodeForm::sendForm($p);
+                    }
+                ),
+                new ClosureButton(
                     "設定",
                     null,
                     function (Player $p, ClosureButton $button) {
