@@ -44,7 +44,9 @@ class BonusCodeForm
                         $p->sendMessage("そのコードは使用済みです");
                         return;
                     }
-                    SQLManager::$manager->setValue($p->getXuid(), SQLConst::TYPE_BONUS, $code, "use", function () use ($p): void {
+                    SQLManager::$manager->setValue($p->getXuid(), SQLConst::TYPE_BONUS, $code, SQLConst::COMPLETE, function () use ($code, $p): void {
+                        SQLManager::$manager->addLog($p->getXuid(), SQLConst::LOG_BONUS, $code, SQLConst::COMPLETE,
+                            SQLConst::NOW_TIME, null, null);
                         $p->sendMessage(TextFormat::GREEN . "これからもReefServerをよろしくお願いいたします");
                         $p->sendMessage(TextFormat::AQUA . "ガチャチケットを" . TextFormat::RED . "20枚" . TextFormat::AQUA . "受け取りました");
                         GatyaManager::addTicket($p->getXuid(), SQLConst::TICKETS_NORMAL, 20);

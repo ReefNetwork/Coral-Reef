@@ -57,7 +57,7 @@ class LevelUpQuest extends QuestData
             $questLevel++;
             $this->value = strval($questLevel);
 
-            SQLManager::$manager->addLog($this->xuid, "quest", self::ID, $questLevel, SQLConst::NOW_TIME, null, null);
+            SQLManager::$manager->addLog($this->xuid, SQLConst::LOG_QUEST, self::ID, $questLevel, SQLConst::NOW_TIME, null, null);
             switch ($questLevel) {
                 case 1:
                     $item = Item::get(ItemIds::IRON_PICKAXE);

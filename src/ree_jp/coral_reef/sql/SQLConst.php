@@ -13,22 +13,25 @@ namespace ree_jp\coral_reef\sql;
 
 interface SQLConst
 {
-    const DATE_FORMAT = 'Y-m-d H:i:s';
+    const DATE_FORMAT = "Y-m-d H:i:s";
 
-    const NOW_TIME = 'now';
-    const TYPE_NULL = 'empty';
+    const NOW_TIME = "now";
+    const NULL = "empty";
+    const COMPLETE = "complete";
 
-    const TYPE_ENV = 'server_environment';
-    const TYPE_SETTINGS = 'setting';
-    const TYPE_TICKETS = 'tickets';
-    const TYPE_GIFT = 'gift';
-    const TYPE_QUEST = 'quest';
+    const TYPE_ENV = "server_environment";
+    const TYPE_SETTINGS = "setting";
+    const TYPE_TICKETS = "tickets";
+    const TYPE_GIFT = "gift";
+    const TYPE_QUEST = "quest";
     const TYPE_BONUS = "bonus";
 
     const ENV_HASTE_EFFECT = "haste_effect";
     const ENV_EXP_BUF = "experience_buff";
 
-    const TICKETS_NORMAL = 'normal_tickets';
+    const TICKETS_NORMAL = "normal_tickets";
 
-    const LOG_GATYA = 'gatya';
+    const LOG_GATYA = "gatya";
+    const LOG_QUEST = "quest";
+    const LOG_BONUS = "bonus";
 }

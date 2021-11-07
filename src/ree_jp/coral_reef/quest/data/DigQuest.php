@@ -15,6 +15,7 @@ use ree_jp\coral_reef\account\AccountManager;
 use ree_jp\coral_reef\gatya\GatyaManager;
 use ree_jp\coral_reef\quest\QuestListener;
 use ree_jp\coral_reef\sql\SQLConst;
+use ree_jp\coral_reef\sql\SQLManager;
 
 class DigQuest extends DailyQuest
 {
@@ -46,6 +47,8 @@ class DigQuest extends DailyQuest
                     case 1000:
                         QuestListener::unsubscribeQuest($this->xuid, QuestListener::USE_SKILL, $this);
                     case 100:
+                        SQLManager::$manager->addLog($this->xuid, SQLConst::LOG_QUEST, self::ID, $$this->value,
+                            SQLConst::NOW_TIME, null, null);
                         GatyaManager::addTicket($this->xuid, SQLConst::TICKETS_NORMAL, 1);
                         $p = AccountManager::getPlayerByXuid($this->xuid);
                         if (!is_null($p)) $p->sendMessage("デイリー整地ボーナスとしてガチャチケットを受け取りました");
