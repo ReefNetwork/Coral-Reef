@@ -23,6 +23,7 @@ class RankingForm
         SQLManager::$manager->getAllUser(function (array $rows) use ($p): void {
             $list[] = [];
             foreach ($rows as $row) {
+                if ($row["xuid"] === 0) continue; // サーバー管理用アカウントをランキングに入れない
                 $list[$row["experience"]][] = $row["name"] . "さん(" . $row["experience"] . ")";
             }
             krsort($list, SORT_NUMERIC);
