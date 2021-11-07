@@ -70,11 +70,11 @@ class BreakSkill
             for ($width = $widthSide; $width >= -$widthSide; --$width) {
                 for ($depth = $depthCeil; $depth >= -$depthSide; --$depth) {
 
-                    $checkVec = $this->getSideFromUserView($block->add(0, 1), $direction, self::RIGHT, $width);
+                    $checkVec = $this->getSideFromUserView($block->add(0, 2), $direction, self::RIGHT, $width);
                     $checkVec = $this->getSideFromUserView($checkVec, $direction, self::FORWARD, $depth);
                     $checkBl = $p->getLevel()->getBlock($checkVec);
                     if (!$checkBl instanceof Flowable && !$checkBl instanceof Air) {
-                        $checkBl2 = $checkBl->add(0, 1);
+                        $checkBl2 = $checkBl->getSide(Vector3::SIDE_UP);
                         if (!$checkBl2 instanceof Flowable && !$checkBl2 instanceof Air) {
                             $p->sendPopup("上から掘ってください");
                             continue;
@@ -106,7 +106,7 @@ class BreakSkill
                     $checkVec = $this->getSideFromUserView($checkVec, $direction, self::FORWARD, $depth);
                     $checkBl = $p->getLevel()->getBlock($checkVec);
                     if (!$checkBl instanceof Flowable && !$checkBl instanceof Air) {
-                        $checkBl2 = $checkBl->add(0, 1);
+                        $checkBl2 = $checkBl->getSide(Vector3::SIDE_UP);
                         if (!$checkBl2 instanceof Flowable && !$checkBl2 instanceof Air) {
                             $p->sendPopup("上から掘ってください");
                             continue;
