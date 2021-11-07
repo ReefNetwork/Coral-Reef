@@ -25,6 +25,8 @@ use ree_jp\coral_reef\sql\SQLManager;
 
 class GatyaManager
 {
+    static array $isProsseing = [];
+
     static function addTicket(string $xuid, string $type, int $count): void
     {
         SQLManager::$manager->getValue($xuid, SQLConst::TYPE_TICKETS, $type, function (array $rows) use ($xuid, $type, $count): void {
@@ -47,6 +49,11 @@ class GatyaManager
     // チケットの枚数が足りるか確認してチケットを減らしてログに記録してアイテムを送る
     static function gatyaProcess(Player $p, string $subtype, int $need, Item $item, string $rare, string $stringRare, bool $isBroadcast, ?Closure $func): void
     {
+        if (array_key_exists($p->getXuid(), self::$isProsseing)) {
+            $p->sendMessage("ガチャを同時に実行することはできません");
+            return;
+        }
+        self::$isProsseing[$p->getXuid()] = true;
         // ガチャチケットが足りるか確認
         SQLManager::$manager->getValue($p->getXuid(), SQLConst::TYPE_TICKETS, $subtype,
             function (array $rows) use ($stringRare, $func, $isBroadcast, $item, $rare, $subtype, $p, $need) {
@@ -72,6 +79,7 @@ class GatyaManager
                                                 });
                                         }
                                         $p->sendMessage('ガチャを引きました(レア度: ' . TextFormat::GREEN . $stringRare . TextFormat::RESET . ')');
+                                        unset(self::$isProsseing[$p->getXuid()]);
                                         if ($isBroadcast) { // 一定のレア度以上は$isBroadcastをtrueにしてガチャを引いたことを全体に表示させる
                                             $broadMessage = $p->getDisplayName() . 'さんが' . TextFormat::GREEN . 'REEFレア' . TextFormat::RESET . 'を引きました';
                                             Server::getInstance()->broadcastMessage($broadMessage);
@@ -79,16 +87,19 @@ class GatyaManager
                                         if (!is_null($func)) $func();
                                     }, function (SqlError $error) use ($p) {
                                         $p->sendMessage('エラーが発生しました');
+                                        unset(self::$isProsseing[$p->getXuid()]);
                                         Server::getInstance()->getLogger()->error('[GatyaReduceTicket] ' . $p->getName() . 'さんの処理中に' . $error->getErrorMessage());
                                     });
                             }, function (SqlError $error) use ($p) {
                                 $p->sendMessage('エラーが発生しました');
+                                unset(self::$isProsseing[$p->getXuid()]);
                                 Server::getInstance()->getLogger()->error('[GatyaLogAdd] ' . $p->getName() . 'さんの処理中に' . $error->getErrorMessage());
                             });
                     }
                 }
             }, function (SqlError $error) use ($p) {
                 $p->sendMessage('エラーが発生しました');
+                unset(self::$isProsseing[$p->getXuid()]);
                 Server::getInstance()->getLogger()->error('[GatyaCheckTicket] ' . $p->getName() . 'さんの処理中に' . $error->getErrorMessage());
             });
     }
