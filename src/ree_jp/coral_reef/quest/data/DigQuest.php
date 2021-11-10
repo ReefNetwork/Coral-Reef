@@ -66,11 +66,15 @@ class DigQuest extends DailyQuest
             case intval($this->value) < 1000:
                 return "スキルを1000回発動させよう (" . $this->value . "/1000)";
         }
-        return parent::getProgress();
+        return "完了";
     }
 
     function getRewardDetails(): string
     {
-        return "ガチャチケット×1枚";
+        if ($this->isComplete()) {
+            return "完了済み";
+        } else {
+            return "ガチャチケット×1枚";
+        }
     }
 }

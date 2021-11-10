@@ -20,6 +20,7 @@ use pocketmine\nbt\tag\ByteTag;
 use pocketmine\Player;
 use pocketmine\plugin\Plugin;
 use ree_jp\coral_reef\form\GatyaForm;
+use ree_jp\coral_reef\quest\QuestListener;
 use ree_jp\coral_reef\sql\SQLConst;
 use ree_jp\coral_reef\sql\SQLManager;
 
@@ -49,6 +50,7 @@ class ReefCommand extends PluginCommand
                     if ($shovel instanceof Durable) $shovel->setUnbreakable();
                     $sender->getInventory()->addItem($shovel);
                     $sender->sendMessage('初期装備を配布しました');
+                    QuestListener::callSubscribedQuest($sender->getXuid(), QuestListener::GET_INIT_TOOL, null);
                     return;
                 case "food":
                     $food = Item::get(ItemIds::MELON)->setCustomName("無限すいか")->setLore(["食べても食べても減らない不思議なすいか"]);

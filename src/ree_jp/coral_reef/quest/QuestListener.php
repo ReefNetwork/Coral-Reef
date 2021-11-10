@@ -11,9 +11,11 @@
 
 namespace ree_jp\coral_reef\quest;
 
+use pocketmine\event\entity\EntityTeleportEvent;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerJoinEvent;
 use pocketmine\event\player\PlayerQuitEvent;
+use pocketmine\Player;
 use ree_jp\coral_reef\quest\data\QuestData;
 
 class QuestListener implements Listener
@@ -24,8 +26,10 @@ class QuestListener implements Listener
      */
 
     const JOIN = "join";
+    const TRANSFER = "transfer";
     const LEVEL_UP = "level_up";
     const USE_SKILL = "user_skill";
+    const GET_INIT_TOOL = "get_init_tool";
 
     static array $subscribeQuest = [];
 
@@ -35,6 +39,17 @@ class QuestListener implements Listener
     function onJoin(PlayerJoinEvent $ev): void
     {
         self::callSubscribedQuest($ev->getPlayer()->getXuid(), self::JOIN, null);
+    }
+
+    /**
+     * @priority MONITOR
+     */
+    function onTransfer(EntityTeleportEvent $ev)
+    {
+        $p = $ev->getEntity();
+        if ($p instanceof Player) {
+            QuestListener::callSubscribedQuest($p->getXuid(), self::TRANSFER, $ev->getTo()->getLevel()->getFolderName());
+        }
     }
 
     /**
@@ -72,6 +87,17 @@ class QuestListener implements Listener
         if (isset(self::$subscribeQuest[$type]) && isset(self::$subscribeQuest[$type][$xuid])) {
             foreach (self::$subscribeQuest[$type][$xuid] as $key => $subscribedQuest) {
                 if ($quest::ID === $subscribedQuest::ID) unset(self::$subscribeQuest[$type][$xuid][$key]);
+            }
+        }
+    }
+
+    static function allUnsubscribeQuest(string $xuid, QuestData $quest): void
+    {
+        foreach (self::$subscribeQuest as $type => $xuidArray) {
+            if (isset($xuidArray[$xuid])) {
+                foreach (self::$subscribeQuest[$type][$xuid] as $key => $subscribedQuest) {
+                    if ($quest::ID === $subscribedQuest::ID) unset(self::$subscribeQuest[$type][$xuid][$key]);
+                }
             }
         }
     }

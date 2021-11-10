@@ -16,6 +16,7 @@ use ree_jp\coral_reef\quest\data\DigQuest;
 use ree_jp\coral_reef\quest\data\LevelUpQuest;
 use ree_jp\coral_reef\quest\data\LoginQuest;
 use ree_jp\coral_reef\quest\data\QuestData;
+use ree_jp\coral_reef\quest\data\TutorialQuest;
 use ree_jp\coral_reef\sql\SQLConst;
 use ree_jp\coral_reef\sql\SQLManager;
 
@@ -30,6 +31,7 @@ class QuestManager
             foreach ($rows as $row) {
                 self::$quests[$xuid][] = self::getQuest($xuid, $row['subtype'], $row['value']);
             }
+            self::registerQuest($xuid, TutorialQuest::ID, null);
             self::registerQuest($xuid, LoginQuest::ID, null);
             self::registerQuest($xuid, LevelUpQuest::ID, null);
             self::registerQuest($xuid, DigQuest::ID, null);
