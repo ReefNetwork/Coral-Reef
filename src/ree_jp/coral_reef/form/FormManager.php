@@ -218,6 +218,10 @@ class FormManager
                 "はい",
                 null,
                 function (Player $p, ClosureButton $button) {
+                    if ($p->getLevel()->getFolderName() === "lobby") {
+                        $p->sendMessage("このワールドでは使用することが出来ません");
+                        return;
+                    }
                     if (AccountManager::hasValue($p->getXuid(), "random_warp_cool_time")) { // 30秒のクールタイム
                         $p->sendMessage("連続で使用するには30秒お待ちください");
                         return;
