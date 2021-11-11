@@ -50,6 +50,8 @@ class QuestManager
     static function getQuest(string $xuid, string $questID, ?string $value): ?QuestData
     {
         switch ($questID) {
+            case TutorialQuest::ID:
+                return new TutorialQuest($xuid, $value);
             case LevelUpQuest::ID:
                 return new LevelUpQuest($xuid, $value);
             case DigQuest::ID:
