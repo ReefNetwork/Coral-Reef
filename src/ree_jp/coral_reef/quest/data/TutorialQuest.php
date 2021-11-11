@@ -48,15 +48,39 @@ class TutorialQuest extends QuestData
         switch (intval($this->value)) {
             case 0:
                 QuestListener::subscribeQuest($this->xuid, QuestListener::GET_INIT_TOOL, $this);
-                if (!is_null($p)) $p->sendMessage(TextFormat::AQUA . "[チュートリアル]" . $this->getRewardDetails() .
+                if (!is_null($p)) $p->sendMessage(TextFormat::AQUA . "[チュートリアル]" . $this->getProgress() .
                     "\nロビーワールドで「初期装備」とかかれた看板をタップもしくは右クリックで受け取れます");
                 return;
             case 1:
                 QuestListener::subscribeQuest($this->xuid, QuestListener::TRANSFER, $this);
-                if (!is_null($p)) $p->sendMessage(TextFormat::AQUA . "[チュートリアル]" . $this->getRewardDetails() .
+                if (!is_null($p)) $p->sendMessage(TextFormat::AQUA . "[チュートリアル]" . $this->getProgress() .
                     "\n棒を地面にタップするとメニューが現れます。メニューの中の「ワールドを移動」を選択し、さらに整地1を選択すると移動できます");
                 return;
             case 2:
+                QuestListener::subscribeQuest($this->xuid, QuestListener::RANDOM_WARP, $this);
+                if (!is_null($p)) $p->sendMessage(TextFormat::AQUA . "[チュートリアル]" . $this->getProgress() .
+                    "\nメニューを開いて「ランダムワープ」を選択するとランダムな地点にワープ出来ます");
+                return;
+            case 3:
+                QuestListener::subscribeQuest($this->xuid, QuestListener::CREATE_WARP_POINT, $this);
+                if (!is_null($p)) $p->sendMessage(TextFormat::AQUA . "[チュートリアル]" . $this->getProgress() .
+                    "\nメニューを開いて「ワープ地点」を選択し、さらに「ワープ地点を 作成/削除 する」を選択し、さらに「ワープ地点を作成する」を選択し、" .
+                    "分かりやすいワープ地点の名前を入力するとワープ地点を作成できます");
+                return;
+            case 4:
+                QuestListener::subscribeQuest($this->xuid, QuestListener::BREAK, $this);
+                if (!is_null($p)) $p->sendMessage(TextFormat::AQUA . "[チュートリアル]" . $this->getProgress() .
+                    "\nブロックを掘ってみよう");
+                return;
+            case 5:
+                QuestListener::subscribeQuest($this->xuid, QuestListener::CHANGE_SKILL, $this);
+                if (!is_null($p)) $p->sendMessage(TextFormat::AQUA . "[チュートリアル]" . $this->getProgress() .
+                    "\nメニューを開いて「スキル設定」を選択し、さらに「" . TextFormat::GREEN . "アングリア" . TextFormat::RESET . "」選択するとスキルを変更できます");
+                return;
+            case 6:
+                QuestListener::subscribeQuest($this->xuid, QuestListener::GATYA, $this);
+                if (!is_null($p)) $p->sendMessage(TextFormat::AQUA . "[チュートリアル]" . $this->getProgress() .
+                    "\nメニューから「ガチャ」を選択し、「ノーマルガチャ 10連続」を選択するとガチャを10回引くことができます");
                 return;
         }
     }
@@ -86,10 +110,49 @@ class TutorialQuest extends QuestData
                 }
                 break;
             case QuestListener::TRANSFER:
-                if (intval($this->value) === 1) {
+                if (($value === "main_1") && (intval($this->value) === 1)) {
                     $this->value++;
                     $this->giveReward();
                     $this->init();
+                }
+                break;
+            case QuestListener::RANDOM_WARP:
+                if (intval($this->value) === 2) {
+                    $this->value++;
+                    $this->giveReward();
+                    $this->init();
+                }
+                break;
+            case QuestListener::CREATE_WARP_POINT:
+                if (intval($this->value) === 3) {
+                    $this->value++;
+                    $this->giveReward();
+                    $this->init();
+                }
+                break;
+            case QuestListener::BREAK:
+                if (intval($this->value) === 4) {
+                    $this->value++;
+                    $this->giveReward();
+                    $this->init();
+                }
+                break;
+            case QuestListener::CHANGE_SKILL:
+                if (intval($this->value) === 5) {
+                    $this->value++;
+                    $this->giveReward();
+                    $this->init();
+                }
+                break;
+            case QuestListener::GATYA:
+                if (intval($this->value) === 6) {
+                    $this->progress++;
+                    if ($this->progress >= 10) {
+                        $this->value++;
+                        $this->giveReward();
+                        $this->progress = 0;
+                        $this->init();
+                    }
                 }
                 break;
         }
@@ -116,7 +179,9 @@ class TutorialQuest extends QuestData
             case 4:
                 return "ブロックを掘ってみよう";
             case 5:
-                return "ガチャを10回引いてみよう";
+                return "スキルを設定してみよう";
+            case 6:
+                return "ガチャを10回引いてみよう(" . $this->progress . "回/10回)";
             default:
                 return "チュートリアルはすべて完了しました";
         }

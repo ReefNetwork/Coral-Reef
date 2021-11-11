@@ -17,6 +17,7 @@ use bbo51dog\bboform\form\ModalForm;
 use bbo51dog\bboform\form\SimpleForm;
 use pocketmine\Player;
 use pocketmine\utils\TextFormat;
+use ree_jp\coral_reef\quest\QuestListener;
 use ree_jp\coral_reef\skill\BreakSkill;
 use ree_jp\coral_reef\skill\SkillManager;
 use ree_jp\coral_reef\sql\SQLManager;
@@ -90,6 +91,7 @@ class SkillSelectForm
                     $user = SQLManager::$manager->getUser($p->getXuid());
                     $user->skill = $skill;
                     $p->sendMessage('スキルを変更しました');
+                    QuestListener::callSubscribedQuest($p->getXuid(), QuestListener::CHANGE_SKILL, $skill->name);
                 }
             ),
             new ClosureButton(

@@ -11,6 +11,7 @@
 
 namespace ree_jp\coral_reef\quest;
 
+use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\entity\EntityTeleportEvent;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerJoinEvent;
@@ -26,10 +27,16 @@ class QuestListener implements Listener
      */
 
     const JOIN = "join";
+    const BREAK = "break";
     const TRANSFER = "transfer";
+
     const LEVEL_UP = "level_up";
+    const CHANGE_SKILL = "change_skill";
     const USE_SKILL = "user_skill";
     const GET_INIT_TOOL = "get_init_tool";
+    const RANDOM_WARP = "random_warp";
+    const CREATE_WARP_POINT = "create_warp_point";
+    const GATYA = "gatya";
 
     static array $subscribeQuest = [];
 
@@ -44,7 +51,15 @@ class QuestListener implements Listener
     /**
      * @priority MONITOR
      */
-    function onTransfer(EntityTeleportEvent $ev)
+    function onBreak(BlockBreakEvent $ev): void
+    {
+        QuestListener::callSubscribedQuest($ev->getPlayer()->getXuid(), self::BREAK, $ev->getBlock());
+    }
+
+    /**
+     * @priority MONITOR
+     */
+    function onTransfer(EntityTeleportEvent $ev): void
     {
         $p = $ev->getEntity();
         if ($p instanceof Player) {

@@ -24,6 +24,7 @@ use pocketmine\math\Vector3;
 use pocketmine\Player;
 use pocketmine\utils\TextFormat;
 use ree_jp\coral_reef\account\AccountManager;
+use ree_jp\coral_reef\quest\QuestListener;
 use ree_jp\coral_reef\sql\SQLManager;
 
 class MyWarpForm
@@ -119,6 +120,7 @@ class MyWarpForm
                         $p->getFloorX(), $p->getFloorY(),
                         $p->getFloorZ()
                     );
+                    QuestListener::callSubscribedQuest($p->getXuid(), QuestListener::CREATE_WARP_POINT, null);
                 }
             }
         ))

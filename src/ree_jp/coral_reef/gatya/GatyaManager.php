@@ -20,6 +20,7 @@ use poggit\libasynql\SqlError;
 use ree_jp\coral_reef\account\GiftData;
 use ree_jp\coral_reef\account\GiftManager;
 use ree_jp\coral_reef\gatya\items\ReefItems;
+use ree_jp\coral_reef\quest\QuestListener;
 use ree_jp\coral_reef\sql\SQLConst;
 use ree_jp\coral_reef\sql\SQLManager;
 
@@ -84,6 +85,7 @@ class GatyaManager
                                             $broadMessage = $p->getDisplayName() . 'さんが' . TextFormat::GREEN . 'REEFレア' . TextFormat::RESET . 'を引きました';
                                             Server::getInstance()->broadcastMessage($broadMessage);
                                         }
+                                        QuestListener::callSubscribedQuest($p->getXuid(), QuestListener::GATYA, $item);
                                         if (!is_null($func)) $func();
                                     }, function (SqlError $error) use ($p) {
                                         $p->sendMessage('エラーが発生しました');

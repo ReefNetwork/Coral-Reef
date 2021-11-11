@@ -21,6 +21,7 @@ use pocketmine\Player;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat;
 use ree_jp\coral_reef\account\AccountManager;
+use ree_jp\coral_reef\quest\QuestListener;
 use ree_jp\coral_reef\sql\SQLManager;
 
 class FormManager
@@ -240,6 +241,7 @@ class FormManager
                         }
                     }
                     $p->teleport($vec);
+                    QuestListener::callSubscribedQuest($p->getXuid(), QuestListener::RANDOM_WARP, $vec);
                 }
             ),
             new ClosureButton(
