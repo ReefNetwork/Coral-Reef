@@ -45,4 +45,9 @@ class LoginQuest extends DailyQuest
     {
         return true;
     }
+
+    function getProgress(): string
+    {
+        return "完了済み";
+    }
 }
