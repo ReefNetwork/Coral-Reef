@@ -26,7 +26,7 @@ class TutorialQuest extends QuestData
 
     private int $progress = 0;
 
-    private int $max = 5; // チュートリアル数(今後増やすことも考えて)
+    private int $max = 6; // チュートリアル数(今後増やすことも考えて)
 
     function __construct(string $xuid, ?string $value)
     {
@@ -96,7 +96,7 @@ class TutorialQuest extends QuestData
 
     function isComplete(): bool
     {
-        return intval($this->value) >= $this->max;
+        return intval($this->value) > $this->max;
     }
 
     function onEvent(string $type, $value): void
@@ -181,7 +181,7 @@ class TutorialQuest extends QuestData
             case 5:
                 return "スキルを設定してみよう";
             case 6:
-                return "ガチャを10回引いてみよう(" . $this->progress . "回/10回)";
+                return "ガチャを10回引いてみよう(" . $this->progress . "/10)";
             default:
                 return "チュートリアルはすべて完了しました";
         }
