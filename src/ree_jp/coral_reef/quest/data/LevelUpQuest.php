@@ -1,4 +1,5 @@
-<?php
+<?php /** @noinspection PhpDuplicateSwitchCaseBodyInspection */
+
 /*
  *  CCCCC                        lll RRRRRR                 fff
  * CC    C  oooo  rr rr    aa aa lll RR   RR   eee    eee  ff
@@ -84,8 +85,23 @@ class LevelUpQuest extends QuestData
                     GatyaManager::addTicket($this->xuid, SQLConst::TICKETS_NORMAL, 5);
                     $this->sendGift($questLevel, [$item]);
                     break;
-                case 6:
-                    GatyaManager::addTicket($this->xuid, SQLConst::TICKETS_NORMAL, 2);
+                case $questLevel <= 9:
+                    GatyaManager::addTicket($this->xuid, SQLConst::TICKETS_NORMAL, 3);
+                    break;
+                case 10:
+                    GatyaManager::addTicket($this->xuid, SQLConst::TICKETS_NORMAL, 5);
+                    break;
+                case $questLevel <= 14:
+                    GatyaManager::addTicket($this->xuid, SQLConst::TICKETS_NORMAL, 4);
+                    break;
+                case 15:
+                    GatyaManager::addTicket($this->xuid, SQLConst::TICKETS_NORMAL, 10);
+                    break;
+                case $questLevel <= 19:
+                    GatyaManager::addTicket($this->xuid, SQLConst::TICKETS_NORMAL, 5);
+                    break;
+                case 20:
+                    GatyaManager::addTicket($this->xuid, SQLConst::TICKETS_NORMAL, 10);
                     break;
             }
             $p->sendMessage("レベルアップ報酬として" . $this->getRewardDetails($questLevel) .
@@ -119,8 +135,18 @@ class LevelUpQuest extends QuestData
                 return "ガチャ券×2枚とりんご×32個";
             case 5:
                 return "ガチャ券×5枚と鉄のツルハシ(耐久3)×3個";
-            case 6:
+            case $level <= 9:
                 return "ガチャ券×3枚";
+            case 10:
+                return "ガチャ券×5枚";
+            case $level <= 14:
+                return "ガチャ券×4枚";
+            case 15:
+                return "ガチャ券×10枚";
+            case $level <= 19:
+                return "ガチャ券×5枚";
+            case 20:
+                return "ガチャ券×10枚";
         }
         return "実装をお待ちください";
     }

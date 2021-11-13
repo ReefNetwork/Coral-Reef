@@ -33,10 +33,13 @@ class QuestManager
             foreach ($rows as $row) {
                 self::$quests[$xuid][] = self::getQuest($xuid, $row['subtype'], $row['value']);
             }
+
             self::registerQuest($xuid, TutorialQuest::ID, null);
-            self::registerQuest($xuid, DailyLoginQuest::ID, null);
             self::registerQuest($xuid, LevelUpQuest::ID, null);
             self::registerQuest($xuid, DailyDigQuest::ID, null);
+            self::registerQuest($xuid, DailyLoginQuest::ID, null);
+            self::registerQuest($xuid, WeeklyDigQuest::ID, null);
+            self::registerQuest($xuid, WeeklyAchieveQuest::ID, null);
             if ($func instanceof Closure) $func($rows);
         });
     }
