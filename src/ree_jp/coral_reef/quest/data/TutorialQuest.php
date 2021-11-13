@@ -160,6 +160,7 @@ class TutorialQuest extends QuestData
 
     private function giveReward(): void
     {
+        QuestListener::callSubscribedQuest($this->xuid, QuestListener::CLEAR_QUEST, $this);
         GatyaManager::addTicket($this->xuid, SQLConst::TICKETS_NORMAL, 1);
         $p = AccountManager::getPlayerByXuid($this->xuid);
         if (!is_null($p)) $p->sendMessage("チュートリアルクエスト報酬としてガチャ券を1枚受け取りました");

@@ -13,10 +13,11 @@ namespace ree_jp\coral_reef\quest\data;
 
 use pocketmine\Server;
 use ree_jp\coral_reef\gatya\GatyaManager;
+use ree_jp\coral_reef\quest\QuestListener;
 use ree_jp\coral_reef\sql\SQLConst;
 use ree_jp\coral_reef\sql\SQLManager;
 
-class LoginQuest extends DailyQuest
+class DailyLoginQuest extends DailyQuest
 {
     const ID = "daily_login";
     const NAME = "ログインボーナス";
@@ -28,6 +29,7 @@ class LoginQuest extends DailyQuest
         parent::__construct($xuid, $value);
         if ($this->value !== "true") {
             $this->value = "true";
+            QuestListener::callSubscribedQuest($this->xuid, QuestListener::CLEAR_QUEST, $this);
             SQLManager::$manager->addLog($this->xuid, SQLConst::LOG_QUEST, self::ID, SQLConst::COMPLETE, SQLConst::NOW_TIME, null, null);
             GatyaManager::addTicket($this->xuid, SQLConst::TICKETS_NORMAL, 1);
             foreach (Server::getInstance()->getOnlinePlayers() as $p) {

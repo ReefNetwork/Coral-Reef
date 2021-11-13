@@ -57,6 +57,7 @@ class LevelUpQuest extends QuestData
             $questLevel++;
             $this->value = strval($questLevel);
 
+            QuestListener::callSubscribedQuest($this->xuid, QuestListener::CLEAR_QUEST, $this);
             SQLManager::$manager->addLog($this->xuid, SQLConst::LOG_QUEST, self::ID, $questLevel, SQLConst::NOW_TIME, null, null);
             switch ($questLevel) {
                 case 1:

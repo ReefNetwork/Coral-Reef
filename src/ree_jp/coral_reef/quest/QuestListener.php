@@ -37,6 +37,7 @@ class QuestListener implements Listener
     const RANDOM_WARP = "random_warp";
     const CREATE_WARP_POINT = "create_warp_point";
     const GATYA = "gatya";
+    const CLEAR_QUEST = "clear_quest";
 
     static array $subscribeQuest = [];
 

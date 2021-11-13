@@ -12,11 +12,13 @@
 namespace ree_jp\coral_reef\quest;
 
 use Closure;
-use ree_jp\coral_reef\quest\data\DigQuest;
+use ree_jp\coral_reef\quest\data\DailyDigQuest;
+use ree_jp\coral_reef\quest\data\DailyLoginQuest;
 use ree_jp\coral_reef\quest\data\LevelUpQuest;
-use ree_jp\coral_reef\quest\data\LoginQuest;
 use ree_jp\coral_reef\quest\data\QuestData;
 use ree_jp\coral_reef\quest\data\TutorialQuest;
+use ree_jp\coral_reef\quest\data\WeeklyAchieveQuest;
+use ree_jp\coral_reef\quest\data\WeeklyDigQuest;
 use ree_jp\coral_reef\sql\SQLConst;
 use ree_jp\coral_reef\sql\SQLManager;
 
@@ -32,9 +34,9 @@ class QuestManager
                 self::$quests[$xuid][] = self::getQuest($xuid, $row['subtype'], $row['value']);
             }
             self::registerQuest($xuid, TutorialQuest::ID, null);
-            self::registerQuest($xuid, LoginQuest::ID, null);
+            self::registerQuest($xuid, DailyLoginQuest::ID, null);
             self::registerQuest($xuid, LevelUpQuest::ID, null);
-            self::registerQuest($xuid, DigQuest::ID, null);
+            self::registerQuest($xuid, DailyDigQuest::ID, null);
             if ($func instanceof Closure) $func($rows);
         });
     }
@@ -54,10 +56,14 @@ class QuestManager
                 return new TutorialQuest($xuid, $value);
             case LevelUpQuest::ID:
                 return new LevelUpQuest($xuid, $value);
-            case DigQuest::ID:
-                return new DigQuest($xuid, $value);
-            case LoginQuest::ID:
-                return new LoginQuest($xuid, $value);
+            case DailyDigQuest::ID:
+                return new DailyDigQuest($xuid, $value);
+            case DailyLoginQuest::ID:
+                return new DailyLoginQuest($xuid, $value);
+            case WeeklyDigQuest::ID:
+                return new WeeklyDigQuest($xuid, $value);
+            case WeeklyAchieveQuest::ID:
+                return new WeeklyAchieveQuest($xuid, $value);
             default:
                 return null;
         }

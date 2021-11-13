@@ -65,7 +65,7 @@ class QuestForm
     {
         $postScript = "";
         if ($quest instanceof DailyQuest) {
-            $postScript = $postScript . "\n期限: " . date("y年m月d日 H時i分", $quest->limit);
+            $postScript = $postScript . "\n期限: " . date("y年m月d日 H時i分", $quest->limit) . "(期限切れ後、進捗がリセットされて復活します)";
         }
         return (new SimpleForm())
             ->setTitle("Quest : " . $quest::NAME)

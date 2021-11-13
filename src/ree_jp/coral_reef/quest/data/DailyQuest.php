@@ -15,26 +15,27 @@ abstract class DailyQuest extends QuestData
 {
     public int $limit;
 
-    function __construct(string $xuid, ?string $value)
+    function __construct(string $xuid, ?string $value, ?int $limit = null)
     {
+        if (is_null($limit)) $limit = $this->getDeadTime();
         $array = json_decode($value, true);
 
-        if (!is_null($array) && $array["limit"] === $this->getDeadTime()) {
+        if (!is_null($array) && $array["limit"] === $limit) {
             $this->limit = $array["limit"];
             parent::__construct($xuid, $array["value"]);
         } else {
-            $this->limit = $this->getDeadTime();
+            $this->limit = $limit;
             parent::__construct($xuid, "");
         }
     }
 
-    private function getDeadTime(): int
+    protected function getDeadTime(): int
     {
         // 5時でリセットする
         if (date("H") < 5) { //5時を下回っていたらその日の5時
-            return mktime(5, 0, 0, date('n'), date('j'), date('Y'));
+            return strtotime("today 5hour");
         } else { // 5時より上だったら次の日の5時
-            return mktime(5, 0, 0, date('n'), date('j') + 1, date('Y'));
+            return strtotime("tomorrow 5hour");
         }
     }
 

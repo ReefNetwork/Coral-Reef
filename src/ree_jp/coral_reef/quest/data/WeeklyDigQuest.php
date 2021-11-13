@@ -17,11 +17,11 @@ use ree_jp\coral_reef\quest\QuestListener;
 use ree_jp\coral_reef\sql\SQLConst;
 use ree_jp\coral_reef\sql\SQLManager;
 
-class DigQuest extends DailyQuest
+class WeeklyDigQuest extends WeeklyQuest
 {
-    const ID = "dig";
-    const NAME = "整地";
-    const SHORT_DETAILS = "整地しよう!";
+    const ID = "weekly_dig";
+    const NAME = "整地(毎週)";
+    const SHORT_DETAILS = "整地しよう!(毎週)";
     const EXPLANATION = "スキルを一定回数使用して整地をしよう。";
 
     function __construct(string $xuid, ?string $value)
@@ -34,7 +34,7 @@ class DigQuest extends DailyQuest
 
     function isComplete(): bool
     {
-        return $this->value >= 1000;
+        return $this->value >= 10000;
     }
 
     function onEvent(string $type, $value): void
@@ -42,18 +42,17 @@ class DigQuest extends DailyQuest
         switch ($type) {
             case QuestListener::USE_SKILL:
                 $this->value++;
-                switch (intval($this->value)) {
-                    /** @noinspection PhpMissingBreakStatementInspection */
-                    case 1000:
-                        QuestListener::unsubscribeQuest($this->xuid, QuestListener::USE_SKILL, $this);
-                    case 100:
-                        SQLManager::$manager->addLog($this->xuid, SQLConst::LOG_QUEST, self::ID, $this->value,
-                            SQLConst::NOW_TIME, null, null);
-                        GatyaManager::addTicket($this->xuid, SQLConst::TICKETS_NORMAL, 1);
-                        $p = AccountManager::getPlayerByXuid($this->xuid);
-                        if (!is_null($p)) $p->sendMessage("デイリー整地ボーナスとしてガチャチケットを受け取りました");
-                        break;
-                }
+                break;
+        }
+        switch (intval($this->value)) {
+            case 10000:
+                QuestListener::unsubscribeQuest($this->xuid, QuestListener::USE_SKILL, $this);
+                QuestListener::callSubscribedQuest($this->xuid, QuestListener::CLEAR_QUEST, $this);
+                SQLManager::$manager->addLog($this->xuid, SQLConst::LOG_QUEST, self::ID, $this->value,
+                    SQLConst::NOW_TIME, null, null);
+                GatyaManager::addTicket($this->xuid, SQLConst::TICKETS_NORMAL, 3);
+                $p = AccountManager::getPlayerByXuid($this->xuid);
+                if (!is_null($p)) $p->sendMessage("デイリー整地ボーナスとしてガチャチケットを受け取りました");
                 break;
         }
     }
@@ -61,10 +60,8 @@ class DigQuest extends DailyQuest
     function getProgress(): string
     {
         switch (true) {
-            case intval($this->value) < 100:
-                return "スキルを100回発動させよう (" . $this->value . "/100)";
             case intval($this->value) < 1000:
-                return "スキルを1000回発動させよう (" . $this->value . "/1000)";
+                return "スキルを1万回発動させよう (" . $this->value . "/10000)";
         }
         return "完了";
     }
@@ -74,7 +71,7 @@ class DigQuest extends DailyQuest
         if ($this->isComplete()) {
             return "完了済み";
         } else {
-            return "ガチャチケット×1枚";
+            return "ガチャチケット×3枚";
         }
     }
 }
