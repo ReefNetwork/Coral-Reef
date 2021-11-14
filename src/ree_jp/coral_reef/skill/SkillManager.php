@@ -23,7 +23,7 @@ use ree_jp\coral_reef\sql\SQLManager;
 
 class SkillManager
 {
-    const SKILLS = ['first', 'second', 'third', 'fourth', 'fifth', 'sixth'];
+    const SKILLS = ['first', 'second', 'third', 'fourth', 'fifth', 'sixth', "seventh", "eighth", "ninth", "tenth", "eleventh"];
 
     static array $reduceCoolTime = [];
 
@@ -31,22 +31,37 @@ class SkillManager
     { // https://en.wikipedia.org/wiki/List_of_reefs
         switch ($skill) {
             case 'first': // https://en.wikipedia.org/wiki/Angria_Bank
-                return new BreakSkill('アングリア', $skill, 0, 1, 0, 0, 1);
+                return new BreakSkill('アングリア', $skill, 0, 1, 0, 0, 1, "1×2");
 
             case 'second': // https://en.wikipedia.org/wiki/Apo_Reef
-                return new BreakSkill('アポ', $skill, 0, 1, 0, 1, 3);
+                return new BreakSkill('アポ', $skill, 0, 1, 0, 1, 3, "1×2×2");
 
             case 'third': // https://en.wikipedia.org/wiki/Arrecifes_de_Cozumel_National_Park
-                return new BreakSkill('パランカー', $skill, 0, 1, 2, 0, 5);
+                return new BreakSkill('パランカー', $skill, 0, 1, 2, 0, 5, "3×2");
 
             case 'fourth': // https://en.wikipedia.org/wiki/Bar_Reef
-                return new BreakSkill('パー', $skill, 0, 2, 2, 0, 8);
+                return new BreakSkill('パー', $skill, 0, 2, 2, 0, 8, "3×3");
 
             case 'fifth': // https://en.wikipedia.org/wiki/Belize_Barrier_Reef
-                return new BreakSkill('ベリーズバリア', $skill, 10, 2, 2, 1, 10);
+                return new BreakSkill('ベリーズバリア', $skill, 10, 2, 2, 1, 10, "3×3×2");
 
             case 'sixth': // https://en.wikipedia.org/wiki/Benares_Shoals
-                return new BreakSkill('ベナレスショールス', $skill, 15, 2, 2, 2, 13);
+                return new BreakSkill('ベナレスショールス', $skill, 15, 2, 2, 2, 13, "3×3×3");
+
+            case "seventh": // https://en.wikipedia.org/wiki/Coral_Triangle
+                return new BreakSkill("トライアングル", $skill, 10, 3, 3, 0, 15, "5×5");
+
+            case "eighth": // https://en.wikipedia.org/wiki/Daintree_Reef
+                return new BreakSkill("デインツリー", $skill, 15, 3, 3, 0, 18, "5×5×2");
+
+            case "ninth": // https://en.wikipedia.org/wiki/Darwin_Mounds
+                return new BreakSkill("ダーウィン", $skill, 20, 3, 3, 0, 20, "5×5×3");
+
+            case "tenth": // https://en.wikipedia.org/wiki/Filippo_Reef
+                return new BreakSkill("フィリッポ", $skill, 25, 3, 3, 0, 23, "5×5×4");
+
+            case "eleventh": // https://en.wikipedia.org/wiki/Flinders_Reef
+                return new BreakSkill("フリンダーズ", $skill, 30, 3, 3, 0, 25, "5×5×5");
 
             default:
                 return null;

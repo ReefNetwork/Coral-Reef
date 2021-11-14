@@ -14,7 +14,6 @@ namespace ree_jp\coral_reef\account;
 
 use Closure;
 use Exception;
-use pocketmine\Player;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat;
 use ree_jp\coral_reef\quest\QuestListener;
@@ -25,9 +24,10 @@ use ree_jp\coral_reef\sql\SQLManager;
 
 class UserAccount
 {
-    const LEVEL_EXPERIMENT = [
+    const LEVEL_EXPERIMENT = [ // 16から18まではスキルで35ブロック破壊と計算する
         1 => 1, 2 => 1000, 3 => 2500, 4 => 6500, 5 => 11500, 6 => 20500, 7 => 31000, 8 => 43000, 9 => 63250, 10 => 85750,
-        11 => 135250, 12 => 189250, 13 => 247750
+        11 => 135250, 12 => 189250, 13 => 247750, 14 => 342250, 15 => 443500, 16 => 583500, 17 => 732250, 18 => 889750, 19 => 1127250, 20 => 1377250,
+        21 => 1771000, 22 => 2183500, 23 => 2614750, 24 => 3214750, 25 => 3839750,
     ];
 
     public string $xuid;

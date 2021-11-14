@@ -46,9 +46,9 @@ class SkillSelectForm
                 $form->addElement(new Button('エラーが発生しました'));
                 array_push($skills, null);
             } else {
-                $color = $skill->needLevel <= $user->level ? TextFormat::GREEN : TextFormat::DARK_GRAY;
+                $color = $skill->needLevel <= $user->level ? TextFormat::BOLD . TextFormat::GREEN : TextFormat::DARK_GRAY;
                 $form->addElement(new ClosureButton(
-                    $color . $skill->name,
+                    $color . $skill->name . "\n" . $skill->shortDetails,
                     null,
                     function (Player $p, ClosureButton $button) use ($user, $skill) {
                         if ($skill->needLevel <= $user->level) { // レベルが足りる場合

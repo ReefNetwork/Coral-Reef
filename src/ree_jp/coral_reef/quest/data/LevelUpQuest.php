@@ -103,6 +103,12 @@ class LevelUpQuest extends QuestData
                 case 20:
                     GatyaManager::addTicket($this->xuid, SQLConst::TICKETS_NORMAL, 10);
                     break;
+                case $questLevel <= 24:
+                    GatyaManager::addTicket($this->xuid, SQLConst::TICKETS_NORMAL, 6);
+                    break;
+                case 25:
+                    GatyaManager::addTicket($this->xuid, SQLConst::TICKETS_NORMAL, 10);
+                    break;
             }
             $p->sendMessage("レベルアップ報酬として" . $this->getRewardDetails($questLevel) .
                 "を受け取りました\n報酬にアイテムが含まれている場合はギフトから1週間以内に受け取れます");
@@ -146,6 +152,10 @@ class LevelUpQuest extends QuestData
             case $level <= 19:
                 return "ガチャ券×5枚";
             case 20:
+                return "ガチャ券×10枚";
+            case $level <= 24:
+                return "ガチャ券×6枚";
+            case 25:
                 return "ガチャ券×10枚";
         }
         return "実装をお待ちください";
