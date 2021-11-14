@@ -5,20 +5,21 @@
 -- #            { values
 -- #                { add
 DELIMITER //
-CREATE PROCEDURE add_value(IN v_xuid BIGINT, IN v_type VARCHAR(99), IN v_subtype VARCHAR(99), IN v_value INT)
+CREATE PROCEDURE "add_value"(IN _xuid BIGINT, IN _type VARCHAR(99), IN _subtype VARCHAR(99), IN _value INT)
 BEGIN
     SELECT value
     INTO @get_value
     FROM VIRTUAL_VALUES
-    WHERE xuid = v_xuid
-      AND type = v_type
-      AND subtype = v_subtype;
-    SET @int_value = CAST(@get_value AS SIGNED) + v_value;
+    WHERE xuid = _xuid
+      AND type = _type
+      AND subtype = _subtype;
+
+    SET @int_value = CAST(@get_value AS SIGNED) + _value;
+
     INSERT INTO VIRTUAL_VALUES
-    VALUES (v_xuid, v_type, v_subtype, @int_value)
+    VALUES (_xuid, _type, _subtype, @int_value)
     ON DUPLICATE KEY UPDATE value = @int_value;
-END
-//
+END //
 DELIMITER ;
 -- #                }
 -- #            }
