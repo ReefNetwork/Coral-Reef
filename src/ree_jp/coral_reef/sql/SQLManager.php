@@ -49,6 +49,7 @@ class SQLManager
             "mysql" => "mysql.sql",
         ]);
         Server::getInstance()->getLogger()->info('[SQL] 準備しています');
+        $this->createFunction();
         $this->createTable();
 
         // BANデータを用意しとく
@@ -195,6 +196,12 @@ class SQLManager
             ['xuid' => intval($xuid), 'type' => strtolower($type), 'subtype' => strtolower($subtype), 'value' => $value], $func, $failure);
     }
 
+    public function addValue(string $xuid, string $type, string $subtype, int $value, ?Closure $func, ?Closure $failure = null): void
+    {
+        $this->db->executeInsert('coral_reef.values.add',
+            ['xuid' => intval($xuid), 'type' => strtolower($type), 'subtype' => strtolower($subtype), 'value' => $value], $func, $failure);
+    }
+
     public function deleteValue(string $xuid, string $type, string $subtype, ?Closure $func, ?Closure $failure = null): void
     {
         $this->db->executeGeneric('coral_reef.values.delete', ['xuid' => intval($xuid), 'type' => strtolower($type), 'subtype' => strtolower($subtype)],
@@ -274,6 +281,11 @@ class SQLManager
                 if ($p->getXuid() === $xuid) $p->sendMessage($notice);
             }
         };
+    }
+
+    private function createFunction(): void
+    {
+        $this->db->executeGeneric("coral_reef.init.functions.values.add");
     }
 
     private function createTable(): void

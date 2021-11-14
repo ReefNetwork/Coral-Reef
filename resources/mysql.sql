@@ -1,7 +1,30 @@
 -- #!mysql
 -- #{ coral_reef
--- #    { init.tables
--- #        { user
+-- #    { init
+-- #        { functions
+-- #            { values
+-- #                { add
+DELIMITER //
+CREATE PROCEDURE add_value(IN v_xuid BIGINT, IN v_type VARCHAR(99), IN v_subtype VARCHAR(99), IN v_value INT)
+BEGIN
+    SELECT value
+    INTO @get_value
+    FROM VIRTUAL_VALUES
+    WHERE xuid = v_xuid
+      AND type = v_type
+      AND subtype = v_subtype;
+    SET @int_value = CAST(@get_value AS SIGNED) + v_value;
+    INSERT INTO VIRTUAL_VALUES
+    VALUES (v_xuid, v_type, v_subtype, @int_value)
+    ON DUPLICATE KEY UPDATE value = @int_value;
+END
+//
+DELIMITER ;
+-- #                }
+-- #            }
+-- #        }
+-- #        { tables
+-- #            { user
 CREATE TABLE IF NOT EXISTS USER
 (
     xuid       BIGINT UNSIGNED NOT NULL PRIMARY KEY,
@@ -10,8 +33,8 @@ CREATE TABLE IF NOT EXISTS USER
     experience BIGINT UNSIGNED NOT NULL,
     skill      VARCHAR(99)
 );
--- #        }
--- #        { ban
+-- #            }
+-- #            { ban
 CREATE TABLE IF NOT EXISTS BAN
 (
     PRIMARY KEY (type, value),
@@ -20,8 +43,8 @@ CREATE TABLE IF NOT EXISTS BAN
     reason VARCHAR(999)       NOT NULL,
     time   DATETIME
 );
--- #        }
--- #        { warp
+-- #            }
+-- #            { warp
 CREATE TABLE IF NOT EXISTS WARP
 (
     PRIMARY KEY (xuid, name),
@@ -33,8 +56,8 @@ CREATE TABLE IF NOT EXISTS WARP
     y      INT             not null,
     z      INT             not null
 );
--- #        }
--- #        { land
+-- #            }
+-- #            { land
 CREATE TABLE IF NOT EXISTS LAND
 (
     PRIMARY KEY (xuid, name),
@@ -47,18 +70,18 @@ CREATE TABLE IF NOT EXISTS LAND
     mz     INT             NOT NULL,
     sz     INT             NOT NULL
 );
--- #        }
--- #        { virtual_value
+-- #            }
+-- #            { virtual_value
 CREATE TABLE IF NOT EXISTS VIRTUAL_VALUES
 (
     PRIMARY KEY (xuid, type, subtype),
     xuid    BIGINT UNSIGNED NOT NULL,
     type    VARCHAR(99)     NOT NULL,
     subtype VARCHAR(99)     NOT NULL,
-    value VARCHAR(9999)
+    value   VARCHAR(9999)
 );
--- #        }
--- #        { log
+-- #            }
+-- #            { log
 CREATE TABLE IF NOT EXISTS LOG
 (
     xuid    BIGINT UNSIGNED NOT NULL,
@@ -67,6 +90,7 @@ CREATE TABLE IF NOT EXISTS LOG
     value   VARCHAR(99)     NOT NULL,
     time    DATETIME
 );
+-- #            }
 -- #        }
 -- #    }
 -- #    { user
@@ -138,6 +162,13 @@ FROM VIRTUAL_VALUES
 WHERE xuid = :xuid
   AND type = :type;
 -- #            }
+-- #        }
+-- #        { add
+-- #        :xuid int
+-- #        :type string
+-- #        :subtype string
+-- #        :value int
+CALL add_value(:xuid, :type, :subtype, :value);
 -- #        }
 -- #        { set
 -- #        :xuid int
