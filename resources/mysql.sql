@@ -4,8 +4,7 @@
 -- #        { functions
 -- #            { values
 -- #                { add
-DELIMITER //
-CREATE PROCEDURE "add_value"(IN _xuid BIGINT, IN _type VARCHAR(99), IN _subtype VARCHAR(99), IN _value INT)
+CREATE PROCEDURE add_value(IN _xuid BIGINT, IN _type VARCHAR(99), IN _subtype VARCHAR(99), IN _value INT)
 BEGIN
     SELECT value
     INTO @get_value
@@ -19,8 +18,7 @@ BEGIN
     INSERT INTO VIRTUAL_VALUES
     VALUES (_xuid, _type, _subtype, @int_value)
     ON DUPLICATE KEY UPDATE value = @int_value;
-END //
-DELIMITER ;
+END;
 -- #                }
 -- #            }
 -- #        }
