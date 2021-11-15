@@ -285,7 +285,8 @@ class SQLManager
 
     private function createFunction(): void
     {
-        $this->db->executeGeneric("coral_reef.init.functions.values.add");
+        $this->db->executeGeneric("coral_reef.init.functions.add_value.reset");
+        $this->db->executeGeneric("coral_reef.init.functions.add_value.create");
     }
 
     private function createTable(): void

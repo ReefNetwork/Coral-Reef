@@ -2,8 +2,8 @@
 -- #{ coral_reef
 -- #    { init
 -- #        { functions
--- #            { values
--- #                { add
+-- #            { add_values
+-- #                { create
 CREATE PROCEDURE add_value(IN _xuid BIGINT, IN _type VARCHAR(99), IN _subtype VARCHAR(99), IN _value INT)
 BEGIN
     SELECT value
@@ -19,6 +19,9 @@ BEGIN
     VALUES (_xuid, _type, _subtype, @int_value)
     ON DUPLICATE KEY UPDATE value = @int_value;
 END;
+-- #                }
+-- #                { reset
+DROP PROCEDURE IF EXISTS add_values;
 -- #                }
 -- #            }
 -- #        }
