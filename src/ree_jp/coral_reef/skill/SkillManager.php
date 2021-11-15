@@ -49,19 +49,19 @@ class SkillManager
                 return new BreakSkill('ベナレスショールス', $skill, 15, 2, 2, 2, 13, "3×3×3");
 
             case "seventh": // https://en.wikipedia.org/wiki/Coral_Triangle
-                return new BreakSkill("トライアングル", $skill, 10, 3, 3, 0, 15, "5×5");
+                return new BreakSkill("トライアングル", $skill, 10, 4, 4, 0, 15, "5×5");
 
             case "eighth": // https://en.wikipedia.org/wiki/Daintree_Reef
-                return new BreakSkill("デインツリー", $skill, 15, 3, 3, 0, 18, "5×5×2");
+                return new BreakSkill("デインツリー", $skill, 15, 4, 4, 1, 18, "5×5×2");
 
             case "ninth": // https://en.wikipedia.org/wiki/Darwin_Mounds
-                return new BreakSkill("ダーウィン", $skill, 20, 3, 3, 0, 20, "5×5×3");
+                return new BreakSkill("ダーウィン", $skill, 20, 4, 4, 2, 20, "5×5×3");
 
             case "tenth": // https://en.wikipedia.org/wiki/Filippo_Reef
-                return new BreakSkill("フィリッポ", $skill, 25, 3, 3, 0, 23, "5×5×4");
+                return new BreakSkill("フィリッポ", $skill, 25, 4, 4, 3, 23, "5×5×4");
 
             case "eleventh": // https://en.wikipedia.org/wiki/Flinders_Reef
-                return new BreakSkill("フリンダーズ", $skill, 30, 3, 3, 0, 25, "5×5×5");
+                return new BreakSkill("フリンダーズ", $skill, 30, 4, 4, 4, 25, "5×5×5");
 
             default:
                 return null;
