@@ -62,7 +62,7 @@ class EffectTask extends Task
     private static function setEffect(Player $p, int $effect, int $level): void
     {
         if ($level < 0) return;
-        $p->addEffect(new EffectInstance(Effect::getEffect($effect), 30 * 20, $level));
+        $p->addEffect(new EffectInstance(Effect::getEffect($effect), 30 * 20, $level, false));
     }
 
     private static function contextReflect(Player $p, array $contexts): void // 属性を反映させる

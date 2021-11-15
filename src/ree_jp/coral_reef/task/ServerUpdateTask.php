@@ -28,7 +28,7 @@ class ServerUpdateTask extends Task
     public function onRun(int $currentTick)
     {
         if (self::$haste_effect >= 0) {
-            $hasteEffect = new EffectInstance(Effect::getEffect(Effect::HASTE), 400, self::$haste_effect);
+            $hasteEffect = new EffectInstance(Effect::getEffect(Effect::HASTE), 400, self::$haste_effect, false);
             foreach (Server::getInstance()->getOnlinePlayers() as $p) $p->addEffect($hasteEffect);
         }
         if ($this->count < 60) {
