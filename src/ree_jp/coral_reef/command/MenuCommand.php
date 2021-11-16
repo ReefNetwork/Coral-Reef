@@ -22,7 +22,7 @@ class MenuCommand extends PluginCommand
     public function __construct(Plugin $owner)
     {
         parent::__construct('menu', $owner);
-        $this->setUsage('/menu - Menuを表示します');
+        $this->setUsage('メニューを表示します');
         $this->setAliases(['m']);
     }
 

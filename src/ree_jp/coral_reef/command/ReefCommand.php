@@ -21,8 +21,6 @@ use pocketmine\Player;
 use pocketmine\plugin\Plugin;
 use ree_jp\coral_reef\form\GatyaForm;
 use ree_jp\coral_reef\quest\QuestListener;
-use ree_jp\coral_reef\sql\SQLConst;
-use ree_jp\coral_reef\sql\SQLManager;
 
 class ReefCommand extends PluginCommand
 {
@@ -70,15 +68,6 @@ class ReefCommand extends PluginCommand
                         return;
                     }
                     switch ($args[1]) {
-                        case SQLConst::ENV_EXP_BUF:
-                        case SQLConst::ENV_HASTE_EFFECT:
-                            if (!isset($args[2]) || !is_numeric($args[2])) {
-                                $sender->sendMessage("引数が間違ってる");
-                                return;
-                            }
-                            SQLManager::$manager->setValue(0, SQLConst::TYPE_ENV, $args[1], $args[2], null);
-                            $sender->sendMessage("反映には最大1分かかります");
-                            break;
                         default:
                             $sender->sendMessage("そのadminコマンドはない!!!!!!!!");
                             break;

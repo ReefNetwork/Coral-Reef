@@ -16,3 +16,5 @@ permissions:
         children:
           coral_reef.command.reef_admin:
             default: op
+          coral_reef.command.reef_console:
+            default: op

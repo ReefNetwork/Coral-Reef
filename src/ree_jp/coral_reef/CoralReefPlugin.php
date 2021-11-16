@@ -22,6 +22,7 @@ use ree_jp\coral_reef\account\ScoreBoardManager;
 use ree_jp\coral_reef\command\MenuCommand;
 use ree_jp\coral_reef\command\ReefAdminCommand;
 use ree_jp\coral_reef\command\ReefCommand;
+use ree_jp\coral_reef\command\ReefConsoleCommand;
 use ree_jp\coral_reef\gatya\items\ReefItems;
 use ree_jp\coral_reef\land\LandManager;
 use ree_jp\coral_reef\quest\QuestListener;
@@ -71,6 +72,7 @@ class CoralReefPlugin extends PluginBase
         $this->getServer()->getCommandMap()->register('menu', new MenuCommand($this));
         $this->getServer()->getCommandMap()->register('reef', new ReefCommand($this));
         $this->getServer()->getCommandMap()->register('reef-admin', new ReefAdminCommand($this));
+        $this->getServer()->getCommandMap()->register('reef-console', new ReefConsoleCommand($this));
         $this->getScheduler()->scheduleRepeatingTask(new SendServerTipTask(), 15);
         $this->getScheduler()->scheduleRepeatingTask(new DataSaveTask(), 20);
         $this->getScheduler()->scheduleRepeatingTask(new EffectTask(), 200);
