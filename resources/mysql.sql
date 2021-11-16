@@ -7,12 +7,17 @@
 CREATE PROCEDURE add_value(IN _xuid BIGINT, IN _type VARCHAR(99), IN _subtype VARCHAR(99), IN _value INT)
 BEGIN
     IF EXISTS(SELECT value
-              INTO @get_value
               FROM VIRTUAL_VALUES
               WHERE xuid = _xuid
                 AND type = _type
                 AND subtype = _subtype)
     THEN
+        SELECT value
+        INTO @get_value
+        FROM VIRTUAL_VALUES
+        WHERE xuid = _xuid
+          AND type = _type
+          AND subtype = _subtype;
         SET @int_value = CAST(@get_value AS SIGNED) + _value;
     ELSE
         SET @int_value = _value;
