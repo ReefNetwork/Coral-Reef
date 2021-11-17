@@ -14,6 +14,8 @@
     "ext-json": "*",
     "pocketmine/pocketmine-mp": "3.*",
     "bbo51dog/bboform": "1.2.1",
+    "reef_network/libasynql": "3.2.0.*",
+    "reef_network/stargate_atlantis": "1.0.1",
     "ext-mbstring": "*"
   },
   "repositories": [
@@ -24,6 +26,14 @@
     {
       "type": "git",
       "url": "https://github.com/bbo51dog/BboForm"
+    },
+    {
+      "type": "git",
+      "url": "https://github.com/ReefNetwork/libasynql"
+    },
+    {
+      "type": "git",
+      "url": "https://github.com/ReefNetwork/StarGate-Atlantis"
     }
   ]
 }
