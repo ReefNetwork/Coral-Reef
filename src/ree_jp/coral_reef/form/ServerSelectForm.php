@@ -15,7 +15,7 @@ use alemiz\sga\StarGateAtlantis;
 use bbo51dog\bboform\element\ClosureButton;
 use bbo51dog\bboform\form\SimpleForm;
 use pocketmine\Player;
-use ProxyCommandExecutePacket;
+use ree_jp\coral_reef\proxy\packet\ProxyCommandExecutePacket;
 use ree_jp\coral_reef\proxy\ProxyManager;
 
 class ServerSelectForm

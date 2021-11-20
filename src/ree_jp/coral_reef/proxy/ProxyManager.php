@@ -14,9 +14,9 @@ namespace ree_jp\coral_reef\proxy;
 use alemiz\sga\StarGateAtlantis;
 use pocketmine\Player;
 use pocketmine\scheduler\ClosureTask;
-use ProxyCommandExecutePacket;
 use ree_jp\coral_reef\account\AccountManager;
 use ree_jp\coral_reef\CoralReefPlugin;
+use ree_jp\coral_reef\proxy\packet\ProxyCommandExecutePacket;
 use ree_jp\coral_reef\sql\SQLManager;
 use Throwable;
 

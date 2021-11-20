@@ -1,5 +1,7 @@
 <?php
 
+namespace ree_jp\coral_reef\proxy\packet;
+
 use alemiz\sga\protocol\StarGatePacket;
 use alemiz\sga\protocol\types\PacketHelper;
 use ree_jp\coral_reef\proxy\ProxyPackets;

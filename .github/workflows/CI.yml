@@ -36,13 +36,13 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: CoralReef
-          path: ./build/CoralReef.phar
+          path: ./build/*
 
   deploy_debug:
     environment: deploy debug
     runs-on: ubuntu-latest
     needs: build
-    if: github.ref == 'refs/heads/master'
+    if: "github.ref == 'refs/heads/master' or contains(github.event.head_commit.message, '[debug]')"
     steps:
       - uses: actions/checkout@v2
       - run: mkdir ~/install_plugins
