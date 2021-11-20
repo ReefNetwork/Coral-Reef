@@ -11,9 +11,11 @@
 
 namespace ree_jp\coral_reef\form;
 
+use alemiz\sga\StarGateAtlantis;
 use bbo51dog\bboform\element\ClosureButton;
 use bbo51dog\bboform\form\SimpleForm;
 use pocketmine\Player;
+use ProxyCommandExecutePacket;
 use ree_jp\coral_reef\proxy\ProxyManager;
 
 class ServerSelectForm
@@ -30,6 +32,13 @@ class ServerSelectForm
                 $server,
                 null,
                 function (Player $p, ClosureButton $button) use ($server) {
+                    if ($server === "lobby") {
+                        $pk = new ProxyCommandExecutePacket();
+                        $pk->playerName = $p->getName();
+                        $pk->command = "lobby";
+                        StarGateAtlantis::getInstance()->getDefaultClient()->sendPacket($pk);
+                        return;
+                    }
                     ProxyManager::transferServerWithSave($p, $server);
                 }
             ));

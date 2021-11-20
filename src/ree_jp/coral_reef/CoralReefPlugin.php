@@ -25,6 +25,7 @@ use ree_jp\coral_reef\command\ReefCommand;
 use ree_jp\coral_reef\command\ReefConsoleCommand;
 use ree_jp\coral_reef\gatya\items\ReefItems;
 use ree_jp\coral_reef\land\LandManager;
+use ree_jp\coral_reef\proxy\ProxyManager;
 use ree_jp\coral_reef\quest\QuestListener;
 use ree_jp\coral_reef\sql\SQLManager;
 use ree_jp\coral_reef\task\DataSaveTask;
@@ -81,6 +82,7 @@ class CoralReefPlugin extends PluginBase
             foreach (Server::getInstance()->getOnlinePlayers() as $p) ScoreBoardManager::sendScoreBoard($p);
         }), 15);
 
+        ProxyManager::registerPackets();
         AccountManager::setUp();
         ReefItems::registerAll();
         $this->pluginInformation();

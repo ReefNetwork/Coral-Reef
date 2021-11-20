@@ -11,15 +11,25 @@
 
 namespace ree_jp\coral_reef\proxy;
 
-use pocketmine\network\mcpe\protocol\TransferPacket;
+use alemiz\sga\StarGateAtlantis;
 use pocketmine\Player;
 use pocketmine\scheduler\ClosureTask;
+use ProxyCommandExecutePacket;
 use ree_jp\coral_reef\account\AccountManager;
 use ree_jp\coral_reef\CoralReefPlugin;
 use ree_jp\coral_reef\sql\SQLManager;
+use Throwable;
 
 class ProxyManager
 {
+    static function registerPackets(): void
+    {
+        foreach (StarGateAtlantis::getInstance()->getClients() as $client) {
+            $codec = $client->getProtocolCodec();
+            $codec->registerPacket(ProxyPackets::COMMAND_EXECUTE, new ProxyCommandExecutePacket());
+        }
+    }
+
     static function transferServerWithSave(Player $p, string $server): void
     {
         AccountManager::setValue($p->getXuid(), 'wait_action');
@@ -50,10 +60,12 @@ class ProxyManager
                 AccountManager::setValue($p->getXuid(), 'save_skill', 0);
                 AccountManager::setValue($p->getXuid(), 'save_quest', 0);
             }
-            $pk = new TransferPacket();
-            $pk->address = $address;
             $p->sendMessage('サーバーを移動しています');
-            $p->sendDataPacket($pk);
+            try {
+                StarGateAtlantis::getInstance()->transferPlayer($p, $address);
+            } catch (Throwable $e) {
+                $p->sendMessage("エラーが発生しました");
+            }
             CoralReefPlugin::$plugin->getScheduler()->scheduleDelayedTask(new ClosureTask(function (int $currentTick) use ($p): void {
                 if ($p->isClosed()) return;
                 $xuid = $p->getXuid();
