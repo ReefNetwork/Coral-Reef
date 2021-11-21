@@ -12,6 +12,7 @@
 namespace ree_jp\coral_reef;
 
 
+use alemiz\sga\StarGateAtlantis;
 use Exception;
 use pocketmine\block\BlockIds;
 use pocketmine\event\block\BlockBreakEvent;
@@ -43,6 +44,7 @@ use ree_jp\coral_reef\account\SettingManager;
 use ree_jp\coral_reef\form\FormManager;
 use ree_jp\coral_reef\form\LandForm;
 use ree_jp\coral_reef\land\LandManager;
+use ree_jp\coral_reef\proxy\ProxyManager;
 use ree_jp\coral_reef\sql\SettingConst;
 use ree_jp\coral_reef\sql\SQLManager;
 use ree_jp\coral_reef\task\EffectTask;
@@ -54,15 +56,17 @@ class EventListener implements Listener
     {
         $p = $ev->getPlayer();
         $xuid = $p->getXuid();
-        if (is_null(SQLManager::$manager)) {
-            $p->kick(TextFormat::GREEN . 'Reef ' . TextFormat::YELLOW . 'Server' . TextFormat::DARK_RED . 'データベースサーバーが見つかりませんでした');
+        if (is_null(SQLManager::$manager) || !is_null(CoralReefPlugin::$plugin->isError())) {
+            $p->kick(TextFormat::GREEN . 'Reef ' . TextFormat::YELLOW . 'Server' . TextFormat::DARK_RED . "データの読み込み中に予期せぬエラーが発生しました");
             return;
         }
-        $error = CoralReefPlugin::$plugin->isError();
-        if (!is_null($error)) {
-            $p->kick(TextFormat::GREEN . 'Reef ' . TextFormat::YELLOW . 'Server' . TextFormat::DARK_RED . 'データの読み込み中に予期せぬエラーが発生しました');
-            return;
+        foreach (StarGateAtlantis::getInstance()->getClients() as $client) {
+            if (!$client->isConnected()) {
+                $p->kick(TextFormat::GREEN . 'Reef ' . TextFormat::YELLOW . 'Server' . TextFormat::DARK_RED . "接続サーバーへ接続できませんでした");
+                return;
+            }
         }
+        ProxyManager::registerPackets();
         SQLManager::$manager->loadUser($xuid, $p->getName());
         $reason = SQLManager::$manager->getBanReason($xuid, $p->getAddress());
         if (is_string($reason)) {
