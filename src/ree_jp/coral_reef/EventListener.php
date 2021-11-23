@@ -20,6 +20,7 @@ use pocketmine\event\block\BlockUpdateEvent;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\event\entity\EntityTeleportEvent;
+use pocketmine\event\inventory\InventoryCloseEvent;
 use pocketmine\event\inventory\InventoryTransactionEvent;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerGameModeChangeEvent;
@@ -33,6 +34,7 @@ use pocketmine\inventory\ArmorInventory;
 use pocketmine\item\Item;
 use pocketmine\item\ItemIds;
 use pocketmine\level\Position;
+use pocketmine\nbt\tag\StringTag;
 use pocketmine\network\mcpe\protocol\ItemFrameDropItemPacket;
 use pocketmine\Player;
 use pocketmine\scheduler\ClosureTask;
@@ -42,6 +44,8 @@ use ree_jp\coral_reef\account\AccountManager;
 use ree_jp\coral_reef\account\SettingManager;
 use ree_jp\coral_reef\form\FormManager;
 use ree_jp\coral_reef\form\LandForm;
+use ree_jp\coral_reef\gatya\items\ReefItems;
+use ree_jp\coral_reef\gatya\items\SpecialItemService;
 use ree_jp\coral_reef\land\LandManager;
 use ree_jp\coral_reef\sql\SettingConst;
 use ree_jp\coral_reef\sql\SQLManager;
@@ -253,6 +257,20 @@ class EventListener implements Listener
         }
         if ($isWorldChange) {
             unset(LandManager::$pos[$p->getXuid()]);
+        }
+    }
+
+    function onClose(InventoryCloseEvent $ev): void
+    {
+        $p = $ev->getPlayer();
+        foreach ($p->getInventory()->getContents() as $slot => $item) {
+            $nbt = $item->getNamedTagEntry(ReefItems::REEF_SP_ITEM);
+            if (!$nbt instanceof StringTag) continue;
+            $renewItem = SpecialItemService::getRenewItem($p->getXuid(), $nbt->getValue(), $item->getDamage());
+
+            if (!$item->equals($renewItem)) {
+                $p->getInventory()->setItem($slot, $renewItem->setCount($item->getCount()));
+            }
         }
     }
 

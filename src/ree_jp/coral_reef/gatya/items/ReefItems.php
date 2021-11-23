@@ -20,6 +20,7 @@ use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\IntTag;
 use pocketmine\nbt\tag\StringTag;
 use pocketmine\utils\TextFormat;
+use ree_jp\coral_reef\account\AccountManager;
 
 class ReefItems
 {
@@ -27,50 +28,50 @@ class ReefItems
     const REEF_SP_ITEM = "reef_special_item";
     const ITEM_RANK = "reef_item_rank";
 
-    const PICKAXE = 1;
-    const SHOVEL = 2;
-    const AXE = 3;
-    const HOE = 4;
-    const HELMET = 11;
-    const CHEST_PLATE = 12;
-    const LEGGINGS = 13;
-    const BOOTS = 14;
+    const PICKAXE = "reef_pickaxe";
+    const SHOVEL = "reef_shovel";
+    const AXE = "reef_axe";
+    const HOE = "reef_hoe";
+    const HELMET = "reef_helmet";
+    const CHEST_PLATE = "reef_chest_plate";
+    const LEGGINGS = "reef_leggings";
+    const BOOTS = "reef_boot";
 
-    static function getItem(string $xuid, int $type): ?Item
+    static function getItem(string $xuid, int $type, int $durable = 0): ?Item
     {
         switch ($type) {
             case self::PICKAXE:
-                $item = Item::get(ItemIds::GOLDEN_PICKAXE);
+                $item = Item::get(ItemIds::DIAMOND_PICKAXE);
                 if (!$item instanceof Durable) return null;
 
-                $item->setNamedTagEntry(new StringTag(self::REEF_SP_ITEM, 'reef_pickaxe'));
+                $item->setNamedTagEntry(new StringTag(self::REEF_SP_ITEM, self::PICKAXE));
                 $item->setCustomName(TextFormat::GREEN . 'Reef' . TextFormat::GOLD . 'Pickaxe');
                 $item->addEnchantment(new EnchantmentInstance(Enchantment::getEnchantment(Enchantment::EFFICIENCY), 10));
                 $item->addEnchantment(new EnchantmentInstance(Enchantment::getEnchantment(Enchantment::SILK_TOUCH), 10));
                 break;
             case self::SHOVEL:
-                $item = Item::get(ItemIds::GOLDEN_SHOVEL);
+                $item = Item::get(ItemIds::DIAMOND_SHOVEL);
                 if (!$item instanceof Durable) return null;
 
-                $item->setNamedTagEntry(new StringTag(self::REEF_SP_ITEM, 'reef_shovel'));
+                $item->setNamedTagEntry(new StringTag(self::REEF_SP_ITEM, self::SHOVEL));
                 $item->setCustomName(TextFormat::GREEN . 'Reef' . TextFormat::GOLD . 'Shovel');
                 $item->addEnchantment(new EnchantmentInstance(Enchantment::getEnchantment(Enchantment::EFFICIENCY), 10));
                 $item->addEnchantment(new EnchantmentInstance(Enchantment::getEnchantment(Enchantment::SILK_TOUCH), 10));
                 break;
             case self::AXE:
-                $item = Item::get(ItemIds::GOLDEN_AXE);
+                $item = Item::get(ItemIds::DIAMOND_AXE);
                 if (!$item instanceof Durable) return null;
 
-                $item->setNamedTagEntry(new StringTag(self::REEF_SP_ITEM, 'reef_axe'));
+                $item->setNamedTagEntry(new StringTag(self::REEF_SP_ITEM, self::AXE));
                 $item->setCustomName(TextFormat::GREEN . 'Reef' . TextFormat::GOLD . 'Axe');
                 $item->addEnchantment(new EnchantmentInstance(Enchantment::getEnchantment(Enchantment::EFFICIENCY), 10));
                 $item->addEnchantment(new EnchantmentInstance(Enchantment::getEnchantment(Enchantment::SILK_TOUCH), 10));
                 break;
             case self::HOE:
-                $item = Item::get(ItemIds::GOLDEN_HOE);
+                $item = Item::get(ItemIds::DIAMOND_HOE);
                 if (!$item instanceof Durable) return null;
 
-                $item->setNamedTagEntry(new StringTag(self::REEF_SP_ITEM, 'reef_hoe'));
+                $item->setNamedTagEntry(new StringTag(self::REEF_SP_ITEM, self::HOE));
                 $item->setCustomName(TextFormat::GREEN . 'Reef' . TextFormat::GOLD . 'Hoe');
                 $item->addEnchantment(new EnchantmentInstance(Enchantment::getEnchantment(Enchantment::EFFICIENCY), 10));
                 $item->addEnchantment(new EnchantmentInstance(Enchantment::getEnchantment(Enchantment::SILK_TOUCH), 10));
@@ -79,7 +80,7 @@ class ReefItems
                 $item = Item::get(ItemIds::DIAMOND_HELMET);
                 if (!$item instanceof Durable) return null;
 
-                $item->setNamedTagEntry(new StringTag(self::REEF_SP_ITEM, 'reef_helmet'));
+                $item->setNamedTagEntry(new StringTag(self::REEF_SP_ITEM, self::HELMET));
                 $item->setCustomName(TextFormat::GREEN . 'Reef' . TextFormat::GOLD . 'Helmet');
                 $item->setLore(["使用時:常時暗視状態になります(同じ効果は重複出来ません)", "", "ボーナス効果: ReefArmor",
                     "この効果を持つアイテムを4つ以上使用していた場合、スキル発動時のクールタイムが減ります"]);
@@ -92,7 +93,7 @@ class ReefItems
                 $item = Item::get(ItemIds::DIAMOND_CHESTPLATE);
                 if (!$item instanceof Durable) return null;
 
-                $item->setNamedTagEntry(new StringTag(self::REEF_SP_ITEM, 'reef_chest_plate'));
+                $item->setNamedTagEntry(new StringTag(self::REEF_SP_ITEM, self::CHEST_PLATE));
                 $item->setCustomName(TextFormat::GREEN . 'Reef' . TextFormat::GOLD . 'ChestPlate');
                 $item->setLore(["使用時:常時満腹状態になります(同じ効果は重複出来ません)", "", "ボーナス効果: ReefArmor",
                     "この効果を持つアイテムを4つ以上使用していた場合、スキル発動時のクールタイムが減ります"]);
@@ -105,7 +106,7 @@ class ReefItems
                 $item = Item::get(ItemIds::DIAMOND_LEGGINGS);
                 if (!$item instanceof Durable) return null;
 
-                $item->setNamedTagEntry(new StringTag(self::REEF_SP_ITEM, 'reef_leggings'));
+                $item->setNamedTagEntry(new StringTag(self::REEF_SP_ITEM, self::LEGGINGS));
                 $item->setCustomName(TextFormat::GREEN . 'Reef' . TextFormat::GOLD . 'Leggings');
                 $item->setLore(["使用時:ジャンプ力が2上がります(同じ効果は重複出来ません)", "", "ボーナス効果: ReefArmor",
                     "この効果を持つアイテムを4つ以上使用していた場合、スキル発動時のクールタイムが減ります"]);
@@ -118,7 +119,7 @@ class ReefItems
                 $item = Item::get(ItemIds::DIAMOND_BOOTS);
                 if (!$item instanceof Durable) return null;
 
-                $item->setNamedTagEntry(new StringTag(self::REEF_SP_ITEM, 'reef_boot'));
+                $item->setNamedTagEntry(new StringTag(self::REEF_SP_ITEM, self::BOOTS));
                 $item->setCustomName(TextFormat::GREEN . 'Reef' . TextFormat::GOLD . 'Boot');
                 $item->setLore(["使用時:スピードが2上がります(同じ効果は重複出来ません)", "", "ボーナス効果: ReefArmor",
                     "この効果を持つアイテムを4つ以上使用していた場合、スキル発動時のクールタイムが減ります"]);
@@ -131,13 +132,14 @@ class ReefItems
                 return null;
         }
         $item->setUnbreakable();
+        $item->setLore(["所有者: " . AccountManager::getUserName($xuid)]);
         $item->setNamedTagEntry(new StringTag('owner', $xuid));
         return $item;
     }
 
     static function registerItems(): void
     {
-        foreach ([1, 2, 3, 4, 11, 12, 13, 14] as $key) {
+        foreach ([self::PICKAXE, self::SHOVEL, self::AXE, self::HOE, self::HELMET, self::CHEST_PLATE, self::LEGGINGS, self::BOOTS] as $key) {
             Item::addCreativeItem(self::getItem(0, $key));
         }
     }

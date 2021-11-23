@@ -20,30 +20,35 @@ use pocketmine\nbt\tag\StringTag;
 
 class UltimateItems extends ReefItems
 {
-    static function getItem(string $xuid, int $type): ?Item
+
+    const PICKAXE = "ultimate_pickaxe";
+    const SHOVEL = "ultimate_shovel";
+    const AXE = "ultimate_axe";
+
+    static function getItem(string $xuid, int $type, int $durable = 0): ?Item
     {
         switch ($type) {
             case self::PICKAXE:
-                $item = Item::get(ItemIds::DIAMOND_PICKAXE);
-                $item->setNamedTagEntry(new StringTag(self::REEF_SP_ITEM, 'ultimate_pickaxe'));
+                $item = Item::get(ItemIds::DIAMOND_PICKAXE, $durable);
+                $item->setNamedTagEntry(new StringTag(self::REEF_SP_ITEM, self::PICKAXE));
                 $item->setCustomName('うるとらツルハシ');
                 break;
             case self::SHOVEL:
-                $item = Item::get(ItemIds::DIAMOND_SHOVEL);
-                $item->setNamedTagEntry(new StringTag(self::REEF_SP_ITEM, 'ultimate_shovel'));
-                $item->setCustomName('ウルトラしゃべる');
+                $item = Item::get(ItemIds::DIAMOND_SHOVEL, $durable);
+                $item->setNamedTagEntry(new StringTag(self::REEF_SP_ITEM, self::SHOVEL));
+                $item->setCustomName('うるとらシャベル');
                 break;
             case self::AXE:
-                $item = Item::get(ItemIds::DIAMOND_AXE);
-                $item->setNamedTagEntry(new StringTag(self::REEF_SP_ITEM, 'ultimate_axe'));
-                $item->setCustomName('うるとらツルハシ');
+                $item = Item::get(ItemIds::DIAMOND_AXE, $durable);
+                $item->setNamedTagEntry(new StringTag(self::REEF_SP_ITEM, self::AXE));
+                $item->setCustomName('うるとらアックス');
                 break;
             default:
                 return null;
         }
         if (!$item instanceof Durable) return null;
 
-        $item->addEnchantment(new EnchantmentInstance(Enchantment::getEnchantment(Enchantment::UNBREAKING), 10));
+        $item->addEnchantment(new EnchantmentInstance(Enchantment::getEnchantment(Enchantment::UNBREAKING), 5));
         $item->addEnchantment(new EnchantmentInstance(Enchantment::getEnchantment(Enchantment::EFFICIENCY), 3));
         $item->addEnchantment(new EnchantmentInstance(Enchantment::getEnchantment(Enchantment::SILK_TOUCH), 1));
         return $item;
@@ -51,7 +56,7 @@ class UltimateItems extends ReefItems
 
     static function registerItems(): void
     {
-        foreach ([1, 2, 3] as $key) {
+        foreach ([self::PICKAXE, self::SHOVEL, self::AXE] as $key) {
             Item::addCreativeItem(self::getItem(0, $key));
         }
     }

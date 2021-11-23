@@ -25,36 +25,36 @@ class NormalItems extends ReefItems
         }
     }
 
-    static function getItem(string $xuid, int $type): ?Item
+    static function getItem(string $xuid, int $type, int $durable = 0): ?Item
     {
         switch ($type) {
             case 1:
-                $item = Item::get(ItemIds::IRON_PICKAXE);
+                $item = Item::get(ItemIds::IRON_PICKAXE, $durable);
                 $item->setCustomName('かたいツルハシ');
-                $item->addEnchantment(new EnchantmentInstance(Enchantment::getEnchantment(Enchantment::UNBREAKING), 10));
+                $item->addEnchantment(new EnchantmentInstance(Enchantment::getEnchantment(Enchantment::UNBREAKING), 3));
                 break;
             case 2:
-                $item = Item::get(ItemIds::IRON_SHOVEL);
+                $item = Item::get(ItemIds::IRON_SHOVEL, $durable);
                 $item->setCustomName('かたいシャベル');
                 $item->addEnchantment(new EnchantmentInstance(Enchantment::getEnchantment(Enchantment::UNBREAKING), 3));
                 break;
             case 3:
-                $item = Item::get(ItemIds::IRON_AXE);
+                $item = Item::get(ItemIds::IRON_AXE, $durable);
                 $item->setCustomName('かたい斧');
                 $item->addEnchantment(new EnchantmentInstance(Enchantment::getEnchantment(Enchantment::UNBREAKING), 3));
                 break;
             case 4:
-                $item = Item::get(ItemIds::IRON_PICKAXE);
+                $item = Item::get(ItemIds::IRON_PICKAXE, $durable);
                 $item->setCustomName('はやいツルハシ');
                 $item->addEnchantment(new EnchantmentInstance(Enchantment::getEnchantment(Enchantment::EFFICIENCY), 2));
                 break;
             case 5:
-                $item = Item::get(ItemIds::IRON_SHOVEL);
+                $item = Item::get(ItemIds::IRON_SHOVEL, $durable);
                 $item->setCustomName('かたいシャベル');
                 $item->addEnchantment(new EnchantmentInstance(Enchantment::getEnchantment(Enchantment::EFFICIENCY), 2));
                 break;
             case 6:
-                $item = Item::get(ItemIds::IRON_AXE);
+                $item = Item::get(ItemIds::IRON_AXE, $durable);
                 $item->setCustomName('はやい斧');
                 $item->addEnchantment(new EnchantmentInstance(Enchantment::getEnchantment(Enchantment::EFFICIENCY), 2));
                 break;

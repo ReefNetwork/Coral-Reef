@@ -20,17 +20,20 @@ use pocketmine\nbt\tag\StringTag;
 
 class RareItems extends ReefItems
 {
-    static function getItem(string $xuid, int $type): ?Item
+    const PICKAXE = "rare_pickaxe";
+    const SHOVEL = "rare_shovel";
+
+    static function getItem(string $xuid, int $type, int $durable = 0): ?Item
     {
         switch ($type) {
             case self::PICKAXE:
-                $item = Item::get(ItemIds::DIAMOND_PICKAXE);
-                $item->setNamedTagEntry(new StringTag(self::REEF_SP_ITEM, 'rare_pickaxe'));
+                $item = Item::get(ItemIds::DIAMOND_PICKAXE, $durable);
+                $item->setNamedTagEntry(new StringTag(self::REEF_SP_ITEM, self::PICKAXE));
                 $item->setCustomName('レアツルハシ');
                 break;
             case self::SHOVEL:
-                $item = Item::get(ItemIds::DIAMOND_SHOVEL);
-                $item->setNamedTagEntry(new StringTag(self::REEF_SP_ITEM, 'rare_axe'));
+                $item = Item::get(ItemIds::DIAMOND_SHOVEL, $durable);
+                $item->setNamedTagEntry(new StringTag(self::REEF_SP_ITEM, self::SHOVEL));
                 $item->setCustomName('レアシャベル');
                 break;
             default:
@@ -44,7 +47,7 @@ class RareItems extends ReefItems
 
     static function registerItems(): void
     {
-        foreach ([1, 2] as $key) {
+        foreach ([self::PICKAXE, self::SHOVEL] as $key) {
             Item::addCreativeItem(self::getItem(0, $key));
         }
     }

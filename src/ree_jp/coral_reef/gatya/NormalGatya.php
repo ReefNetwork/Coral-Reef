@@ -97,13 +97,13 @@ class NormalGatya
                 case $firstRand <= (5 + 25):// 2.5%
                     switch (mt_rand(1, 3)) {
                         case 1:
-                            $item = UltimateItems::getItem($xuid, ReefItems::PICKAXE);
+                            $item = UltimateItems::getItem($xuid, UltimateItems::PICKAXE);
                             break;
                         case 2:
-                            $item = UltimateItems::getItem($xuid, ReefItems::AXE);
+                            $item = UltimateItems::getItem($xuid, UltimateItems::AXE);
                             break;
                         case 3:
-                            $item = UltimateItems::getItem($xuid, ReefItems::SHOVEL);
+                            $item = UltimateItems::getItem($xuid, UltimateItems::SHOVEL);
                             break;
                         default:
                             $p->sendMessage('エラーが発生しました');
@@ -116,10 +116,10 @@ class NormalGatya
                 case $firstRand <= (30 + 100):// 10%
                     switch (mt_rand(1, 2)) {
                         case 1:
-                            $item = SuperItems::getItem($xuid, ReefItems::PICKAXE);
+                            $item = SuperItems::getItem($xuid, SuperItems::PICKAXE);
                             break;
                         case 2:
-                            $item = SuperItems::getItem($xuid, ReefItems::SHOVEL);
+                            $item = SuperItems::getItem($xuid, SuperItems::SHOVEL);
                             break;
                         default:
                             $p->sendMessage('エラーが発生しました');
@@ -132,10 +132,10 @@ class NormalGatya
                 case $firstRand <= (130 + 300):// 30%
                     switch (mt_rand(1, 2)) {
                         case 1:
-                            $item = RareItems::getItem($xuid, ReefItems::PICKAXE);
+                            $item = RareItems::getItem($xuid, RareItems::PICKAXE);
                             break;
                         case 2:
-                            $item = RareItems::getItem($xuid, ReefItems::SHOVEL);
+                            $item = RareItems::getItem($xuid, RareItems::SHOVEL);
                             break;
                         default:
                             $p->sendMessage('エラーが発生しました');
