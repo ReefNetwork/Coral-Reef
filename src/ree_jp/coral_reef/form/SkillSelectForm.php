@@ -87,11 +87,11 @@ class SkillSelectForm
             new ClosureButton(
                 "はい",
                 null,
-                function (Player $p, ClosureButton $button) use ($skill) {
+                function (Player $p, ClosureButton $button) use ($skillName, $skill) {
                     $user = SQLManager::$manager->getUser($p->getXuid());
                     $user->skill = $skill;
                     $p->sendMessage('スキルを変更しました');
-                    QuestListener::callSubscribedQuest($p->getXuid(), QuestListener::CHANGE_SKILL, $skill->name);
+                    QuestListener::callSubscribedQuest($p->getXuid(), QuestListener::CHANGE_SKILL, $skillName);
                 }
             ),
             new ClosureButton(
