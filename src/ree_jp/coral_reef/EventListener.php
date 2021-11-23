@@ -268,7 +268,7 @@ class EventListener implements Listener
             if (!$nbt instanceof StringTag) continue;
             $renewItem = SpecialItemService::getRenewItem($p->getXuid(), $nbt->getValue(), $item->getDamage());
 
-            if (!$item->equals($renewItem)) {
+            if (!is_null($renewItem) && !$item->equals($renewItem)) {
                 $p->getInventory()->setItem($slot, $renewItem->setCount($item->getCount()));
             }
         }
