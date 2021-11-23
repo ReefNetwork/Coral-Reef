@@ -266,8 +266,12 @@ class EventListener implements Listener
         foreach ($p->getInventory()->getContents() as $slot => $item) {
             $nbt = $item->getNamedTagEntry(ReefItems::REEF_SP_ITEM);
             if (!$nbt instanceof StringTag) continue;
-            $renewItem = SpecialItemService::getRenewItem($p->getXuid(), $nbt->getValue(), $item->getDamage());
+            $xuidNbt = $item->getNamedTagEntry("owner");
+            if ($xuidNbt instanceof StringTag) {
+                $xuid = $xuidNbt->getValue();
+            } else $xuid = $p->getXuid();
 
+            $renewItem = SpecialItemService::getRenewItem($xuid(), $nbt->getValue(), $item->getDamage());
             if (!is_null($renewItem) && !$item->equals($renewItem)) {
                 $p->getInventory()->setItem($slot, $renewItem->setCount($item->getCount()));
             }
