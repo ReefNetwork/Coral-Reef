@@ -21,13 +21,18 @@ class NormalItems extends ReefItems
     static function registerItems(): void
     {
         foreach ([1, 2, 3, 4, 5, 6] as $key) {
-            Item::addCreativeItem(self::getItem(0, $key));
+            Item::addCreativeItem(self::getItemInt(0, $key));
         }
     }
 
-    static function getItem(string $xuid, int $type, int $durable = 0): ?Item
+    static function getItemInt(string $xuid, int $type, int $durable = 0): ?Item
     {
-        switch ($type) {
+        return self::getItem($xuid, strval($type), $durable);
+    }
+
+    static function getItem(string $xuid, string $type, int $durable = 0): ?Item
+    {
+        switch (intval($type)) {
             case 1:
                 $item = Item::get(ItemIds::IRON_PICKAXE, $durable);
                 $item->setCustomName('かたいツルハシ');

@@ -25,7 +25,7 @@ class UltimateItems extends ReefItems
     const SHOVEL = "ultimate_shovel";
     const AXE = "ultimate_axe";
 
-    static function getItem(string $xuid, int $type, int $durable = 0): ?Item
+    static function getItem(string $xuid, string $type, int $durable = 0): ?Item
     {
         switch ($type) {
             case self::PICKAXE:

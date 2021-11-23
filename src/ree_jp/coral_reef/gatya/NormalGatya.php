@@ -146,7 +146,7 @@ class NormalGatya
                     break;
 
                 default:// 残り
-                    $item = NormalItems::getItem($xuid, mt_rand(1, 7));
+                    $item = NormalItems::getItemInt($xuid, mt_rand(1, 7));
                     GatyaManager::gatyaProcess($p, SQLConst::TICKETS_NORMAL, 1, $item, 'normal',
                         TextFormat::DARK_GRAY . 'ノーマル' . TextFormat::RESET, false, $func);
                     break;

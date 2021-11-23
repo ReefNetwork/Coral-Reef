@@ -37,7 +37,7 @@ class ReefItems
     const LEGGINGS = "reef_leggings";
     const BOOTS = "reef_boot";
 
-    static function getItem(string $xuid, int $type, int $durable = 0): ?Item
+    static function getItem(string $xuid, string $type, int $durable = 0): ?Item
     {
         switch ($type) {
             case self::PICKAXE:

@@ -23,7 +23,7 @@ class SuperItems extends ReefItems
     const PICKAXE = "super_pickaxe";
     const SHOVEL = "super_shovel";
 
-    static function getItem(string $xuid, int $type, int $durable = 0): ?Item
+    static function getItem(string $xuid, string $type, int $durable = 0): ?Item
     {
         switch ($type) {
             case self::PICKAXE:

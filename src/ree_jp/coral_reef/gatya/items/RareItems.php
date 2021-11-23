@@ -23,7 +23,7 @@ class RareItems extends ReefItems
     const PICKAXE = "rare_pickaxe";
     const SHOVEL = "rare_shovel";
 
-    static function getItem(string $xuid, int $type, int $durable = 0): ?Item
+    static function getItem(string $xuid, string $type, int $durable = 0): ?Item
     {
         switch ($type) {
             case self::PICKAXE:
