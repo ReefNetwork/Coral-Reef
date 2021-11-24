@@ -21,6 +21,7 @@ use pocketmine\Player;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat;
 use ree_jp\coral_reef\account\AccountManager;
+use ree_jp\coral_reef\money\MoneyService;
 use ree_jp\coral_reef\quest\QuestListener;
 use ree_jp\coral_reef\sql\SQLManager;
 
@@ -33,142 +34,145 @@ class FormManager
         if (AccountManager::hasValue($xuid, 'form_cool_time')) return;
         AccountManager::setValue($xuid, 'form_cool_time', 10);
 
-        $user = SQLManager::$manager->getUser($xuid);
-        $level = is_null($user) ? 'error' : $user->level;
-        $necessaryExperience = is_null($user) ? 'error' : $user->necessaryExperience;
-        $exp = is_null($user) ? 'error' : $user->experience;
+        MoneyService::getMoney($xuid, function (int $money) use ($xuid, $p) {
+            $user = SQLManager::$manager->getUser($xuid);
+            $level = is_null($user) ? 'error' : $user->level;
+            $necessaryExperience = is_null($user) ? 'error' : $user->necessaryExperience;
+            $exp = is_null($user) ? 'error' : $user->experience;
 
-        if (AccountManager::hasValue($xuid, 'fly')) {
-            $fly_status = '無効';
-        } else {
-            $fly_status = '有効';
-        }
-        $form = (new SimpleForm())
-            ->setTitle("ReefServer Menu")
-            ->setText("レベル : $level\nレベルアップまで : $necessaryExperience\n経験値 : $exp")
-            ->addElements(
-                new ClosureButton(
-                    "ストレージ",
-                    null,
-                    function (Player $p, ClosureButton $button) {
-                        Server::getInstance()->dispatchCommand($p, 'stackstorage');
-                        $p->sendMessage(TextFormat::DARK_GRAY . "ストレージを開いています(数秒かかることがあります)");
-                    }
-                ),
-                new ClosureButton(
-                    "飛行を$fly_status にする",
-                    null,
-                    function (Player $p, ClosureButton $button) use ($xuid) {
-                        if (AccountManager::hasValue($xuid, 'fly')) {
-                            AccountManager::setValue($xuid, 'fly', 0);
-                            $p->setFlying(false);
-                            $p->setAllowFlight(false);
-                            $p->sendMessage('飛行を無効にしました');
-                        } else {
-                            if (in_array($p->getLevel()->getFolderName(), AccountManager::STOP_FLY_WORLD)) {
-                                $p->sendMessage('このワールドで飛行することはできません');
-                                return;
-                            }
-                            AccountManager::setValue($xuid, 'fly');
-                            $p->setAllowFlight(true);
-                            $p->setFlying(true);
-                            $p->sendMessage('飛行を有効にしました');
+            if (AccountManager::hasValue($xuid, 'fly')) {
+                $fly_status = '無効';
+            } else {
+                $fly_status = '有効';
+            }
+
+            $form = (new SimpleForm())
+                ->setTitle("ReefServer Menu")
+                ->setText("レベル : $level\nレベルアップまで : $necessaryExperience\n経験値 : $exp\nお金 : $money")
+                ->addElements(
+                    new ClosureButton(
+                        "ストレージ",
+                        null,
+                        function (Player $p, ClosureButton $button) {
+                            Server::getInstance()->dispatchCommand($p, 'stackstorage');
+                            $p->sendMessage(TextFormat::DARK_GRAY . "ストレージを開いています(数秒かかることがあります)");
                         }
-                    }
-                ),
-                new ClosureButton(
-                    "ワープ地点",
-                    null,
-                    function (Player $p, ClosureButton $button) {
-                        MyWarpForm::sendWarpForm($p);
-                    }
-                ),
-                new ClosureButton(
-                    "ワールド移動",
-                    null,
-                    function (Player $p, ClosureButton $button) {
-                        $p->sendForm(self::worldTeleportForm());
-                    }
-                ),
-                new ClosureButton(
-                    "サーバー移動",
-                    null,
-                    function (Player $p, ClosureButton $button) {
-                        ServerSelectForm::sendServerSelectForm($p);
-                    }
-                ),
-                new ClosureButton(
-                    "スキル設定",
-                    null,
-                    function (Player $p, ClosureButton $button) use ($xuid) {
-                        $p->sendForm(SkillSelectForm::SkillSelectForm($xuid));
-                    }
-                ),
-                new ClosureButton(
-                    "パーティー",
-                    null,
-                    function (Player $p, ClosureButton $button) use ($xuid) {
-                        $p->sendForm(PartyForm::partyForm($xuid));
-                    }
-                ),
-                new ClosureButton(
-                    "土地保護",
-                    null,
-                    function (Player $p, ClosureButton $button) use ($xuid) {
-                        $p->sendForm(LandForm::landForm($xuid));
-                    }
-                ),
-                new ClosureButton(
-                    "クエスト",
-                    null,
-                    function (Player $p, ClosureButton $button) {
-                        $p->sendForm(QuestForm::questForm($p));
-                    }
-                ),
-                new ClosureButton(
-                    "ガチャ",
-                    null,
-                    function (Player $p, ClosureButton $button) {
-                        GatyaForm::sendGatyaForm($p);
-                    }
-                ),
-                new ClosureButton(
-                    "ギフト",
-                    null,
-                    function (Player $p, ClosureButton $button) {
-                        GiftForm::sendGiftForm($p);
-                    }
-                ),
-                new ClosureButton(
-                    "ランダムワープ",
-                    null,
-                    function (Player $p, ClosureButton $button) {
-                        $p->sendForm(self::randomWarpModalForm());
-                    }
-                ),
-                new ClosureButton(
-                    "ランキング",
-                    null,
-                    function (Player $p, ClosureButton $button) {
-                        RankingForm::sendForm($p);
-                    }
-                ),
-                new ClosureButton(
-                    "ボーナスコード",
-                    null,
-                    function (Player $p, ClosureButton $button) {
-                        BonusCodeForm::sendForm($p);
-                    }
-                ),
-                new ClosureButton(
-                    "設定",
-                    null,
-                    function (Player $p, ClosureButton $button) {
-                        $p->sendForm(SettingForm::settingForm());
-                    }
-                ),
-            );
-        $p->sendForm($form);
+                    ),
+                    new ClosureButton(
+                        "飛行を$fly_status にする",
+                        null,
+                        function (Player $p, ClosureButton $button) use ($xuid) {
+                            if (AccountManager::hasValue($xuid, 'fly')) {
+                                AccountManager::setValue($xuid, 'fly', 0);
+                                $p->setFlying(false);
+                                $p->setAllowFlight(false);
+                                $p->sendMessage('飛行を無効にしました');
+                            } else {
+                                if (in_array($p->getLevel()->getFolderName(), AccountManager::STOP_FLY_WORLD)) {
+                                    $p->sendMessage('このワールドで飛行することはできません');
+                                    return;
+                                }
+                                AccountManager::setValue($xuid, 'fly');
+                                $p->setAllowFlight(true);
+                                $p->setFlying(true);
+                                $p->sendMessage('飛行を有効にしました');
+                            }
+                        }
+                    ),
+                    new ClosureButton(
+                        "ワープ地点",
+                        null,
+                        function (Player $p, ClosureButton $button) {
+                            MyWarpForm::sendWarpForm($p);
+                        }
+                    ),
+                    new ClosureButton(
+                        "ワールド移動",
+                        null,
+                        function (Player $p, ClosureButton $button) {
+                            $p->sendForm(self::worldTeleportForm());
+                        }
+                    ),
+                    new ClosureButton(
+                        "サーバー移動",
+                        null,
+                        function (Player $p, ClosureButton $button) {
+                            ServerSelectForm::sendServerSelectForm($p);
+                        }
+                    ),
+                    new ClosureButton(
+                        "スキル設定",
+                        null,
+                        function (Player $p, ClosureButton $button) use ($xuid) {
+                            $p->sendForm(SkillSelectForm::SkillSelectForm($xuid));
+                        }
+                    ),
+                    new ClosureButton(
+                        "パーティー",
+                        null,
+                        function (Player $p, ClosureButton $button) use ($xuid) {
+                            $p->sendForm(PartyForm::partyForm($xuid));
+                        }
+                    ),
+                    new ClosureButton(
+                        "土地保護",
+                        null,
+                        function (Player $p, ClosureButton $button) use ($xuid) {
+                            $p->sendForm(LandForm::landForm($xuid));
+                        }
+                    ),
+                    new ClosureButton(
+                        "クエスト",
+                        null,
+                        function (Player $p, ClosureButton $button) {
+                            $p->sendForm(QuestForm::questForm($p));
+                        }
+                    ),
+                    new ClosureButton(
+                        "ガチャ",
+                        null,
+                        function (Player $p, ClosureButton $button) {
+                            GatyaForm::sendGatyaForm($p);
+                        }
+                    ),
+                    new ClosureButton(
+                        "ギフト",
+                        null,
+                        function (Player $p, ClosureButton $button) {
+                            GiftForm::sendGiftForm($p);
+                        }
+                    ),
+                    new ClosureButton(
+                        "ランダムワープ",
+                        null,
+                        function (Player $p, ClosureButton $button) {
+                            $p->sendForm(self::randomWarpModalForm());
+                        }
+                    ),
+                    new ClosureButton(
+                        "ランキング",
+                        null,
+                        function (Player $p, ClosureButton $button) {
+                            RankingForm::sendForm($p);
+                        }
+                    ),
+                    new ClosureButton(
+                        "ボーナスコード",
+                        null,
+                        function (Player $p, ClosureButton $button) {
+                            BonusCodeForm::sendForm($p);
+                        }
+                    ),
+                    new ClosureButton(
+                        "設定",
+                        null,
+                        function (Player $p, ClosureButton $button) {
+                            $p->sendForm(SettingForm::settingForm());
+                        }
+                    ),
+                );
+            $p->sendForm($form);
+        });
     }
 
     static function worldTeleportForm(): SimpleForm

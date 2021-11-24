@@ -26,6 +26,7 @@ use ree_jp\coral_reef\account\UserAccount;
 use ree_jp\coral_reef\CoralReefPlugin;
 use ree_jp\coral_reef\land\LandData;
 use ree_jp\coral_reef\land\LandManager;
+use ree_jp\coral_reef\money\MoneyCache;
 
 class SQLManager
 {
@@ -64,6 +65,7 @@ class SQLManager
 
     public function close(): void
     {
+        MoneyCache::purgeAll();
         Server::getInstance()->getLogger()->info('[SQL] クエリの終了を待っています');
         $this->db->waitAll();
         $this->db->close();
@@ -178,6 +180,16 @@ class SQLManager
             });
     }
 
+    public function getMoney(string $xuid, ?Closure $func, ?Closure $failure = null): void
+    {
+        $this->db->executeSelect('coral_reef.money.get', ['xuid' => intval($xuid)], $func, $failure);
+    }
+
+    public function addMoney(string $xuid, int $money, ?Closure $func, ?Closure $failure = null): void
+    {
+        $this->db->executeInsert('coral_reef.money.add', ["xuid" => intval($xuid), "money" => $money], $func, $failure);
+    }
+
     public function getValue(string $xuid, string $type, string $subtype, ?Closure $func, ?Closure $failure = null): void
     {
         $this->db->executeSelect('coral_reef.values.get.one', ['xuid' => intval($xuid), 'type' => strtolower($type), 'subtype' => strtolower($subtype)],
@@ -287,12 +299,15 @@ class SQLManager
     {
         $this->db->executeGeneric("coral_reef.init.functions.add_value.reset");
         $this->db->executeGeneric("coral_reef.init.functions.add_value.create");
+        $this->db->executeGeneric("coral_reef.init.functions.add_money.reset");
+        $this->db->executeGeneric("coral_reef.init.functions.add_money.create");
     }
 
     private function createTable(): void
     {
         $this->db->executeGeneric('coral_reef.init.tables.user');
         $this->db->executeGeneric('coral_reef.init.tables.ban');
+        $this->db->executeGeneric('coral_reef.init.tables.money');
         $this->db->executeGeneric('coral_reef.init.tables.warp');
         $this->db->executeGeneric('coral_reef.init.tables.land');
         $this->db->executeGeneric('coral_reef.init.tables.virtual_value');

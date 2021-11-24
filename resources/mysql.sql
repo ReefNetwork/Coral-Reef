@@ -32,6 +32,28 @@ END;
 DROP PROCEDURE IF EXISTS add_value;
 -- #                }
 -- #            }
+-- #            { add_money
+-- #                { create
+CREATE PROCEDURE add_money(IN _xuid BIGINT, IN _money BIGINT)
+BEGIN
+    IF EXISTS(SELECT value
+              FROM MONEY
+              WHERE xuid = _xuid
+                AND money = _money)
+    then
+        INSERT INTO MONEY
+        VALUES (_xuid, _money);
+    else
+        UPDATE MONEY
+        SET money = _money + money
+        WHERE xuid = _xuid;
+    end if;
+END;
+-- #                }
+-- #                { reset
+DROP PROCEDURE IF EXISTS add_money;
+-- #                }
+-- #            }
 -- #        }
 -- #        { tables
 -- #            { user
@@ -52,6 +74,13 @@ CREATE TABLE IF NOT EXISTS BAN
     value  VARCHAR(20)        NOT NULL,
     reason VARCHAR(999)       NOT NULL,
     time   DATETIME
+);
+-- #            }
+-- #            { money
+CREATE TABLE IF NOT EXISTS MONEY
+(
+    xuid  BIGINT UNSIGNED NOT NULL PRIMARY KEY,
+    money BIGINT          NOT NULL
 );
 -- #            }
 -- #            { warp
@@ -150,6 +179,19 @@ WHERE xuid = :xuid;
 -- #        { get
 SELECT *
 FROM BAN;
+-- #        }
+-- #    }
+-- #    { money
+-- #        { get
+-- #        :xuid int
+SELECT money
+FROM MONEY
+WHERE xuid = :xuid;
+-- #        }
+-- #        { add
+-- #        :xuid int
+-- #        :money int
+CALL add_money(:xuid, :money);
 -- #        }
 -- #    }
 -- #    { values
@@ -253,6 +295,16 @@ WHERE server = :server;
 -- #        :sz int
 INSERT INTO LAND
 VALUES (:xuid, :name, :server, :level, :mx, :sx, :mz, :sz);
+/*
+ *  CCCCC                        lll RRRRRR                 fff
+ * CC    C  oooo  rr rr    aa aa lll RR   RR   eee    eee  ff
+ * CC      oo  oo rrr  r  aa aaa lll RRRRRR  ee   e ee   e ffff
+ * CC    C oo  oo rr     aa  aaa lll RR  RR  eeeee  eeeee  ff
+ *  CCCCC   oooo  rr      aaa aa lll RR   RR  eeeee  eeeee ff
+ *
+ * Copyright (c) 2021. Ree-jp(https://ree-jp.net)
+ */
+
 -- #        }
 -- #        { delete
 -- #        :xuid int

@@ -22,6 +22,7 @@ use pocketmine\Player;
 use pocketmine\scheduler\ClosureTask;
 use pocketmine\Server;
 use ree_jp\coral_reef\CoralReefPlugin;
+use ree_jp\coral_reef\money\MoneyService;
 use ree_jp\coral_reef\quest\QuestManager;
 use ree_jp\coral_reef\skill\BreakSkill;
 use ree_jp\coral_reef\skill\SkillManager;
@@ -129,18 +130,23 @@ class AccountManager
                 $p->getLevelNonNull()->setBlock($bl, Block::get(BlockIds::AIR));
             }
         }
-        if ($skill instanceof BreakSkill && $p->isSurvival()) {
-            if (!self::hasValue($xuid, 'skill_cool_time') && !self::hasValue($xuid, 'skill_active') &&
-                !($p->isSneaking() && !SettingManager::isEnableOption($xuid, SettingConst::SNEAK_SKILL))) {
-                if (((($p->getX() - 1) === $bl->getX()) || (($p->getX() + 1) === $bl->getX())) && ((($p->getZ() - 1) === $bl->getZ()) ||
-                        (($p->getZ() + 1) === $bl->getZ()))
-                    && ($p->getY() - 1 === $bl->getY()) && SettingManager::isEnableOption($xuid, SettingConst::BREAK_UNDER_GROUND)) {
-                    $p->sendPopup("地面にスキルをは発動できません\n設定で変更できます");
-                    return;
+        if (self::hasValue($xuid, 'skill_active')) {
+            MoneyService::addMoney($xuid, 1);
+        } else {
+            MoneyService::addMoney($xuid, 10);
+            if ($skill instanceof BreakSkill && $p->isSurvival()) {
+                if (!self::hasValue($xuid, 'skill_cool_time') && !self::hasValue($xuid, 'skill_active') &&
+                    !($p->isSneaking() && !SettingManager::isEnableOption($xuid, SettingConst::SNEAK_SKILL))) {
+                    if (((($p->getX() - 1) === $bl->getX()) || (($p->getX() + 1) === $bl->getX())) && ((($p->getZ() - 1) === $bl->getZ()) ||
+                            (($p->getZ() + 1) === $bl->getZ()))
+                        && ($p->getY() - 1 === $bl->getY()) && SettingManager::isEnableOption($xuid, SettingConst::BREAK_UNDER_GROUND)) {
+                        $p->sendPopup("地面にスキルをは発動できません\n設定で変更できます");
+                        return;
+                    }
+                    AccountManager::setValue($xuid, 'skill_active');
+                    SkillManager::skillActive($p, $bl);
+                    AccountManager::setValue($xuid, 'skill_active', 0);
                 }
-                AccountManager::setValue($xuid, 'skill_active');
-                SkillManager::skillActive($p, $bl);
-                AccountManager::setValue($xuid, 'skill_active', 0);
             }
         }
     }
