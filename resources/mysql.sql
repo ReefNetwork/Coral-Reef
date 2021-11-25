@@ -171,7 +171,7 @@ WHERE xuid = :xuid;
 -- #        :money int
 INSERT INTO MONEY
 VALUES (:xuid, :money)
-ON DUPLICATE KEY UPDATE money = :name + money;
+ON DUPLICATE KEY UPDATE money = :money + money;
 -- #        }
 -- #    }
 -- #    { values
