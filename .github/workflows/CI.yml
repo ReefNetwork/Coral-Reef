@@ -36,7 +36,9 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: CoralReef
-          path: ./build/*
+          path: |
+            ./build/*
+            !./build/make-phar.php
 
   deploy_debug:
     environment: deploy debug
@@ -55,14 +57,15 @@ jobs:
       - name: deploy debug
         uses: sand4rt/ftp-deployer@v1.3
         with:
-          sftp: true # optional
-          host: ${{ secrets.DEBUG_HOST }} # e.g. ftp.host.com or sftp.host.com (without ftp:// or ftps://)
-          port: ${{ secrets.DEBUG_PORT}} # optional, default is: 21
-          username: ${{ secrets.DEBUG_USERNAME }} # FTP username
-          password: ${{ secrets.DEBUG_PASSWORD }} # FTP password
-          remote_folder: /install_plugins/ # optional, remote path of your FTP server
-          local_folder: ./install_plugins/ # optional, local path, default is: dist
-          cleanup: false # optional, remove existing files inside FTP remote folder
+          sftp: true
+          host: ${{ secrets.DEBUG_HOST }}
+          port: ${{ secrets.DEBUG_PORT}}
+          username: ${{ secrets.DEBUG_USERNAME }}
+          password: ${{ secrets.DEBUG_PASSWORD }}
+          remote_folder: /install_plugins/
+          local_folder: ./install_plugins/
+          cleanup: false
+          inclued: [ '*.phar' ]
 
   deploy_stable:
     environment: deploy seichi
@@ -81,11 +84,12 @@ jobs:
       - name: deploy seichi_1
         uses: sand4rt/ftp-deployer@v1.3
         with:
-          sftp: true # optional
-          host: ${{ secrets.SEICHI_1_HOST }} # e.g. ftp.host.com or sftp.host.com (without ftp:// or ftps://)
-          port: ${{ secrets.SEICHI_1_PORT}} # optional, default is: 21
-          username: ${{ secrets.SEICHI_1_USERNAME }} # FTP username
-          password: ${{ secrets.SEICHI_1_PASSWORD }} # FTP password
-          remote_folder: /install_plugins/ # optional, remote path of your FTP server
-          local_folder: ./install_plugins/ # optional, local path, default is: dist
-          cleanup: false # optional, remove existing files inside FTP remote folder
+          sftp: true
+          host: ${{ secrets.SEICHI_1_HOST }}
+          port: ${{ secrets.SEICHI_1_PORT}}
+          username: ${{ secrets.SEICHI_1_USERNAME }}
+          password: ${{ secrets.SEICHI_1_PASSWORD }}
+          remote_folder: /install_plugins/
+          local_folder: ./install_plugins/
+          cleanup: false
+          inclued: [ '*.phar' ]
