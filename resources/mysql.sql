@@ -36,10 +36,9 @@ DROP PROCEDURE IF EXISTS add_value;
 -- #                { create
 CREATE PROCEDURE add_money(IN _xuid BIGINT, IN _money BIGINT)
 BEGIN
-    IF EXISTS(SELECT value
+    IF EXISTS(SELECT money
               FROM MONEY
-              WHERE xuid = _xuid
-                AND money = _money)
+              WHERE xuid = _xuid)
     then
         INSERT INTO MONEY
         VALUES (_xuid, _money);
@@ -295,16 +294,6 @@ WHERE server = :server;
 -- #        :sz int
 INSERT INTO LAND
 VALUES (:xuid, :name, :server, :level, :mx, :sx, :mz, :sz);
-/*
- *  CCCCC                        lll RRRRRR                 fff
- * CC    C  oooo  rr rr    aa aa lll RR   RR   eee    eee  ff
- * CC      oo  oo rrr  r  aa aaa lll RRRRRR  ee   e ee   e ffff
- * CC    C oo  oo rr     aa  aaa lll RR  RR  eeeee  eeeee  ff
- *  CCCCC   oooo  rr      aaa aa lll RR   RR  eeeee  eeeee ff
- *
- * Copyright (c) 2021. Ree-jp(https://ree-jp.net)
- */
-
 -- #        }
 -- #        { delete
 -- #        :xuid int
