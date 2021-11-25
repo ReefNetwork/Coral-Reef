@@ -32,27 +32,6 @@ END;
 DROP PROCEDURE IF EXISTS add_value;
 -- #                }
 -- #            }
--- #            { add_money
--- #                { create
-CREATE PROCEDURE add_money(IN _xuid BIGINT, IN _money BIGINT)
-BEGIN
-    IF EXISTS(SELECT money
-              FROM MONEY
-              WHERE xuid = _xuid)
-    then
-        INSERT INTO MONEY
-        VALUES (_xuid, _money);
-    else
-        UPDATE MONEY
-        SET money = _money + money
-        WHERE xuid = _xuid;
-    end if;
-END;
--- #                }
--- #                { reset
-DROP PROCEDURE IF EXISTS add_money;
--- #                }
--- #            }
 -- #        }
 -- #        { tables
 -- #            { user
@@ -190,7 +169,9 @@ WHERE xuid = :xuid;
 -- #        { add
 -- #        :xuid int
 -- #        :money int
-CALL add_money(:xuid, :money);
+INSERT INTO MONEY
+VALUES (:xuid, :money)
+ON DUPLICATE KEY UPDATE money = :name + money;
 -- #        }
 -- #    }
 -- #    { values

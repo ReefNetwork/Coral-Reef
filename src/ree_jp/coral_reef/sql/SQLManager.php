@@ -299,8 +299,6 @@ class SQLManager
     {
         $this->db->executeGeneric("coral_reef.init.functions.add_value.reset");
         $this->db->executeGeneric("coral_reef.init.functions.add_value.create");
-        $this->db->executeGeneric("coral_reef.init.functions.add_money.reset");
-        $this->db->executeGeneric("coral_reef.init.functions.add_money.create");
     }
 
     private function createTable(): void
