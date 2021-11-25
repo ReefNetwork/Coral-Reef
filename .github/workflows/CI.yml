@@ -65,7 +65,8 @@ jobs:
           remote_folder: /install_plugins/
           local_folder: ./install_plugins/
           cleanup: false
-          inclued: [ '*.phar' ]
+          inclued: |
+            '*.phar'
 
   deploy_stable:
     environment: deploy seichi
@@ -92,4 +93,5 @@ jobs:
           remote_folder: /install_plugins/
           local_folder: ./install_plugins/
           cleanup: false
-          inclued: [ '*.phar' ]
+          inclued: |
+            '*.phar'
