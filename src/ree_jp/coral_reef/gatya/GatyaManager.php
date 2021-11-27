@@ -28,9 +28,9 @@ class GatyaManager
 {
     static array $isProcessing = [];
 
-    static function addTicket(string $xuid, string $type, int $count): void
+    static function addTicket(string $xuid, string $type, int $count, ?Closure $func = null): void
     {
-        SQLManager::$manager->addValue($xuid, SQLConst::TYPE_TICKETS, $type, $count, null, function (SqlError $error) use ($xuid): void {
+        SQLManager::$manager->addValue($xuid, SQLConst::TYPE_TICKETS, $type, $count, $func, function (SqlError $error) use ($xuid): void {
             Server::getInstance()->getLogger()->error('[TicketAdd] ' . $xuid . 'さんの処理中に' . $error->getErrorMessage());
         });
     }
