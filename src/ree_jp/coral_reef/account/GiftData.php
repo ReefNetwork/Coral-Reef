@@ -41,7 +41,9 @@ class GiftData
             if ($key === false) {
                 $this->items[] = $item;
             } else {
-                $this->items[$key]["count"] += $item["count"];
+                $duplicateItem = json_decode($this->items[$key], true);
+                $duplicateItem["count"] += json_decode($item, true)["count"];
+                $this->items[$key] = json_encode($duplicateItem);
             }
         }
     }
