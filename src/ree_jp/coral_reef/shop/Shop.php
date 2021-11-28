@@ -14,6 +14,7 @@ namespace ree_jp\coral_reef\shop;
 use Closure;
 use JetBrains\PhpStorm\ArrayShape;
 use pocketmine\block\BlockIds;
+use pocketmine\item\Item;
 use pocketmine\level\Position;
 use pocketmine\Player;
 use pocketmine\Server;
@@ -28,7 +29,7 @@ use ree_jp\coral_reef\sql\SQLManager;
 class Shop
 {
     public Position $pos;
-    private array $payment;
+    public array $payment;
 
     public function __construct(Position $pos, array $payment)
     {
@@ -75,7 +76,7 @@ class Shop
 
     private function pay(string $xuid, int $count, Closure $func, Closure $failure): void
     {
-        $value = $this->payment["count"] * $count;
+        $value = $this->payment["amount"] * $count;
         switch ($this->payment["type"]) {
             case "money":
                 MoneyService::getMoney($xuid, function (int $money) use ($xuid, $func, $failure, $value): void {
@@ -102,6 +103,9 @@ class Shop
         }
     }
 
+    /**
+     * @return Item[]|null
+     */
     public function getItems(): ?array
     {
         $i = 0;

@@ -1,0 +1,56 @@
+<?php
+/*
+ *  CCCCC                        lll RRRRRR                 fff
+ * CC    C  oooo  rr rr    aa aa lll RR   RR   eee    eee  ff
+ * CC      oo  oo rrr  r  aa aaa lll RRRRRR  ee   e ee   e ffff
+ * CC    C oo  oo rr     aa  aaa lll RR  RR  eeeee  eeeee  ff
+ *  CCCCC   oooo  rr      aaa aa lll RR   RR  eeeee  eeeee ff
+ *
+ * Copyright (c) 2021. Ree-jp(https://ree-jp.net)
+ */
+
+namespace ree_jp\coral_reef\shop\form;
+
+use bbo51dog\bboform\element\ClosureButton;
+use bbo51dog\bboform\element\Dropdown;
+use bbo51dog\bboform\element\Input;
+use bbo51dog\bboform\form\ClosureCustomForm;
+use bbo51dog\bboform\form\CustomForm;
+use bbo51dog\bboform\form\SimpleForm;
+use pocketmine\level\Position;
+use pocketmine\Player;
+use ree_jp\coral_reef\shop\Shop;
+use ree_jp\coral_reef\shop\ShopStore;
+
+class ShopManageForm
+{
+    const PAYMENT = ["money", "normal_tickets"];
+
+    static function sendForm(Player $p, ShopStore $store, Position $pos): void
+    {
+        $shop = $store->findShop($p);
+        if (is_null($shop)) {
+            $p->sendForm(self::shopCreateForm($store, $pos));
+        } else {
+            $p->sendForm((new SimpleForm())->setTitle("Shop Manage")->setText("このショップに対して行う動作を選んでください")
+                ->addElements(new ClosureButton("ショップを変更する", null, function (Player $p, ClosureButton $button) use ($pos, $store, $shop): void {
+                    $p->sendForm(self::shopCreateForm($store, $pos, self::PAYMENT[$shop->payment["type"]], $shop->payment["amount"]));
+                }), new ClosureButton("削除する", null, function (Player $p, ClosureButton $button) use ($pos, $store) {
+                    $store->removeShop($pos);
+                })));
+        }
+    }
+
+    static function shopCreateForm(ShopStore $store, Position $pos, string $type = "なし", int $count = 0): CustomForm
+    {
+        $typeElement = new Dropdown("このショップの支払い方法を設定してください(もともとは$type)", self::PAYMENT);
+        $countElement = new Input("このショップの支払う量を設定してください", "100", $count);
+        return (new ClosureCustomForm(function (Player $p, ClosureCustomForm $form) use ($pos, $store, $countElement, $typeElement): void {
+            $payment = self::PAYMENT[$typeElement->getValue()];
+            $count = intval($countElement->getValue());
+
+            $store->createShop(new Shop($pos, ["type" => $payment, "count" => $count]));
+            $p->sendMessage("ショップを作成しました");
+        }))->setTitle("Shop Edit")->addElements($typeElement, $countElement);
+    }
+}
