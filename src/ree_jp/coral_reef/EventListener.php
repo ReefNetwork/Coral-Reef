@@ -242,7 +242,9 @@ class EventListener implements Listener
         }
         switch ($ev->getBlock()->getId()) {
             case BlockIds::SIGN_POST:
+            case BlockIds::WALL_SIGN:
                 ShopService::showShop($p, $this->shopStore, $ev->getBlock());
+                break;
         }
         $ev->setCancelled(LandManager::$instance->protect($p, $ev->getBlock(), null, true));
     }

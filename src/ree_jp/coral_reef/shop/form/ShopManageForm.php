@@ -41,16 +41,16 @@ class ShopManageForm
         }
     }
 
-    static function shopCreateForm(ShopStore $store, Position $pos, string $type = "なし", int $count = 0): CustomForm
+    static function shopCreateForm(ShopStore $store, Position $pos, string $type = "なし", int $amount = 0): CustomForm
     {
         $typeElement = new Dropdown("このショップの支払い方法を設定してください(もともとは$type)", self::PAYMENT);
-        $countElement = new Input("このショップの支払う量を設定してください", "100", $count);
-        return (new ClosureCustomForm(function (Player $p, ClosureCustomForm $form) use ($pos, $store, $countElement, $typeElement): void {
+        $amountElement = new Input("このショップの支払う量を設定してください", "100", $amount);
+        return (new ClosureCustomForm(function (Player $p, ClosureCustomForm $form) use ($pos, $store, $amountElement, $typeElement): void {
             $payment = self::PAYMENT[$typeElement->getValue()];
-            $count = intval($countElement->getValue());
+            $amount = intval($amountElement->getValue());
 
-            $store->createShop(new Shop($pos, ["type" => $payment, "count" => $count]));
+            $store->createShop(new Shop($pos, ["type" => $payment, "amount" => $amount]));
             $p->sendMessage("ショップを作成しました");
-        }))->setTitle("Shop Edit")->addElements($typeElement, $countElement);
+        }))->setTitle("Shop Edit")->addElements($typeElement, $amountElement);
     }
 }
