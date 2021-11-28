@@ -94,7 +94,7 @@ class Shop
                     function (array $rows) use ($xuid, $func, $failure, $value): void {
                         $row = array_shift($rows);
                         if (isset($row['value']) && ($value <= intval($row['value']))) {
-                            GatyaManager::addTicket($xuid, SQLConst::TICKETS_NORMAL, $value, $func);
+                            GatyaManager::addTicket($xuid, SQLConst::TICKETS_NORMAL, -$value, $func);
                         } else {
                             $failure();
                         }

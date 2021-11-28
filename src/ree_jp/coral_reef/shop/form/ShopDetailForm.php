@@ -31,12 +31,14 @@ class ShopDetailForm
         foreach ($items as $item) {
             $itemString .= $item->getName() . TextFormat::RESET . " ×" . $item->getCount() . "\n";
         }
-        $text = new Label("金額\n" . TextFormat::GOLD . $shop->payment["amount"] . TextFormat::RESET . $itemString);
+        $text = "金額\n" . $shop->payment["type"] . $shop->payment["amount"] . TextFormat::RESET . $itemString;
+        $text = str_replace($text, "お金: " . TextFormat::GOLD, "money");
+        $text = str_replace($text, "ガチャチケット: " . TextFormat::BLUE, "normal_tickets");
         $amount = new Slider("購入するセット数を選択してください", 1, 64, 1);
         $form = (new ClosureCustomForm(function (Player $p, ClosureCustomForm $form) use ($shop, $amount): void {
             $amount->getValue();
             $shop->buy($p, $amount->getValue());
-        }))->setTitle("Shop")->addElements($text, $amount);
+        }))->setTitle("Shop")->addElements(new Label($text), $amount);
         $p->sendForm($form);
     }
 }
