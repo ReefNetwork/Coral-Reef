@@ -110,7 +110,7 @@ class Shop
     {
         $i = 0;
         while ($i < 5) {
-            $i--;
+            $i++;
             $nowPos = $this->pos->subtract(0, $i);
             $item = $this->pos->getLevel()->getBlock($nowPos);
             if ($item->getId() !== BlockIds::CHEST) continue;

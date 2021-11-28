@@ -34,7 +34,7 @@ class ShopManageForm
         } else {
             $p->sendForm((new SimpleForm())->setTitle("Shop Manage")->setText("このショップに対して行う動作を選んでください")
                 ->addElements(new ClosureButton("ショップを変更する", null, function (Player $p, ClosureButton $button) use ($pos, $store, $shop): void {
-                    $p->sendForm(self::shopCreateForm($store, $pos, self::PAYMENT[$shop->payment["type"]], $shop->payment["amount"]));
+                    $p->sendForm(self::shopCreateForm($store, $pos, $shop->payment["type"], $shop->payment["amount"]));
                 }), new ClosureButton("削除する", null, function (Player $p, ClosureButton $button) use ($pos, $store) {
                     $store->removeShop($pos);
                 })));
