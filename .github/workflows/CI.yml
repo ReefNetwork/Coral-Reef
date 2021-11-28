@@ -56,7 +56,7 @@ jobs:
 
       - name: remove LICENSES
         run: |
-          rm -r ./build/LICENSES
+          rm -r ./install_plugins/LICENSES
 
       - name: deploy debug
         uses: sand4rt/ftp-deployer@v1.3
