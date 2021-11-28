@@ -54,6 +54,10 @@ jobs:
           name: CoralReef
           path: install_plugins
 
+      - name: remove LICENSES
+        run: |
+          rm -r ./build/LICENSES
+
       - name: deploy debug
         uses: sand4rt/ftp-deployer@v1.3
         with:
@@ -81,6 +85,10 @@ jobs:
         with:
           name: CoralReef
           path: install_plugins
+
+      - name: remove LICENSES
+        run: |
+          rm -r ./build/LICENSES
 
       - name: deploy seichi_1
         uses: sand4rt/ftp-deployer@v1.3

@@ -35,19 +35,19 @@ class GiftData
 
         foreach ($items as $item) {
             if ($item instanceof Item) {
+                $checkItem = $item;
                 $item = json_encode($item);
-            }
-            $key = array_search($item, $this->items, true);
-            if ($key === false) {
-                $this->items[] = $item;
             } else {
-                $duplicateItem = json_decode($this->items[$key], true);
-                $arrayItem = json_decode($item, true);
-                if (!isset($duplicateItem["count"])) $duplicateItem["count"] = 1;
-                if (!isset($arrayItem["count"])) $arrayItem["count"] = 1;
-                $duplicateItem["count"] += $arrayItem["count"];
-                $this->items[$key] = json_encode($duplicateItem);
+                $checkItem = Item::jsonDeserialize(json_decode($item, true));
             }
+            foreach ($this->items as $key => $jsonItem) {
+                $storeItem = Item::jsonDeserialize(json_decode($jsonItem, true));
+                if ($checkItem->equals($storeItem)) {
+                    $this->items[$key] = json_encode($storeItem->setCount($storeItem->getCount() + $checkItem->getCount()));
+                    continue 2;
+                }
+            }
+            $this->items[] = $item;
         }
     }
 
