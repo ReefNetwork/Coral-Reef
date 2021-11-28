@@ -31,6 +31,7 @@ class ShopStore
     private function loadShop(): void
     {
         unset($this->shops);
+        $this->shops = [];
         $this->config->reload();
         foreach ($this->config->getAll() as $key => $shopData) {
             $this->shops[$key] = Shop::jsonDeserialize($shopData);
