@@ -47,6 +47,8 @@ use ree_jp\coral_reef\form\LandForm;
 use ree_jp\coral_reef\gatya\items\ReefItems;
 use ree_jp\coral_reef\gatya\items\SpecialItemService;
 use ree_jp\coral_reef\land\LandManager;
+use ree_jp\coral_reef\shop\ShopService;
+use ree_jp\coral_reef\shop\ShopStore;
 use ree_jp\coral_reef\sql\SettingConst;
 use ree_jp\coral_reef\sql\SQLManager;
 use ree_jp\coral_reef\task\EffectTask;
@@ -54,6 +56,10 @@ use Throwable;
 
 class EventListener implements Listener
 {
+    public function __construct(private ShopStore $shopStore)
+    {
+    }
+
     function onPreLogin(PlayerLoginEvent $ev): void
     {
         $p = $ev->getPlayer();
@@ -233,6 +239,10 @@ class EventListener implements Listener
                     $p->sendForm(LandForm::landCreateAssistForm($xuid, $ev->getBlock()));
                 }
                 break;
+        }
+        switch ($ev->getBlock()->getId()) {
+            case BlockIds::SIGN_POST:
+                ShopService::showShop($p, $this->shopStore, $ev->getBlock());
         }
         $ev->setCancelled(LandManager::$instance->protect($p, $ev->getBlock(), null, true));
     }
