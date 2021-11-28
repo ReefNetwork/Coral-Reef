@@ -32,8 +32,8 @@ class ShopDetailForm
             $itemString .= $item->getName() . TextFormat::RESET . " ×" . $item->getCount() . "\n";
         }
         $text = "金額\n" . $shop->payment["type"] . $shop->payment["amount"] . TextFormat::RESET . $itemString;
-        $text = str_replace($text, "お金: " . TextFormat::GOLD, "money");
-        $text = str_replace($text, "ガチャチケット: " . TextFormat::BLUE, "normal_tickets");
+        $text = str_replace("お金: " . TextFormat::GOLD, $text, "money");
+        $text = str_replace("ガチャチケット: " . TextFormat::BLUE, $text, "normal_tickets");
         $amount = new Slider("購入するセット数を選択してください", 1, 64, 1);
         $form = (new ClosureCustomForm(function (Player $p, ClosureCustomForm $form) use ($shop, $amount): void {
             $amount->getValue();
