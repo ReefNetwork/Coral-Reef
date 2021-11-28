@@ -28,7 +28,7 @@ class ShopManageForm
 
     static function sendForm(Player $p, ShopStore $store, Position $pos): void
     {
-        $shop = $store->findShop($p);
+        $shop = $store->findShop($pos);
         if (is_null($shop)) {
             $p->sendForm(self::shopCreateForm($store, $pos));
         } else {

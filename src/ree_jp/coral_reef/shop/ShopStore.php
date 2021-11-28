@@ -40,9 +40,14 @@ class ShopStore
 
     public function findShop(Position $pos): ?Shop
     {
-        $posKey = $this->createKey($pos);
-        if (isset($this->shops[$posKey])) {
-            return $this->shops[$posKey];
+//        $posKey = $this->createKey($pos);
+//        if (isset($this->shops[$posKey])) {
+//            return $this->shops[$posKey];
+//        }
+        foreach ($this->shops as $shop) {
+            if ($shop->pos->equals($pos)) {
+                return $shop;
+            }
         }
         return null;
     }

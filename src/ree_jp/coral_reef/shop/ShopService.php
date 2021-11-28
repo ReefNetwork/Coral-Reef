@@ -27,7 +27,7 @@ class ShopService
             return;
         }
 
-        $shop = $store->findShop($p);
+        $shop = $store->findShop($pos);
         if (!is_null($shop)) {
             ShopDetailForm::sendForm($p, $shop);
         }
