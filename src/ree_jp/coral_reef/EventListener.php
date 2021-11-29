@@ -243,6 +243,8 @@ class EventListener implements Listener
         switch ($ev->getBlock()->getId()) {
             case BlockIds::SIGN_POST:
             case BlockIds::WALL_SIGN:
+                if (AccountManager::hasValue($xuid, 'form_cool_time')) return;
+                AccountManager::setValue($xuid, 'form_cool_time', 10);
                 ShopService::showShop($p, $this->shopStore, $ev->getBlock());
                 break;
         }
