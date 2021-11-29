@@ -151,5 +151,7 @@ class ReefItems
         SuperItems::registerItems();
         RareItems::registerItems();
         NormalItems::registerItems();
+
+        ConvertItems::registerItems();
     }
 }
