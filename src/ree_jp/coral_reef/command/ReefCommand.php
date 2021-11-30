@@ -62,17 +62,6 @@ class ReefCommand extends PluginCommand
                 case "test":
                     $sender->sendMessage('super test message yeah');
                     break;
-                case "admin":
-                    if (!$sender->isOp() || !isset($args[1])) {
-                        $sender->sendMessage("yhe_eee_eeeee_eeeee_eeeee_eeeee_eeeee");
-                        return;
-                    }
-                    switch ($args[1]) {
-                        default:
-                            $sender->sendMessage("そのadminコマンドはない!!!!!!!!");
-                            break;
-                    }
-                    break;
             }
         }
         $sender->sendMessage('そのコマンドは間違っています');

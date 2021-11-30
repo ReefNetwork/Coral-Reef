@@ -34,18 +34,34 @@ class ShopDetailForm
             $itemString .= $item->getName() . TextFormat::RESET . " ×" . $item->getCount() . "\n";
         }
         $text = "金額\n" . $shop->payment["type"] . $shop->payment["amount"] . TextFormat::RESET;
-        $amount = new Slider("購入するセット数を選択してください", 1, 64, 1);
+        $amount = new Slider(self::replaceOrderType($shop->orderType) . "するセット数を選択してください", 1, 64, 1);
 
         $form = (new ClosureCustomForm(function (Player $p, ClosureCustomForm $form) use ($shop, $amount): void {
-            $p->sendForm((new ModalForm(new ClosureButton("購入する", null, function (Player $p, ClosureButton $button) use ($amount, $shop): void {
-                $shop->buy($p, $amount->getValue());
-            }), new ClosureButton("戻る", null, function (Player $p, ClosureButton $button) use ($shop): void {
+            $p->sendForm((new ModalForm(new ClosureButton(self::replaceOrderType($shop->orderType) . "する", null,
+                function (Player $p, ClosureButton $button) use ($amount, $shop): void {
+                    switch ($shop->orderType) {
+                        case "buy":
+                            $shop->buy($p, $amount->getValue());
+                            break;
+                        case "sell":
+                            $shop->sell($p, $amount->getValue());
+                            break;
+                        default:
+                            $p->sendMessage("エラーが発生しました");
+                    }
+                }), new ClosureButton("戻る", null, function (Player $p, ClosureButton $button) use ($shop): void {
                 self::sendForm($p, $shop);
-            })))->setTitle("Shop -> Confirm")->setText("本当にこのアイテムを購入しますか?\n必要な金額: " .
+            })))->setTitle("Shop -> Confirm")->setText("本当にこのアイテムを" . self::replaceOrderType($shop->orderType) . "しますか?\n" .
                 self::replacePaymentType("金額\n" . $shop->payment["type"] . $shop->payment["amount"] * $amount->getValue() . TextFormat::RESET)));
 
         }))->setTitle("Shop")->addElements(new Label(self::replacePaymentType($text) . $itemString), $amount);
         $p->sendForm($form);
+    }
+
+    static function replaceOrderType(string $text): string
+    {
+        $text = str_replace("buy", "購入", $text);
+        return str_replace("sell", "売却", $text);
     }
 
     static function replacePaymentType(string $text): string

@@ -24,6 +24,7 @@ use ree_jp\coral_reef\shop\ShopStore;
 
 class ShopManageForm
 {
+    const TYPE = ["buy", "sell"];
     const PAYMENT = ["money", "normal_tickets"];
 
     static function sendForm(Player $p, ShopStore $store, Position $pos): void
@@ -41,15 +42,17 @@ class ShopManageForm
         }
     }
 
-    static function shopCreateForm(ShopStore $store, Position $pos, string $type = "なし", int $amount = 0): CustomForm
+    static function shopCreateForm(ShopStore $store, Position $pos, string $orderType = "なし", string $payType = "なし", int $amount = 0): CustomForm
     {
-        $typeElement = new Dropdown("このショップの支払い方法を設定してください(もともとは$type)", self::PAYMENT);
+        $orderElement = new Dropdown("買わせる(buy)か買い取る(sell)か (もともとは$orderType)", self::TYPE);
+        $typeElement = new Dropdown("このショップの支払い方法を設定してください(もともとは$payType)", self::PAYMENT);
         $amountElement = new Input("このショップの支払う量を設定してください", "100", $amount);
-        return (new ClosureCustomForm(function (Player $p, ClosureCustomForm $form) use ($pos, $store, $amountElement, $typeElement): void {
+        return (new ClosureCustomForm(function (Player $p, ClosureCustomForm $form) use ($orderElement, $pos, $store, $amountElement, $typeElement): void {
+            $order = self::TYPE[$orderElement->getValue()];
             $payment = self::PAYMENT[$typeElement->getValue()];
             $amount = intval($amountElement->getValue());
 
-            $store->createShop(new Shop($pos, ["type" => $payment, "amount" => $amount]));
+            $store->createShop(new Shop($pos, $order, ["type" => $payment, "amount" => $amount]));
             $p->sendMessage("ショップを作成しました");
         }))->setTitle("Shop Edit")->addElements($typeElement, $amountElement);
     }

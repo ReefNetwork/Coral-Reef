@@ -40,10 +40,6 @@ class ShopStore
 
     public function findShop(Position $pos): ?Shop
     {
-//        $posKey = $this->createKey($pos);
-//        if (isset($this->shops[$posKey])) {
-//            return $this->shops[$posKey];
-//        }
         foreach ($this->shops as $shop) {
             if ($shop->pos->equals($pos)) {
                 return $shop;
@@ -52,20 +48,22 @@ class ShopStore
         return null;
     }
 
-    public function createShop(Shop $shop): void
-    {
-        $this->config->set($this->createKey($shop->pos), $shop->jsonSerialize());
-        $this->config->save();
-        $this->loadShop();
-    }
-
     private function createKey(Position $pos): string
     {
         return $pos->getLevel()->getFolderName() . ":" . $pos->getX() . ":" . $pos->getY() . ":" . $pos->getZ();
     }
 
+    public function createShop(Shop $shop): void
+    {
+        $this->config->reload();
+        $this->config->set($this->createKey($shop->pos), $shop->jsonSerialize());
+        $this->config->save();
+        $this->loadShop();
+    }
+
     public function removeShop(Position $pos): void
     {
+        $this->config->reload();
         $this->config->remove($this->createKey($pos));
         $this->config->save();
         $this->loadShop();
