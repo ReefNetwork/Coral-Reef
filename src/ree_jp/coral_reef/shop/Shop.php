@@ -42,7 +42,7 @@ class Shop
     static function jsonDeserialize(array $array): Shop
     {
         $level = Server::getInstance()->getLevelByName($array["level"]);
-        $orderType = $array["orderType"] ?? "buy";
+        $orderType = $array["order_type"] ?? "buy";
         return new Shop(new Position($array["x"], $array["y"], $array["z"], $level), $orderType, $array["payment"]);
     }
 
