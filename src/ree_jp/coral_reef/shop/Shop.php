@@ -151,7 +151,7 @@ class Shop
             $tile = $this->pos->getLevel()->getTile($nowPos);
             if (!$tile instanceof Chest) continue;
 
-            return clone $tile->getInventory()->getContents();
+            return $tile->getInventory()->getContents();
         }
         return null;
     }
