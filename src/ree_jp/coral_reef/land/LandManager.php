@@ -46,8 +46,8 @@ class LandManager
         if (is_null(SQLManager::$manager)) throw new Exception('データベースにアクセス出来ませんでした');
         SQLManager::$manager->loadProtectLand(function (array $rows) {
             foreach ($rows as $arrayLand) {
-                array_push($this->lands, new LandData($arrayLand['xuid'], $arrayLand['name'], $arrayLand['level'],
-                    new AxisAlignedBB($arrayLand['sx'], 0, $arrayLand['sz'], $arrayLand['mx'], 0, $arrayLand['mz'])));
+                $this->lands[] = new LandData($arrayLand['xuid'], $arrayLand['name'], $arrayLand['level'],
+                    new AxisAlignedBB($arrayLand['sx'], 0, $arrayLand['sz'], $arrayLand['mx'], 0, $arrayLand['mz']));
             }
         }, function (SqlError $error) {
             CoralReefPlugin::$plugin->setError('土地情報を取得中に' . $error->getErrorMessage());
@@ -75,10 +75,10 @@ class LandManager
         return $myLands;
     }
 
-    public function canCreateLand(AxisAlignedBB $aabb): ?LandData
+    public function canCreateLand(AxisAlignedBB $aabb, string $level): ?LandData
     {
         foreach ($this->lands as $land) {
-            if ($land->aabb->intersectsWith($aabb, -0.00001)) {
+            if ($land->aabb->intersectsWith($aabb, -0.00001) && ($land->level === $level)) {
                 return $land;
             }
         }

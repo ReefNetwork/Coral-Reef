@@ -156,12 +156,12 @@ class LandForm
                     if (mb_strlen($name) > 0) {
                         $aabb = LandManager::$instance->getAabb($x1, $z1, $x2, $z2);
                         $land = new LandData($p->getXuid(), $name, $p->getLevel()->getFolderName(), $aabb);
-                        $result = LandManager::$instance->canCreateLand($aabb);
+                        $result = LandManager::$instance->canCreateLand($aabb, $p->getLevel()->getFolderName());
                         if (is_null($result)) {
                             SQLManager::$manager->addProtectLand($land, $p);
                         } else {
                             $name = AccountManager::getUserName($land->xuid);
-                            $p->sendMessage("指定した土地の一部が$name さんの$land->name とかぶっていたため土地を作成することが出来ませんでした");
+                            $p->sendMessage("指定した土地の一部が$name さんの$result->name とかぶっていたため土地を作成することが出来ませんでした");
                         }
                     } else $p->sendMessage('名前が短すぎます');
                 } else $p->sendMessage('座標の欄には数字を入力してください');
