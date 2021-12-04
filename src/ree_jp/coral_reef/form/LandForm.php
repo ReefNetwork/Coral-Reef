@@ -23,6 +23,7 @@ use pocketmine\item\Item;
 use pocketmine\item\ItemIds;
 use pocketmine\math\Vector3;
 use pocketmine\Player;
+use pocketmine\utils\TextFormat;
 use ree_jp\coral_reef\account\AccountManager;
 use ree_jp\coral_reef\land\LandData;
 use ree_jp\coral_reef\land\LandManager;
@@ -157,6 +158,11 @@ class LandForm
                         $aabb = LandManager::$instance->getAabb($x1, $z1, $x2, $z2);
                         $land = new LandData($p->getXuid(), $name, $p->getLevel()->getFolderName(), $aabb);
                         $result = LandManager::$instance->canCreateLand($aabb, $p->getLevel()->getFolderName());
+                        $space = (($aabb->maxX - $aabb->minX) + 1) * (($aabb->maxZ - $aabb->minZ) + 1);
+                        if ($space > 1000000) {
+                            $p->sendMessage("デカすぎます100万ブロック以下にしてください");
+                            return;
+                        }
                         if (is_null($result)) {
                             SQLManager::$manager->addProtectLand($land, $p);
                         } else {
@@ -180,7 +186,7 @@ class LandForm
 
     private static function landDeleteConfirmForm(LandData $land): ModalForm
     {
-        return new ModalForm(
+        return (new ModalForm(
             new ClosureButton(
                 "はい",
                 null,
@@ -195,6 +201,6 @@ class LandForm
                     $p->sendForm(self::landEditForm($land));
                 },
             ),
-        );
+        ))->setText(TextFormat::RED . "本当に削除しますか?");
     }
 }
