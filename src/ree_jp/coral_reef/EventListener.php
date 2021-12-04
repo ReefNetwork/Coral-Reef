@@ -133,6 +133,9 @@ class EventListener implements Listener
             case EntityDamageEvent::CAUSE_VOID:
                 $health = -1;
                 break;
+
+            default:
+                $ev->setCancelled();
         }
         if ($health <= $ev->getFinalDamage()) {
             $ev->setCancelled();
