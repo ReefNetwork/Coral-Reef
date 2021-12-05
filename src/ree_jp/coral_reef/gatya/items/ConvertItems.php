@@ -34,7 +34,7 @@ class ConvertItems extends ReefItems
             case self::NORMAL_TICKETS_FRAGMENT:
                 $item = Item::get(ItemIds::PAPER);
                 $item->setNamedTagEntry(new StringTag(self::REEF_SP_ITEM, self::NORMAL_TICKETS_FRAGMENT));
-                $item->addEnchantment(new EnchantmentInstance(Enchantment::getEnchantment(Enchantment::FORTUNE), 1));
+                $item->addEnchantment(new EnchantmentInstance(Enchantment::getEnchantment(Enchantment::INFINITY), 1));
                 $item->setCustomName("ノーマルガチャチケットのかけら");
                 $item->setLore(["このかけらを10個集めるとノーマルガチャチケットを受け取れます"]);
                 break;
