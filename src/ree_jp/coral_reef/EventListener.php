@@ -227,6 +227,11 @@ class EventListener implements Listener
         }
 
         switch ($ev->getItem()->getId()) {
+            case ItemIds::FLINT_STEEL:
+                $ev->setCancelled();
+                $p->sendMessage("fuck");
+                return;
+
             case ItemIds::STICK:
                 FormManager::sendMenu($p);
                 break;
