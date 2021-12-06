@@ -229,7 +229,7 @@ class EventListener implements Listener
         switch ($ev->getItem()->getId()) {
             case ItemIds::FLINT_STEEL:
                 $ev->setCancelled();
-                $p->sendMessage("fuck");
+                $p->kick(TextFormat::DARK_RED . "このアイテムは使用出来ません");
                 return;
 
             case ItemIds::STICK:
@@ -255,6 +255,10 @@ class EventListener implements Listener
                 AccountManager::setValue($xuid, 'form_cool_time', 10);
                 ShopService::showShop($p, $this->shopStore, $ev->getBlock());
                 break;
+        }
+        if ($ev->getBlock()->getId() === BlockIds::FRAME_BLOCK) {
+            $ev->setCancelled(LandManager::$instance->protect($p, $ev->getBlock(), "このワールドで額縁を変更することはできません"));
+            return;
         }
         $ev->setCancelled(LandManager::$instance->protect($p, $ev->getBlock(), null, true));
     }

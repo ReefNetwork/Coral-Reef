@@ -45,7 +45,7 @@ class CoralReefPlugin extends PluginBase
     public function onLoad()
     {
         self::$plugin = $this;
-        $this->isDev = !strstr($this->getDescription()->getVersion(), 'stable');
+        $this->isDev = !str_contains($this->getDescription()->getVersion(), 'stable');
     }
 
     public function onEnable()
@@ -96,14 +96,13 @@ class CoralReefPlugin extends PluginBase
         foreach ($this->getServer()->getOnlinePlayers() as $p) {
             $p->kick("サーバーを停止します", false);
         }
-        if (!empty($this->getServer()->getOnlinePlayers())) sleep(1);
         if (!is_null(SQLManager::$manager)) SQLManager::$manager->close();
     }
 
     public function setError(string $error): void
     {
         $this->getLogger()->emergency($error);
-        array_push($this->errors, $error);
+        $this->errors[] = $error;
     }
 
     public function isError(): ?array
