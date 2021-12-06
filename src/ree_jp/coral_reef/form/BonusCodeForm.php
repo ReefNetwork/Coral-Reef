@@ -14,6 +14,7 @@ namespace ree_jp\coral_reef\form;
 use bbo51dog\bboform\element\Input;
 use bbo51dog\bboform\element\Label;
 use bbo51dog\bboform\form\ClosureCustomForm;
+use Closure;
 use pocketmine\Player;
 use pocketmine\utils\TextFormat;
 use poggit\libasynql\SqlError;
@@ -28,35 +29,51 @@ class BonusCodeForm
         $codeElement = new Input("コードを入力してください", "bonus");
         $p->sendForm((new ClosureCustomForm(function (Player $p, ClosureCustomForm $form) use ($codeElement): void {
             $code = strtolower($codeElement->getValue());
+            $code = str_replace(["-", "_", " "], "", $code);
             if (empty($code)) return;
             self::bonusCode($p, $code);
         }))->addElements(new Label("コードを入力するとボーナスを受け取れます\nコードはDiscordやウェブサイトで不定期に配布しています"), $codeElement));
     }
 
+    /** @noinspection SpellCheckingInspection */
     static function bonusCode(Player $p, string $code): void
     {
-        $xuid = $p->getXuid();
         switch ($code) {
             case "reef2nd":
-                SQLManager::$manager->getValue($xuid, SQLConst::TYPE_BONUS, $code, function (array $rows) use ($p, $code): void {
-                    $row = array_shift($rows);
-                    if (!empty($row)) {
-                        $p->sendMessage("そのコードは使用済みです");
-                        return;
-                    }
-                    SQLManager::$manager->setValue($p->getXuid(), SQLConst::TYPE_BONUS, $code, SQLConst::COMPLETE, function () use ($code, $p): void {
-                        SQLManager::$manager->addLog($p->getXuid(), SQLConst::LOG_BONUS, $code, SQLConst::COMPLETE,
-                            SQLConst::NOW_TIME, null, null);
-                        $p->sendMessage(TextFormat::GREEN . "これからもReefServerをよろしくお願いいたします");
-                        $p->sendMessage(TextFormat::AQUA . "ガチャチケットを" . TextFormat::RED . "20枚" . TextFormat::AQUA . "受け取りました");
-                        GatyaManager::addTicket($p->getXuid(), SQLConst::TICKETS_NORMAL, 20);
-                    });
-                }, function (SqlError $error) use ($p): void {
-                    $p->sendMessage("エラーが発生しました");
+                self::useCode($p, $code, function () use ($p): void {
+                    $p->sendMessage(TextFormat::GREEN . "これからもReefServerをよろしくお願いいたします");
+                    $p->sendMessage(TextFormat::AQUA . "ガチャチケットを" . TextFormat::RED . "20枚" . TextFormat::AQUA . "受け取りました");
+                    GatyaManager::addTicket($p->getXuid(), SQLConst::TICKETS_NORMAL, 20);
+                });
+                break;
+
+            case "lostseichi2":
+                self::useCode($p, $code, function () use ($p): void {
+                    $p->sendMessage(TextFormat::GREEN . "ごめんなさい!!!!");
+                    $p->sendMessage(TextFormat::AQUA . "ガチャチケットを" . TextFormat::RED . "5枚" . TextFormat::AQUA . "受け取りました");
+                    GatyaManager::addTicket($p->getXuid(), SQLConst::TICKETS_NORMAL, 5);
                 });
                 break;
             default:
                 $p->sendMessage("そのコードは存在しません");
         }
+    }
+
+    private static function useCode(Player $p, string $code, Closure $func): void
+    {
+        SQLManager::$manager->getValue($p->getXuid(), SQLConst::TYPE_BONUS, $code, function (array $rows) use ($func, $p, $code): void {
+            $row = array_shift($rows);
+            if (!empty($row)) {
+                $p->sendMessage("そのコードは使用済みです");
+                return;
+            }
+            SQLManager::$manager->setValue($p->getXuid(), SQLConst::TYPE_BONUS, $code, SQLConst::COMPLETE, function () use ($func, $code, $p): void {
+                SQLManager::$manager->addLog($p->getXuid(), SQLConst::LOG_BONUS, $code, SQLConst::COMPLETE,
+                    SQLConst::NOW_TIME, null, null);
+                $func();
+            });
+        }, function (SqlError $error) use ($p): void {
+            $p->sendMessage("エラーが発生しました");
+        });
     }
 }
