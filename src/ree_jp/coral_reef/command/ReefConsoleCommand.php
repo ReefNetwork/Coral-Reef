@@ -13,7 +13,9 @@ namespace ree_jp\coral_reef\command;
 
 use pocketmine\command\CommandSender;
 use pocketmine\command\PluginCommand;
+use pocketmine\Player;
 use pocketmine\plugin\Plugin;
+use ree_jp\coral_reef\gatya\items\SpecialItemService;
 use ree_jp\coral_reef\sql\SQLConst;
 use ree_jp\coral_reef\sql\SQLManager;
 
@@ -41,6 +43,12 @@ class ReefConsoleCommand extends PluginCommand
                     }
                     SQLManager::$manager->setValue(0, SQLConst::TYPE_ENV, $args[0], $args[1], null);
                     $sender->sendMessage("反映には最大1分かかります");
+                    break;
+
+                case "tool":
+                    if ($sender instanceof Player) {
+                        $sender->getInventory()->addItem(SpecialItemService::getRenewItem($args[1], $args[2], $args[3]));
+                    }
                     break;
                 default:
                     $sender->sendMessage("そのコマンドはない!!!!!!!!");
