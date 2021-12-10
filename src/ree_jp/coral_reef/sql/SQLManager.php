@@ -288,9 +288,9 @@ class SQLManager
 
     public function recordSession(string $xuid, SessionData $session): void
     {
-        $this->db->executeGeneric("coral_reef.session.add", ["xuid" => $xuid, "join_time" => date(SQLConst::DATE_FORMAT, $session->joinTime),
-            "quit_time" => date(SQLConst::DATE_FORMAT, $session->quitTime), "break_count" => $session->breakCount, "place_count" => $session->placeCount,
-            "skill_count" => $session->skillCount]);
+        $this->db->executeGeneric("coral_reef.session.add", ["xuid" => $xuid, "server" => $this->server,
+            "join_time" => date(SQLConst::DATE_FORMAT, $session->joinTime), "quit_time" => date(SQLConst::DATE_FORMAT, $session->quitTime),
+            "break_count" => $session->breakCount, "place_count" => $session->placeCount, "skill_count" => $session->skillCount]);
     }
 
     private function noticeByXUid(string $xuid, string $notice): Closure

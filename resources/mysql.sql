@@ -112,6 +112,7 @@ CREATE TABLE IF NOT EXISTS LOG
 CREATE TABLE IF NOT EXISTS SESSION_RECORD
 (
     xuid        BIGINT UNSIGNED NOT NULL,
+    server      varchar(99)     NOT NULL,
     join_time   DATETIME        NOT NULL,
     quit_time   DATETIME        NOT NULL,
     break_count int             NOT NULL,
@@ -328,13 +329,14 @@ WHERE xuid = :xuid
 -- #    { session
 -- #        { add
 -- #        :xuid int
+-- #        :server string
 -- #        :join_time string
 -- #        :quit_time string
 -- #        :break_count int
 -- #        :place_count int
 -- #        :skill_count int
 INSERT INTO SESSION_RECORD
-VALUES (:xuid, :join_time, :quit_time, :break_count, :place_count, :skill_count);
+VALUES (:xuid, :server, :join_time, :quit_time, :break_count, :place_count, :skill_count);
 -- #        }
 -- #    }
 -- #}
