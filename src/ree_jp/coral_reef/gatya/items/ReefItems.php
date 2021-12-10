@@ -26,7 +26,6 @@ class ReefItems
 {
     const SPECIAL_EFFECT = "reef_special_effect";
     const REEF_SP_ITEM = "reef_special_item";
-    const ITEM_RANK = "reef_item_rank";
 
     const PICKAXE = "reef_pickaxe";
     const SHOVEL = "reef_shovel";
@@ -83,7 +82,7 @@ class ReefItems
                 $item->setNamedTagEntry(new StringTag(self::REEF_SP_ITEM, self::HELMET));
                 $item->setCustomName(TextFormat::GREEN . 'Reef' . TextFormat::GOLD . 'Helmet');
                 $item->setLore(["使用時:常時暗視状態になります(同じ効果は重複出来ません)", "", "ボーナス効果: ReefArmor",
-                    "この効果を持つアイテムを4つ以上使用していた場合、スキル発動時のクールタイムが減ります"]);
+                    "この効果を持つアイテムを4つ以上使用していた場合、スキル発動時のクールタイムが3秒減少します"]);
                 $item->setNamedTagEntry(new CompoundTag(self::SPECIAL_EFFECT, [
                     new IntTag("night_vision", 0),
                     new StringTag("context", "reef_armor"),
@@ -96,7 +95,7 @@ class ReefItems
                 $item->setNamedTagEntry(new StringTag(self::REEF_SP_ITEM, self::CHEST_PLATE));
                 $item->setCustomName(TextFormat::GREEN . 'Reef' . TextFormat::GOLD . 'ChestPlate');
                 $item->setLore(["使用時:常時満腹状態になります(同じ効果は重複出来ません)", "", "ボーナス効果: ReefArmor",
-                    "この効果を持つアイテムを4つ以上使用していた場合、スキル発動時のクールタイムが減ります"]);
+                    "この効果を持つアイテムを4つ以上使用していた場合、スキル発動時のクールタイムが3秒減少します"]);
                 $item->setNamedTagEntry(new CompoundTag(self::SPECIAL_EFFECT, [
                     new IntTag("saturation", 0),
                     new StringTag("context", "reef_armor"),
@@ -109,7 +108,7 @@ class ReefItems
                 $item->setNamedTagEntry(new StringTag(self::REEF_SP_ITEM, self::LEGGINGS));
                 $item->setCustomName(TextFormat::GREEN . 'Reef' . TextFormat::GOLD . 'Leggings');
                 $item->setLore(["使用時:ジャンプ力が2上がります(同じ効果は重複出来ません)", "", "ボーナス効果: ReefArmor",
-                    "この効果を持つアイテムを4つ以上使用していた場合、スキル発動時のクールタイムが減ります"]);
+                    "この効果を持つアイテムを4つ以上使用していた場合、スキル発動時のクールタイムが3秒減少します"]);
                 $item->setNamedTagEntry(new CompoundTag(self::SPECIAL_EFFECT, [
                     new IntTag("jump_boost", 1),
                     new StringTag("context", "reef_armor"),
@@ -122,7 +121,7 @@ class ReefItems
                 $item->setNamedTagEntry(new StringTag(self::REEF_SP_ITEM, self::BOOTS));
                 $item->setCustomName(TextFormat::GREEN . 'Reef' . TextFormat::GOLD . 'Boot');
                 $item->setLore(["使用時:スピードが2上がります(同じ効果は重複出来ません)", "", "ボーナス効果: ReefArmor",
-                    "この効果を持つアイテムを4つ以上使用していた場合、スキル発動時のクールタイムが減ります"]);
+                    "この効果を持つアイテムを4つ以上使用していた場合、スキル発動時のクールタイムが3秒減少します"]);
                 $item->setNamedTagEntry(new CompoundTag(self::SPECIAL_EFFECT, [
                     new IntTag("speed", 1),
                     new StringTag("context", "reef_armor"),
@@ -132,7 +131,9 @@ class ReefItems
                 return null;
         }
         $item->setUnbreakable();
-        $item->setLore(["所有者: " . AccountManager::getUserName($xuid)]);
+        $lore = $item->getLore();
+        $lore[] = "所有者: " . AccountManager::getUserName($xuid);
+        $item->setLore($lore);
         $item->setNamedTagEntry(new StringTag('owner', $xuid));
         return $item;
     }
