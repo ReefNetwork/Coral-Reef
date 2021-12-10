@@ -27,6 +27,7 @@ use ree_jp\coral_reef\CoralReefPlugin;
 use ree_jp\coral_reef\land\LandData;
 use ree_jp\coral_reef\land\LandManager;
 use ree_jp\coral_reef\money\MoneyCache;
+use ree_jp\coral_reef\session\SessionData;
 
 class SQLManager
 {
@@ -285,6 +286,12 @@ class SQLManager
         $this->db->executeSelect('coral_reef.log.get.type', ['xuid' => intval($xuid), 'type' => $type], $func, $failure);
     }
 
+    public function recordSession(string $xuid, SessionData $session): void
+    {
+        $this->db->executeGeneric("coral_reef.session.add", ["xuid" => $xuid, "join_time" => date(SQLConst::DATE_FORMAT, $session->joinTime),
+            "quit_time" => date(SQLConst::DATE_FORMAT, $session->quitTime), "break_count" => $session->breakCount, "place_count" => $session->placeCount,
+            "skill_count" => $session->skillCount]);
+    }
 
     private function noticeByXUid(string $xuid, string $notice): Closure
     {
@@ -310,5 +317,6 @@ class SQLManager
         $this->db->executeGeneric('coral_reef.init.tables.land');
         $this->db->executeGeneric('coral_reef.init.tables.virtual_value');
         $this->db->executeGeneric('coral_reef.init.tables.log');
+        $this->db->executeGeneric("coral_reef.init.tables.session");
     }
 }

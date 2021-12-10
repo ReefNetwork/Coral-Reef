@@ -15,7 +15,6 @@ namespace ree_jp\coral_reef\account;
 use Exception;
 use pocketmine\block\Block;
 use pocketmine\block\BlockIds;
-use pocketmine\item\Item;
 use pocketmine\level\Position;
 use pocketmine\math\Vector3;
 use pocketmine\Player;
@@ -24,6 +23,7 @@ use pocketmine\Server;
 use ree_jp\coral_reef\CoralReefPlugin;
 use ree_jp\coral_reef\money\MoneyService;
 use ree_jp\coral_reef\quest\QuestManager;
+use ree_jp\coral_reef\session\SessionData;
 use ree_jp\coral_reef\skill\BreakSkill;
 use ree_jp\coral_reef\skill\SkillManager;
 use ree_jp\coral_reef\sql\SettingConst;
@@ -116,10 +116,10 @@ class AccountManager
     /**
      * @param Player $p
      * @param Block $bl
-     * @param Item $item
+     * @param SessionData $session
      * @throws Exception
      */
-    static function blockBroken(Player $p, Block $bl, Item $item): void
+    static function blockBroken(Player $p, Block $bl, SessionData $session): void
     {
         $xuid = $p->getXuid();
         $user = SQLManager::$manager->getUser($xuid);
@@ -132,8 +132,12 @@ class AccountManager
         }
         if (self::hasValue($xuid, 'skill_active')) {
             MoneyService::addMoney($xuid, 1);
+            $session->breakBlock();
         } else {
             MoneyService::addMoney($xuid, 10);
+            $session->breakBlock();
+            $session->runSkill();
+
             if ($skill instanceof BreakSkill && $p->isSurvival()) {
                 if (!self::hasValue($xuid, 'skill_cool_time') && !self::hasValue($xuid, 'skill_active') &&
                     !($p->isSneaking() && !SettingManager::isEnableOption($xuid, SettingConst::SNEAK_SKILL))) {

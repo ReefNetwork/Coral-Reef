@@ -47,6 +47,7 @@ use ree_jp\coral_reef\form\LandForm;
 use ree_jp\coral_reef\gatya\items\ReefItems;
 use ree_jp\coral_reef\gatya\items\SpecialItemService;
 use ree_jp\coral_reef\land\LandManager;
+use ree_jp\coral_reef\session\SessionStore;
 use ree_jp\coral_reef\shop\ShopService;
 use ree_jp\coral_reef\shop\ShopStore;
 use ree_jp\coral_reef\sql\SettingConst;
@@ -56,7 +57,7 @@ use Throwable;
 
 class EventListener implements Listener
 {
-    public function __construct(private ShopStore $shopStore)
+    public function __construct(private ShopStore $shopStore, private SessionStore $sessionStore)
     {
     }
 
@@ -90,12 +91,13 @@ class EventListener implements Listener
         $p = $ev->getPlayer();
         $xuid = $p->getXuid();
 
-//        if (is_null(SQLManager::$manager->getUser($xuid))) { // データをまだ読み込めてなかったら動きを止める
-//            AccountManager::setValue($xuid, 'wait_action');
-//            $p->setImmobile();
-//            $p->sendMessage('データを確認しています...');
-//        }
+        if (is_null(SQLManager::$manager->getUser($xuid))) { // データをまだ読み込めてなかったら動きを止める
+            AccountManager::setValue($xuid, 'wait_action');
+            $p->setImmobile();
+            $p->sendMessage('データを確認しています...');
+        }
         AccountManager::userJoin($p);
+        $this->sessionStore->createSession($xuid);
 
         $ev->setJoinMessage(""); // プロキシ側で参加メッセージを流す
         $p->sendTitle(TextFormat::GREEN . 'Reef ' . TextFormat::YELLOW . 'Server');
@@ -108,6 +110,7 @@ class EventListener implements Listener
         $p = $ev->getPlayer();
 
         AccountManager::userQuit($p);
+        $this->sessionStore->destruction($p->getXuid());
         $ev->setQuitMessage(""); // プロキシ側で退出メッセージを流す
     }
 
@@ -175,7 +178,7 @@ class EventListener implements Listener
         $p = $ev->getPlayer();
         if ($ev->isCancelled()) return;
         try {
-            AccountManager::blockBroken($p, $ev->getBlock(), $ev->getItem());
+            AccountManager::blockBroken($p, $ev->getBlock(), $this->sessionStore->getSessionData($p->getXuid()));
         } catch (Exception $e) {
             $p->sendMessage('エラーが発生しました');
             Server::getInstance()->getLogger()->error('[blockBroke]' . $p->getName() . 'の処理中に' . $e->getMessage());

@@ -27,6 +27,7 @@ use ree_jp\coral_reef\gatya\items\ReefItems;
 use ree_jp\coral_reef\land\LandManager;
 use ree_jp\coral_reef\money\MoneyCache;
 use ree_jp\coral_reef\quest\QuestListener;
+use ree_jp\coral_reef\session\SessionStore;
 use ree_jp\coral_reef\shop\ShopStore;
 use ree_jp\coral_reef\sql\SQLManager;
 use ree_jp\coral_reef\task\DataSaveTask;
@@ -69,7 +70,7 @@ class CoralReefPlugin extends PluginBase
         $this->getServer()->loadLevel("main_1");
         $this->getServer()->loadLevel("main_2");
 
-        $this->getServer()->getPluginManager()->registerEvents(new EventListener(new ShopStore($this->getDataFolder())), $this);
+        $this->getServer()->getPluginManager()->registerEvents(new EventListener(new ShopStore($this->getDataFolder()), new SessionStore()), $this);
         $this->getServer()->getPluginManager()->registerEvents(new QuestListener(), $this); // クエスト用
         $this->getServer()->getCommandMap()->register('menu', new MenuCommand($this));
         $this->getServer()->getCommandMap()->register('reef', new ReefCommand($this));

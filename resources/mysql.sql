@@ -108,6 +108,17 @@ CREATE TABLE IF NOT EXISTS LOG
     time    DATETIME
 );
 -- #            }
+-- #            { session
+CREATE TABLE IF NOT EXISTS SESSION_RECORD
+(
+    xuid        BIGINT UNSIGNED NOT NULL,
+    join_time   DATETIME        NOT NULL,
+    quit_time   DATETIME        NOT NULL,
+    break_count int             NOT NULL,
+    place_count int             NOT NULL,
+    skill_count int             NOT NULL
+);
+-- #            }
 -- #        }
 -- #    }
 -- #    { user
@@ -312,6 +323,18 @@ FROM LOG
 WHERE xuid = :xuid
   AND type = :type;
 -- #            }
+-- #        }
+-- #    }
+-- #    { session
+-- #        { add
+-- #        :xuid int
+-- #        :join_time string
+-- #        :quit_time string
+-- #        :break_count int
+-- #        :place_count int
+-- #        :skill_count int
+INSERT INTO SESSION_RECORD
+VALUES (:xuid, :join_time, :quit_time, :break_count, :place_count, :skill_count);
 -- #        }
 -- #    }
 -- #}
