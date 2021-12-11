@@ -157,7 +157,7 @@ class LandForm
                     if (mb_strlen($name) > 0) {
                         $aabb = LandManager::$instance->getAabb($x1, $z1, $x2, $z2);
                         $land = new LandData($p->getXuid(), $name, $p->getLevel()->getFolderName(), $aabb);
-                        $result = LandManager::$instance->canCreateLand($aabb, $p->getLevel()->getFolderName());
+                        $result = LandManager::$instance->canCreateLand($land);
                         $space = (($aabb->maxX - $aabb->minX) + 1) * (($aabb->maxZ - $aabb->minZ) + 1);
                         if ($space > 1000000) {
                             $p->sendMessage("デカすぎます100万ブロック以下にしてください");

@@ -250,7 +250,9 @@ class SQLManager
         $this->db->executeInsert('coral_reef.land.create', ['xuid' => intval($land->xuid), 'name' => $land->name, 'server' => $this->server,
             'level' => $land->level, 'mx' => $land->aabb->maxX, 'sx' => $land->aabb->minX, 'mz' => $land->aabb->maxZ, 'sz' => $land->aabb->minZ],
             function (int $insertId, int $affectedRows) use ($p, $land) {
-                array_push(LandManager::$instance->lands, $land);
+                if (!isset(LandManager::$instance->lands[$land->level])) LandManager::$instance->lands[$land->level] = [];
+
+                LandManager::$instance->lands[$land->name][] = $land;
                 $p->sendMessage($land->name . 'を作成しました');
             }, function (SqlError $error) use ($p, $land) {
                 Server::getInstance()->getLogger()->error("[LandSQL] $land->name の作成中に" . $error->getErrorMessage());
@@ -262,9 +264,13 @@ class SQLManager
     {
         $this->db->executeGeneric('coral_reef.land.delete', ['xuid' => intval($land->xuid), 'name' => $land->name, 'server' => $this->server],
             function () use ($p, $land) {
-                foreach (LandManager::$instance->lands as $key => $cacheLand) {
-                    if ($cacheLand->xuid === $land->xuid && $cacheLand->name === $land->name) {
-                        array_splice(LandManager::$instance->lands, $key, 1);
+                foreach (LandManager::$instance->lands as $level => $cacheLands) {
+                    if ($level !== $land->level) continue;
+
+                    foreach ($cacheLands as $key => $cacheLand) {
+                        if ($cacheLand->xuid === $land->xuid && $cacheLand->name === $land->name) {
+                            array_splice(LandManager::$instance->lands[$level], $key, 1);
+                        }
                     }
                 }
                 $p->sendMessage('土地を削除しました');

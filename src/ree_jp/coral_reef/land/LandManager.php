@@ -12,6 +12,7 @@
 namespace ree_jp\coral_reef\land;
 
 use Exception;
+use JetBrains\PhpStorm\Pure;
 use pocketmine\level\particle\PortalParticle;
 use pocketmine\level\Position;
 use pocketmine\level\sound\GenericSound;
@@ -34,7 +35,7 @@ class LandManager
     static array $pos;
 
     /**
-     * @var LandData[]
+     * @var LandData[][]
      */
     public array $lands = [];
 
@@ -46,7 +47,10 @@ class LandManager
         if (is_null(SQLManager::$manager)) throw new Exception('データベースにアクセス出来ませんでした');
         SQLManager::$manager->loadProtectLand(function (array $rows) {
             foreach ($rows as $arrayLand) {
-                $this->lands[] = new LandData($arrayLand['xuid'], $arrayLand['name'], $arrayLand['level'],
+                $level = $arrayLand['level'];
+                if (!isset($this->lands[$level])) $this->lands[$level] = [];
+
+                $this->lands[$level][] = new LandData($arrayLand['xuid'], $arrayLand['name'], $level,
                     new AxisAlignedBB($arrayLand['sx'], 0, $arrayLand['sz'], $arrayLand['mx'], 0, $arrayLand['mz']));
             }
         }, function (SqlError $error) {
@@ -56,9 +60,11 @@ class LandManager
 
     public function getLand(Position $pos): ?LandData
     {
-        foreach ($this->lands as $land) {
-            if ($land->isLand($pos)) {
-                return $land;
+        foreach ($this->lands as $level => $lands) {
+            if ($level !== $pos->getLevel()->getFolderName()) continue;
+
+            foreach ($lands as $land) {
+                if ($land->isLand($pos)) return $land;
             }
         }
         return null;
@@ -67,19 +73,25 @@ class LandManager
     public function getMyLand(string $xuid): array
     {
         $myLands = [];
-        foreach ($this->lands as $land) {
-            if ($land->xuid === $xuid) {
-                array_push($myLands, $land);
+        foreach ($this->lands as $lands) {
+            foreach ($lands as $land) {
+                if ($land->xuid === $xuid) {
+                    $myLands[] = $land;
+                }
             }
         }
         return $myLands;
     }
 
-    public function canCreateLand(AxisAlignedBB $aabb, string $level): ?LandData
+    #[Pure] public function canCreateLand(LandData $checkLand): ?LandData
     {
-        foreach ($this->lands as $land) {
-            if ($land->aabb->intersectsWith($aabb, -0.00001) && ($land->level === $level)) {
-                return $land;
+        foreach ($this->lands as $level => $lands) {
+            if ($level !== $checkLand->level) continue;
+
+            foreach ($lands as $land) {
+                if ($land->aabb->intersectsWith($checkLand->aabb, -0.00001) && ($land->level === $level)) {
+                    return $land;
+                }
             }
         }
         return null;
@@ -119,7 +131,8 @@ class LandManager
         return true;
     }
 
-    public function checkSpace(Player $p): void
+    public
+    function checkSpace(Player $p): void
     {
         $xuid = $p->getXuid();
         if (isset(LandManager::$pos[$xuid][1]) && isset(LandManager::$pos[$xuid][2])) {
@@ -142,7 +155,8 @@ class LandManager
         } else $p->sendMessage('地点を2つとも設定してください');
     }
 
-    private function sendCheckSpaceEffect(Player $p, AxisAlignedBB $aabb, int $x, int $z): void
+    private
+    function sendCheckSpaceEffect(Player $p, AxisAlignedBB $aabb, int $x, int $z): void
     {
         for ($y = $aabb->minY; $y <= $aabb->maxY; $y += 0.6) {
             $p->getLevelNonNull()->addParticle(new PortalParticle(
@@ -152,7 +166,8 @@ class LandManager
         }
     }
 
-    public function getAabb(int $x1, int $z1, int $x2, int $z2): AxisAlignedBB
+    public
+    function getAabb(int $x1, int $z1, int $x2, int $z2): AxisAlignedBB
     {
         if ($x1 > $x2) {
             $minX = $x2;
