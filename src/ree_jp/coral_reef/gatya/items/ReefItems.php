@@ -21,6 +21,7 @@ use pocketmine\nbt\tag\IntTag;
 use pocketmine\nbt\tag\StringTag;
 use pocketmine\utils\TextFormat;
 use ree_jp\coral_reef\account\AccountManager;
+use ree_jp\coral_reef\gatya\items\event\Christmas2021ReefItems;
 
 class ReefItems
 {
@@ -154,5 +155,7 @@ class ReefItems
         NormalItems::registerItems();
 
         ConvertItems::registerItems();
+
+        Christmas2021ReefItems::registerAll();
     }
 }

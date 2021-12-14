@@ -30,8 +30,10 @@ interface SQLConst
     const ENV_EXP_BUF = "experience_buff";
 
     const TICKETS_NORMAL = "normal_tickets";
+    const TICKETS_CHRISTMAS_2021 = "christmas_2021_tickets";
 
-    const LOG_GATYA = "gatya";
     const LOG_QUEST = "quest";
     const LOG_BONUS = "bonus";
+    const LOG_GATYA = "gatya";
+    const LOG_GATYA_CHRISTMAS_2021 = "gatya_christmas_2021";
 }
