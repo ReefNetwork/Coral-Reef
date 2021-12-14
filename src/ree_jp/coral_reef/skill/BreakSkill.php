@@ -17,8 +17,10 @@ use pocketmine\block\Block;
 use pocketmine\block\BlockIds;
 use pocketmine\block\Flowable;
 use pocketmine\block\Liquid;
+use pocketmine\item\Item;
 use pocketmine\level\Level;
 use pocketmine\math\Vector3;
+use pocketmine\nbt\tag\IntTag;
 use pocketmine\Player;
 use ree_jp\coral_reef\account\SettingManager;
 use ree_jp\coral_reef\sql\SettingConst;
@@ -61,7 +63,7 @@ class BreakSkill
      */
     public function runSkill(Vector3 $block, Player $p): void
     {
-        $this->frozeWater($p, $block);
+        $this->frozeWater($p, $block, $p->getInventory()->getItemInHand());
 
         $direction = $p->getDirection();
         $widthSide = intval(floor($this->width / 2));
@@ -134,37 +136,44 @@ class BreakSkill
 
     private function breakBlockBySkill(Player $p, Vector3 $vec): void
     {
-        $this->frozeWater($p, $vec);
-
-        $bl = $p->getLevel()->getBlock($vec);
         $hand = $p->getInventory()->getItemInHand();
+        $bl = $p->getLevel()->getBlock($vec);
+        $this->frozeWater($p, $vec, $hand);
+
         if ($bl->getHardness() < 0 || $bl instanceof Liquid) return;
 
         $p->getLevel()->useBreakOn($vec, $hand, $p);
     }
 
-    private function frozeWater(Player $p, Vector3 $vec): void
+    private function frozeWater(Player $p, Vector3 $vec, Item $hand): void
     {
         if (!SettingManager::isEnableOption($p->getXuid(), SettingConst::NO_FREEZE_WATER)) {
+            $nbt = $hand->getNamedTagEntry("frozen_block");
+            if ($nbt instanceof IntTag) {
+                $block = Block::get($nbt->getValue());
+            } else {
+                $block = Block::get(BlockIds::STAINED_GLASS, 3);
+            }
+
             try {
-                $this->changeWater($p->getLevel(), $vec);
-                $this->changeWater($p->getLevel(), $vec->add(0, 1));
-                $this->changeWater($p->getLevel(), $vec->add(0, -1));
-                $this->changeWater($p->getLevel(), $vec->add(1));
-                $this->changeWater($p->getLevel(), $vec->add(-1));
-                $this->changeWater($p->getLevel(), $vec->add(0, 0, 1));
-                $this->changeWater($p->getLevel(), $vec->add(0, 0, -1));
+                $this->changeWater($p->getLevel(), $vec, $block);
+                $this->changeWater($p->getLevel(), $vec->add(0, 1), $block);
+                $this->changeWater($p->getLevel(), $vec->add(0, -1), $block);
+                $this->changeWater($p->getLevel(), $vec->add(1), $block);
+                $this->changeWater($p->getLevel(), $vec->add(-1), $block);
+                $this->changeWater($p->getLevel(), $vec->add(0, 0, 1), $block);
+                $this->changeWater($p->getLevel(), $vec->add(0, 0, -1), $block);
             } catch (Exception $ex) {
                 $p->sendMessage("エラーが発生しました");
             }
         }
     }
 
-    private function changeWater(?Level $level, Vector3 $vec3): void // 水を水色のガラスに変える
+    private function changeWater(?Level $level, Vector3 $vec3, Block $replaceBlock): void // 水を水色のガラスに変える
     {
         if (is_null($level)) return;
         if ($level->getBlock($vec3)->getId() === BlockIds::WATER) { // 水を水色のガラスに変える
-            $level->setBlock($vec3, Block::get(BlockIds::STAINED_GLASS, 3));
+            $level->setBlock($vec3, $replaceBlock);
         }
     }
 
@@ -173,61 +182,36 @@ class BreakSkill
      */
     private function getSideFromUserView(Vector3 $vec3, int $view, int $direction, int $value): Vector3
     {
-        switch ($view) {
-            case self::NORTH:
-                switch ($direction) {
-                    case self::FORWARD:
-                        return $vec3->add(-$value);
-                    case self::BACKWARD:
-                        return $vec3->add($value);
-                    case self::RIGHT:
-                        return $vec3->add(0, 0, -$value);
-                    case self::LEFT:
-                        return $vec3->add(0, 0, $value);
-                    default:
-                        throw new Exception('不正な方角');
-                }
-            case self::SOUTH:
-                switch ($direction) {
-                    case self::FORWARD:
-                        return $vec3->add($value);
-                    case self::BACKWARD:
-                        return $vec3->add(-$value);
-                    case self::RIGHT:
-                        return $vec3->add(0, 0, -$value);
-                    case self::LEFT:
-                        return $vec3->add(0, 0, $value);
-                    default:
-                        throw new Exception('不正な方角');
-                }
-            case self::WEST:
-                switch ($direction) {
-                    case self::FORWARD:
-                        return $vec3->add(0, 0, $value);
-                    case self::BACKWARD:
-                        return $vec3->add(0, 0, -$value);
-                    case self::RIGHT:
-                        return $vec3->add(-$value);
-                    case self::LEFT:
-                        return $vec3->add($value);
-                    default:
-                        throw new Exception('不正な方角');
-                }
-            case self::EAST:
-                switch ($direction) {
-                    case self::FORWARD:
-                        return $vec3->add(0, 0, -$value);
-                    case self::BACKWARD:
-                        return $vec3->add(0, 0, $value);
-                    case self::RIGHT:
-                        return $vec3->add(-$value);
-                    case self::LEFT:
-                        return $vec3->add($value);
-                    default:
-                        throw new Exception('不正な方角');
-                }
-            default:
-                throw new Exception('不正な視点の方角');
-        }
+        return match ($view) {
+            self::NORTH => match ($direction) {
+                self::FORWARD => $vec3->add(-$value),
+                self::BACKWARD => $vec3->add($value),
+                self::RIGHT => $vec3->add(0, 0, -$value),
+                self::LEFT => $vec3->add(0, 0, $value),
+                default => throw new Exception('不正な方角'),
+            },
+            self::SOUTH => match ($direction) {
+                self::FORWARD => $vec3->add($value),
+                self::BACKWARD => $vec3->add(-$value),
+                self::RIGHT => $vec3->add(0, 0, -$value),
+                self::LEFT => $vec3->add(0, 0, $value),
+                default => throw new Exception('不正な方角'),
+            },
+            self::WEST => match ($direction) {
+                self::FORWARD => $vec3->add(0, 0, $value),
+                self::BACKWARD => $vec3->add(0, 0, -$value),
+                self::RIGHT => $vec3->add(-$value),
+                self::LEFT => $vec3->add($value),
+                default => throw new Exception('不正な方角'),
+            },
+            self::EAST => match ($direction) {
+                self::FORWARD => $vec3->add(0, 0, -$value),
+                self::BACKWARD => $vec3->add(0, 0, $value),
+                self::RIGHT => $vec3->add(-$value),
+                self::LEFT => $vec3->add($value),
+                default => throw new Exception('不正な方角'),
+            },
+            default => throw new Exception('不正な視点の方角'),
+        };
     }
 }
