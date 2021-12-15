@@ -156,6 +156,6 @@ class ReefItems
 
         ConvertItems::registerItems();
 
-        Christmas2021ReefItems::registerAll();
+        Christmas2021ReefItems::registerItems();
     }
 }
