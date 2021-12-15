@@ -13,17 +13,9 @@ namespace ree_jp\coral_reef\skill;
 
 use Exception;
 use pocketmine\block\Air;
-use pocketmine\block\Block;
-use pocketmine\block\BlockIds;
 use pocketmine\block\Flowable;
-use pocketmine\block\Liquid;
-use pocketmine\item\Item;
-use pocketmine\level\Level;
 use pocketmine\math\Vector3;
-use pocketmine\nbt\tag\IntTag;
 use pocketmine\Player;
-use ree_jp\coral_reef\account\SettingManager;
-use ree_jp\coral_reef\sql\SettingConst;
 
 class BreakSkill
 {
@@ -63,7 +55,7 @@ class BreakSkill
      */
     public function runSkill(Vector3 $block, Player $p): void
     {
-        $this->frozeWater($p, $block, $p->getInventory()->getItemInHand());
+        BreakService::frozeWater($p, $block, $p->getInventory()->getItemInHand());
 
         $direction = $p->getDirection();
         $widthSide = intval(floor($this->width / 2));
@@ -89,7 +81,7 @@ class BreakSkill
                         if (!($height === 0 && $width === 0 && $depth === 0)) {
                             $vec = $this->getSideFromUserView($block->add(0, -$height), $direction, self::RIGHT, $width);
                             $vec = $this->getSideFromUserView($vec, $direction, self::FORWARD, $depth);
-                            $this->breakBlockBySkill($p, $vec);
+                            BreakService::breakBlockBySkill($p, $vec);
                         }
                     }
                 }
@@ -127,53 +119,10 @@ class BreakSkill
                         }
                         $vec = $this->getSideFromUserView($base, $direction, self::RIGHT, $width);
                         $vec = $this->getSideFromUserView($vec, $direction, self::FORWARD, $depth);
-                        $this->breakBlockBySkill($p, $vec);
+                        BreakService::breakBlockBySkill($p, $vec);
                     }
                 }
             }
-        }
-    }
-
-    private function breakBlockBySkill(Player $p, Vector3 $vec): void
-    {
-        $hand = $p->getInventory()->getItemInHand();
-        $bl = $p->getLevel()->getBlock($vec);
-        $this->frozeWater($p, $vec, $hand);
-
-        if ($bl->getHardness() < 0 || $bl instanceof Liquid) return;
-
-        $p->getLevel()->useBreakOn($vec, $hand, $p);
-    }
-
-    private function frozeWater(Player $p, Vector3 $vec, Item $hand): void
-    {
-        if (!SettingManager::isEnableOption($p->getXuid(), SettingConst::NO_FREEZE_WATER)) {
-            $nbt = $hand->getNamedTagEntry("frozen_block");
-            if ($nbt instanceof IntTag) {
-                $block = Block::get($nbt->getValue());
-            } else {
-                $block = Block::get(BlockIds::STAINED_GLASS, 3);
-            }
-
-            try {
-                $this->changeWater($p->getLevel(), $vec, $block);
-                $this->changeWater($p->getLevel(), $vec->add(0, 1), $block);
-                $this->changeWater($p->getLevel(), $vec->add(0, -1), $block);
-                $this->changeWater($p->getLevel(), $vec->add(1), $block);
-                $this->changeWater($p->getLevel(), $vec->add(-1), $block);
-                $this->changeWater($p->getLevel(), $vec->add(0, 0, 1), $block);
-                $this->changeWater($p->getLevel(), $vec->add(0, 0, -1), $block);
-            } catch (Exception $ex) {
-                $p->sendMessage("エラーが発生しました");
-            }
-        }
-    }
-
-    private function changeWater(?Level $level, Vector3 $vec3, Block $replaceBlock): void // 水を水色のガラスに変える
-    {
-        if (is_null($level)) return;
-        if ($level->getBlock($vec3)->getId() === BlockIds::WATER) { // 水を水色のガラスに変える
-            $level->setBlock($vec3, $replaceBlock);
         }
     }
 
