@@ -124,7 +124,7 @@ class LevelUpQuest extends QuestData
             case 5:
                 return "ガチャ券×5枚と鉄のツルハシ(耐久3)×3個";
             default:
-                $give = ($level / 5) + 2;
+                $give = ceil($level / 5) + 2;
                 if (($level % 5) === 0) $give += 3;
                 return "ガチャ券×$give 枚";
         }
