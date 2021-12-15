@@ -25,7 +25,7 @@ use ree_jp\coral_reef\sql\SQLManager;
 class SkillManager
 {
     const SKILLS = ['first', 'second', 'third', 'fourth', 'fifth', 'sixth', "seventh", "eighth", "ninth", "tenth", "eleventh", "twelfth", "thirteenth",
-        "fourteenth", "fifteenth", "sixteenth", "seventeenth", "eighteenth", "nineteenth"];
+        "fourteenth", "fifteenth", "sixteenth", "seventeenth", "eighteenth", "nineteenth", "twentieth", "twenty-first", "twenty-second", "twenty-third"];
 
     static array $reduceCoolTime = [];
 
@@ -51,6 +51,10 @@ class SkillManager
             "seventeenth" => new BreakSkill("リラ", $skill, 65, 8, 8, 4, 40, "9×9×5"),
             "eighteenth" => new BreakSkill("マヌエルルイス", $skill, 90, 8, 8, 6, 43, "9×9×7"),
             "nineteenth" => new BreakSkill("マロ", $skill, 115, 8, 8, 8, 45, "9×9×9"),
+            "twentieth" => new BreakSkill("メソバリア", $skill, 95, 10, 10, 4, 48, "11×11×5"),
+            "twenty-first" => new BreakSkill("ロックス", $skill, 125, 10, 10, 6, 50, "11×11×7"),
+            "twenty-second" => new BreakSkill("マイアミテラス", $skill, 155, 10, 10, 8, 53, "11×11×9"),
+            "twenty-third" => new BreakSkill("マーカス", $skill, 185, 10, 10, 10, 55, "11×11×11"),
             default => null,
         };
     }
