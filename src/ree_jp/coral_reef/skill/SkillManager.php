@@ -12,6 +12,7 @@
 namespace ree_jp\coral_reef\skill;
 
 use Exception;
+use JetBrains\PhpStorm\Pure;
 use pocketmine\block\Block;
 use pocketmine\network\mcpe\protocol\LevelSoundEventPacket;
 use pocketmine\Player;
@@ -23,49 +24,35 @@ use ree_jp\coral_reef\sql\SQLManager;
 
 class SkillManager
 {
-    const SKILLS = ['first', 'second', 'third', 'fourth', 'fifth', 'sixth', "seventh", "eighth", "ninth", "tenth", "eleventh"];
+    const SKILLS = ['first', 'second', 'third', 'fourth', 'fifth', 'sixth', "seventh", "eighth", "ninth", "tenth", "eleventh", "twelfth", "thirteenth",
+        "fourteenth", "fifteenth", "sixteenth", "seventeenth", "eighteenth", "nineteenth"];
 
     static array $reduceCoolTime = [];
 
-    static function getSkill(?string $skill): ?BreakSkill
-    { // https://en.wikipedia.org/wiki/List_of_reefs
-        switch ($skill) {
-            case 'first': // https://en.wikipedia.org/wiki/Angria_Bank
-                return new BreakSkill('アングリア', $skill, 0, 1, 0, 0, 1, "1×2");
-
-            case 'second': // https://en.wikipedia.org/wiki/Apo_Reef
-                return new BreakSkill('アポ', $skill, 0, 1, 0, 1, 3, "1×2×2");
-
-            case 'third': // https://en.wikipedia.org/wiki/Arrecifes_de_Cozumel_National_Park
-                return new BreakSkill('パランカー', $skill, 0, 1, 2, 0, 5, "3×2");
-
-            case 'fourth': // https://en.wikipedia.org/wiki/Bar_Reef
-                return new BreakSkill('パー', $skill, 0, 2, 2, 0, 8, "3×3");
-
-            case 'fifth': // https://en.wikipedia.org/wiki/Belize_Barrier_Reef
-                return new BreakSkill('ベリーズバリア', $skill, 10, 2, 2, 1, 10, "3×3×2");
-
-            case 'sixth': // https://en.wikipedia.org/wiki/Benares_Shoals
-                return new BreakSkill('ベナレスショールス', $skill, 15, 2, 2, 2, 13, "3×3×3");
-
-            case "seventh": // https://en.wikipedia.org/wiki/Coral_Triangle
-                return new BreakSkill("トライアングル", $skill, 10, 4, 4, 0, 15, "5×5");
-
-            case "eighth": // https://en.wikipedia.org/wiki/Daintree_Reef
-                return new BreakSkill("デインツリー", $skill, 15, 4, 4, 1, 18, "5×5×2");
-
-            case "ninth": // https://en.wikipedia.org/wiki/Darwin_Mounds
-                return new BreakSkill("ダーウィン", $skill, 20, 4, 4, 2, 20, "5×5×3");
-
-            case "tenth": // https://en.wikipedia.org/wiki/Filippo_Reef
-                return new BreakSkill("フィリッポ", $skill, 25, 4, 4, 3, 23, "5×5×4");
-
-            case "eleventh": // https://en.wikipedia.org/wiki/Flinders_Reef
-                return new BreakSkill("フリンダーズ", $skill, 30, 4, 4, 4, 25, "5×5×5");
-
-            default:
-                return null;
-        }
+    #[Pure] static function getSkill(?string $skill): ?BreakSkill
+    {
+        return match ($skill) { // https://en.wikipedia.org/wiki/List_of_reefs
+            'first' => new BreakSkill('アングリア', $skill, 0, 1, 0, 0, 1, "1×2"),
+            'second' => new BreakSkill('アポ', $skill, 0, 1, 0, 1, 3, "1×2×2"),
+            'third' => new BreakSkill('パランカー', $skill, 0, 1, 2, 0, 5, "3×2"),
+            'fourth' => new BreakSkill('パー', $skill, 0, 2, 2, 0, 8, "3×3"),
+            'fifth' => new BreakSkill('ベリーズバリア', $skill, 10, 2, 2, 1, 10, "3×3×2"),
+            'sixth' => new BreakSkill('ベナレスショールス', $skill, 15, 2, 2, 2, 13, "3×3×3"),
+            "seventh" => new BreakSkill("トライアングル", $skill, 10, 4, 4, 0, 15, "5×5"),
+            "eighth" => new BreakSkill("デインツリー", $skill, 15, 4, 4, 1, 18, "5×5×2"),
+            "ninth" => new BreakSkill("ダーウィン", $skill, 20, 4, 4, 2, 20, "5×5×3"),
+            "tenth" => new BreakSkill("フィリッポ", $skill, 25, 4, 4, 3, 23, "5×5×4"),
+            "eleventh" => new BreakSkill("フリンダーズ", $skill, 30, 4, 4, 4, 25, "5×5×5"),
+            "twelfth" => new BreakSkill("フレンチフリゲート", $skill, 13, 6, 6, 0, 28, "7×7×1"),
+            "thirteenth" => new BreakSkill("グレートバリア", $skill, 30, 6, 6, 2, 30, "7×7×3"),
+            "fourteenth" => new BreakSkill("ベレス", $skill, 45, 4, 4, 4, 33, "7×7×5"),
+            "fifteenth" => new BreakSkill("キングマン", $skill, 60, 4, 4, 6, 35, "7×7×7"),
+            "sixteenth" => new BreakSkill("ランズダウン", $skill, 40, 8, 8, 2, 38, "9×9×3"),
+            "seventeenth" => new BreakSkill("リラ", $skill, 65, 8, 8, 4, 40, "9×9×5"),
+            "eighteenth" => new BreakSkill("マヌエルルイス", $skill, 90, 8, 8, 6, 43, "9×9×7"),
+            "nineteenth" => new BreakSkill("マロ", $skill, 115, 8, 8, 8, 45, "9×9×9"),
+            default => null,
+        };
     }
 
     static function reduceCoolTime(string $xuid, int $tick): void // マイナス入れるとクールタイムが増える
