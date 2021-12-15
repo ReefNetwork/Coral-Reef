@@ -74,7 +74,7 @@ class SkillManager
 
         QuestListener::callSubscribedQuest($p->getXuid(), QuestListener::USE_SKILL, $skill);
         $skill->runSkill($bl, $p);
-        $cool_time = $skill->cool_time;
+        $cool_time = $skill->coolTime;
         if (isset(self::$reduceCoolTime[$xuid])) { // クールタイム減らすのを反映
             $cool_time -= self::$reduceCoolTime[$xuid];
         }
