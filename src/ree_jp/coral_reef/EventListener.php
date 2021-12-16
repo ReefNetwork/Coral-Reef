@@ -212,6 +212,14 @@ class EventListener implements Listener
         $ev->setCancelled(LandManager::$instance->protect($p, $ev->getBlock(), 'このワールドでブロックを設置することはできません'));
     }
 
+    /**
+     * @priority MONITOR
+     */
+    function onPlaceMonitor(BlockPlaceEvent $ev): void
+    {
+        $this->sessionStore->getSessionData($ev->getPlayer()->getXuid())->placeBlock();
+    }
+
     function onUpdate(BlockUpdateEvent $ev)
     {
         $blId = $ev->getBlock()->getId();

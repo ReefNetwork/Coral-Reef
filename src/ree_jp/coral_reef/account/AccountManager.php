@@ -130,12 +130,12 @@ class AccountManager
                 $p->getLevelNonNull()->setBlock($bl, Block::get(BlockIds::AIR));
             }
         }
+
+        $session->breakBlock();
         if (self::hasValue($xuid, 'skill_active')) {
             MoneyService::addMoney($xuid, 1);
-            $session->breakBlock();
         } else {
             MoneyService::addMoney($xuid, 10);
-            $session->breakBlock();
             $session->runSkill();
 
             if ($skill instanceof BreakSkill && $p->isSurvival()) {
