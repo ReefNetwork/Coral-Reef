@@ -79,7 +79,7 @@ class SkillSelectForm
     static function SkillConfirmForm(?BreakSkill $skill): ModalForm
     {
         $skillName = is_null($skill) ? 'なし' : $skill->name;
-        $coolTime = is_null($skill) ? 0 : $skill->cool_time * 0.05;
+        $coolTime = is_null($skill) ? 0 : $skill->coolTime * 0.05;
         $height = is_null($skill) ? 1 : $skill->height + 1;
         $width = is_null($skill) ? 1 : $skill->width + 1;
         $depth = is_null($skill) ? 1 : $skill->depth + 1;
