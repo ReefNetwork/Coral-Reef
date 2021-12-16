@@ -37,11 +37,10 @@ use ree_jp\coral_reef\sql\SettingConst;
 
 class BreakService
 {
-    static function breakBlockBySkill(Player $p, Vector3 $vec): void
+    static function breakBlockBySkill(Player $p, Block $bl): void
     {
         $hand = $p->getInventory()->getItemInHand();
-        $bl = $p->getLevel()->getBlock($vec);
-        self::frozeWater($p, $vec, $hand);
+        self::frozeWater($p, $bl, $hand);
 
         if ($bl->getHardness() < 0 || $bl instanceof Liquid) return;
 
@@ -80,7 +79,6 @@ class BreakService
     private static function silentBreak(Level $level, Block $bl, Item $item = null, Player $p = null): void
     {
         $affectedBlocks = $bl->getAffectedBlocks();
-
         if ($item === null) $item = ItemFactory::get(BlockIds::AIR, 0, 0);
 
         $drops = [];

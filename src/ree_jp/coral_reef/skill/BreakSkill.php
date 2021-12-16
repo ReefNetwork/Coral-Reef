@@ -13,6 +13,7 @@ namespace ree_jp\coral_reef\skill;
 
 use Exception;
 use pocketmine\block\Air;
+use pocketmine\block\Block;
 use pocketmine\block\Flowable;
 use pocketmine\math\Vector3;
 use pocketmine\Player;
@@ -57,6 +58,10 @@ class BreakSkill
     {
         BreakService::frozeWater($p, $block, $p->getInventory()->getItemInHand());
 
+        /** @var Block[] $needUpdate */
+        $needUpdate = [];
+
+        $level = $p->getLevel();
         $direction = $p->getDirection();
         $widthSide = intval(floor($this->width / 2));
         $depthSide = intval(floor($this->depth / 2));
@@ -81,7 +86,9 @@ class BreakSkill
                         if (!($height === 0 && $width === 0 && $depth === 0)) {
                             $vec = $this->getSideFromUserView($block->add(0, -$height), $direction, self::RIGHT, $width);
                             $vec = $this->getSideFromUserView($vec, $direction, self::FORWARD, $depth);
-                            BreakService::breakBlockBySkill($p, $vec);
+                            $bl = $level->getBlock($vec);
+                            BreakService::breakBlockBySkill($p, $bl);
+                            $needUpdate[] = $bl;
                         }
                     }
                 }
@@ -119,10 +126,15 @@ class BreakSkill
                         }
                         $vec = $this->getSideFromUserView($base, $direction, self::RIGHT, $width);
                         $vec = $this->getSideFromUserView($vec, $direction, self::FORWARD, $depth);
-                        BreakService::breakBlockBySkill($p, $vec);
+                        $bl = $level->getBlock($vec);
+                        BreakService::breakBlockBySkill($p, $bl);
+                        $needUpdate[] = $bl;
                     }
                 }
             }
+        }
+        foreach ($needUpdate as $update) {
+            BreakService::updateBlock($p->getLevel(), $update);
         }
     }
 
