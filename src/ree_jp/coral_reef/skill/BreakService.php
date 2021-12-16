@@ -71,7 +71,7 @@ class BreakService
     {
         if (is_null($level)) return;
         if ($level->getBlock($vec3)->getId() === BlockIds::WATER) { // 水を水色のガラスに変える
-            $level->setBlock($vec3, $replaceBlock);
+            $level->setBlock($vec3, $replaceBlock, false, false);
         }
     }
 
