@@ -54,8 +54,8 @@ class GatyaForm
                     new ClosureButton(
                         "クリスマスガチャ",
                         null,
-                        function (Player $p, ClosureButton $button) use ($normal) {
-                            self::sendGatyaNumberChoices($p, SQLConst::TICKETS_CHRISTMAS_2021, $normal);
+                        function (Player $p, ClosureButton $button) use ($christmas) {
+                            self::sendGatyaNumberChoices($p, SQLConst::TICKETS_CHRISTMAS_2021, $christmas);
                         }
                     ),
                 );
@@ -108,7 +108,7 @@ class GatyaForm
                 )
             ))
                 ->setTitle("NormalGatya -> Confirm")
-                ->setText(self::replaceTicketName($ticketType) . "を$num 個消費してノーマルガチャを回しますか？\n$tickets -> $after")
+                ->setText(self::replaceTicketName($ticketType) . "を$num 個消費してガチャを回しますか？\n$tickets -> $after")
         );
     }
 

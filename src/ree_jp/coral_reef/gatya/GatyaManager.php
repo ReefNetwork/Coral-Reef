@@ -93,6 +93,9 @@ class GatyaManager
                                 unset(self::$isProcessing[$p->getXuid()]);
                                 Server::getInstance()->getLogger()->error('[GatyaLogAdd] ' . $p->getName() . 'さんの処理中に' . $error->getErrorMessage());
                             });
+                    } else {
+                        $p->sendMessage('ガチャチケットが足りません');
+                        unset(self::$isProcessing[$p->getXuid()]);
                     }
                 }
             }, function (SqlError $error) use ($p) {
