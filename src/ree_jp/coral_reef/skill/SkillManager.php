@@ -78,9 +78,12 @@ class SkillManager
         $skill = $user->skill;
         if (is_null($skill)) throw new Exception('スキルが設定されていません');
 
-        if (mt_rand(1, 100) === 100) {
-            GatyaManager::addTicket($xuid, SQLConst::TICKETS_CHRISTMAS_2021, 1);
-            $p->sendMessage("クリスマスガチャチケットを入手しました");
+        if (!AccountManager::hasValue($xuid, "christmas_ticket_cool_down")) {
+            AccountManager::setValue($xuid, "christmas_ticket_cool_down", 20 * 10);
+            if (mt_rand(1, 100) === 100) {
+                GatyaManager::addTicket($xuid, SQLConst::TICKETS_CHRISTMAS_2021, 1);
+                $p->sendMessage("クリスマスガチャチケットを入手しました");
+            }
         }
 
         QuestListener::callSubscribedQuest($p->getXuid(), QuestListener::USE_SKILL, $skill);
