@@ -67,7 +67,7 @@ class GatyaForm
     {
         $min = 1;
         if ($tickets < 1) $min = 0;
-        $amount = new Slider(self::replaceTicketName($ticketType) . "を引く回数を選択してください", $min, $tickets, 1);
+        $amount = new Slider(self::replaceTicketName($ticketType) . "を引く回数を選択してください", $min, $tickets, $min);
         $form = (new ClosureCustomForm(function (Player $p, ClosureCustomForm $form) use ($tickets, $ticketType, $amount): void {
             self::sendGatyaConfirmForm($p, $ticketType, $amount->getValue(), $tickets);
         }))->setTitle("Gatya")->addElements($amount);
