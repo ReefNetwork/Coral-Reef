@@ -14,7 +14,6 @@ namespace ree_jp\coral_reef\quest;
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\entity\EntityTeleportEvent;
 use pocketmine\event\Listener;
-use pocketmine\event\player\PlayerJoinEvent;
 use pocketmine\event\player\PlayerQuitEvent;
 use pocketmine\Player;
 use ree_jp\coral_reef\quest\data\QuestData;
@@ -26,7 +25,6 @@ class QuestListener implements Listener
      * イベントの値は絶対に変更しないように
      */
 
-    const JOIN = "join";
     const BREAK = "break";
     const TRANSFER = "transfer";
 
@@ -40,14 +38,6 @@ class QuestListener implements Listener
     const CLEAR_QUEST = "clear_quest";
 
     static array $subscribeQuest = [];
-
-    /**
-     * @priority MONITOR
-     */
-    function onJoin(PlayerJoinEvent $ev): void
-    {
-        self::callSubscribedQuest($ev->getPlayer()->getXuid(), self::JOIN, null);
-    }
 
     /**
      * @priority MONITOR
