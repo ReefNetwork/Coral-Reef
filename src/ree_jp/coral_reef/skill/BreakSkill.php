@@ -133,9 +133,9 @@ class BreakSkill
                 }
             }
         }
-        foreach ($needUpdate as $update) {
-            BreakService::updateBlock($p->getLevel(), $update);
-        }
+//        foreach ($needUpdate as $update) {
+//            BreakService::updateBlock($p->getLevel(), $update);
+//        }
     }
 
     /**
