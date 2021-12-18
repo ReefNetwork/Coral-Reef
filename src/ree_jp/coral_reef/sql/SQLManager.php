@@ -62,6 +62,14 @@ class SQLManager
         $this->db->waitAll();
         Server::getInstance()->getLogger()->info('[SQL] complete');
         $this->server = $server;
+
+        $this->getAllUser(function (array $rows): void {
+            foreach ($rows as $row) {
+                $data = new SessionData($row["xuid"]);
+                $data->breakCount = $row["experience"];
+                $this->recordSession($row["xuid"], $data);
+            }
+        });
     }
 
     public function close(): void
@@ -295,7 +303,7 @@ class SQLManager
     public function recordSession(string $xuid, SessionData $session): void
     {
         $this->db->executeGeneric("coral_reef.session.add", ["xuid" => $xuid, "server" => $this->server,
-            "join_time" => date(SQLConst::DATE_FORMAT, $session->joinTime), "quit_time" => date(SQLConst::DATE_FORMAT, $session->quitTime),
+            "join_time" => date(SQLConst::DATE_FORMAT, 0), "quit_time" => date(SQLConst::DATE_FORMAT, 1),
             "break_count" => $session->breakCount, "place_count" => $session->placeCount, "skill_count" => $session->skillCount]);
     }
 

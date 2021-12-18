@@ -90,6 +90,8 @@ class CoralReefPlugin extends PluginBase
         AccountManager::setUp();
         ReefItems::registerAll();
         $this->pluginInformation();
+
+        $this->setError("メンテナンスバージョンのシステムです");
     }
 
     public function onDisable()
