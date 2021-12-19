@@ -20,6 +20,7 @@ use ree_jp\coral_reef\account\AccountManager;
 use ree_jp\coral_reef\account\GiftData;
 use ree_jp\coral_reef\sql\SQLConst;
 use ree_jp\coral_reef\sql\SQLManager;
+use Throwable;
 
 class GiftForm
 {
@@ -119,8 +120,18 @@ class GiftForm
                 $p->sendMessage(TextFormat::DARK_GRAY . $item->getName() . "を受け取りました");
                 $p->getInventory()->addItem($item);
             } else {
-                $gift->save($p->getXuid(), null, null);
-                return false;
+                try {
+                    /**
+                     * @noinspection PhpUndefinedNamespaceInspection
+                     * @noinspection PhpUndefinedClassInspection
+                     * @noinspection PhpFullyQualifiedNameUsageInspection
+                     */
+                    \ree_jp\stackStorage\api\StackStorageAPI::$instance->add($p->getXuid(), $item);
+                } catch (Throwable $e) { // StackStorageAPIが見つからなかった場合
+                    $gift->save($p->getXuid(), null, null);
+                    return false;
+                }
+                $p->sendMessage(TextFormat::DARK_GRAY . $item->getName() . "をストレージで受け取りました");
             }
         }
         $gift->save($p->getXuid(), null, null);
