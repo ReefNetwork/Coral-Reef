@@ -38,9 +38,9 @@ class SettingForm
                     "座標の表示",
                     null,
                     function (Player $p, ClosureButton $button) {
-                        self::sendBoolForm($p, '座標を表示しますか?', '隠す / 表示',
+                        self::sendBoolForm($p, "座標を表示しますか?", "表示 / 隠す",
                             SettingConst::COORDINATES, function () use ($p) {
-                                $p->sendMessage('設定を保存しました');
+                                $p->sendMessage("設定を保存しました");
                                 SettingManager::updateShowCoordinates($p);
                             });
                     }
@@ -52,7 +52,7 @@ class SettingForm
                         self::sendBoolForm($p, 'スニーク中はスキルを無効にしますか?', '無効にする / しない',
                             SettingConst::SNEAK_SKILL, function () use ($p) {
                                 $p->sendMessage('設定を保存しました');
-                                SettingManager::updateShowCoordinates($p);
+                                SettingManager::updateOption($p, SettingConst::SNEAK_SKILL);
                             });
                     }
                 ),

@@ -77,12 +77,12 @@ class SettingManager
     static function updateBoolOption(string $xuid, string $type, Closure $failure): void
     {
         SQLManager::$manager->getValue($xuid, SQLConst::TYPE_SETTINGS, $type,
-            function (array $rows) use ($xuid) {
+            function (array $rows) use ($type, $xuid) {
                 $row = array_shift($rows);
                 $bool = false;
-                if (isset($row['value'])) if ($row['value'] === 'true') $bool = true;
+                if (isset($row["value"]) && ($row["value"] === "true")) $bool = true;
                 if (!isset(self::$settingCache[$xuid])) self::$settingCache[$xuid] = [];
-                self::$settingCache[$xuid][SettingConst::HIDE_SERVER_TIP] = $bool;
+                self::$settingCache[$xuid][$type] = $bool;
             }, $failure);
     }
 }
