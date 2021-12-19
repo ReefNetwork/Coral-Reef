@@ -86,7 +86,7 @@ class LevelUpQuest extends QuestData
                     $this->sendGift($questLevel, [$item]);
                     break;
                 default:
-                    $give = ($questLevel / 5) + 2;
+                    $give = ceil($questLevel / 5) + 2;
                     if (($questLevel % 5) === 0) $give += 3;
 
                     GatyaManager::addTicket($this->xuid, SQLConst::TICKETS_NORMAL, $give);
