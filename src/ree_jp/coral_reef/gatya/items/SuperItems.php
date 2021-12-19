@@ -32,7 +32,7 @@ class SuperItems extends ReefItems
                 $item->setCustomName('スーパーツルハシ');
                 break;
             case self::SHOVEL:
-                $item = Item::get(ItemIds::DIAMOND_SHOVEL);
+                $item = Item::get(ItemIds::DIAMOND_SHOVEL, $durable);
                 $item->setNamedTagEntry(new StringTag(self::REEF_SP_ITEM, self::SHOVEL));
                 $item->setCustomName('スーパーシャベル');
                 break;
