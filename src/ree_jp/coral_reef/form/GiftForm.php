@@ -116,22 +116,27 @@ class GiftForm
     static private function receiveItems(Player $p, GiftData $gift): bool
     {
         foreach ($gift->getItems() as $item) {
-            if ($p->getInventory()->canAddItem($item) && $gift->markReceived($item)) {
-                $p->sendMessage(TextFormat::DARK_GRAY . $item->getName() . "を受け取りました");
-                $p->getInventory()->addItem($item);
-            } else {
-                try {
-                    /**
-                     * @noinspection PhpUndefinedNamespaceInspection
-                     * @noinspection PhpUndefinedClassInspection
-                     * @noinspection PhpFullyQualifiedNameUsageInspection
-                     */
-                    \ree_jp\stackStorage\api\StackStorageAPI::$instance->add($p->getXuid(), $item);
-                } catch (Throwable $e) { // StackStorageAPIが見つからなかった場合
-                    $gift->save($p->getXuid(), null, null);
-                    return false;
+            if ($gift->markReceived($item)) {
+                if ($p->getInventory()->canAddItem($item)) {
+                    $p->sendMessage(TextFormat::DARK_GRAY . $item->getName() . "を受け取りました");
+                    $p->getInventory()->addItem($item);
+                } else {
+                    try {
+                        /**
+                         * @noinspection PhpUndefinedNamespaceInspection
+                         * @noinspection PhpUndefinedClassInspection
+                         * @noinspection PhpFullyQualifiedNameUsageInspection
+                         */
+                        \ree_jp\stackStorage\api\StackStorageAPI::$instance->add($p->getXuid(), $item);
+                    } catch (Throwable $e) { // StackStorageAPIが見つからなかった場合
+                        $gift->save($p->getXuid(), null, null);
+                        return false;
+                    }
+                    $p->sendMessage(TextFormat::DARK_GRAY . $item->getName() . "をストレージで受け取りました");
                 }
-                $p->sendMessage(TextFormat::DARK_GRAY . $item->getName() . "をストレージで受け取りました");
+            } else {
+                $gift->save($p->getXuid(), null, null);
+                return false;
             }
         }
         $gift->save($p->getXuid(), null, null);
