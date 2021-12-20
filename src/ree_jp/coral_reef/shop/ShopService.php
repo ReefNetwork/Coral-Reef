@@ -11,8 +11,8 @@
 
 namespace ree_jp\coral_reef\shop;
 
-use pocketmine\level\Position;
-use pocketmine\Player;
+use pocketmine\player\Player;
+use pocketmine\world\Position;
 use ree_jp\coral_reef\shop\form\ShopDetailForm;
 use ree_jp\coral_reef\shop\form\ShopManageForm;
 
@@ -20,7 +20,7 @@ class ShopService
 {
     static function showShop(Player $p, ShopStore $store, Position $pos): void
     {
-        if ($pos->getLevel()?->getFolderName() !== "lobby") return;
+        if ($pos->getWorld()->getFolderName() !== "lobby") return;
 
         if ($p->isCreative()) {
             ShopManageForm::sendForm($p, $store, $pos);

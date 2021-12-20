@@ -11,12 +11,11 @@
 
 namespace ree_jp\coral_reef\account;
 
-use Exception;
 use pocketmine\network\mcpe\protocol\RemoveObjectivePacket;
 use pocketmine\network\mcpe\protocol\SetDisplayObjectivePacket;
 use pocketmine\network\mcpe\protocol\SetScorePacket;
 use pocketmine\network\mcpe\protocol\types\ScorePacketEntry;
-use pocketmine\Player;
+use pocketmine\player\Player;
 use pocketmine\utils\TextFormat;
 use ree_jp\coral_reef\CoralReefPlugin;
 use ree_jp\coral_reef\sql\SQLManager;
@@ -27,10 +26,6 @@ class ScoreBoardManager
     const board = 'board';
     const object = 'sidebar';
 
-    /**
-     * @param Player $p
-     * @throws Exception
-     */
     static function sendScoreBoard(Player $p): void
     {
         $user = SQLManager::$manager->getUser($p->getXuid());
@@ -38,14 +33,14 @@ class ScoreBoardManager
 
         $pk = new RemoveObjectivePacket();
         $pk->objectiveName = self::board;
-        $p->sendDataPacket($pk);
+        $p->getNetworkSession()->sendDataPacket($pk);
         $pk = new SetDisplayObjectivePacket();
         $pk->displaySlot = self::object;
         $pk->objectiveName = self::board;
         $pk->displayName = TextFormat::GREEN . 'Reef ' . TextFormat::YELLOW . 'Server';
         $pk->criteriaName = "dummy";
         $pk->sortOrder = 0;
-        $p->sendDataPacket($pk);
+        $p->getNetworkSession()->sendDataPacket($pk);
 
         $pk = new SetScorePacket();
         $pk->type = SetScorePacket::TYPE_CHANGE;
@@ -72,7 +67,7 @@ class ScoreBoardManager
         if (CoralReefPlugin::$plugin->isDev) {
             self::setScore($pk, 13, CoralReefPlugin::$plugin->getDescription()->getVersion());
         }
-        $p->sendDataPacket($pk);
+        $p->getNetworkSession()->sendDataPacket($pk);
     }
 
     private static function setScore(SetScorePacket $pk, int $score, string $content): void

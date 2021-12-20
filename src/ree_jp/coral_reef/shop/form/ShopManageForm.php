@@ -17,8 +17,8 @@ use bbo51dog\bboform\element\Input;
 use bbo51dog\bboform\form\ClosureCustomForm;
 use bbo51dog\bboform\form\CustomForm;
 use bbo51dog\bboform\form\SimpleForm;
-use pocketmine\level\Position;
-use pocketmine\Player;
+use pocketmine\player\Player;
+use pocketmine\world\Position;
 use ree_jp\coral_reef\shop\Shop;
 use ree_jp\coral_reef\shop\ShopStore;
 
@@ -34,9 +34,9 @@ class ShopManageForm
             $p->sendForm(self::shopCreateForm($store, $pos));
         } else {
             $p->sendForm((new SimpleForm())->setTitle("Shop Manage")->setText("このショップに対して行う動作を選んでください")
-                ->addElements(new ClosureButton("ショップを変更する", null, function (Player $p, ClosureButton $button) use ($pos, $store, $shop): void {
+                ->addElements(new ClosureButton("ショップを変更する", null, function (Player $p) use ($pos, $store, $shop): void {
                     $p->sendForm(self::shopCreateForm($store, $pos, $shop->orderType, $shop->payment["type"], $shop->payment["amount"]));
-                }), new ClosureButton("削除する", null, function (Player $p, ClosureButton $button) use ($pos, $store) {
+                }), new ClosureButton("削除する", null, function () use ($pos, $store) {
                     $store->removeShop($pos);
                 })));
         }
@@ -47,7 +47,7 @@ class ShopManageForm
         $orderElement = new Dropdown("買わせる(buy)か買い取る(sell)か (もともとは$orderType)", self::TYPE);
         $typeElement = new Dropdown("このショップの支払い方法を設定してください(もともとは$payType)", self::PAYMENT);
         $amountElement = new Input("このショップの支払う量を設定してください", "100", $amount);
-        return (new ClosureCustomForm(function (Player $p, ClosureCustomForm $form) use ($orderElement, $pos, $store, $amountElement, $typeElement): void {
+        return (new ClosureCustomForm(function (Player $p) use ($orderElement, $pos, $store, $amountElement, $typeElement): void {
             $order = self::TYPE[$orderElement->getValue()];
             $payment = self::PAYMENT[$typeElement->getValue()];
             $amount = intval($amountElement->getValue());

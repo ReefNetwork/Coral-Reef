@@ -17,7 +17,7 @@ use poggit\libasynql\SqlError;
 use ree_jp\coral_reef\sql\SQLConst;
 use ree_jp\coral_reef\sql\SQLManager;
 
-class GiftManager
+class GiftService
 {
     static function addGift(string $target, GiftData $gift, ?Closure $func, ?Closure $failure): void
     {

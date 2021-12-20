@@ -13,11 +13,13 @@ namespace ree_jp\coral_reef;
 
 use Exception;
 use PDOException;
-use pocketmine\level\generator\GeneratorManager;
 use pocketmine\plugin\PluginBase;
 use pocketmine\scheduler\ClosureTask;
 use pocketmine\Server;
-use ree_jp\coral_reef\account\AccountManager;
+use pocketmine\world\generator\Flat;
+use pocketmine\world\generator\normal\Normal;
+use pocketmine\world\WorldCreationOptions;
+use ree_jp\coral_reef\account\AccountStore;
 use ree_jp\coral_reef\account\ScoreBoardManager;
 use ree_jp\coral_reef\command\MenuCommand;
 use ree_jp\coral_reef\command\ReefAdminCommand;
@@ -41,58 +43,49 @@ class CoralReefPlugin extends PluginBase
 
     public bool $isDev = false;
 
+    private SQLManager $sqlRepo;
+    private AccountStore $accountStore;
+    private LandManager $landStore;
+    private ShopStore $shopStore;
+    private SessionStore $sessionStore;
     private array $errors = [];
 
-    public function onLoad()
+    public function onLoad(): void
     {
         self::$plugin = $this;
         $this->isDev = !str_contains($this->getDescription()->getVersion(), 'stable');
     }
 
-    public function onEnable()
+    public function onEnable(): void
     {
         date_default_timezone_set('Asia/Tokyo');
+        $this->accountStore = new AccountStore();
         try {
-            SQLManager::$manager = new SQLManager($this->getDataFolder(), $this->getConfig()->get(ConfigConst::SERVER_NAME));
+            $this->sqlRepo = new SQLManager($this->accountStore, $this->getDataFolder(), $this->getConfig()->get(ConfigConst::SERVER_NAME));
+            SQLManager::$manager = $this->sqlRepo;
         } catch (PDOException $e) {
             $this->getLogger()->critical("[SQL]" . $e->getMessage());
         }
         try {
-            LandManager::$instance = new LandManager();
+            $this->landStore = new LandManager();
+            LandManager::$instance = $this->landStore;
         } catch (Exception $e) {
             $this->getLogger()->critical("[LandManager]" . $e->getMessage());
         }
+        $this->shopStore = new ShopStore($this->getDataFolder());
+        $this->sessionStore = new SessionStore();
 
-        $this->getServer()->generateLevel("lobby", time(), GeneratorManager::getGenerator("flat"));
-        $this->getServer()->generateLevel("main_1", time(), generatorManager::getGenerator("default"));
-        $this->getServer()->generateLevel("main_2", time(), generatorManager::getGenerator("default"));
-        $this->getServer()->loadLevel("lobby");
-        $this->getServer()->loadLevel("main_1");
-        $this->getServer()->loadLevel("main_2");
+        $this->registerCommands();
+        $this->registerListeners();
+        $this->registerSchedules();
+        $this->loadWorlds();
 
-        $this->getServer()->getPluginManager()->registerEvents(new EventListener(new ShopStore($this->getDataFolder()), new SessionStore()), $this);
-        $this->getServer()->getPluginManager()->registerEvents(new QuestListener(), $this); // クエスト用
-        $this->getServer()->getCommandMap()->register('menu', new MenuCommand($this));
-        $this->getServer()->getCommandMap()->register('reef', new ReefCommand($this));
-        $this->getServer()->getCommandMap()->register('reef-admin', new ReefAdminCommand($this));
-        $this->getServer()->getCommandMap()->register('reef-console', new ReefConsoleCommand($this));
-        $this->getScheduler()->scheduleRepeatingTask(new SendServerTipTask(), 15);
-        $this->getScheduler()->scheduleRepeatingTask(new DataSaveTask(), 20);
-        $this->getScheduler()->scheduleRepeatingTask(new EffectTask(), 200);
-        $this->getScheduler()->scheduleRepeatingTask(new ServerUpdateTask(), 20);
-        $this->getScheduler()->scheduleRepeatingTask(new ClosureTask(function (int $currentTick): void {
-            foreach (Server::getInstance()->getOnlinePlayers() as $p) ScoreBoardManager::sendScoreBoard($p);
-        }), 15);
-        $this->getScheduler()->scheduleRepeatingTask(new ClosureTask(function (int $currentTick): void {
-            MoneyCache::purgeAll();
-        }), 20);
-
-        AccountManager::setUp();
+        $this->accountStore->updateUserNameList($this->sqlRepo);
         ReefItems::registerAll();
         $this->pluginInformation();
     }
 
-    public function onDisable()
+    public function onDisable(): void
     {
         foreach ($this->getServer()->getOnlinePlayers() as $p) {
             $p->kick("サーバーを停止します", false);
@@ -110,6 +103,52 @@ class CoralReefPlugin extends PluginBase
     {
         if (empty($this->errors)) return null;
         return $this->errors;
+    }
+
+    private function registerListeners(): void
+    {
+        $this->getServer()->getPluginManager()->registerEvents(new EventListener($this->sqlRepo, $this->accountStore, $this->landStore,
+            $this->shopStore, $this->sessionStore), $this);
+        $this->getServer()->getPluginManager()->registerEvents(new QuestListener(), $this); // クエスト用
+    }
+
+    private function registerCommands(): void
+    {
+        $this->getServer()->getCommandMap()->register('menu', new MenuCommand($this));
+        $this->getServer()->getCommandMap()->register('reef', new ReefCommand($this));
+        $this->getServer()->getCommandMap()->register('reef-admin', new ReefAdminCommand($this));
+        $this->getServer()->getCommandMap()->register('reef-console', new ReefConsoleCommand($this));
+    }
+
+    private function registerSchedules(): void
+    {
+        $this->getScheduler()->scheduleRepeatingTask(new SendServerTipTask(), 15);
+        $this->getScheduler()->scheduleRepeatingTask(new DataSaveTask(), 20);
+        $this->getScheduler()->scheduleRepeatingTask(new EffectTask(), 200);
+        $this->getScheduler()->scheduleRepeatingTask(new ServerUpdateTask(), 20);
+        $this->getScheduler()->scheduleRepeatingTask(new ClosureTask(function (): void {
+            foreach (Server::getInstance()->getOnlinePlayers() as $p) ScoreBoardManager::sendScoreBoard($p);
+        }), 15);
+        $this->getScheduler()->scheduleRepeatingTask(new ClosureTask(function (): void {
+            MoneyCache::purgeAll();
+        }), 20);
+    }
+
+    private function loadWorlds(): void
+    {
+        $wm = $this->getServer()->getWorldManager();
+        if (!$wm->isWorldGenerated("lobby")) {
+            $wm->generateWorld("lobby", WorldCreationOptions::create()->setGeneratorClass(Flat::class));
+        }
+        if (!$wm->isWorldGenerated("main_1")) {
+            $wm->generateWorld("main_1", WorldCreationOptions::create()->setGeneratorClass(Normal::class));
+        }
+        if (!$wm->isWorldGenerated("main_2")) {
+            $wm->generateWorld("main_2", WorldCreationOptions::create()->setGeneratorClass(Normal::class));
+        }
+        $wm->loadWorld("lobby");
+        $wm->loadWorld("main_1");
+        $wm->loadWorld("main_2");
     }
 
     private function pluginInformation(): void

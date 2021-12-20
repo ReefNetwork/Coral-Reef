@@ -13,14 +13,14 @@ namespace ree_jp\coral_reef\shop;
 
 use Closure;
 use JetBrains\PhpStorm\ArrayShape;
-use pocketmine\block\BlockIds;
+use pocketmine\block\BlockLegacyIds;
+use pocketmine\block\tile\Chest;
 use pocketmine\item\Item;
-use pocketmine\level\Position;
-use pocketmine\Player;
+use pocketmine\player\Player;
 use pocketmine\Server;
-use pocketmine\tile\Chest;
+use pocketmine\world\Position;
 use ree_jp\coral_reef\account\GiftData;
-use ree_jp\coral_reef\account\GiftManager;
+use ree_jp\coral_reef\account\GiftService;
 use ree_jp\coral_reef\gatya\GatyaManager;
 use ree_jp\coral_reef\money\MoneyService;
 use ree_jp\coral_reef\sql\SQLConst;
@@ -41,7 +41,7 @@ class Shop
 
     static function jsonDeserialize(array $array): Shop
     {
-        $level = Server::getInstance()->getLevelByName($array["level"]);
+        $level = Server::getInstance()->getWorldManager()->getWorldByName($array["level"]);
         $orderType = $array["order_type"] ?? "buy";
         return new Shop(new Position($array["x"], $array["y"], $array["z"], $level), $orderType, $array["payment"]);
     }
@@ -49,7 +49,7 @@ class Shop
     #[ArrayShape(["level" => "string", "x" => "int", "y" => "int", "z" => "int", "order_type" => "string", "payment" => "array"])]
     public function jsonSerialize(): array
     {
-        return ["level" => $this->pos->getLevel()->getFolderName(), "x" => $this->pos->getFloorX(), "y" => $this->pos->getFloorY(), "z" => $this->pos->getFloorZ(),
+        return ["level" => $this->pos->getWorld()->getFolderName(), "x" => $this->pos->getFloorX(), "y" => $this->pos->getFloorY(), "z" => $this->pos->getFloorZ(),
             "order_type" => $this->orderType, "payment" => $this->payment];
     }
 
@@ -68,7 +68,7 @@ class Shop
                 $count--;
             }
             if (!empty($gifts)) {
-                GiftManager::addGift($xuid, new GiftData(0, "ショップで購入したアイテムです", time() + (7 * 24 * 60 * 60), $gifts),
+                GiftService::addGift($xuid, new GiftData(0, "ショップで購入したアイテムです", time() + (7 * 24 * 60 * 60), $gifts),
                     null, null);
                 $p->sendMessage("アイテムの一部がインベントリに入らなかったためギフトに送信しました\n1週間以内に受け取ってください");
             }
@@ -144,11 +144,11 @@ class Shop
         $i = 0;
         while ($i < 5) {
             $i++;
-            $nowPos = $this->pos->subtract(0, $i);
-            $item = $this->pos->getLevel()->getBlock($nowPos);
-            if ($item->getId() !== BlockIds::CHEST) continue;
+            $nowPos = $this->pos->subtract(0, $i, 0);
+            $item = $this->pos->getWorld()->getBlock($nowPos);
+            if ($item->getId() !== BlockLegacyIds::CHEST) continue;
 
-            $tile = $this->pos->getLevel()->getTile($nowPos);
+            $tile = $this->pos->getWorld()->getTile($nowPos);
             if (!$tile instanceof Chest) continue;
 
             return $tile->getInventory()->getContents();
