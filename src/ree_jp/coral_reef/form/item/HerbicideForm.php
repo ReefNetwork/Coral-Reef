@@ -37,10 +37,11 @@ class HerbicideForm
         $height = $nbt->getInt("height", 0);
 
         $form = new ModalForm(new ClosureButton("使用する", null, function (Player $p) use ($item, $height, $weight): void {
-            if (!$p->getInventory()->contains($item)) {
+            if (!$p->getInventory()->getItemInHand()->equalsExact($item)) {
                 $p->sendMessage("エラーが発生しました");
                 return;
             }
+            $p->getInventory()->setItemInHand($item->setCount($item->getCount() - 1));
             $p->getInventory()->remove($item->setCount(1));
             $p->sendMessage(self::calculation($weight, $height) . "秒かかります");
             self::herbicide($p, $weight, $height, -$weight, -$weight, $height, 0);
@@ -62,7 +63,6 @@ class HerbicideForm
         $xuid = $p->getXuid();
         $methodCount = 0;
         AccountManager::setValue($xuid, "skill_active");
-        AccountManager::setValue($xuid, "skill_active", 0);
         for (; $x >= -$weight; $x--) {
             for (; $z >= -$weight; $z--) {
                 for (; $relativeHeight >= -$height; $relativeHeight--) {
@@ -87,5 +87,7 @@ class HerbicideForm
                 }
             }
         }
+        AccountManager::setValue($xuid, "skill_active", 0);
+        $p->sendMessage($count . "ブロックを破壊しました");
     }
 }
