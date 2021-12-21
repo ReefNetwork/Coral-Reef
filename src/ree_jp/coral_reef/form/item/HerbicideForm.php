@@ -19,13 +19,16 @@ use pocketmine\block\BlockIds;
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\Player;
+use pocketmine\scheduler\ClosureTask;
 use ree_jp\coral_reef\account\AccountManager;
+use ree_jp\coral_reef\CoralReefPlugin;
 
 class HerbicideForm
 {
     static function sendForm(Player $p): void
     {
-        $nbt = $p->getInventory()->getItemInHand()->getNamedTagEntry("herbicide_scale");
+        $item = $p->getInventory()->getItemInHand();
+        $nbt = $item->getNamedTagEntry("herbicide_scale");
         if (!$nbt instanceof CompoundTag) {
             return;
         }
@@ -33,24 +36,36 @@ class HerbicideForm
         $weight = $nbt->getInt("weight", 0);
         $height = $nbt->getInt("height", 0);
 
-        $form = new ModalForm(new ClosureButton("使用する", null, function (Player $p) use ($height, $weight): void {
-            $count = self::herbicide($p, $weight, $height);
-            $p->sendMessage("除草剤を使用して$count ブロックを破壊しました");
+        $form = new ModalForm(new ClosureButton("使用する", null, function (Player $p) use ($item, $height, $weight): void {
+            if (!$p->getInventory()->contains($item)) {
+                $p->sendMessage("エラーが発生しました");
+                return;
+            }
+            $p->getInventory()->remove($item->setCount(1));
+            $p->sendMessage(self::calculation($weight, $height) . "秒かかります");
+            self::herbicide($p, $weight, $height, -$weight, -$weight, $height, 0);
         }), new Button("キャンセル"));
         $form->setTitle("Confirm")->setText("本当に除草剤を使用しますか?\n範囲内のすべての原木と葉を破壊します\n範囲はプレイヤーの位置が中心になります" .
             "\n\n範囲\n半径: $weight ブロック\n高さ: 上下$height ブロック");
         $p->sendForm($form);
     }
 
-    private static function herbicide(Player $p, int $weight, int $height): int
+    private static function calculation(int $weight, int $height): float
+    {
+        $edge = $weight * 2 + 1;
+        $blocks = $edge * $edge * $height;
+        return $blocks / 10000;
+    }
+
+    private static function herbicide(Player $p, int $weight, int $height, int $x, int $z, int $relativeHeight, int $count): void
     {
         $xuid = $p->getXuid();
-        $count = 0;
+        $methodCount = 0;
         AccountManager::setValue($xuid, "skill_active");
         AccountManager::setValue($xuid, "skill_active", 0);
-        for ($x = $weight; $x >= -$weight; $x--) {
-            for ($z = $weight; $z >= -$weight; $z--) {
-                for ($relativeHeight = $height; $relativeHeight >= -$height; $relativeHeight--) {
+        for (; $x >= -$weight; $x--) {
+            for (; $z >= -$weight; $z--) {
+                for (; $relativeHeight >= -$height; $relativeHeight--) {
                     $check = $p->add($x, $relativeHeight, $z);
                     $bl = $p->getLevel()->getBlock($check);
                     if (in_array($bl->getId(), [BlockIds::LEAVES, BlockIds::LEAVES2, BlockIds::LOG, BlockIds::LOG2])) {
@@ -61,9 +76,16 @@ class HerbicideForm
                             $count++;
                         }
                     }
+                    $methodCount++;
+                    if ($methodCount > 500) {
+                        CoralReefPlugin::$plugin->getScheduler()->scheduleDelayedTask(new ClosureTask(
+                            function () use ($count, $relativeHeight, $z, $x, $height, $weight, $p): void {
+                                self::herbicide($p, $weight, $height, $x, $z, $relativeHeight--, $count);
+                            }), 1);
+                        return;
+                    }
                 }
             }
         }
-        return $count;
     }
 }
