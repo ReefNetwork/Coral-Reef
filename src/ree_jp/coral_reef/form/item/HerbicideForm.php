@@ -17,6 +17,7 @@ use bbo51dog\bboform\form\ModalForm;
 use pocketmine\block\Block;
 use pocketmine\block\BlockIds;
 use pocketmine\event\block\BlockBreakEvent;
+use pocketmine\level\Position;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\Player;
 use pocketmine\scheduler\ClosureTask;
@@ -43,7 +44,8 @@ class HerbicideForm
             }
             $p->getInventory()->setItemInHand($item->setCount($item->getCount() - 1));
             $p->sendMessage(self::calculation($weight, $height) . "秒かかります");
-            self::herbicide($p, $weight, $height, $weight, $weight, $height, 0);
+            AccountManager::setValue($p->getXuid(), "skill_active");
+            self::herbicide($p, clone $p->getPosition(), $weight, $height, $weight, $weight, $height, 0);
         }), new Button("キャンセル"));
         $form->setTitle("Confirm")->setText("本当に除草剤を使用しますか?\n範囲内のすべての原木と葉を破壊します\n範囲はプレイヤーの位置が中心になります" .
             "\n\n範囲\n半径: $weight ブロック\n高さ: 上下$height ブロック");
@@ -57,16 +59,18 @@ class HerbicideForm
         return $blocks / 10000;
     }
 
-    private static function herbicide(Player $p, int $weight, int $height, int $x, int $z, int $relativeHeight, int $count): void
+    private static function herbicide(Player $p, Position $pos, int $weight, int $height, int $x, int $z, int $relativeHeight, int $count): void
     {
-        $xuid = $p->getXuid();
+        if (!$p->isOnline()) {
+            AccountManager::setValue($p->getXuid(), "skill_active", 0);
+            return;
+        }
         $methodCount = 0;
-        AccountManager::setValue($xuid, "skill_active");
         for (; $x >= -$weight; --$x) {
             for (; $z >= -$weight; --$z) {
                 for (; $relativeHeight >= -$height; --$relativeHeight) {
-                    $check = $p->add($x, $relativeHeight, $z);
-                    $bl = $p->getLevel()->getBlock($check);
+                    $check = $pos->add($x, $relativeHeight, $z);
+                    $bl = $pos->getLevel()->getBlock($check);
                     if (in_array($bl->getId(), [BlockIds::LEAVES, BlockIds::LEAVES2, BlockIds::LOG, BlockIds::LOG2])) {
                         $event = new BlockBreakEvent($p, $bl, $p->getInventory()->getItemInHand(), true);
                         $event->call();
@@ -78,8 +82,8 @@ class HerbicideForm
                     $methodCount++;
                     if ($methodCount > 500) {
                         CoralReefPlugin::$plugin->getScheduler()->scheduleDelayedTask(new ClosureTask(
-                            function () use ($count, $relativeHeight, $z, $x, $height, $weight, $p): void {
-                                self::herbicide($p, $weight, $height, $x, $z, --$relativeHeight, $count);
+                            function () use ($pos, $count, $relativeHeight, $z, $x, $height, $weight, $p): void {
+                                self::herbicide($p, $pos, $weight, $height, $x, $z, --$relativeHeight, $count);
                             }), 1);
                         return;
                     }
@@ -88,9 +92,7 @@ class HerbicideForm
             }
             $z = $weight;
         }
-        AccountManager::setValue($xuid, "skill_active", 0);
-        if ($p->isOnline()) {
-            $p->sendMessage($count . "ブロックを破壊しました");
-        }
+        AccountManager::setValue($p->getXuid(), "skill_active", 0);
+        $p->sendMessage($count . "ブロックを破壊しました");
     }
 }
