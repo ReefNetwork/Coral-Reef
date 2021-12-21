@@ -270,10 +270,12 @@ class SQLManager
                     foreach ($cacheLands as $key => $cacheLand) {
                         if ($cacheLand->xuid === $land->xuid && $cacheLand->name === $land->name) {
                             array_splice(LandManager::$instance->lands[$level], $key, 1);
+                            $p->sendMessage('土地を削除しました');
+                            return;
                         }
                     }
                 }
-                $p->sendMessage('土地を削除しました');
+                $p->sendMessage("エラーが発生しました");
             }, function (SqlError $error) use ($p, $land) {
                 Server::getInstance()->getLogger()->error("[LandSQL] $land->name の削除中に" . $error->getErrorMessage());
                 $p->sendMessage('エラーが発生しました');
