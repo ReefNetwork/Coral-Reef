@@ -15,15 +15,18 @@ use pocketmine\item\enchantment\Enchantment;
 use pocketmine\item\enchantment\EnchantmentInstance;
 use pocketmine\item\Item;
 use pocketmine\item\ItemIds;
+use pocketmine\nbt\tag\CompoundTag;
+use pocketmine\nbt\tag\IntTag;
 use pocketmine\nbt\tag\StringTag;
 
 class ConvertItems extends ReefItems
 {
     const NORMAL_TICKETS_FRAGMENT = "normal_tickets_fragment";
+    const HERBICIDE = "herbicide";
 
     static function registerItems(): void
     {
-        foreach ([self::NORMAL_TICKETS_FRAGMENT] as $key) {
+        foreach ([self::NORMAL_TICKETS_FRAGMENT, self::HERBICIDE] as $key) {
             Item::addCreativeItem(self::getItem(0, $key));
         }
     }
@@ -37,6 +40,15 @@ class ConvertItems extends ReefItems
                 $item->addEnchantment(new EnchantmentInstance(Enchantment::getEnchantment(Enchantment::INFINITY), 1));
                 $item->setCustomName("ノーマルガチャチケットのかけら");
                 $item->setLore(["このかけらを10個集めるとノーマルガチャチケットを受け取れます"]);
+                break;
+            case self::HERBICIDE:
+                $item = Item::get(ItemIds::DYE, 10);
+                $item->setNamedTagEntry(new StringTag(self::REEF_SP_ITEM, self::HERBICIDE));
+                $item->addEnchantment(new EnchantmentInstance(Enchantment::getEnchantment(Enchantment::INFINITY), 1));
+                $item->setCustomName("除草剤");
+                $item->setLore(["原木と葉っぱを破壊できます"]);
+                $nbt = new CompoundTag("herbicide_scale", [new IntTag("weight", 30), new IntTag("height", 10)]);
+                $item->setNamedTagEntry($nbt);
                 break;
             default:
                 return null;
