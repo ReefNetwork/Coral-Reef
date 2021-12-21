@@ -14,6 +14,7 @@ namespace ree_jp\coral_reef\skill;
 use Exception;
 use JetBrains\PhpStorm\Pure;
 use pocketmine\block\Block;
+use pocketmine\block\BlockIds;
 use pocketmine\network\mcpe\protocol\LevelSoundEventPacket;
 use pocketmine\Player;
 use pocketmine\scheduler\ClosureTask;
@@ -77,6 +78,7 @@ class SkillManager
         $user = SQLManager::$manager->getUser($xuid);
         $skill = $user->skill;
         if (is_null($skill)) throw new Exception('スキルが設定されていません');
+        if ($bl->getId() === BlockIds::BEDROCK) throw new Exception("岩盤を壊すことはできません");
 
         if (!AccountManager::hasValue($xuid, "christmas_ticket_cool_down")) {
             AccountManager::setValue($xuid, "christmas_ticket_cool_down", 20 * 10);
