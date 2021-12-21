@@ -43,7 +43,7 @@ class HerbicideForm
             }
             $p->getInventory()->setItemInHand($item->setCount($item->getCount() - 1));
             $p->sendMessage(self::calculation($weight, $height) . "秒かかります");
-            self::herbicide($p, $weight, $height, clone $weight, clone $weight, clone $height, 0);
+            self::herbicide($p, $weight, $height, $weight, $weight, $height, 0);
         }), new Button("キャンセル"));
         $form->setTitle("Confirm")->setText("本当に除草剤を使用しますか?\n範囲内のすべての原木と葉を破壊します\n範囲はプレイヤーの位置が中心になります" .
             "\n\n範囲\n半径: $weight ブロック\n高さ: 上下$height ブロック");
