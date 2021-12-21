@@ -77,8 +77,9 @@ class Christmas2021
                         true => "1",
                         false => "0.5"
                     };
-                    GatyaManager::gatyaProcess($p, SQLConst::TICKETS_CHRISTMAS_2021, 1, $item, "reef_rare",
-                        TextFormat::GREEN . "REEFレア" . TextFormat::DARK_GRAY . "[$percent %]" . TextFormat::RESET, true, $func);
+                    GatyaManager::gatyaProcess($p, SQLConst::LOG_GATYA_CHRISTMAS_2021, SQLConst::TICKETS_CHRISTMAS_2021, 1, $item,
+                        "reef_rare", TextFormat::GREEN . "REEFレア" . TextFormat::DARK_GRAY . "[$percent %]" . TextFormat::RESET,
+                        true, $func);
                     break;
 
                 case $firstRand <= (5 + 150):// 15%
@@ -93,8 +94,9 @@ class Christmas2021
                             $p->sendMessage("エラーが発生しました");
                             return;
                     }
-                    GatyaManager::gatyaProcess($p, SQLConst::TICKETS_CHRISTMAS_2021, 1, $item, "super_rare",
-                        TextFormat::BLUE . "スーパーレア" . TextFormat::DARK_GRAY . "[15%]" . TextFormat::RESET, false, $func);
+                    GatyaManager::gatyaProcess($p, SQLConst::LOG_GATYA_CHRISTMAS_2021, SQLConst::TICKETS_CHRISTMAS_2021, 1, $item,
+                        "super_rare", TextFormat::BLUE . "スーパーレア" . TextFormat::DARK_GRAY . "[15%]" . TextFormat::RESET,
+                        false, $func);
                     break;
 
                 case $firstRand <= (155 + 345):// 34.5%
@@ -109,15 +111,17 @@ class Christmas2021
                             $p->sendMessage("エラーが発生しました");
                             return;
                     }
-                    GatyaManager::gatyaProcess($p, SQLConst::TICKETS_CHRISTMAS_2021, 1, $item, "rare",
-                        TextFormat::AQUA . "レア" . TextFormat::DARK_GRAY . "[34.5%]" . TextFormat::RESET, false, $func);
+                    GatyaManager::gatyaProcess($p, SQLConst::LOG_GATYA_CHRISTMAS_2021, SQLConst::TICKETS_CHRISTMAS_2021, 1, $item,
+                        "rare", TextFormat::AQUA . "レア" . TextFormat::DARK_GRAY . "[34.5%]" . TextFormat::RESET,
+                        false, $func);
                     break;
 
                 default:
                     $items = [Item::get(ItemIds::SNOWBALL, 0, 8), Item::get(ItemIds::STEAK, 0, 4), Item::get(ItemIds::CAKE),
                         Item::get(ItemIds::COOKED_CHICKEN, 0, 4), Item::get(ItemIds::MUSHROOM_STEW), Item::get(ItemIds::GOLDEN_APPLE)];
-                    GatyaManager::gatyaProcess($p, SQLConst::TICKETS_CHRISTMAS_2021, 1, $items[array_rand($items)], "normal",
-                        TextFormat::GOLD . "ノーマル" . TextFormat::DARK_GRAY . "[50%]" . TextFormat::RESET, false, $func);
+                    GatyaManager::gatyaProcess($p, SQLConst::LOG_GATYA_CHRISTMAS_2021, SQLConst::TICKETS_CHRISTMAS_2021, 1,
+                        $items[array_rand($items)], "normal", TextFormat::GOLD . "ノーマル" . TextFormat::DARK_GRAY . "[50%]" . TextFormat::RESET,
+                        false, $func);
                     break;
             }
         }, function (SqlError $error) use ($p) {

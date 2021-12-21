@@ -44,7 +44,7 @@ class GatyaManager
     }
 
     // チケットの枚数が足りるか確認してチケットを減らしてログに記録してアイテムを送る
-    static function gatyaProcess(Player $p, string $subtype, int $need, Item $item, string $rare, string $stringRare, bool $isBroadcast, ?Closure $func): void
+    static function gatyaProcess(Player $p, string $gatyaLog, string $subtype, int $need, Item $item, string $rare, string $stringRare, bool $isBroadcast, ?Closure $func): void
     {
         if (array_key_exists($p->getXuid(), self::$isProcessing)) {
             $p->sendMessage("ガチャを同時に実行することはできません");
@@ -53,11 +53,11 @@ class GatyaManager
         self::$isProcessing[$p->getXuid()] = true;
         // ガチャチケットが足りるか確認
         SQLManager::$manager->getValue($p->getXuid(), SQLConst::TYPE_TICKETS, $subtype,
-            function (array $rows) use ($stringRare, $func, $isBroadcast, $item, $rare, $subtype, $p, $need) {
+            function (array $rows) use ($gatyaLog, $stringRare, $func, $isBroadcast, $item, $rare, $subtype, $p, $need) {
                 foreach ($rows as $row) {
                     if (isset($row['value']) && intval($row['value']) >= $need) {
                         // ログに追加
-                        SQLManager::$manager->addLog($p->getXuid(), SQLConst::LOG_GATYA, $rare,
+                        SQLManager::$manager->addLog($p->getXuid(), $gatyaLog, $rare,
                             $item->getNamedTag()->getString(ReefItems::REEF_SP_ITEM, 'unknown'), SQLConst::NOW_TIME,
                             function (int $insertId, int $affectedRows) use ($stringRare, $func, $rare, $isBroadcast, $item, $need, $row, $subtype, $p) {
                                 // ガチャチケットを減らす
