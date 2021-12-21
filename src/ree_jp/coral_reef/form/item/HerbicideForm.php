@@ -17,19 +17,19 @@ use bbo51dog\bboform\form\ModalForm;
 use pocketmine\block\Block;
 use pocketmine\block\BlockIds;
 use pocketmine\event\block\BlockBreakEvent;
-use pocketmine\item\Item;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\Player;
 use ree_jp\coral_reef\account\AccountManager;
 
 class HerbicideForm
 {
-    static function sendForm(Item $item): void
+    static function sendForm(Player $p): void
     {
-        $nbt = $item->getNamedTagEntry("herbicide_scale");
+        $nbt = $p->getInventory()->getItemInHand()->getNamedTagEntry("herbicide_scale");
         if (!$nbt instanceof CompoundTag) {
             return;
         }
+
         $weight = $nbt->getInt("weight", 0);
         $height = $nbt->getInt("height", 0);
 
