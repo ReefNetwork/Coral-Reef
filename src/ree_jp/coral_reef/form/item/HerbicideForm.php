@@ -89,6 +89,8 @@ class HerbicideForm
             $z = $weight;
         }
         AccountManager::setValue($xuid, "skill_active", 0);
-        $p->sendMessage($count . "ブロックを破壊しました");
+        if ($p->isOnline()) {
+            $p->sendMessage($count . "ブロックを破壊しました");
+        }
     }
 }
