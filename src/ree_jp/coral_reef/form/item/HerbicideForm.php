@@ -62,9 +62,9 @@ class HerbicideForm
         $xuid = $p->getXuid();
         $methodCount = 0;
         AccountManager::setValue($xuid, "skill_active");
-        for (; $x >= -$weight; $x--) {
-            for (; $z >= -$weight; $z--) {
-                for (; $relativeHeight >= -$height; $relativeHeight--) {
+        for (; $x >= -$weight; --$x) {
+            for (; $z >= -$weight; --$z) {
+                for (; $relativeHeight >= -$height; --$relativeHeight) {
                     $check = $p->add($x, $relativeHeight, $z);
                     $bl = $p->getLevel()->getBlock($check);
                     if (in_array($bl->getId(), [BlockIds::LEAVES, BlockIds::LEAVES2, BlockIds::LOG, BlockIds::LOG2])) {
@@ -79,7 +79,7 @@ class HerbicideForm
                     if ($methodCount > 500) {
                         CoralReefPlugin::$plugin->getScheduler()->scheduleDelayedTask(new ClosureTask(
                             function () use ($count, $relativeHeight, $z, $x, $height, $weight, $p): void {
-                                self::herbicide($p, $weight, $height, $x, $z, $relativeHeight--, $count);
+                                self::herbicide($p, $weight, $height, $x, $z, --$relativeHeight, $count);
                             }), 1);
                         return;
                     }
