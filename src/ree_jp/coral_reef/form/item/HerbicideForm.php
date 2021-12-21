@@ -43,7 +43,7 @@ class HerbicideForm
             }
             $p->getInventory()->setItemInHand($item->setCount($item->getCount() - 1));
             $p->sendMessage(self::calculation($weight, $height) . "秒かかります");
-            self::herbicide($p, $weight, $height, $weight, $weight, $height, 0);
+            self::herbicide($p, $weight, $height, clone $weight, clone $weight, clone $height, 0);
         }), new Button("キャンセル"));
         $form->setTitle("Confirm")->setText("本当に除草剤を使用しますか?\n範囲内のすべての原木と葉を破壊します\n範囲はプレイヤーの位置が中心になります" .
             "\n\n範囲\n半径: $weight ブロック\n高さ: 上下$height ブロック");
@@ -62,16 +62,12 @@ class HerbicideForm
         $xuid = $p->getXuid();
         $methodCount = 0;
         AccountManager::setValue($xuid, "skill_active");
-        var_dump($x);
-        var_dump(-$weight);
         for (; $x >= -$weight; --$x) {
             for (; $z >= -$weight; --$z) {
                 for (; $relativeHeight >= -$height; --$relativeHeight) {
-                    var_dump("a");
                     $check = $p->add($x, $relativeHeight, $z);
                     $bl = $p->getLevel()->getBlock($check);
                     if (in_array($bl->getId(), [BlockIds::LEAVES, BlockIds::LEAVES2, BlockIds::LOG, BlockIds::LOG2])) {
-                        var_dump("b");
                         $event = new BlockBreakEvent($p, $bl, $p->getInventory()->getItemInHand(), true);
                         $event->call();
                         if (!$event->isCancelled()) {
@@ -81,7 +77,6 @@ class HerbicideForm
                     }
                     $methodCount++;
                     if ($methodCount > 500) {
-                        var_dump("c");
                         CoralReefPlugin::$plugin->getScheduler()->scheduleDelayedTask(new ClosureTask(
                             function () use ($count, $relativeHeight, $z, $x, $height, $weight, $p): void {
                                 self::herbicide($p, $weight, $height, $x, $z, --$relativeHeight, $count);
