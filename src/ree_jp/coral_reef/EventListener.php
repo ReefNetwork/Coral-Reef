@@ -34,6 +34,7 @@ use pocketmine\inventory\ArmorInventory;
 use pocketmine\item\Item;
 use pocketmine\item\ItemIds;
 use pocketmine\level\Position;
+use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\StringTag;
 use pocketmine\network\mcpe\protocol\ItemFrameDropItemPacket;
 use pocketmine\Player;
@@ -43,6 +44,7 @@ use pocketmine\utils\TextFormat;
 use ree_jp\coral_reef\account\AccountManager;
 use ree_jp\coral_reef\account\SettingManager;
 use ree_jp\coral_reef\form\FormManager;
+use ree_jp\coral_reef\form\item\HerbicideForm;
 use ree_jp\coral_reef\form\LandForm;
 use ree_jp\coral_reef\gatya\items\ReefItems;
 use ree_jp\coral_reef\gatya\items\SpecialItemService;
@@ -258,6 +260,13 @@ class EventListener implements Listener
                     $p->sendForm(LandForm::landCreateAssistForm($xuid, $ev->getBlock()));
                 }
                 break;
+
+            case ItemIds::DYE:
+                if ($ev->getItem()->getNamedTagEntry("herbicide_scale") instanceof CompoundTag) {
+                    if (AccountManager::hasValue($xuid, 'form_cool_time')) return;
+                    AccountManager::setValue($xuid, 'form_cool_time', 10);
+                    HerbicideForm::sendForm($ev->getItem());
+                }
         }
         switch ($ev->getBlock()->getId()) {
             case BlockIds::SIGN_POST:
