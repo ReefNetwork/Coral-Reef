@@ -42,7 +42,6 @@ class HerbicideForm
                 return;
             }
             $p->getInventory()->setItemInHand($item->setCount($item->getCount() - 1));
-            $p->getInventory()->remove($item->setCount(1));
             $p->sendMessage(self::calculation($weight, $height) . "秒かかります");
             self::herbicide($p, $weight, $height, $weight, $weight, $height, 0);
         }), new Button("キャンセル"));
