@@ -252,7 +252,7 @@ class SQLManager
             function (int $insertId, int $affectedRows) use ($p, $land) {
                 if (!isset(LandManager::$instance->lands[$land->level])) LandManager::$instance->lands[$land->level] = [];
 
-                LandManager::$instance->lands[$land->name][] = $land;
+                LandManager::$instance->lands[$land->level][] = $land;
                 $p->sendMessage($land->name . 'を作成しました');
             }, function (SqlError $error) use ($p, $land) {
                 Server::getInstance()->getLogger()->error("[LandSQL] $land->name の作成中に" . $error->getErrorMessage());
