@@ -63,8 +63,11 @@ class HerbicideForm
         $methodCount = 0;
         AccountManager::setValue($xuid, "skill_active");
         for (; $x >= -$weight; --$x) {
+            var_dump("x-$x");
             for (; $z >= -$weight; --$z) {
+                var_dump("z-$z");
                 for (; $relativeHeight >= -$height; --$relativeHeight) {
+                    var_dump("relativeHeight-$relativeHeight");
                     $check = $p->add($x, $relativeHeight, $z);
                     $bl = $p->getLevel()->getBlock($check);
                     if (in_array($bl->getId(), [BlockIds::LEAVES, BlockIds::LEAVES2, BlockIds::LOG, BlockIds::LOG2])) {
