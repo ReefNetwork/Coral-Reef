@@ -39,6 +39,7 @@ class HerbicideForm
         }), new Button("キャンセル"));
         $form->setTitle("Confirm")->setText("本当に除草剤を使用しますか?\n範囲内のすべての原木と葉を破壊します\n範囲はプレイヤーの位置が中心になります" .
             "\n\n範囲\n半径: $weight ブロック\n高さ: 上下$height ブロック");
+        $p->sendForm($form);
     }
 
     private static function herbicide(Player $p, int $weight, int $height): int
