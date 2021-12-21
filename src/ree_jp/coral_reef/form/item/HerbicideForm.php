@@ -62,12 +62,16 @@ class HerbicideForm
         $xuid = $p->getXuid();
         $methodCount = 0;
         AccountManager::setValue($xuid, "skill_active");
+        var_dump($x);
+        var_dump(-$weight);
         for (; $x >= -$weight; --$x) {
             for (; $z >= -$weight; --$z) {
                 for (; $relativeHeight >= -$height; --$relativeHeight) {
+                    var_dump("a");
                     $check = $p->add($x, $relativeHeight, $z);
                     $bl = $p->getLevel()->getBlock($check);
                     if (in_array($bl->getId(), [BlockIds::LEAVES, BlockIds::LEAVES2, BlockIds::LOG, BlockIds::LOG2])) {
+                        var_dump("b");
                         $event = new BlockBreakEvent($p, $bl, $p->getInventory()->getItemInHand(), true);
                         $event->call();
                         if (!$event->isCancelled()) {
@@ -77,6 +81,7 @@ class HerbicideForm
                     }
                     $methodCount++;
                     if ($methodCount > 500) {
+                        var_dump("c");
                         CoralReefPlugin::$plugin->getScheduler()->scheduleDelayedTask(new ClosureTask(
                             function () use ($count, $relativeHeight, $z, $x, $height, $weight, $p): void {
                                 self::herbicide($p, $weight, $height, $x, $z, --$relativeHeight, $count);
