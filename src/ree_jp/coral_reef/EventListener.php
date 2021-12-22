@@ -1,4 +1,5 @@
-<?php
+<?php /** @noinspection PhpUnused */
+
 /*
  *  CCCCC                        lll RRRRRR                 fff
  * CC    C  oooo  rr rr    aa aa lll RR   RR   eee    eee  ff
@@ -13,7 +14,7 @@ namespace ree_jp\coral_reef;
 
 
 use Exception;
-use pocketmine\block\BlockIds;
+use pocketmine\block\BlockLegacyIds;
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\block\BlockPlaceEvent;
 use pocketmine\event\block\BlockUpdateEvent;
@@ -29,18 +30,15 @@ use pocketmine\event\player\PlayerItemConsumeEvent;
 use pocketmine\event\player\PlayerJoinEvent;
 use pocketmine\event\player\PlayerLoginEvent;
 use pocketmine\event\player\PlayerQuitEvent;
-use pocketmine\event\server\DataPacketReceiveEvent;
 use pocketmine\inventory\ArmorInventory;
-use pocketmine\item\Item;
 use pocketmine\item\ItemIds;
-use pocketmine\level\Position;
-use pocketmine\nbt\tag\StringTag;
-use pocketmine\network\mcpe\protocol\ItemFrameDropItemPacket;
-use pocketmine\Player;
+use pocketmine\item\VanillaItems;
+use pocketmine\player\Player;
 use pocketmine\scheduler\ClosureTask;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat;
 use ree_jp\coral_reef\account\AccountManager;
+use ree_jp\coral_reef\account\AccountStore;
 use ree_jp\coral_reef\account\SettingManager;
 use ree_jp\coral_reef\form\FormManager;
 use ree_jp\coral_reef\form\LandForm;
@@ -57,42 +55,27 @@ use Throwable;
 
 class EventListener implements Listener
 {
-    public function __construct(private ShopStore $shopStore, private SessionStore $sessionStore)
+    public function __construct(private ?SQLManager $sqlRepo, private AccountStore $accountStore, private LandManager $landStore,
+                                private ShopStore   $shopStore, private SessionStore $sessionStore)
     {
     }
 
-    function onPreLogin(PlayerLoginEvent $ev): void
+    public function onPreLogin(PlayerLoginEvent $ev): void
     {
-        $p = $ev->getPlayer();
-        $xuid = $p->getXuid();
-        if (is_null(SQLManager::$manager)) {
-            $p->kick(TextFormat::GREEN . 'Reef ' . TextFormat::YELLOW . 'Server' . TextFormat::DARK_RED . 'データベースサーバーが見つかりませんでした');
-            return;
+        if (is_null($this->sqlRepo)) {
+            $ev->getPlayer()->kick(TextFormat::GREEN . "Reef" . TextFormat::YELLOW . "Server" .
+                TextFormat::DARK_RED . "データの読み込み中に予期せぬエラーが発生しました");
         }
-        $error = CoralReefPlugin::$plugin->isError();
-        if (!is_null($error)) {
-            $p->kick(TextFormat::GREEN . 'Reef ' . TextFormat::YELLOW . 'Server' . TextFormat::DARK_RED . 'データの読み込み中に予期せぬエラーが発生しました');
-            return;
-        }
-        SQLManager::$manager->loadUser($xuid, $p->getName());
-        $reason = SQLManager::$manager->getBanReason($xuid, $p->getAddress());
-        if (is_string($reason)) {
-            $isNotShow = strstr($reason, '[BAN_NOT_SHOW]', true);
-            if ($isNotShow === false) {
-                $p->kick("Banされています" . TextFormat::EOL . $reason);
-            } else {
-                $p->kick(TextFormat::GREEN . 'Reef ' . TextFormat::YELLOW . 'Server' . TextFormat::DARK_RED . "\n\n$isNotShow");
-            }
-        }
+        $this->sqlRepo->loadUser($ev->getPlayer());
     }
 
-    function onJoin(PlayerJoinEvent $ev): void
+    public function onJoin(PlayerJoinEvent $ev): void
     {
         $p = $ev->getPlayer();
         $xuid = $p->getXuid();
 
-        if (is_null(SQLManager::$manager->getUser($xuid))) { // データをまだ読み込めてなかったら動きを止める
-            AccountManager::setValue($xuid, 'wait_action');
+        if (is_null($this->sqlRepo->getUser($xuid))) { // データをまだ読み込めてなかったら動きを止める
+            $this->accountStore->setValue($xuid, 'wait_action');
             $p->setImmobile();
             $p->sendMessage('データを確認しています...');
         }
@@ -101,11 +84,12 @@ class EventListener implements Listener
 
         $ev->setJoinMessage(""); // プロキシ側で参加メッセージを流す
         $p->sendTitle(TextFormat::GREEN . 'Reef ' . TextFormat::YELLOW . 'Server');
-        if (!$p->getInventory()->contains(Item::get(ItemIds::STICK)))
-            $p->getInventory()->addItem(Item::get(ItemIds::STICK)->setCustomName('メニューを開く'));
+        if (!$p->getInventory()->contains(VanillaItems::STICK())) {
+            $p->getInventory()->addItem(VanillaItems::STICK()->setCustomName('メニューを開く'));
+        }
     }
 
-    function onQuit(PlayerQuitEvent $ev): void
+    public function onQuit(PlayerQuitEvent $ev): void
     {
         $p = $ev->getPlayer();
 
@@ -114,18 +98,18 @@ class EventListener implements Listener
         $ev->setQuitMessage(""); // プロキシ側で退出メッセージを流す
     }
 
-    function onDamage(EntityDamageEvent $ev)
+    public function onDamage(EntityDamageEvent $ev)
     {
         $p = $ev->getEntity();
         if (!$p instanceof Player) return;
-        if (AccountManager::hasValue($p->getXuid(), 'wait_action')) {
-            $ev->setCancelled();
+        if ($this->accountStore->hasValue($p->getXuid(), 'wait_action')) {
+            $ev->cancel();
             return;
         }
 
         $health = $p->getHealth();
         if ($ev instanceof EntityDamageByEntityEvent && $ev->getDamager() instanceof Player) {
-            $ev->setCancelled();
+            $ev->cancel();
             return;
         }
         switch ($ev->getCause()) {
@@ -138,42 +122,42 @@ class EventListener implements Listener
                 break;
 
             default:
-                $ev->setCancelled();
+                $ev->cancel();
         }
         if ($health <= $ev->getFinalDamage()) {
-            $ev->setCancelled();
+            $ev->cancel();
             $p->setHealth($p->getMaxHealth());
-            $p->setFood($p->getMaxFood());
-            $p->teleport(Server::getInstance()->getDefaultLevel()->getSpawnLocation());
+            $p->getHungerManager()->setFood($p->getHungerManager()->getMaxFood());
+            $p->teleport(Server::getInstance()->getWorldManager()->getDefaultWorld()->getSpawnLocation());
             Server::getInstance()->broadcastMessage(TextFormat::DARK_GRAY . '[死亡] ' . $p->getDisplayName());
             $p->sendTitle("死亡しました");
         }
     }
 
-
     /**
      * @priority LOW
      */
-    function onBreakLow(BlockBreakEvent $ev): void
+    public function onBreakLow(BlockBreakEvent $ev): void
     {
         $p = $ev->getPlayer();
-        if (AccountManager::hasValue($p->getXuid(), 'wait_action')) {
-            $ev->setCancelled();
+        if ($this->accountStore->hasValue($p->getXuid(), 'wait_action')) {
+            $ev->cancel();
             return;
         }
-
-        $ev->setCancelled(LandManager::$instance->protect($p, $ev->getBlock(), 'このワールドでブロックを掘ることはできません'));
-        if (AccountManager::hasValue($p->getXuid(), 'skill_cool_time') &&
+        if ($this->landStore->protect($p, $ev->getBlock()->getPosition(), 'このワールドでブロックを掘ることはできません')) {
+            $ev->cancel();
+        }
+        if ($this->accountStore->hasValue($p->getXuid(), 'skill_cool_time') &&
             !SettingManager::isEnableOption($p->getXuid(), SettingConst::ALLOW_COOL_TIME_DIG)) {
             $p->sendPopup("クールタイム中はブロックを掘ることはできません");
-            $ev->setCancelled();
+            $ev->cancel();
         }
     }
 
     /**
      * @priority MONITOR
      */
-    function onBreakMonitor(BlockBreakEvent $ev): void
+    public function onBreakMonitor(BlockBreakEvent $ev): void
     {
         $p = $ev->getPlayer();
         if ($ev->isCancelled()) return;
@@ -193,7 +177,7 @@ class EventListener implements Listener
                 \ree_jp\stackStorage\api\StackStorageAPI::$instance->add($p->getXuid(), $dropItem);
             }
             $ev->setDrops([]);
-        } catch (Throwable $e) { // StackStorageAPIが見つからなかった場合
+        } catch (Throwable) { // StackStorageAPIが見つからなかった場合
             $p->sendMessage('ストレージにアクセスできませんでした');
         }
     }
@@ -201,45 +185,47 @@ class EventListener implements Listener
     /**
      * @priority LOW
      */
-    function onPlace(BlockPlaceEvent $ev): void
+    public function onPlace(BlockPlaceEvent $ev): void
     {
         $p = $ev->getPlayer();
-        if (AccountManager::hasValue($p, 'wait_action')) {
-            $ev->setCancelled();
+        if ($this->accountStore->hasValue($p, 'wait_action')) {
+            $ev->cancel();
             return;
         }
 
-        $ev->setCancelled(LandManager::$instance->protect($p, $ev->getBlock(), 'このワールドでブロックを設置することはできません'));
+        if (LandManager::$instance->protect($p, $ev->getBlock()->getPosition(), 'このワールドでブロックを設置することはできません')) {
+            $ev->cancel();
+        }
     }
 
     /**
      * @priority MONITOR
      */
-    function onPlaceMonitor(BlockPlaceEvent $ev): void
+    public function onPlaceMonitor(BlockPlaceEvent $ev): void
     {
         $this->sessionStore->getSessionData($ev->getPlayer()->getXuid())->placeBlock();
     }
 
-    function onUpdate(BlockUpdateEvent $ev)
+    public function onUpdate(BlockUpdateEvent $ev)
     {
         $blId = $ev->getBlock()->getId();
-        if (($blId === BlockIds::FLOWING_WATER) || ($blId === BlockIds::WATER)) {
-            $ev->setCancelled();
+        if (($blId === BlockLegacyIds::FLOWING_WATER) || ($blId === BlockLegacyIds::WATER)) {
+            $ev->cancel();
         }
     }
 
-    function onTouch(PlayerInteractEvent $ev): void
+    public function onTouch(PlayerInteractEvent $ev): void
     {
         $p = $ev->getPlayer();
         $xuid = $p->getXuid();
-        if (AccountManager::hasValue($xuid, 'wait_action')) {
-            $ev->setCancelled();
+        if ($this->accountStore->hasValue($xuid, 'wait_action')) {
+            $ev->cancel();
             return;
         }
 
         switch ($ev->getItem()->getId()) {
             case ItemIds::FLINT_STEEL:
-                $ev->setCancelled();
+                $ev->cancel();
                 $p->kick(TextFormat::DARK_RED . "このアイテムは使用出来ません");
                 return;
 
@@ -249,66 +235,68 @@ class EventListener implements Listener
 
             case ItemIds::CLOCK:
                 if ($p->isSneaking()) {
-                    if (AccountManager::hasValue($xuid, 'particle_cool_time')) return;
-                    AccountManager::setValue($xuid, 'particle_cool_time', 20);
-                    LandManager::$instance->checkSpace($p);
+                    if ($this->accountStore->hasValue($xuid, 'particle_cool_time')) return;
+                    $this->accountStore->setValue($xuid, 'particle_cool_time', 20);
+                    $this->landStore->checkSpace($p);
                 } else {
-                    if (AccountManager::hasValue($xuid, 'form_cool_time')) return;
-                    AccountManager::setValue($xuid, 'form_cool_time', 10);
-                    $p->sendForm(LandForm::landCreateAssistForm($xuid, $ev->getBlock()));
+                    if ($this->accountStore->hasValue($xuid, 'form_cool_time')) return;
+                    $this->accountStore->setValue($xuid, 'form_cool_time', 10);
+                    $p->sendForm(LandForm::landCreateAssistForm($xuid, $ev->getBlock()->getPosition()));
                 }
                 break;
         }
         switch ($ev->getBlock()->getId()) {
-            case BlockIds::SIGN_POST:
-            case BlockIds::WALL_SIGN:
-                if (AccountManager::hasValue($xuid, 'form_cool_time')) return;
-                AccountManager::setValue($xuid, 'form_cool_time', 10);
-                ShopService::showShop($p, $this->shopStore, $ev->getBlock());
+            case BlockLegacyIds::SIGN_POST:
+            case BlockLegacyIds::WALL_SIGN:
+                if ($this->accountStore->hasValue($xuid, 'form_cool_time')) return;
+                $this->accountStore->setValue($xuid, 'form_cool_time', 10);
+                ShopService::showShop($p, $this->shopStore, $ev->getBlock()->getPosition());
                 break;
         }
-        if ($ev->getBlock()->getId() === BlockIds::FRAME_BLOCK) {
-            $ev->setCancelled(LandManager::$instance->protect($p, $ev->getBlock(), "このワールドで額縁を変更することはできません"));
+        if (($ev->getBlock()->getId() === BlockLegacyIds::FRAME_BLOCK) &&
+            $this->landStore->protect($p, $ev->getBlock()->getPosition(), "このワールドで額縁を変更することはできません")) {
+            $ev->cancel();
             return;
         }
-        $ev->setCancelled(LandManager::$instance->protect($p, $ev->getBlock(), null, true));
+        if (!$this->landStore->protect($p, $ev->getBlock()->getPosition(), null, true)) {
+            $ev->cancel();
+        }
     }
 
-    function onTeleport(EntityTeleportEvent $ev): void
+    public function onTeleport(EntityTeleportEvent $ev): void
     {
         $p = $ev->getEntity();
         if (!$p instanceof Player) return;
-        if (AccountManager::hasValue($p->getXuid(), 'wait_action')) {
-            $ev->setCancelled();
+        if ($this->accountStore->hasValue($p->getXuid(), 'wait_action')) {
+            $ev->cancel();
             return;
         }
-        $fromLevelName = $ev->getFrom()->getLevel()->getFolderName();
-        $toLevelName = $ev->getTo()->getLevel()->getFolderName();
+        $fromLevelName = $ev->getFrom()->getWorld()->getFolderName();
+        $toLevelName = $ev->getTo()->getWorld()->getFolderName();
         $isWorldChange = $fromLevelName !== $toLevelName;
 
-        if (in_array($toLevelName, AccountManager::STOP_FLY_WORLD) && AccountManager::hasValue($p->getXuid(), 'fly')) {
-            AccountManager::setValue($p->getXuid(), 'fly', 0);
+        if (in_array($toLevelName, AccountManager::STOP_FLY_WORLD) && $this->accountStore->hasValue($p->getXuid(), 'fly')) {
+            $this->accountStore->setValue($p->getXuid(), 'fly', 0);
             $p->setFlying(false);
             $p->setAllowFlight(false);
             $p->sendMessage('このワールドで飛行することはできません');
         }
         if ($isWorldChange) {
-            unset(LandManager::$pos[$p->getXuid()]);
+            unset($this->landStore->pos[$p->getXuid()]);
         }
     }
 
-    function onClose(InventoryCloseEvent $ev): void
+    public function onClose(InventoryCloseEvent $ev): void
     {
         $p = $ev->getPlayer();
-        foreach ($p->getInventory()->getContents() as $slot => $item) {
-            $nbt = $item->getNamedTagEntry(ReefItems::REEF_SP_ITEM);
-            if (!$nbt instanceof StringTag) continue;
-            $xuidNbt = $item->getNamedTagEntry("owner");
-            if ($xuidNbt instanceof StringTag) {
-                $xuid = $xuidNbt->getValue();
-            } else $xuid = $p->getXuid();
+        if ($this->accountStore->hasValue($p->getXuid(), "item_renew_cool_time")) return;
+        $this->accountStore->setValue($p->getXuid(), "item_renew_cool_time", 20 * 60);
 
-            $renewItem = SpecialItemService::getRenewItem($xuid, $nbt->getValue(), $item->getDamage());
+        foreach ($p->getInventory()->getContents() as $slot => $item) {
+            $nbt = $item->getNamedTag();
+            $xuid = $nbt->getString("owner", $p->getXuid());
+
+            $renewItem = SpecialItemService::getRenewItem($xuid, $nbt->getString(ReefItems::REEF_SP_ITEM, "unknown"), $item->getMeta());
             if (!is_null($renewItem) && !$item->equals($renewItem)) {
                 $p->getInventory()->setItem($slot, $renewItem->setCount($item->getCount()));
             }
@@ -318,13 +306,14 @@ class EventListener implements Listener
     /**
      * @priority MONITOR
      */
-    function onEat(PlayerItemConsumeEvent $ev): void
+    public function onEat(PlayerItemConsumeEvent $ev): void
     {
         $p = $ev->getPlayer();
         $food = $ev->getItem();
-        $tag = $food->getNamedTagEntry("reef_infinite_food");
-        if (!is_null($tag) && $p->isHungry()) {
-            CoralReefPlugin::$plugin->getScheduler()->scheduleDelayedTask(new ClosureTask(function (int $currentTick) use ($food, $p): void {
+        $nbt = $food->getNamedTag();
+        $tag = $nbt->getByte(ReefItems::REEF_SP_ITEM, 99999);
+        if (($tag !== 99999) && $p->getHungerManager()->isHungry()) {
+            CoralReefPlugin::$plugin->getScheduler()->scheduleDelayedTask(new ClosureTask(function () use ($food, $p): void {
                 $p->getInventory()->addItem($food->setCount(1));
             }), 3);
         }
@@ -333,12 +322,12 @@ class EventListener implements Listener
     /**
      * @priority MONITOR
      */
-    function onTransactionMonitor(InventoryTransactionEvent $ev): void
+    public function onTransactionMonitor(InventoryTransactionEvent $ev): void
     {
         $transaction = $ev->getTransaction();
         foreach ($transaction->getInventories() as $inv) {
             if ($inv instanceof ArmorInventory) { // 防具を動かしたとき、エフェクトの更新をする
-                CoralReefPlugin::$plugin->getScheduler()->scheduleDelayedTask(new ClosureTask(function (int $currentTick) use ($transaction): void {
+                CoralReefPlugin::$plugin->getScheduler()->scheduleDelayedTask(new ClosureTask(function () use ($transaction): void {
                     EffectTask::updateEffect($transaction->getSource());
                 }), 3);
                 return;
@@ -349,24 +338,14 @@ class EventListener implements Listener
     /**
      * @priority MONITOR
      */
-    function onModeChangeMonitor(PlayerGameModeChangeEvent $ev): void
+    public function onModeChangeMonitor(PlayerGameModeChangeEvent $ev): void
     {
         $p = $ev->getPlayer();
-        if (AccountManager::hasValue($p->getXuid(), 'fly')) {
-            AccountManager::setValue($p->getXuid(), 'fly', 0);
+        if ($this->accountStore->hasValue($p->getXuid(), 'fly')) {
+            $this->accountStore->setValue($p->getXuid(), 'fly', 0);
             $p->setFlying(false);
             $p->setAllowFlight(false);
             $p->sendMessage('モードが変わったため飛行を無効化しました');
-        }
-    }
-
-    function onReceived(DataPacketReceiveEvent $ev)
-    {
-        $pk = $ev->getPacket();
-        $p = $ev->getPlayer();
-        if ($pk instanceof ItemFrameDropItemPacket) {
-            $ev->setCancelled(LandManager::$instance->protect($p, new Position($pk->x, $pk->y, $pk->z, $p->getLevel()),
-                'このワールドで額縁を変更することはできません'));
         }
     }
 }
