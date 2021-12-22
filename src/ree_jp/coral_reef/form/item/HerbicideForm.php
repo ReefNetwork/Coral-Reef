@@ -44,7 +44,6 @@ class HerbicideForm
             }
             $p->getInventory()->setItemInHand($item->setCount($item->getCount() - 1));
             $p->sendMessage(self::calculation($weight, $height) . "秒かかります");
-            AccountManager::setValue($p->getXuid(), "herbicide_break");
             self::herbicide($p, clone $p->getPosition(), $weight, $height, $weight, $weight, $height, 0);
         }), new Button("キャンセル"));
         $form->setTitle("Confirm")->setText("本当に除草剤を使用しますか?\n範囲内のすべての原木と葉を破壊します\n範囲はプレイヤーの位置が中心になります" .
@@ -62,9 +61,10 @@ class HerbicideForm
     private static function herbicide(Player $p, Position $pos, int $weight, int $height, int $x, int $z, int $relativeHeight, int $count): void
     {
         if (!$p->isOnline()) {
-            AccountManager::setValue($p->getXuid(), "herbicide_break", 0);
+
             return;
         }
+        AccountManager::setValue($p->getXuid(), "herbicide_break");
         $methodCount = 0;
         for (; $x >= -$weight; --$x) {
             for (; $z >= -$weight; --$z) {
@@ -81,6 +81,7 @@ class HerbicideForm
                     }
                     $methodCount++;
                     if ($methodCount > 500) {
+                        AccountManager::setValue($p->getXuid(), "herbicide_break", 0);
                         CoralReefPlugin::$plugin->getScheduler()->scheduleDelayedTask(new ClosureTask(
                             function () use ($pos, $count, $relativeHeight, $z, $x, $height, $weight, $p): void {
                                 self::herbicide($p, $pos, $weight, $height, $x, $z, --$relativeHeight, $count);
