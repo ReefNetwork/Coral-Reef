@@ -179,6 +179,8 @@ class EventListener implements Listener
     {
         $p = $ev->getPlayer();
         if ($ev->isCancelled()) return;
+        if (AccountManager::hasValue($p->getXuid(), "herbicide_break")) return;
+
         try {
             AccountManager::blockBroken($p, $ev->getBlock(), $this->sessionStore->getSessionData($p->getXuid()));
         } catch (Exception $e) {

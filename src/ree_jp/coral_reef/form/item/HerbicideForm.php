@@ -44,7 +44,7 @@ class HerbicideForm
             }
             $p->getInventory()->setItemInHand($item->setCount($item->getCount() - 1));
             $p->sendMessage(self::calculation($weight, $height) . "秒かかります");
-            AccountManager::setValue($p->getXuid(), "skill_active");
+            AccountManager::setValue($p->getXuid(), "herbicide_break");
             self::herbicide($p, clone $p->getPosition(), $weight, $height, $weight, $weight, $height, 0);
         }), new Button("キャンセル"));
         $form->setTitle("Confirm")->setText("本当に除草剤を使用しますか?\n範囲内のすべての原木と葉を破壊します\n範囲はプレイヤーの位置が中心になります" .
@@ -62,7 +62,7 @@ class HerbicideForm
     private static function herbicide(Player $p, Position $pos, int $weight, int $height, int $x, int $z, int $relativeHeight, int $count): void
     {
         if (!$p->isOnline()) {
-            AccountManager::setValue($p->getXuid(), "skill_active", 0);
+            AccountManager::setValue($p->getXuid(), "herbicide_break", 0);
             return;
         }
         $methodCount = 0;
@@ -92,7 +92,7 @@ class HerbicideForm
             }
             $z = $weight;
         }
-        AccountManager::setValue($p->getXuid(), "skill_active", 0);
+        AccountManager::setValue($p->getXuid(), "herbicide_break", 0);
         $p->sendMessage($count . "ブロックを破壊しました");
     }
 }
