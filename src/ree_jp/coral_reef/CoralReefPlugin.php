@@ -11,7 +11,6 @@
 
 namespace ree_jp\coral_reef;
 
-use Exception;
 use PDOException;
 use pocketmine\plugin\PluginBase;
 use pocketmine\scheduler\ClosureTask;
@@ -66,12 +65,7 @@ class CoralReefPlugin extends PluginBase
         } catch (PDOException $e) {
             $this->getLogger()->critical("[SQL]" . $e->getMessage());
         }
-        try {
-            $this->landStore = new LandManager();
-            LandManager::$instance = $this->landStore;
-        } catch (Exception $e) {
-            $this->getLogger()->critical("[LandManager]" . $e->getMessage());
-        }
+        $this->landStore = new LandManager();
         $this->shopStore = new ShopStore($this->getDataFolder());
         $this->sessionStore = new SessionStore();
 
@@ -93,16 +87,10 @@ class CoralReefPlugin extends PluginBase
         if (!is_null(SQLManager::$manager)) SQLManager::$manager->close();
     }
 
-    public function setError(string $error): void
+    public function criticalError(string $detail): void
     {
-        $this->getLogger()->emergency($error);
-        $this->errors[] = $error;
-    }
-
-    public function isError(): ?array
-    {
-        if (empty($this->errors)) return null;
-        return $this->errors;
+        $this->getLogger()->critical("致命的なエラーが発生しました: " . $detail);
+        $this->getServer()->getPluginManager()->disablePlugin($this);
     }
 
     private function registerListeners(): void

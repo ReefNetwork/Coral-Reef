@@ -11,57 +11,34 @@
 
 namespace ree_jp\coral_reef\land;
 
-use Exception;
 use JetBrains\PhpStorm\Pure;
-use pocketmine\level\particle\PortalParticle;
-use pocketmine\level\Position;
-use pocketmine\level\sound\GenericSound;
 use pocketmine\math\AxisAlignedBB;
 use pocketmine\math\Vector3;
-use pocketmine\network\mcpe\protocol\LevelEventPacket;
-use pocketmine\Player;
+use pocketmine\player\Player;
+use pocketmine\Server;
 use pocketmine\utils\TextFormat;
+use pocketmine\world\particle\PortalParticle;
+use pocketmine\world\Position;
+use pocketmine\world\sound\EndermanTeleportSound;
 use poggit\libasynql\SqlError;
 use ree_jp\coral_reef\account\AccountManager;
-use ree_jp\coral_reef\CoralReefPlugin;
+use ree_jp\coral_reef\account\AccountStore;
 use ree_jp\coral_reef\form\PartyForm;
 use ree_jp\coral_reef\sql\SQLManager;
 
 class LandManager
 {
-    const CAN_CREATE_LAND = array('main_2');
+    const CAN_CREATE_LAND = array("main_2");
+    const LOBBY_WORLD = array("lobby");
+    const NEED_LAND_PROTECT = array("main_2");
 
-    static LandManager $instance;
     static array $pos;
 
-    /**
-     * @var LandData[][]
-     */
-    public array $lands = [];
 
-    /**
-     * @throws Exception
-     */
-    public function __construct()
+    static function getLand(LandStore $store, Position $pos): ?LandData
     {
-        if (is_null(SQLManager::$manager)) throw new Exception('データベースにアクセス出来ませんでした');
-        SQLManager::$manager->loadProtectLand(function (array $rows) {
-            foreach ($rows as $arrayLand) {
-                $level = $arrayLand['level'];
-                if (!isset($this->lands[$level])) $this->lands[$level] = [];
-
-                $this->lands[$level][] = new LandData($arrayLand['xuid'], $arrayLand['name'], $level,
-                    new AxisAlignedBB($arrayLand['sx'], 0, $arrayLand['sz'], $arrayLand['mx'], 0, $arrayLand['mz']));
-            }
-        }, function (SqlError $error) {
-            CoralReefPlugin::$plugin->setError('土地情報を取得中に' . $error->getErrorMessage());
-        });
-    }
-
-    public function getLand(Position $pos): ?LandData
-    {
-        foreach ($this->lands as $level => $lands) {
-            if ($level !== $pos->getLevel()->getFolderName()) continue;
+        foreach ($store->lands as $level => $lands) {
+            if ($level !== $pos->getWorld()->getFolderName()) continue;
 
             foreach ($lands as $land) {
                 if ($land->isLand($pos)) return $land;
@@ -70,10 +47,10 @@ class LandManager
         return null;
     }
 
-    public function getMyLand(string $xuid): array
+    static function getMyLand(LandStore $store, string $xuid): array
     {
         $myLands = [];
-        foreach ($this->lands as $lands) {
+        foreach ($store->lands as $lands) {
             foreach ($lands as $land) {
                 if ($land->xuid === $xuid) {
                     $myLands[] = $land;
@@ -83,9 +60,9 @@ class LandManager
         return $myLands;
     }
 
-    #[Pure] public function canCreateLand(LandData $checkLand): ?LandData
+    #[Pure] static function canCreateLand(LandStore $store, LandData $checkLand): ?LandData
     {
-        foreach ($this->lands as $level => $lands) {
+        foreach ($store->lands as $level => $lands) {
             if ($level !== $checkLand->level) continue;
 
             foreach ($lands as $land) {
@@ -97,18 +74,56 @@ class LandManager
         return null;
     }
 
-    public function protect(Player $p, Position $pos, ?string $message, bool $isTouch = false): bool
+    static function addLand(SQLManager $sqlRepo, LandStore $store, LandData $land, ?Player $p): void
     {
-        if (in_array($p->getLevel()->getFolderName(), ['lobby']) && !($p->isOp() && $p->isCreative())) {
+        $sqlRepo->addProtectLand($land, function () use ($store, $p, $land) {
+            if (!isset($store->lands[$land->level])) $store->lands[$land->level] = [];
+            $store->lands[$land->level][] = $land;
+
+            if ($p instanceof Player && $p->isOnline()) {
+                $p->sendMessage($land->name . 'を作成しました');
+            }
+        }, function (SqlError $error) use ($p, $land) {
+            Server::getInstance()->getLogger()->error("[LandSQL] $land->name の作成中に" . $error->getErrorMessage());
+
+            if ($p instanceof Player && $p->isOnline()) {
+                $p->sendMessage('エラーが発生しました');
+            }
+        });
+    }
+
+    static function deleteLand(SQLManager $sqlRepo, LandStore $store, LandData $land, ?Player $p): void
+    {
+        $sqlRepo->deleteProtectLand($land, function () use ($store, $p, $land) {
+            foreach ($store->lands as $level => $cacheLands) {
+                if ($level !== $land->level) continue;
+
+                foreach ($cacheLands as $key => $cacheLand) {
+                    if ($cacheLand->xuid === $land->xuid && $cacheLand->name === $land->name) {
+                        array_splice($store->lands[$level], $key, 1);
+                        $p->sendMessage("土地を削除しました");
+                    }
+                }
+            }
+            $p->sendMessage("エラーが発生しました");
+        }, function (SqlError $error) use ($p, $land) {
+            Server::getInstance()->getLogger()->error("[LandSQL] $land->name の削除中に" . $error->getErrorMessage());
+            $p->sendMessage("エラーが発生しました");
+        });
+    }
+
+    static function protect(LandStore $landStore, AccountStore $accountStore, Player $p, Position $pos, ?string $message, bool $isTouch = false): bool
+    {
+        if (in_array($p->getWorld()->getFolderName(), self::LOBBY_WORLD) && !(AccountManager::isOp($p) && $p->isCreative())) {
             if (is_null($message)) return false;
             $p->sendPopup($message);
         } else {
-            $land = self::$instance->getLand($pos);
+            $land = self::getLand($landStore, $pos);
             if (is_null($land)) {
-                if (in_array($p->getLevel()->getFolderName(), ['main_2'])) { // 土地保護しないと掘れないワールド
+                if (in_array($p->getWorld()->getFolderName(), self::NEED_LAND_PROTECT)) { // 土地保護しないと掘れないワールド
                     if ($isTouch) return false;
                     $p->sendPopup("このワールドは土地保護が必要です");
-                    if ($p->isOp() && $p->isCreative()) return false;
+                    if (AccountManager::isOp($p) && $p->isCreative()) return false;
                 } else {
                     return false;
                 }
@@ -116,16 +131,15 @@ class LandManager
                 if ($land->xuid === $p->getXuid() || PartyForm::isParty($land->xuid, $p->getXuid())) return false;
                 $name = AccountManager::getUserName($land->xuid);
                 $p->sendPopup("この土地は$name によって保護されています($land->name)");
-                if ($p->isOp() && $p->isCreative()) return false;
+                if (AccountManager::isOp($p) && $p->isCreative()) return false;
             }
         }
-        if (!AccountManager::hasValue($p->getXuid(), 'protect_warning')) {
-            AccountManager::setValue($p->getXuid(), 'protect_warning', 10);
-            $p->getLevelNonNull()->addSound(new GenericSound($pos, LevelEventPacket::EVENT_SOUND_PORTAL), [$p]);
+        if (!$accountStore->hasValue($p->getXuid(), 'protect_warning')) {
+            $accountStore->setValue($p->getXuid(), 'protect_warning', 10);
+            $p->getWorld()->addSound($p->getPosition(), new EndermanTeleportSound(), [$p]);
             $particleVec = $pos->add(0.5, 1.5, 0.5);
             for ($count = 0; $count < 30; $count++) {
-                $p->getLevelNonNull()->addParticle(new PortalParticle(
-                    $particleVec->add(mt_rand(-10, 10) * 0.1, 0, mt_rand(-10, 10) * 0.1)), [$p]);
+                $p->getWorld()->addParticle($particleVec->add(mt_rand(-10, 10) * 0.1, 0, mt_rand(-10, 10) * 0.1), new PortalParticle(), [$p]);
             }
         }
         return true;
@@ -140,8 +154,8 @@ class LandManager
             $vec2 = LandManager::$pos[$xuid][2];
             if ($vec1 instanceof Vector3 && $vec2 instanceof Vector3) {
                 $aabb = $this->getAabb($vec1->getFloorX(), $vec1->getFloorZ(), $vec2->getFloorX(), $vec2->getFloorZ());
-                $aabb->minY = $p->getFloorY();
-                $aabb->maxY = $p->getFloorY() + 3;
+                $aabb->minY = $p->getPosition()->getFloorY();
+                $aabb->maxY = $p->getPosition()->getFloorY() + 3;
                 $p->sendMessage(TextFormat::DARK_GRAY . "指定されている範囲を表示しています");
                 for ($x = $aabb->minX; $x <= $aabb->maxX; $x += 0.6) {
                     $this->sendCheckSpaceEffect($p, $aabb, $x, $aabb->minZ);
@@ -159,10 +173,8 @@ class LandManager
     function sendCheckSpaceEffect(Player $p, AxisAlignedBB $aabb, int $x, int $z): void
     {
         for ($y = $aabb->minY; $y <= $aabb->maxY; $y += 0.6) {
-            $p->getLevelNonNull()->addParticle(new PortalParticle(
-                new Vector3($x + 0.5, $y, $z + 0.5)), [$p]);
-            $p->getLevelNonNull()->addParticle(new PortalParticle(
-                new Vector3($x + 0.5, $y, $z + 0.5)), [$p]);
+            $p->getWorld()->addParticle(new Vector3($x + 0.5, $y, $z + 0.5), new PortalParticle(), [$p]);
+            $p->getWorld()->addParticle(new Vector3($x + 0.5, $y, $z + 0.5), new PortalParticle(), [$p]);
         }
     }
 
