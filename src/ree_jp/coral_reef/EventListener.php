@@ -45,6 +45,7 @@ use ree_jp\coral_reef\form\LandForm;
 use ree_jp\coral_reef\gatya\items\ReefItems;
 use ree_jp\coral_reef\gatya\items\SpecialItemService;
 use ree_jp\coral_reef\land\LandManager;
+use ree_jp\coral_reef\land\LandStore;
 use ree_jp\coral_reef\session\SessionStore;
 use ree_jp\coral_reef\shop\ShopService;
 use ree_jp\coral_reef\shop\ShopStore;
@@ -55,7 +56,7 @@ use Throwable;
 
 class EventListener implements Listener
 {
-    public function __construct(private ?SQLManager $sqlRepo, private AccountStore $accountStore, private LandManager $landStore,
+    public function __construct(private ?SQLManager $sqlRepo, private AccountStore $accountStore, private LandStore $landStore,
                                 private ShopStore   $shopStore, private SessionStore $sessionStore)
     {
     }
@@ -74,7 +75,7 @@ class EventListener implements Listener
         $p = $ev->getPlayer();
         $xuid = $p->getXuid();
 
-        if (is_null($this->sqlRepo->getUser($xuid))) { // データをまだ読み込めてなかったら動きを止める
+        if (is_null($this->accountStore->getUser($xuid))) { // データをまだ読み込めてなかったら動きを止める
             $this->accountStore->setValue($xuid, 'wait_action');
             $p->setImmobile();
             $p->sendMessage('データを確認しています...');
@@ -93,7 +94,7 @@ class EventListener implements Listener
     {
         $p = $ev->getPlayer();
 
-        AccountManager::userQuit($p);
+        AccountManager::userQuit($this->accountStore, $p);
         $this->sessionStore->destruction($p->getXuid());
         $ev->setQuitMessage(""); // プロキシ側で退出メッセージを流す
     }
@@ -144,7 +145,7 @@ class EventListener implements Listener
             $ev->cancel();
             return;
         }
-        if ($this->landStore->protect($p, $ev->getBlock()->getPosition(), 'このワールドでブロックを掘ることはできません')) {
+        if (LandManager::protect($this->landStore, $this->accountStore, $p, $ev->getBlock()->getPosition(), 'このワールドでブロックを掘ることはできません')) {
             $ev->cancel();
         }
         if ($this->accountStore->hasValue($p->getXuid(), 'skill_cool_time') &&
@@ -162,7 +163,7 @@ class EventListener implements Listener
         $p = $ev->getPlayer();
         if ($ev->isCancelled()) return;
         try {
-            AccountManager::blockBroken($p, $ev->getBlock(), $this->sessionStore->getSessionData($p->getXuid()));
+            AccountManager::blockBroken($this->sqlRepo, $this->accountStore, $p, $ev->getBlock(), $this->sessionStore->getSessionData($p->getXuid()));
         } catch (Exception $e) {
             $p->sendMessage('エラーが発生しました');
             Server::getInstance()->getLogger()->error('[blockBroke]' . $p->getName() . 'の処理中に' . $e->getMessage());
@@ -193,7 +194,8 @@ class EventListener implements Listener
             return;
         }
 
-        if (LandManager::$instance->protect($p, $ev->getBlock()->getPosition(), 'このワールドでブロックを設置することはできません')) {
+        if (LandManager::protect($this->landStore, $this->accountStore, $p, $ev->getBlock()->getPosition(),
+            "このワールドでブロックを設置することはできません")) {
             $ev->cancel();
         }
     }
@@ -230,14 +232,14 @@ class EventListener implements Listener
                 return;
 
             case ItemIds::STICK:
-                FormManager::sendMenu($p);
+                FormManager::sendMenu($this->sqlRepo, $this->accountStore, $p);
                 break;
 
             case ItemIds::CLOCK:
                 if ($p->isSneaking()) {
                     if ($this->accountStore->hasValue($xuid, 'particle_cool_time')) return;
                     $this->accountStore->setValue($xuid, 'particle_cool_time', 20);
-                    $this->landStore->checkSpace($p);
+                    LandManager::checkSpace($this->landStore, $p);
                 } else {
                     if ($this->accountStore->hasValue($xuid, 'form_cool_time')) return;
                     $this->accountStore->setValue($xuid, 'form_cool_time', 10);
@@ -250,15 +252,15 @@ class EventListener implements Listener
             case BlockLegacyIds::WALL_SIGN:
                 if ($this->accountStore->hasValue($xuid, 'form_cool_time')) return;
                 $this->accountStore->setValue($xuid, 'form_cool_time', 10);
-                ShopService::showShop($p, $this->shopStore, $ev->getBlock()->getPosition());
+                ShopService::showShop($this->sqlRepo, $p, $this->shopStore, $ev->getBlock()->getPosition());
                 break;
         }
         if (($ev->getBlock()->getId() === BlockLegacyIds::FRAME_BLOCK) &&
-            $this->landStore->protect($p, $ev->getBlock()->getPosition(), "このワールドで額縁を変更することはできません")) {
+            LandManager::protect($this->landStore, $this->accountStore, $p, $ev->getBlock()->getPosition(), "このワールドで額縁を変更することはできません")) {
             $ev->cancel();
             return;
         }
-        if (!$this->landStore->protect($p, $ev->getBlock()->getPosition(), null, true)) {
+        if (!LandManager::protect($this->landStore, $this->accountStore, $p, $ev->getBlock()->getPosition(), null, true)) {
             $ev->cancel();
         }
     }

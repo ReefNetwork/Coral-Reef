@@ -17,6 +17,7 @@ use ree_jp\coral_reef\sql\SQLManager;
 
 class AccountStore
 {
+    public array $users = [];
     private array $values = array();
     private array $xuid = array();
 
@@ -52,10 +53,16 @@ class AccountStore
         return $this->values[$key] ?? null;
     }
 
+    public function getUser(string $xuid): ?UserAccount // 今サーバーに参加してるプレイヤーのみ取得できる
+    {
+        if (array_key_exists($xuid, $this->users)) return $this->users[$xuid];
+        return null;
+    }
+
     public function getUserName(string $xuid): string
     {
         $name = "";
-        $user = SQLManager::$manager->getUser($xuid);
+        $user = $this->getUser($xuid);
         if (is_null($user)) {
             if (isset($this->xuid[$xuid])) {
                 $name = $this->xuid[$xuid];
@@ -66,9 +73,9 @@ class AccountStore
         return $name;
     }
 
-    public function updateUserNameList(SQLManager $sqlRepo): void
+    public function updateUserNameList(SQLManager $repo): void
     {
-        $sqlRepo->getAllUser(function (array $rows): void {
+        $repo->getAllUser(function (array $rows): void {
             $list = [];
             foreach ($rows as $row) {
                 $list[$row["xuid"]] = $row["name"];

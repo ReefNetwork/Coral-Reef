@@ -15,10 +15,11 @@ use pocketmine\player\Player;
 use pocketmine\world\Position;
 use ree_jp\coral_reef\shop\form\ShopDetailForm;
 use ree_jp\coral_reef\shop\form\ShopManageForm;
+use ree_jp\coral_reef\sql\SQLManager;
 
 class ShopService
 {
-    static function showShop(Player $p, ShopStore $store, Position $pos): void
+    static function showShop(SQLManager $repo, Player $p, ShopStore $store, Position $pos): void
     {
         if ($pos->getWorld()->getFolderName() !== "lobby") return;
 
@@ -29,7 +30,7 @@ class ShopService
 
         $shop = $store->findShop($pos);
         if (!is_null($shop)) {
-            ShopDetailForm::sendForm($p, $shop);
+            ShopDetailForm::sendForm($repo, $p, $shop);
         }
     }
 }

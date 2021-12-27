@@ -19,10 +19,11 @@ use bbo51dog\bboform\form\ModalForm;
 use pocketmine\player\Player;
 use pocketmine\utils\TextFormat;
 use ree_jp\coral_reef\shop\Shop;
+use ree_jp\coral_reef\sql\SQLManager;
 
 class ShopDetailForm
 {
-    static function sendForm(Player $p, Shop $shop): void
+    static function sendForm(SQLManager $repo, Player $p, Shop $shop): void
     {
         $itemString = "\n\nアイテム\n";
         $items = $shop->getItems();
@@ -36,21 +37,21 @@ class ShopDetailForm
         $text = "金額\n" . $shop->payment["type"] . $shop->payment["amount"] . TextFormat::RESET;
         $amount = new Slider(self::replaceOrderType($shop->orderType) . "するセット数を選択してください", 1, 64, 1);
 
-        $form = (new ClosureCustomForm(function (Player $p) use ($shop, $amount): void {
+        $form = (new ClosureCustomForm(function (Player $p) use ($repo, $shop, $amount): void {
             $p->sendForm((new ModalForm(new ClosureButton(self::replaceOrderType($shop->orderType) . "する", null,
-                function (Player $p) use ($amount, $shop): void {
+                function (Player $p) use ($repo, $amount, $shop): void {
                     switch ($shop->orderType) {
                         case "buy":
-                            $shop->buy($p, $amount->getValue());
+                            $shop->buy($repo, $p, $amount->getValue());
                             break;
                         case "sell":
-                            $shop->sell($p, $amount->getValue());
+                            $shop->sell($repo, $p, $amount->getValue());
                             break;
                         default:
                             $p->sendMessage("エラーが発生しました");
                     }
-                }), new ClosureButton("戻る", null, function (Player $p) use ($shop): void {
-                self::sendForm($p, $shop);
+                }), new ClosureButton("戻る", null, function (Player $p) use ($repo, $shop): void {
+                self::sendForm($repo, $p, $shop);
             })))->setTitle("Shop -> Confirm")->setText("本当にこのアイテムを" . self::replaceOrderType($shop->orderType) . "しますか?\n" .
                 self::replacePaymentType("金額\n" . $shop->payment["type"] . $shop->payment["amount"] * $amount->getValue() . TextFormat::RESET)));
 

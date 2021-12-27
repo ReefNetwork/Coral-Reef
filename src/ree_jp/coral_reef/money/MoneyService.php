@@ -16,10 +16,10 @@ use ree_jp\coral_reef\sql\SQLManager;
 
 class MoneyService
 {
-    static function getMoney(string $xuid, Closure $func): void
+    static function getMoney(SQLManager $repo, string $xuid, Closure $func): void
     {
-        MoneyCache::purge($xuid);
-        SQLManager::$manager->getMoney($xuid, function (array $rows) use ($func): void {
+        MoneyCache::purge($repo, $xuid);
+        $repo->getMoney($xuid, function (array $rows) use ($func): void {
             $row = array_shift($rows);
             if (isset($row["money"])) {
                 $func($row["money"]);
@@ -29,15 +29,15 @@ class MoneyService
         });
     }
 
-    static function reduceMoney(string $xuid, int $money): void
+    static function reduceMoney(SQLManager $repo, string $xuid, int $money, bool $force = false): void
     {
-        self::addMoney($xuid, -$money);
+        self::addMoney($repo, $xuid, -$money, $force);
     }
 
-    static function addMoney(string $xuid, int $money, bool $force = false): void
+    static function addMoney(SQLManager $repo, string $xuid, int $money, bool $force = false): void
     {
         if ($force) {
-            SQLManager::$manager->addMoney($xuid, $money, null);
+            $repo->addMoney($xuid, $money, null);
         } else {
             if (isset(MoneyCache::$cache[$xuid])) {
                 MoneyCache::$cache[$xuid] += $money;

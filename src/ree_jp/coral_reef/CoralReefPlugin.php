@@ -24,7 +24,7 @@ use ree_jp\coral_reef\command\ReefAdminCommand;
 use ree_jp\coral_reef\command\ReefCommand;
 use ree_jp\coral_reef\command\ReefConsoleCommand;
 use ree_jp\coral_reef\gatya\items\ReefItems;
-use ree_jp\coral_reef\land\LandManager;
+use ree_jp\coral_reef\land\LandStore;
 use ree_jp\coral_reef\money\MoneyCache;
 use ree_jp\coral_reef\quest\QuestListener;
 use ree_jp\coral_reef\session\SessionStore;
@@ -43,7 +43,7 @@ class CoralReefPlugin extends PluginBase
 
     private SQLManager $sqlRepo;
     private AccountStore $accountStore;
-    private LandManager $landStore;
+    private LandStore $landStore;
     private ShopStore $shopStore;
     private SessionStore $sessionStore;
 
@@ -58,7 +58,7 @@ class CoralReefPlugin extends PluginBase
         date_default_timezone_set('Asia/Tokyo');
         $this->accountStore = new AccountStore();
         $this->sqlRepo = new SQLManager($this->accountStore, $this, $this->getDataFolder(), $this->getConfig()->get(ConfigConst::SERVER_NAME));
-        $this->landStore = new LandManager();
+        $this->landStore = new LandStore($this->sqlRepo);
         $this->shopStore = new ShopStore($this->getDataFolder());
         $this->sessionStore = new SessionStore();
 
@@ -111,7 +111,7 @@ class CoralReefPlugin extends PluginBase
             foreach (Server::getInstance()->getOnlinePlayers() as $p) ScoreBoardManager::sendScoreBoard($p);
         }), 15);
         $this->getScheduler()->scheduleRepeatingTask(new ClosureTask(function (): void {
-            MoneyCache::purgeAll();
+            MoneyCache::purgeAll($this->sqlRepo);
         }), 20);
     }
 

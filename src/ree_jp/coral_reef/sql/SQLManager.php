@@ -33,8 +33,6 @@ class SQLManager
 
     private DataConnector $db;
 
-    public array $users = [];
-    public array $ban = [];
     public array $setting = [];
     private string $server;
 
@@ -63,7 +61,7 @@ class SQLManager
 
     public function close(): void
     {
-        MoneyCache::purgeAll();
+        MoneyCache::purgeAll($this);
         Server::getInstance()->getLogger()->info('[SQL] クエリの終了を待っています');
         $this->db->waitAll();
         $this->db->close();
@@ -84,9 +82,9 @@ class SQLManager
             if (isset($arrayAccount['xuid']) && isset($arrayAccount['name']) && isset($arrayAccount['experience'])) {
                 $skill = $arrayAccount['skill'] ?? null;
                 $account = new UserAccount($arrayAccount['xuid'], $arrayAccount['name'], intval($arrayAccount['experience']), $skill);
-                $this->users[$account->xuid] = $account;
+                $this->accountStore->users[$account->xuid] = $account;
             } elseif (empty($arrayAccount)) { // データが存在しないとき新しくデータを作る
-                $this->users[$xuid] = new UserAccount($xuid, $name, 0, null);
+                $this->accountStore->users[$xuid] = new UserAccount($xuid, $name, 0, null);
             } else { // データ壊れてるよ
                 Server::getInstance()->getLogger()->warning($xuid . 'のデータの読み込みに失敗しました');
                 return;
@@ -112,12 +110,6 @@ class SQLManager
     public function getAllUser(Closure $func): void
     {
         $this->db->executeSelect("coral_reef.user.all", [], $func);
-    }
-
-    public function getUser(string $xuid): ?UserAccount // 今サーバーに参加してるプレイヤーのみ取得できる
-    {
-        if (array_key_exists($xuid, $this->users)) return $this->users[$xuid];
-        return null;
     }
 
     public function setUser(string $xuid, string $name, string $ip): void

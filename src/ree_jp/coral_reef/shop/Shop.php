@@ -53,10 +53,10 @@ class Shop
             "order_type" => $this->orderType, "payment" => $this->payment];
     }
 
-    public function buy(Player $p, int $count = 1): void
+    public function buy(SQLManager $repo, Player $p, int $count = 1): void
     {
         $xuid = $p->getXuid();
-        $this->pay($xuid, $count, function () use ($xuid, $p, $count): void {
+        $this->pay($repo, $xuid, $count, function () use ($xuid, $p, $count): void {
             $items = $this->getItems();
             $gifts = [];
             while ($count > 0) {
@@ -78,7 +78,7 @@ class Shop
         });
     }
 
-    public function sell(Player $p, int $count = 1): void
+    public function sell(SQLManager $repo, Player $p, int $count = 1): void
     {
         foreach ($this->getItems() as $item) {
             $item = $item->setCount($item->getCount() * $count);
@@ -87,7 +87,7 @@ class Shop
                 return;
             }
         }
-        $this->pay($p->getXuid(), $count, function () use ($p, $count): void {
+        $this->pay($repo, $p->getXuid(), $count, function () use ($p, $count): void {
             foreach ($this->getItems() as $item) {
                 $item = $item->setCount($item->getCount() * $count);
                 $p->getInventory()->removeItem($item);
@@ -98,18 +98,18 @@ class Shop
         }, true);
     }
 
-    private function pay(string $xuid, int $count, Closure $func, Closure $failure, bool $isSell = false): void
+    private function pay(SQLManager $repo, string $xuid, int $count, Closure $func, Closure $failure, bool $isSell = false): void
     {
         $value = $this->payment["amount"] * $count;
         switch ($this->payment["type"]) {
             case "money":
                 if ($isSell) {
-                    MoneyService::addMoney($xuid, $value);
+                    MoneyService::addMoney($repo, $xuid, $value);
                     $func();
                 } else {
-                    MoneyService::getMoney($xuid, function (int $money) use ($xuid, $func, $failure, $value): void {
+                    MoneyService::getMoney($repo, $xuid, function (int $money) use ($repo, $xuid, $func, $failure, $value): void {
                         if ($value <= $money) {
-                            MoneyService::reduceMoney($xuid, $value);
+                            MoneyService::reduceMoney($repo, $xuid, $value);
                             $func();
                         } else {
                             $failure();
