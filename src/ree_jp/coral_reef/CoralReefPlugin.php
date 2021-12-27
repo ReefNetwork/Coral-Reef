@@ -11,7 +11,6 @@
 
 namespace ree_jp\coral_reef;
 
-use PDOException;
 use pocketmine\plugin\PluginBase;
 use pocketmine\scheduler\ClosureTask;
 use pocketmine\Server;
@@ -47,7 +46,6 @@ class CoralReefPlugin extends PluginBase
     private LandManager $landStore;
     private ShopStore $shopStore;
     private SessionStore $sessionStore;
-    private array $errors = [];
 
     public function onLoad(): void
     {
@@ -59,12 +57,7 @@ class CoralReefPlugin extends PluginBase
     {
         date_default_timezone_set('Asia/Tokyo');
         $this->accountStore = new AccountStore();
-        try {
-            $this->sqlRepo = new SQLManager($this->accountStore, $this->getDataFolder(), $this->getConfig()->get(ConfigConst::SERVER_NAME));
-            SQLManager::$manager = $this->sqlRepo;
-        } catch (PDOException $e) {
-            $this->getLogger()->critical("[SQL]" . $e->getMessage());
-        }
+        $this->sqlRepo = new SQLManager($this->accountStore, $this, $this->getDataFolder(), $this->getConfig()->get(ConfigConst::SERVER_NAME));
         $this->landStore = new LandManager();
         $this->shopStore = new ShopStore($this->getDataFolder());
         $this->sessionStore = new SessionStore();

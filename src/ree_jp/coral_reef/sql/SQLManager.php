@@ -13,7 +13,6 @@ namespace ree_jp\coral_reef\sql;
 
 
 use Closure;
-use PDOException;
 use pocketmine\player\Player;
 use pocketmine\Server;
 use pocketmine\utils\Config;
@@ -39,22 +38,23 @@ class SQLManager
     public array $setting = [];
     private string $server;
 
-    /**
-     * @throws PDOException
-     */
-    public function __construct(private AccountStore $accountStore, string $path, string $server)
+    public function __construct(private AccountStore $accountStore, CoralReefPlugin $plugin, string $path, string $server)
     {
         $config = new Config($path . 'sql.yml');
         Server::getInstance()->getLogger()->info('[SQL] サーバーに接続中...');
-        $this->db = libasynql::create(CoralReefPlugin::$plugin, $config->get('database'), [
-            "mysql" => "mysql.sql",
-        ]);
-        Server::getInstance()->getLogger()->info('[SQL] 準備しています');
-        $this->createFunction();
+        try {
+            $this->db = libasynql::create(CoralReefPlugin::$plugin, $config->get('database'), [
+                "mysql" => "mysql.sql",
+            ]);
+        } catch (SqlError $error) {
+            $plugin->criticalError("SQLサーバーに接続中に" . $error->getErrorMessage());
+        }
+        Server::getInstance()->getLogger()->info("[SQL] 準備しています");
+//        $this->createFunction();
         $this->createTable();
 
         // サーバーアカウントを作成(初期スポーンの保護などに使う)
-        $this->setUser('0', TextFormat::GREEN . 'Reef ' . TextFormat::YELLOW . 'Server' . TextFormat::RESET, '0.0.0.0');
+        $this->setUser("0", TextFormat::GREEN . "Reef " . TextFormat::YELLOW . "Server" . TextFormat::RESET, "0.0.0.0");
 
         $this->db->waitAll();
         Server::getInstance()->getLogger()->info('[SQL] complete');
