@@ -33,13 +33,13 @@ class AccountManager
 {
     const STOP_FLY_WORLD = array('lobby');
 
-    static function userJoin(Player $p): void
+    static function userJoin(SQLManager $repo, Player $p): void
     {
         $xuid = $p->getXuid();
 
-        SQLManager::$manager->setUser($xuid, $p->getName(), $p->getNetworkSession()->getIp());
+        $repo->setUser($xuid, $p->getName(), $p->getNetworkSession()->getIp());
         QuestManager::updateQuests($xuid);
-        GiftService::checkAllExpired($xuid);
+        GiftService::checkAllExpired($repo, $xuid);
         SettingManager::updateNickName($p);
         SettingManager::updateShowCoordinates($p);
         SettingManager::updateOption($p, SettingConst::SNEAK_SKILL);
@@ -49,7 +49,7 @@ class AccountManager
         SettingManager::updateOption($p, SettingConst::ALLOW_COOL_TIME_DIG);
     }
 
-    static function userQuit(AccountStore $store, Player $p): void
+    static function userQuit(SQLManager $repo, AccountStore $store, Player $p): void
     {
         $xuid = $p->getXuid();
 
@@ -57,7 +57,7 @@ class AccountManager
             $store->setValue($xuid, 'transfer_server', 0);
         } else {
             $account = $store->getUser($xuid);
-            $account->save();
+            $account->save($repo);
         }
         if ($store->hasValue($p->getXuid(), 'fly')) { // フライを無効にする
             $store->setValue($p->getXuid(), 'fly', 0);
@@ -80,7 +80,7 @@ class AccountManager
         $xuid = $p->getXuid();
         $user = $store->getUser($xuid);
         $skill = $user->skill;
-        $user->addXp(ServerUpdateTask::$exp_buff);
+        $user->addXp($p, ServerUpdateTask::$exp_buff);
         if (!SettingManager::isEnableOption($p->getXuid(), SettingConst::NO_FREEZE_WATER)) { // 水を掘ったら水が消えるように
             if ($bl->getId() === BlockLegacyIds::WATER) {
                 $p->getWorld()->setBlock($bl->getPosition(), VanillaBlocks::AIR());

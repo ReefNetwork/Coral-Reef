@@ -11,8 +11,8 @@
 
 namespace ree_jp\coral_reef\task;
 
-use pocketmine\entity\Effect;
-use pocketmine\entity\EffectInstance;
+use pocketmine\entity\effect\EffectInstance;
+use pocketmine\entity\effect\VanillaEffects;
 use pocketmine\scheduler\Task;
 use pocketmine\Server;
 use ree_jp\coral_reef\sql\SQLConst;
@@ -25,21 +25,25 @@ class ServerUpdateTask extends Task
 
     private int $count = 0;
 
-    public function onRun(int $currentTick)
+    public function __construct(private SQLManager $repo)
+    {
+    }
+
+    public function onRun(): void
     {
         if (self::$haste_effect >= 0) {
-            $hasteEffect = new EffectInstance(Effect::getEffect(Effect::HASTE), 400, self::$haste_effect, false);
-            foreach (Server::getInstance()->getOnlinePlayers() as $p) $p->addEffect($hasteEffect);
+            $hasteEffect = new EffectInstance(VanillaEffects::HASTE(), 400, self::$haste_effect, false);
+            foreach (Server::getInstance()->getOnlinePlayers() as $p) $p->getEffects()->add($hasteEffect);
         }
-        if ($this->count < 60) {
+        if ($this->count < 6) {
             $this->count++;
             return;
         }
 
         $this->count = 0;
-        SQLManager::$manager->getAllSubtypeValue(0, SQLConst::TYPE_ENV, function (array $rows): void { // serverENVを更新する
+        $this->repo->getAllSubtypeValue(0, SQLConst::TYPE_ENV, function (array $rows): void { // serverENVを更新する
             foreach ($rows as $row) {
-                switch ($row['subtype']) {
+                switch ($row["subtype"]) {
                     case SQLConst::ENV_HASTE_EFFECT:
                         self::$haste_effect = intval($row['value']);
                         break;

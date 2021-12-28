@@ -14,6 +14,7 @@ namespace ree_jp\coral_reef\account;
 
 use Closure;
 use Exception;
+use pocketmine\player\Player;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat;
 use ree_jp\coral_reef\quest\QuestListener;
@@ -50,7 +51,7 @@ class UserAccount
         $this->skill = SkillManager::getSkill($skill);
     }
 
-    function save(?Closure $xpFunc = null, ?Closure $skillFunc = null, ?Closure $questFunc = null): void
+    function save(SQLManager $repo, ?Closure $xpFunc = null, ?Closure $skillFunc = null, ?Closure $questFunc = null): void
     {
         if (is_null($this->skill)) {
             $skillId = null;
@@ -58,30 +59,27 @@ class UserAccount
             $skillId = $this->skill->id;
         }
         try {
-            SQLManager::$manager->setXp($this->xuid, $this->experience, $xpFunc);
-            SQLManager::$manager->setSkill($this->xuid, $skillId, $skillFunc);
+            $repo->setXp($this->xuid, $this->experience, $xpFunc);
+            $repo->setSkill($this->xuid, $skillId, $skillFunc);
             QuestManager::save($this->xuid, $questFunc);
         } catch (Exception $e) {
             Server::getInstance()->getLogger()->error($this->name . 'のデータ保存に失敗しました' . $e->getMessage());
         }
     }
 
-    function addXp(int $xp = 1): void
+    function addXp(Player $p, int $xp = 1): void
     {
         $this->experience = $xp + $this->experience;
         $this->necessaryExperience -= $xp;
         if ($this->necessaryExperience <= 0 && ($this->level !== array_key_last(self::LEVEL_EXPERIMENT))) {
             $beforeLevel = $this->level;
             $this->setLevelAndNecessaryExperience();
+            QuestListener::callSubscribedQuest($p->getXuid(), QuestListener::LEVEL_UP, $this->level);
 
-            $p = Server::getInstance()->getPlayer($this->name);
-            if (!is_null($p)) {
-                QuestListener::callSubscribedQuest($p->getXuid(), QuestListener::LEVEL_UP, $this->level);
-                $p->sendTitle(
-                    TextFormat::BLUE . 'L' . TextFormat::GREEN . 'e' . TextFormat::AQUA . 'v' . TextFormat::GREEN . 'e' . TextFormat::BLUE . 'L ' .
-                    TextFormat::RED . 'U' . TextFormat::LIGHT_PURPLE . 'P', TextFormat::YELLOW . $beforeLevel . TextFormat::RESET . ' -> ' .
-                    TextFormat::GOLD . $this->level);
-            }
+            $p->sendTitle(
+                TextFormat::BLUE . 'L' . TextFormat::GREEN . 'e' . TextFormat::AQUA . 'v' . TextFormat::GREEN . 'e' . TextFormat::BLUE . 'L ' .
+                TextFormat::RED . 'U' . TextFormat::LIGHT_PURPLE . 'P', TextFormat::YELLOW . $beforeLevel . TextFormat::RESET . ' -> ' .
+                TextFormat::GOLD . $this->level);
             $message = $this->name . "さんのレベルが$this->level になりました";
             Server::getInstance()->broadcastMessage($message);
         }

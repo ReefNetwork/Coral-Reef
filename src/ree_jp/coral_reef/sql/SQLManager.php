@@ -29,8 +29,6 @@ use ree_jp\coral_reef\session\SessionData;
 
 class SQLManager
 {
-    static ?SQLManager $manager = null;
-
     private DataConnector $db;
 
     public array $setting = [];

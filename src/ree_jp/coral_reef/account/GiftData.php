@@ -12,6 +12,7 @@
 namespace ree_jp\coral_reef\account;
 
 use Closure;
+use JetBrains\PhpStorm\ArrayShape;
 use pocketmine\item\Item;
 use ree_jp\coral_reef\sql\SQLConst;
 use ree_jp\coral_reef\sql\SQLManager;
@@ -56,6 +57,7 @@ class GiftData
         return new GiftData($arrayItems['from'], $arrayItems['message'], $arrayItems['expiry'], $arrayItems['items'], $id, $arrayItems['receivedItems']);
     }
 
+    #[ArrayShape(['from' => "string", 'message' => "string", 'expiry' => "int", 'items' => "array", 'receivedItems' => "array"])]
     public function jsonSerialize(): array
     {
         return ['from' => $this->from, 'message' => $this->message, 'expiry' => $this->expiry, 'items' => $this->items, 'receivedItems' => $this->receivedItems];
@@ -91,19 +93,19 @@ class GiftData
         return ($this->expiry - time()) < 0;
     }
 
-    public function save(string $xuid, ?Closure $func, ?Closure $failure): void
+    public function save(SQLManager $repo, string $xuid, ?Closure $func, ?Closure $failure): void
     {
         if (is_null($this->uniqueID)) {
             $id = uniqid();
             // 同じidのギフトがないか確認
-            SQLManager::$manager->getValue($xuid, SQLConst::TYPE_GIFT, $id, function (array $rows) use ($func, $failure, $id, $xuid) {
+            $repo->getValue($xuid, SQLConst::TYPE_GIFT, $id, function (array $rows) use ($repo, $func, $failure, $id, $xuid) {
                 $row = array_shift($rows);
                 if (empty($row)) {
-                    SQLManager::$manager->setValue($xuid, SQLConst::TYPE_GIFT, $id, json_encode($this), $func, $failure);
-                } else $this->save($xuid, $func, $failure); // あったら最初からもう一回やる
+                    $repo->setValue($xuid, SQLConst::TYPE_GIFT, $id, json_encode($this), $func, $failure);
+                } else $this->save($repo, $xuid, $func, $failure); // あったら最初からもう一回やる
             });
         } else {
-            SQLManager::$manager->setValue($xuid, SQLConst::TYPE_GIFT, $this->uniqueID, json_encode($this), $func, $failure);
+            $repo->setValue($xuid, SQLConst::TYPE_GIFT, $this->uniqueID, json_encode($this), $func, $failure);
         }
     }
 }

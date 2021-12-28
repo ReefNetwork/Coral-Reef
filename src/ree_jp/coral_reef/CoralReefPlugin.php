@@ -77,7 +77,7 @@ class CoralReefPlugin extends PluginBase
         foreach ($this->getServer()->getOnlinePlayers() as $p) {
             $p->kick("サーバーを停止します", false);
         }
-        if (!is_null(SQLManager::$manager)) SQLManager::$manager->close();
+        $this->sqlRepo->close();
     }
 
     public function criticalError(string $detail): void
@@ -95,20 +95,20 @@ class CoralReefPlugin extends PluginBase
 
     private function registerCommands(): void
     {
-        $this->getServer()->getCommandMap()->register('menu', new MenuCommand($this));
-        $this->getServer()->getCommandMap()->register('reef', new ReefCommand($this));
-        $this->getServer()->getCommandMap()->register('reef-admin', new ReefAdminCommand($this));
-        $this->getServer()->getCommandMap()->register('reef-console', new ReefConsoleCommand($this));
+        $this->getServer()->getCommandMap()->register("menu", new MenuCommand($this, $this->sqlRepo, $this->accountStore));
+        $this->getServer()->getCommandMap()->register("reef", new ReefCommand($this));
+        $this->getServer()->getCommandMap()->register("reef-admin", new ReefAdminCommand($this, $this->sqlRepo, $this->accountStore, $this->landStore));
+        $this->getServer()->getCommandMap()->register("reef-console", new ReefConsoleCommand($this, $this->accountStore));
     }
 
     private function registerSchedules(): void
     {
         $this->getScheduler()->scheduleRepeatingTask(new SendServerTipTask(), 15);
-        $this->getScheduler()->scheduleRepeatingTask(new DataSaveTask(), 20);
+        $this->getScheduler()->scheduleRepeatingTask(new DataSaveTask($this->sqlRepo, $this->accountStore), 20);
         $this->getScheduler()->scheduleRepeatingTask(new EffectTask(), 200);
-        $this->getScheduler()->scheduleRepeatingTask(new ServerUpdateTask(), 20);
+        $this->getScheduler()->scheduleRepeatingTask(new ServerUpdateTask($this->sqlRepo), 200);
         $this->getScheduler()->scheduleRepeatingTask(new ClosureTask(function (): void {
-            foreach (Server::getInstance()->getOnlinePlayers() as $p) ScoreBoardManager::sendScoreBoard($p);
+            foreach (Server::getInstance()->getOnlinePlayers() as $p) ScoreBoardManager::sendScoreBoard($this->accountStore, $p);
         }), 15);
         $this->getScheduler()->scheduleRepeatingTask(new ClosureTask(function (): void {
             MoneyCache::purgeAll($this->sqlRepo);

@@ -32,9 +32,6 @@ class LandManager
     const LOBBY_WORLD = array("lobby");
     const NEED_LAND_PROTECT = array("main_2");
 
-    static array $pos;
-
-
     static function getLand(LandStore $store, Position $pos): ?LandData
     {
         foreach ($store->lands as $level => $lands) {
@@ -47,6 +44,9 @@ class LandManager
         return null;
     }
 
+    /**
+     * @return LandData[]
+     */
     static function getMyLand(LandStore $store, string $xuid): array
     {
         $myLands = [];
@@ -129,7 +129,7 @@ class LandManager
                 }
             } else {
                 if ($land->xuid === $p->getXuid() || PartyForm::isParty($land->xuid, $p->getXuid())) return false;
-                $name = AccountManager::getUserName($land->xuid);
+                $name = $accountStore->getUserName($land->xuid);
                 $p->sendPopup("この土地は$name によって保護されています($land->name)");
                 if (AccountManager::isOp($p) && $p->isCreative()) return false;
             }
@@ -145,32 +145,30 @@ class LandManager
         return true;
     }
 
-    public
-    function checkSpace(Player $p): void
+    static function checkSpace(LandStore $store, Player $p): void
     {
         $xuid = $p->getXuid();
-        if (isset(LandManager::$pos[$xuid][1]) && isset(LandManager::$pos[$xuid][2])) {
-            $vec1 = LandManager::$pos[$xuid][1];
-            $vec2 = LandManager::$pos[$xuid][2];
+        if (isset($store->pos[$xuid][1]) && isset($store->pos[$xuid][2])) {
+            $vec1 = $store->pos[$xuid][1];
+            $vec2 = $store->pos[$xuid][2];
             if ($vec1 instanceof Vector3 && $vec2 instanceof Vector3) {
-                $aabb = $this->getAabb($vec1->getFloorX(), $vec1->getFloorZ(), $vec2->getFloorX(), $vec2->getFloorZ());
+                $aabb = self::getAabb($vec1->getFloorX(), $vec1->getFloorZ(), $vec2->getFloorX(), $vec2->getFloorZ());
                 $aabb->minY = $p->getPosition()->getFloorY();
                 $aabb->maxY = $p->getPosition()->getFloorY() + 3;
                 $p->sendMessage(TextFormat::DARK_GRAY . "指定されている範囲を表示しています");
                 for ($x = $aabb->minX; $x <= $aabb->maxX; $x += 0.6) {
-                    $this->sendCheckSpaceEffect($p, $aabb, $x, $aabb->minZ);
-                    $this->sendCheckSpaceEffect($p, $aabb, $x, $aabb->maxZ);
+                    self::sendCheckSpaceEffect($p, $aabb, $x, $aabb->minZ);
+                    self::sendCheckSpaceEffect($p, $aabb, $x, $aabb->maxZ);
                 }
                 for ($z = $aabb->minZ; $z <= $aabb->maxZ; $z += 0.6) {
-                    $this->sendCheckSpaceEffect($p, $aabb, $aabb->minX, $z);
-                    $this->sendCheckSpaceEffect($p, $aabb, $aabb->maxX, $z);
+                    self::sendCheckSpaceEffect($p, $aabb, $aabb->minX, $z);
+                    self::sendCheckSpaceEffect($p, $aabb, $aabb->maxX, $z);
                 }
             } else $p->sendMessage('エラーが発生しました');
         } else $p->sendMessage('地点を2つとも設定してください');
     }
 
-    private
-    function sendCheckSpaceEffect(Player $p, AxisAlignedBB $aabb, int $x, int $z): void
+    static private function sendCheckSpaceEffect(Player $p, AxisAlignedBB $aabb, int $x, int $z): void
     {
         for ($y = $aabb->minY; $y <= $aabb->maxY; $y += 0.6) {
             $p->getWorld()->addParticle(new Vector3($x + 0.5, $y, $z + 0.5), new PortalParticle(), [$p]);
@@ -178,8 +176,7 @@ class LandManager
         }
     }
 
-    public
-    function getAabb(int $x1, int $z1, int $x2, int $z2): AxisAlignedBB
+    static function getAabb(int $x1, int $z1, int $x2, int $z2): AxisAlignedBB
     {
         if ($x1 > $x2) {
             $minX = $x2;

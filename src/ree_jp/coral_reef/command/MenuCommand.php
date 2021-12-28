@@ -11,17 +11,20 @@
 
 namespace ree_jp\coral_reef\command;
 
+use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
-use pocketmine\command\PluginCommand;
-use pocketmine\Player;
+use pocketmine\player\Player;
 use pocketmine\plugin\Plugin;
+use pocketmine\plugin\PluginOwned;
+use ree_jp\coral_reef\account\AccountStore;
 use ree_jp\coral_reef\form\FormManager;
+use ree_jp\coral_reef\sql\SQLManager;
 
-class MenuCommand extends PluginCommand
+class MenuCommand extends Command implements PluginOwned
 {
-    public function __construct(Plugin $owner)
+    public function __construct(private Plugin $owner, private SQLManager $repo, private AccountStore $store)
     {
-        parent::__construct('menu', $owner);
+        parent::__construct("menu");
         $this->setUsage('メニューを表示します');
         $this->setAliases(['m']);
     }
@@ -32,7 +35,11 @@ class MenuCommand extends PluginCommand
             $sender->sendMessage('このコマンドはプレイヤー専用です');
             return;
         }
-        if (!$this->testPermission($sender)) return;
-        FormManager::sendMenu($sender);
+        FormManager::sendMenu($this->repo, $this->store, $sender);
+    }
+
+    public function getOwningPlugin(): Plugin
+    {
+        return $this->owner;
     }
 }

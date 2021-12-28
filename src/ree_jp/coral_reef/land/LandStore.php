@@ -12,6 +12,7 @@
 namespace ree_jp\coral_reef\land;
 
 use pocketmine\math\AxisAlignedBB;
+use pocketmine\math\Vector3;
 use poggit\libasynql\SqlError;
 use ree_jp\coral_reef\CoralReefPlugin;
 use ree_jp\coral_reef\sql\SQLManager;
@@ -22,6 +23,11 @@ class LandStore
      * @var LandData[][]
      */
     public array $lands = [];
+
+    /**
+     * @var Vector3[][]
+     */
+    public array $pos;
 
     public function __construct(SQLManager $sqlRepo)
     {

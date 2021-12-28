@@ -80,7 +80,7 @@ class EventListener implements Listener
             $p->setImmobile();
             $p->sendMessage('データを確認しています...');
         }
-        AccountManager::userJoin($p);
+        AccountManager::userJoin($this->sqlRepo, $p);
         $this->sessionStore->createSession($xuid);
 
         $ev->setJoinMessage(""); // プロキシ側で参加メッセージを流す
@@ -94,7 +94,7 @@ class EventListener implements Listener
     {
         $p = $ev->getPlayer();
 
-        AccountManager::userQuit($this->accountStore, $p);
+        AccountManager::userQuit($this->sqlRepo, $this->accountStore, $p);
         $this->sessionStore->destruction($p->getXuid());
         $ev->setQuitMessage(""); // プロキシ側で退出メッセージを流す
     }

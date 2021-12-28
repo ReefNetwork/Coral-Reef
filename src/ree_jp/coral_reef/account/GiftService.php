@@ -19,18 +19,18 @@ use ree_jp\coral_reef\sql\SQLManager;
 
 class GiftService
 {
-    static function addGift(string $target, GiftData $gift, ?Closure $func, ?Closure $failure): void
+    static function addGift($repo, string $target, GiftData $gift, ?Closure $func, ?Closure $failure): void
     {
-        $gift->save($target, $func, $failure);
+        $gift->save($repo, $target, $func, $failure);
     }
 
-    static function checkAllExpired(string $xuid): void
+    static function checkAllExpired(SQLManager $repo, string $xuid): void
     {
-        SQLManager::$manager->getAllSubtypeValue($xuid, SQLConst::TYPE_GIFT, function (array $rows) use ($xuid) {
+        $repo->getAllSubtypeValue($xuid, SQLConst::TYPE_GIFT, function (array $rows) use ($repo, $xuid) {
             foreach ($rows as $row) {
                 $gift = GiftData::jsonDeserialize(json_decode($row["value"], true), $row["subtype"]);
                 if ($gift->isExpired()) {
-                    SQLManager::$manager->deleteValue($xuid, SQLConst::TYPE_GIFT, $gift->uniqueID, null, function (SqlError $error) use ($xuid) {
+                    $repo->deleteValue($xuid, SQLConst::TYPE_GIFT, $gift->uniqueID, null, function (SqlError $error) use ($xuid) {
                         Server::getInstance()->getLogger()->error("[CheckExpired] $xuid の削除中に" . $error->getErrorMessage());
                     });
                 }

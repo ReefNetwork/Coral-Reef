@@ -11,12 +11,14 @@
 
 namespace ree_jp\coral_reef\task;
 
+use pocketmine\entity\Entity;
 use pocketmine\entity\object\ExperienceOrb;
 use pocketmine\entity\object\ItemEntity;
 use pocketmine\scheduler\ClosureTask;
 use pocketmine\scheduler\Task;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat;
+use ree_jp\coral_reef\account\AccountStore;
 use ree_jp\coral_reef\account\UserAccount;
 use ree_jp\coral_reef\CoralReefPlugin;
 use ree_jp\coral_reef\sql\SQLManager;
@@ -27,49 +29,58 @@ class DataSaveTask extends Task
     const SAVE_INTERVAL = 300;
     private int $timer = self::SHUTDOWN;
 
-    public function onRun(int $currentTick)
+    /**
+     * @var Entity[]
+     */
+    private array $entities = [];
+
+    public function __construct(private SQLManager $repo, private AccountStore $store)
+    {
+    }
+
+    public function onRun(): void
     {
         --$this->timer;
         switch ($this->timer % self::SAVE_INTERVAL) {
             case 60:
-                Server::getInstance()->broadcastMessage(TextFormat::GRAY . '1分後にデータのセーブと地面に落ちているアイテムなどの削除を行います');
+                Server::getInstance()->broadcastMessage(TextFormat::GRAY . "1分後にデータのセーブと地面に落ちているアイテムなどの削除を行います");
                 break;
             case 15:
-                Server::getInstance()->broadcastMessage(TextFormat::GRAY . '15秒後にデータのセーブと地面に落ちているアイテムなどの削除を行います');
+                Server::getInstance()->broadcastMessage(TextFormat::GRAY . "15秒後にデータのセーブと地面に落ちているアイテムなどの削除を行います");
                 break;
             case 5:
-                Server::getInstance()->broadcastMessage(TextFormat::GRAY . '5秒後にデータのセーブと地面に落ちているアイテムなどの削除を行います');
+                Server::getInstance()->broadcastMessage(TextFormat::GRAY . "5秒後にデータのセーブと地面に落ちているアイテムなどの削除を行います");
                 break;
             case 0:
                 Server::getInstance()->broadcastMessage(TextFormat::GRAY . "データのセーブを行います\n数秒かかります...");
                 $start = microtime(true);
                 $this->save();
-                $message = 'データをセーブしました(' . round(microtime(true) - $start, 2) . '秒)';
+                $message = "データをセーブしました(" . round(microtime(true) - $start, 2) . "秒)";
                 Server::getInstance()->broadcastMessage(TextFormat::GRAY . $message);
                 self::startClearItem();
         }
         switch ($this->timer) {
             case 3600:
-                Server::getInstance()->broadcastMessage(TextFormat::GRAY . '1時間後に再起動を行います');
+                Server::getInstance()->broadcastMessage(TextFormat::GRAY . "1時間後に再起動を行います");
                 break;
             case 1800:
-                Server::getInstance()->broadcastMessage(TextFormat::GRAY . '30分後に再起動を行います');
+                Server::getInstance()->broadcastMessage(TextFormat::GRAY . "30分後に再起動を行います");
                 break;
             case 600:
-                Server::getInstance()->broadcastMessage(TextFormat::GRAY . '10分後に再起動を行います');
+                Server::getInstance()->broadcastMessage(TextFormat::GRAY . "10分後に再起動を行います");
                 break;
             case 60:
-                Server::getInstance()->broadcastMessage(TextFormat::GRAY . '60秒後に再起動を行います');
+                Server::getInstance()->broadcastMessage(TextFormat::GRAY . "60秒後に再起動を行います");
                 break;
             case 30:
-                Server::getInstance()->broadcastMessage(TextFormat::GRAY . '30秒後に再起動を行います');
+                Server::getInstance()->broadcastMessage(TextFormat::GRAY . "30秒後に再起動を行います");
                 break;
             case 5:
-                Server::getInstance()->broadcastMessage(TextFormat::GRAY . '5秒後に再起動を行います');
+                Server::getInstance()->broadcastMessage(TextFormat::GRAY . "5秒後に再起動を行います");
                 break;
         }
         if ($this->timer < 0) {
-            Server::getInstance()->broadcastMessage(TextFormat::DARK_RED . '再起動中...');
+            Server::getInstance()->broadcastMessage(TextFormat::DARK_RED . "再起動中...");
             foreach (Server::getInstance()->getOnlinePlayers() as $p) {
                 $p->kick("再起動しています", false);
             }
@@ -79,39 +90,38 @@ class DataSaveTask extends Task
 
     private function save(): void
     {
-        foreach (Server::getInstance()->getLevels() as $level) {
+        foreach (Server::getInstance()->getWorldManager()->getWorlds() as $level) {
             $level->save(true);
         }
         foreach (Server::getInstance()->getOnlinePlayers() as $p) {
-            $user = SQLManager::$manager->getUser($p->getXuid());
-            if ($user instanceof UserAccount) $user->save();
+            $user = $this->store->getUser($p->getXuid());
+            if ($user instanceof UserAccount) $user->save($this->repo);
         }
     }
 
-    static function startClearItem(): void
+    private function startClearItem(): void
     {
-        Server::getInstance()->broadcastMessage(TextFormat::GRAY . '5秒後に地面に落ちているアイテムなどの削除を行います');
-        foreach (Server::getInstance()->getLevels() as $level) {
-            foreach ($level->getEntities() as $entity) {
+        Server::getInstance()->broadcastMessage(TextFormat::GRAY . "10秒後に地面に落ちているアイテムなどの削除を行います");
+        foreach (Server::getInstance()->getWorldManager()->getWorlds() as $world) {
+            foreach ($world->getEntities() as $entity) {
                 if ($entity instanceof ItemEntity or $entity instanceof ExperienceOrb) {
-                    $entity->namedtag->setByte('drop_item_clean_warn', 0);
+                    $this->entities[] = $entity;
                 }
             }
         }
-        CoralReefPlugin::$plugin->getScheduler()->scheduleDelayedTask(new ClosureTask(function (int $currentTick): void {
-            self::clearWarnItem();
-        }), 20 * 5);
+        CoralReefPlugin::$plugin->getScheduler()->scheduleDelayedTask(new ClosureTask(function (): void {
+            $this->clearWarnItem();
+        }), 20 * 10);
     }
 
-    private static function clearWarnItem(): void
+    private function clearWarnItem(): void
     {
-        foreach (Server::getInstance()->getLevels() as $level) {
-            foreach ($level->getEntities() as $entity) {
-                if ($entity instanceof ItemEntity or $entity instanceof ExperienceOrb) {
-                    if ($entity->namedtag->offsetExists('drop_item_clean_warn')) $entity->close();
-                }
+        foreach ($this->entities as $entity) {
+            if (!$entity->isClosed()) {
+                $entity->close();
             }
         }
-        Server::getInstance()->broadcastMessage(TextFormat::GRAY . '地面に落ちているアイテムなどを削除しました');
+        $this->entities = [];
+        Server::getInstance()->broadcastMessage(TextFormat::GRAY . "地面に落ちているアイテムなどを削除しました");
     }
 }

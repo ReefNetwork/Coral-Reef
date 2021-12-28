@@ -18,7 +18,6 @@ use pocketmine\network\mcpe\protocol\types\ScorePacketEntry;
 use pocketmine\player\Player;
 use pocketmine\utils\TextFormat;
 use ree_jp\coral_reef\CoralReefPlugin;
-use ree_jp\coral_reef\sql\SQLManager;
 use ree_jp\coral_reef\task\ServerUpdateTask;
 
 class ScoreBoardManager
@@ -26,9 +25,9 @@ class ScoreBoardManager
     const board = 'board';
     const object = 'sidebar';
 
-    static function sendScoreBoard(Player $p): void
+    static function sendScoreBoard(AccountStore $store, Player $p): void
     {
-        $user = SQLManager::$manager->getUser($p->getXuid());
+        $user = $store->getUser($p->getXuid());
         if (is_null($user)) return;
 
         $pk = new RemoveObjectivePacket();
