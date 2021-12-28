@@ -298,7 +298,8 @@ class EventListener implements Listener
             $nbt = $item->getNamedTag();
             $xuid = $nbt->getString("owner", $p->getXuid());
 
-            $renewItem = SpecialItemService::getRenewItem($xuid, $nbt->getString(ReefItems::REEF_SP_ITEM, "unknown"), $item->getMeta());
+            $renewItem = SpecialItemService::getRenewItem($xuid, $nbt->getString(ReefItems::REEF_SP_ITEM, "unknown"), $item->getMeta(),
+                $this->accountStore);
             if (!is_null($renewItem) && !$item->equals($renewItem)) {
                 $p->getInventory()->setItem($slot, $renewItem->setCount($item->getCount()));
             }

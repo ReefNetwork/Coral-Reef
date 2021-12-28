@@ -11,12 +11,12 @@
 
 namespace ree_jp\coral_reef\gatya\items;
 
+use pocketmine\inventory\CreativeInventory;
 use pocketmine\item\Durable;
-use pocketmine\item\enchantment\Enchantment;
 use pocketmine\item\enchantment\EnchantmentInstance;
+use pocketmine\item\enchantment\VanillaEnchantments;
 use pocketmine\item\Item;
-use pocketmine\item\ItemIds;
-use pocketmine\nbt\tag\StringTag;
+use pocketmine\item\VanillaItems;
 
 class SuperItems extends ReefItems
 {
@@ -27,13 +27,17 @@ class SuperItems extends ReefItems
     {
         switch ($type) {
             case self::PICKAXE:
-                $item = Item::get(ItemIds::DIAMOND_PICKAXE, $durable);
-                $item->setNamedTagEntry(new StringTag(self::REEF_SP_ITEM, self::PICKAXE));
+                $item = VanillaItems::DIAMOND_PICKAXE()->setDamage($durable);
+                $nbt = $item->getNamedTag();
+                $nbt->setString(self::REEF_SP_ITEM, self::PICKAXE);
+                $item->setNamedTag($nbt);
                 $item->setCustomName('スーパーツルハシ');
                 break;
             case self::SHOVEL:
-                $item = Item::get(ItemIds::DIAMOND_SHOVEL, $durable);
-                $item->setNamedTagEntry(new StringTag(self::REEF_SP_ITEM, self::SHOVEL));
+                $item = VanillaItems::DIAMOND_SHOVEL()->setDamage($durable);
+                $nbt = $item->getNamedTag();
+                $nbt->setString(self::REEF_SP_ITEM, self::SHOVEL);
+                $item->setNamedTag($nbt);
                 $item->setCustomName('スーパーシャベル');
                 break;
             default:
@@ -41,15 +45,15 @@ class SuperItems extends ReefItems
         }
         if (!$item instanceof Durable) return null;
 
-        $item->addEnchantment(new EnchantmentInstance(Enchantment::getEnchantment(Enchantment::UNBREAKING), 3));
-        $item->addEnchantment(new EnchantmentInstance(Enchantment::getEnchantment(Enchantment::EFFICIENCY), 1));
+        $item->addEnchantment(new EnchantmentInstance(VanillaEnchantments::UNBREAKING(), 3));
+        $item->addEnchantment(new EnchantmentInstance(VanillaEnchantments::EFFICIENCY(), 1));
         return $item;
     }
 
     static function registerItems(): void
     {
         foreach ([self::PICKAXE, self::SHOVEL] as $key) {
-            Item::addCreativeItem(self::getItem(0, $key));
+            CreativeInventory::getInstance()->add(self::getItem(0, $key));
         }
     }
 }

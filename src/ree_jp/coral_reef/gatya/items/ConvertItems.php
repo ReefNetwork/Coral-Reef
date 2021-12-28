@@ -11,11 +11,11 @@
 
 namespace ree_jp\coral_reef\gatya\items;
 
-use pocketmine\item\enchantment\Enchantment;
+use pocketmine\inventory\CreativeInventory;
 use pocketmine\item\enchantment\EnchantmentInstance;
+use pocketmine\item\enchantment\VanillaEnchantments;
 use pocketmine\item\Item;
-use pocketmine\item\ItemIds;
-use pocketmine\nbt\tag\StringTag;
+use pocketmine\item\VanillaItems;
 
 class ConvertItems extends ReefItems
 {
@@ -24,7 +24,7 @@ class ConvertItems extends ReefItems
     static function registerItems(): void
     {
         foreach ([self::NORMAL_TICKETS_FRAGMENT] as $key) {
-            Item::addCreativeItem(self::getItem(0, $key));
+            CreativeInventory::getInstance()->add(self::getItem(0, $key));
         }
     }
 
@@ -32,9 +32,11 @@ class ConvertItems extends ReefItems
     {
         switch ($type) {
             case self::NORMAL_TICKETS_FRAGMENT:
-                $item = Item::get(ItemIds::PAPER);
-                $item->setNamedTagEntry(new StringTag(self::REEF_SP_ITEM, self::NORMAL_TICKETS_FRAGMENT));
-                $item->addEnchantment(new EnchantmentInstance(Enchantment::getEnchantment(Enchantment::INFINITY), 1));
+                $item = VanillaItems::PAPER();
+                $nbt = $item->getNamedTag();
+                $nbt->setString(self::REEF_SP_ITEM, self::NORMAL_TICKETS_FRAGMENT);
+                $item->setNamedTag($nbt);
+                $item->addEnchantment(new EnchantmentInstance(VanillaEnchantments::FLAME(), 1));
                 $item->setCustomName("ノーマルガチャチケットのかけら");
                 $item->setLore(["このかけらを10個集めるとノーマルガチャチケットを受け取れます"]);
                 break;

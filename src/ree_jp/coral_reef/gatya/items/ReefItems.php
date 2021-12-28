@@ -11,16 +11,13 @@
 
 namespace ree_jp\coral_reef\gatya\items;
 
-use pocketmine\item\Durable;
-use pocketmine\item\enchantment\Enchantment;
+use pocketmine\inventory\CreativeInventory;
 use pocketmine\item\enchantment\EnchantmentInstance;
+use pocketmine\item\enchantment\VanillaEnchantments;
 use pocketmine\item\Item;
-use pocketmine\item\ItemIds;
+use pocketmine\item\VanillaItems;
 use pocketmine\nbt\tag\CompoundTag;
-use pocketmine\nbt\tag\IntTag;
-use pocketmine\nbt\tag\StringTag;
 use pocketmine\utils\TextFormat;
-use ree_jp\coral_reef\account\AccountManager;
 use ree_jp\coral_reef\gatya\items\event\Christmas2021ReefItems;
 
 class ReefItems
@@ -41,108 +38,109 @@ class ReefItems
     {
         switch ($type) {
             case self::PICKAXE:
-                $item = Item::get(ItemIds::DIAMOND_PICKAXE);
-                if (!$item instanceof Durable) return null;
-
-                $item->setNamedTagEntry(new StringTag(self::REEF_SP_ITEM, self::PICKAXE));
+                $item = VanillaItems::DIAMOND_PICKAXE();
+                $nbt = $item->getNamedTag();
+                $nbt->setString(self::REEF_SP_ITEM, self::PICKAXE);
+                $item->setNamedTag($nbt);
                 $item->setCustomName(TextFormat::GREEN . 'Reef' . TextFormat::GOLD . 'Pickaxe');
-                $item->addEnchantment(new EnchantmentInstance(Enchantment::getEnchantment(Enchantment::EFFICIENCY), 10));
-                $item->addEnchantment(new EnchantmentInstance(Enchantment::getEnchantment(Enchantment::SILK_TOUCH), 10));
+                $item->addEnchantment(new EnchantmentInstance(VanillaEnchantments::EFFICIENCY(), 10));
+                $item->addEnchantment(new EnchantmentInstance(VanillaEnchantments::SILK_TOUCH(), 10));
                 break;
             case self::SHOVEL:
-                $item = Item::get(ItemIds::DIAMOND_SHOVEL);
-                if (!$item instanceof Durable) return null;
-
-                $item->setNamedTagEntry(new StringTag(self::REEF_SP_ITEM, self::SHOVEL));
+                $item = VanillaItems::DIAMOND_SHOVEL();
+                $nbt = $item->getNamedTag();
+                $nbt->setString(self::REEF_SP_ITEM, self::SHOVEL);
+                $item->setNamedTag($nbt);
                 $item->setCustomName(TextFormat::GREEN . 'Reef' . TextFormat::GOLD . 'Shovel');
-                $item->addEnchantment(new EnchantmentInstance(Enchantment::getEnchantment(Enchantment::EFFICIENCY), 10));
-                $item->addEnchantment(new EnchantmentInstance(Enchantment::getEnchantment(Enchantment::SILK_TOUCH), 10));
+                $item->addEnchantment(new EnchantmentInstance(VanillaEnchantments::EFFICIENCY(), 10));
+                $item->addEnchantment(new EnchantmentInstance(VanillaEnchantments::SILK_TOUCH(), 10));
                 break;
             case self::AXE:
-                $item = Item::get(ItemIds::DIAMOND_AXE);
-                if (!$item instanceof Durable) return null;
-
-                $item->setNamedTagEntry(new StringTag(self::REEF_SP_ITEM, self::AXE));
+                $item = VanillaItems::DIAMOND_AXE();
+                $nbt = $item->getNamedTag();
+                $nbt->setString(self::REEF_SP_ITEM, self::AXE);
+                $item->setNamedTag($nbt);
                 $item->setCustomName(TextFormat::GREEN . 'Reef' . TextFormat::GOLD . 'Axe');
-                $item->addEnchantment(new EnchantmentInstance(Enchantment::getEnchantment(Enchantment::EFFICIENCY), 10));
-                $item->addEnchantment(new EnchantmentInstance(Enchantment::getEnchantment(Enchantment::SILK_TOUCH), 10));
+                $item->addEnchantment(new EnchantmentInstance(VanillaEnchantments::EFFICIENCY(), 10));
+                $item->addEnchantment(new EnchantmentInstance(VanillaEnchantments::SILK_TOUCH(), 10));
                 break;
             case self::HOE:
-                $item = Item::get(ItemIds::DIAMOND_HOE);
-                if (!$item instanceof Durable) return null;
-
-                $item->setNamedTagEntry(new StringTag(self::REEF_SP_ITEM, self::HOE));
+                $item = VanillaItems::DIAMOND_HOE();
+                $nbt = $item->getNamedTag();
+                $nbt->setString(self::REEF_SP_ITEM, self::HOE);
+                $item->setNamedTag($nbt);
                 $item->setCustomName(TextFormat::GREEN . 'Reef' . TextFormat::GOLD . 'Hoe');
-                $item->addEnchantment(new EnchantmentInstance(Enchantment::getEnchantment(Enchantment::EFFICIENCY), 10));
-                $item->addEnchantment(new EnchantmentInstance(Enchantment::getEnchantment(Enchantment::SILK_TOUCH), 10));
+                $item->addEnchantment(new EnchantmentInstance(VanillaEnchantments::EFFICIENCY(), 10));
+                $item->addEnchantment(new EnchantmentInstance(VanillaEnchantments::SILK_TOUCH(), 10));
                 break;
             case self::HELMET:
-                $item = Item::get(ItemIds::DIAMOND_HELMET);
-                if (!$item instanceof Durable) return null;
-
-                $item->setNamedTagEntry(new StringTag(self::REEF_SP_ITEM, self::HELMET));
+                $item = VanillaItems::DIAMOND_HELMET();
+                $nbt = $item->getNamedTag();
+                $nbt->setString(self::REEF_SP_ITEM, self::HELMET);
+                $effectTag = new CompoundTag();
+                $effectTag->setInt("night_vision", 0);
+                $effectTag->setString("context", "reef_armor");
+                $nbt->setTag(self::SPECIAL_EFFECT, $effectTag);
+                $item->setNamedTag($nbt);
                 $item->setCustomName(TextFormat::GREEN . 'Reef' . TextFormat::GOLD . 'Helmet');
                 $item->setLore(["使用時:常時暗視状態になります(同じ効果は重複出来ません)", "", "ボーナス効果: ReefArmor",
                     "この効果を持つアイテムを4つ以上使用していた場合、スキル発動時のクールタイムが3秒減少します"]);
-                $item->setNamedTagEntry(new CompoundTag(self::SPECIAL_EFFECT, [
-                    new IntTag("night_vision", 0),
-                    new StringTag("context", "reef_armor"),
-                ]));
                 break;
             case self::CHEST_PLATE:
-                $item = Item::get(ItemIds::DIAMOND_CHESTPLATE);
-                if (!$item instanceof Durable) return null;
-
-                $item->setNamedTagEntry(new StringTag(self::REEF_SP_ITEM, self::CHEST_PLATE));
+                $item = VanillaItems::DIAMOND_CHESTPLATE();
+                $nbt = $item->getNamedTag();
+                $nbt->setString(self::REEF_SP_ITEM, self::CHEST_PLATE);
+                $effectTag = new CompoundTag();
+                $effectTag->setInt("saturation", 0);
+                $effectTag->setString("context", "reef_armor");
+                $nbt->setTag(self::SPECIAL_EFFECT, $effectTag);
+                $item->setNamedTag($nbt);
                 $item->setCustomName(TextFormat::GREEN . 'Reef' . TextFormat::GOLD . 'ChestPlate');
                 $item->setLore(["使用時:常時満腹状態になります(同じ効果は重複出来ません)", "", "ボーナス効果: ReefArmor",
                     "この効果を持つアイテムを4つ以上使用していた場合、スキル発動時のクールタイムが3秒減少します"]);
-                $item->setNamedTagEntry(new CompoundTag(self::SPECIAL_EFFECT, [
-                    new IntTag("saturation", 0),
-                    new StringTag("context", "reef_armor"),
-                ]));
                 break;
             case self::LEGGINGS:
-                $item = Item::get(ItemIds::DIAMOND_LEGGINGS);
-                if (!$item instanceof Durable) return null;
-
-                $item->setNamedTagEntry(new StringTag(self::REEF_SP_ITEM, self::LEGGINGS));
+                $item = VanillaItems::DIAMOND_LEGGINGS();
+                $nbt = $item->getNamedTag();
+                $nbt->setString(self::REEF_SP_ITEM, self::LEGGINGS);
+                $effectTag = new CompoundTag();
+                $effectTag->setInt("jump_boost", 1);
+                $effectTag->setString("context", "reef_armor");
+                $nbt->setTag(self::SPECIAL_EFFECT, $effectTag);
+                $item->setNamedTag($nbt);
                 $item->setCustomName(TextFormat::GREEN . 'Reef' . TextFormat::GOLD . 'Leggings');
                 $item->setLore(["使用時:ジャンプ力が2上がります(同じ効果は重複出来ません)", "", "ボーナス効果: ReefArmor",
                     "この効果を持つアイテムを4つ以上使用していた場合、スキル発動時のクールタイムが3秒減少します"]);
-                $item->setNamedTagEntry(new CompoundTag(self::SPECIAL_EFFECT, [
-                    new IntTag("jump_boost", 1),
-                    new StringTag("context", "reef_armor"),
-                ]));
                 break;
             case self::BOOTS:
-                $item = Item::get(ItemIds::DIAMOND_BOOTS);
-                if (!$item instanceof Durable) return null;
-
-                $item->setNamedTagEntry(new StringTag(self::REEF_SP_ITEM, self::BOOTS));
+                $item = VanillaItems::DIAMOND_BOOTS();
+                $nbt = $item->getNamedTag();
+                $nbt->setString(self::REEF_SP_ITEM, self::BOOTS);
+                $effectTag = new CompoundTag();
+                $effectTag->setInt("speed", 1);
+                $effectTag->setString("context", "reef_armor");
+                $nbt->setTag(self::SPECIAL_EFFECT, $effectTag);
+                $item->setNamedTag($nbt);
                 $item->setCustomName(TextFormat::GREEN . 'Reef' . TextFormat::GOLD . 'Boot');
                 $item->setLore(["使用時:スピードが2上がります(同じ効果は重複出来ません)", "", "ボーナス効果: ReefArmor",
                     "この効果を持つアイテムを4つ以上使用していた場合、スキル発動時のクールタイムが3秒減少します"]);
-                $item->setNamedTagEntry(new CompoundTag(self::SPECIAL_EFFECT, [
-                    new IntTag("speed", 1),
-                    new StringTag("context", "reef_armor"),
-                ]));
                 break;
             default:
                 return null;
         }
         $item->setUnbreakable();
-        $lore = $item->getLore();
-        $lore[] = "所有者: " . AccountManager::getUserName($xuid);
-        $item->setLore($lore);
-        $item->setNamedTagEntry(new StringTag('owner', $xuid));
+
+        $nbt = $item->getNamedTag();
+        $nbt->setString("owner", $xuid);
+        $item->setNamedTag($nbt);
+
         return $item;
     }
 
     static function registerItems(): void
     {
         foreach ([self::PICKAXE, self::SHOVEL, self::AXE, self::HOE, self::HELMET, self::CHEST_PLATE, self::LEGGINGS, self::BOOTS] as $key) {
-            Item::addCreativeItem(self::getItem(0, $key));
+            CreativeInventory::getInstance()->add(self::getItem(0, $key));
         }
     }
 
