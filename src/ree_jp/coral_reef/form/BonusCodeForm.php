@@ -34,15 +34,24 @@ class BonusCodeForm
             self::bonusCode($p, $code);
         }))->addElements(new Label("コードを入力するとボーナスを受け取れます\nコードはDiscordやウェブサイトで不定期に配布しています"), $codeElement));
     }
-    
+
     static function bonusCode(Player $p, string $code): void
     {
         switch ($code) {
             case "2022":
                 self::useCode($p, $code, function () use ($p): void {
                     $p->sendMessage(TextFormat::GREEN . "これからもReefServerをよろしくお願いいたします");
-                    $p->sendMessage(TextFormat::AQUA . "ガチャチケットを" . TextFormat::RED . "10枚" . TextFormat::AQUA . "受け取りました");
-                    GatyaManager::addTicket($p->getXuid(), SQLConst::TICKETS_NORMAL, 10);
+                    $p->sendMessage(TextFormat::AQUA . "ガチャチケットを" . TextFormat::RED . "5枚" . TextFormat::AQUA . "受け取りました");
+                    GatyaManager::addTicket($p->getXuid(), SQLConst::TICKETS_NORMAL, 5);
+                });
+                break;
+            case "Cyclone200m":
+                self::useCode($p, $code, function () use ($p): void {
+                    $p->sendMessage(TextFormat::GREEN . "Cyclone0849さんの経験値量が2億を超えました!!!!おめでとう!!!");
+                    $p->sendMessage(TextFormat::AQUA . "ガチャチケットを" . TextFormat::RED . "2枚" . TextFormat::AQUA . "受け取りました");
+                    GatyaManager::addTicket($p->getXuid(), SQLConst::TICKETS_NORMAL, 2);
+                    $p->sendMessage(TextFormat::RED . "クリスマスガチャチケットを" . TextFormat::RED . "2枚" . TextFormat::AQUA . "受け取りました");
+                    GatyaManager::addTicket($p->getXuid(), SQLConst::TICKETS_CHRISTMAS_2021, 2);
                 });
                 break;
             default:
