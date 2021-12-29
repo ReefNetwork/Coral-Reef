@@ -11,6 +11,7 @@
 
 namespace ree_jp\coral_reef\quest\data;
 
+use JetBrains\PhpStorm\Pure;
 use ree_jp\coral_reef\account\AccountManager;
 use ree_jp\coral_reef\gatya\GatyaManager;
 use ree_jp\coral_reef\quest\QuestListener;
@@ -24,9 +25,9 @@ class WeeklyAchieveQuest extends WeeklyQuest
     const SHORT_DETAILS = "デイリークエストをクリアしよう";
     const EXPLANATION = "毎日サーバーをプレイしてデイリークエストをクリアしよう";
 
-    function __construct(string $xuid, ?string $value)
+    function __construct(SQLManager $repo, string $xuid, ?string $value)
     {
-        parent::__construct($xuid, $value);
+        parent::__construct($repo, $xuid, $value);
         if (!$this->isComplete()) {
             QuestListener::subscribeQuest($xuid, QuestListener::CLEAR_QUEST, $this);
         }
@@ -52,9 +53,9 @@ class WeeklyAchieveQuest extends WeeklyQuest
                 QuestListener::unsubscribeQuest($this->xuid, QuestListener::CLEAR_QUEST, $this);
             case 14:
                 QuestListener::callSubscribedQuest($this->xuid, QuestListener::CLEAR_QUEST, $this);
-                SQLManager::$manager->addLog($this->xuid, SQLConst::LOG_QUEST, self::ID, $this->value,
+                $this->repo->addLog($this->xuid, SQLConst::LOG_QUEST, self::ID, $this->value,
                     SQLConst::NOW_TIME, null, null);
-                GatyaManager::addTicket($this->xuid, SQLConst::TICKETS_NORMAL, 3);
+                GatyaManager::addTicket($this->repo, $this->xuid, SQLConst::TICKETS_NORMAL, 3);
                 $p = AccountManager::getPlayerByXuid($this->xuid);
                 if (!is_null($p)) $p->sendMessage("デイリークエスト達成報酬としてガチャチケットを受け取りました");
                 break;
@@ -63,16 +64,14 @@ class WeeklyAchieveQuest extends WeeklyQuest
 
     function getProgress(): string
     {
-        switch (true) {
-            case intval($this->value) < 14:
-                return "クエストを14回クリアしよう (" . $this->value . "/14)";
-            case intval($this->value) < 21:
-                return "クエストを21回クリアしよう (" . $this->value . "/21)";
-        }
-        return "完了";
+        return match (true) {
+            intval($this->value) < 14 => "クエストを14回クリアしよう (" . $this->value . "/14)",
+            intval($this->value) < 21 => "クエストを21回クリアしよう (" . $this->value . "/21)",
+            default => "完了",
+        };
     }
 
-    function getRewardDetails(): string
+    #[Pure] function getRewardDetails(): string
     {
         if ($this->isComplete()) {
             return "完了済み";

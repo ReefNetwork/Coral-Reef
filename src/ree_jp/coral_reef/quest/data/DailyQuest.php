@@ -11,21 +11,23 @@
 
 namespace ree_jp\coral_reef\quest\data;
 
+use ree_jp\coral_reef\sql\SQLManager;
+
 abstract class DailyQuest extends QuestData
 {
     public int $limit;
 
-    function __construct(string $xuid, ?string $value, ?int $limit = null)
+    function __construct(SQLManager $repo, string $xuid, ?string $value, ?int $limit = null)
     {
         if (is_null($limit)) $limit = $this->getDeadTime();
         $array = json_decode($value, true);
 
         if (!is_null($array) && $array["limit"] === $limit) {
             $this->limit = $array["limit"];
-            parent::__construct($xuid, $array["value"]);
+            parent::__construct($repo, $xuid, $array["value"]);
         } else {
             $this->limit = $limit;
-            parent::__construct($xuid, "");
+            parent::__construct($repo, $xuid, "");
         }
     }
 

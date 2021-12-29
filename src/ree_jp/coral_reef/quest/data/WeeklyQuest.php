@@ -11,11 +11,13 @@
 
 namespace ree_jp\coral_reef\quest\data;
 
+use ree_jp\coral_reef\sql\SQLManager;
+
 abstract class WeeklyQuest extends DailyQuest
 {
-    function __construct(string $xuid, ?string $value)
+    function __construct(SQLManager $repo, string $xuid, ?string $value)
     {
-        parent::__construct($xuid, $value, $this->getDeadTime());
+        parent::__construct($repo, $xuid, $value, $this->getDeadTime());
     }
 
     protected function getDeadTime(): int
