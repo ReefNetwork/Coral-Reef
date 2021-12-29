@@ -34,24 +34,15 @@ class BonusCodeForm
             self::bonusCode($p, $code);
         }))->addElements(new Label("コードを入力するとボーナスを受け取れます\nコードはDiscordやウェブサイトで不定期に配布しています"), $codeElement));
     }
-
-    /** @noinspection SpellCheckingInspection */
+    
     static function bonusCode(Player $p, string $code): void
     {
         switch ($code) {
-            case "reef2nd":
+            case "2022":
                 self::useCode($p, $code, function () use ($p): void {
                     $p->sendMessage(TextFormat::GREEN . "これからもReefServerをよろしくお願いいたします");
-                    $p->sendMessage(TextFormat::AQUA . "ガチャチケットを" . TextFormat::RED . "20枚" . TextFormat::AQUA . "受け取りました");
-                    GatyaManager::addTicket($p->getXuid(), SQLConst::TICKETS_NORMAL, 20);
-                });
-                break;
-
-            case "lostseichi2":
-                self::useCode($p, $code, function () use ($p): void {
-                    $p->sendMessage(TextFormat::GREEN . "ごめんなさい!!!!");
-                    $p->sendMessage(TextFormat::AQUA . "ガチャチケットを" . TextFormat::RED . "5枚" . TextFormat::AQUA . "受け取りました");
-                    GatyaManager::addTicket($p->getXuid(), SQLConst::TICKETS_NORMAL, 5);
+                    $p->sendMessage(TextFormat::AQUA . "ガチャチケットを" . TextFormat::RED . "10枚" . TextFormat::AQUA . "受け取りました");
+                    GatyaManager::addTicket($p->getXuid(), SQLConst::TICKETS_NORMAL, 10);
                 });
                 break;
             default:
