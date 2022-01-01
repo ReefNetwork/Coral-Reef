@@ -117,7 +117,7 @@ class SQLManager
             $row = array_shift($rows);
             $ips = [];
             if (isset($row['ips'])) {
-                $ips = explode(':', $rows['ips']);
+                $ips = explode(':', $row['ips']);
             }
             if (!in_array($ip, $ips)) $ips[] = $ip;
             $this->db->executeInsert('coral_reef.user.set.account',
