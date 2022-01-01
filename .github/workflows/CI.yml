@@ -24,7 +24,7 @@ jobs:
 
       - name: virion install
         run: |
-          wget https://cloud.ree-jp.net/s/3mB3j46Ytsj2q7A/download -O libasynql.phar
+          wget https://poggit.pmmp.io/r/152920/libasynql.phar -O libasynql.phar
           php -d phar.readonly=0 libasynql.phar ./build/CoralReef.phar "ree_jp\\coral_reef\\libs\\"
 
       - name: LICENSES
