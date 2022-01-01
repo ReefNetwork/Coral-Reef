@@ -33,20 +33,20 @@ class AccountManager
 {
     const STOP_FLY_WORLD = array('lobby');
 
-    static function userJoin(SQLManager $repo, Player $p): void
+    static function userJoin(SQLManager $repo, AccountStore $store, Player $p): void
     {
         $xuid = $p->getXuid();
 
         $repo->setUser($xuid, $p->getName(), $p->getNetworkSession()->getIp());
-        QuestManager::updateQuests($xuid);
+        QuestManager::updateQuests($repo, $store, $xuid);
         GiftService::checkAllExpired($repo, $xuid);
-        SettingManager::updateNickName($p);
-        SettingManager::updateShowCoordinates($p);
-        SettingManager::updateOption($p, SettingConst::SNEAK_SKILL);
-        SettingManager::updateOption($p, SettingConst::HIDE_SERVER_TIP);
-        SettingManager::updateOption($p, SettingConst::NO_FREEZE_WATER);
-        SettingManager::updateOption($p, SettingConst::BREAK_UNDER_GROUND);
-        SettingManager::updateOption($p, SettingConst::ALLOW_COOL_TIME_DIG);
+        SettingManager::updateNickName($repo, $p);
+        SettingManager::updateShowCoordinates($repo, $p);
+        SettingManager::updateOption($repo, $p, SettingConst::SNEAK_SKILL);
+        SettingManager::updateOption($repo, $p, SettingConst::HIDE_SERVER_TIP);
+        SettingManager::updateOption($repo, $p, SettingConst::NO_FREEZE_WATER);
+        SettingManager::updateOption($repo, $p, SettingConst::BREAK_UNDER_GROUND);
+        SettingManager::updateOption($repo, $p, SettingConst::ALLOW_COOL_TIME_DIG);
     }
 
     static function userQuit(SQLManager $repo, AccountStore $store, Player $p): void
@@ -105,7 +105,7 @@ class AccountManager
                         return;
                     }
                     $store->setValue($xuid, 'skill_active');
-                    SkillManager::skillActive($store, $p, $bl);
+                    SkillManager::skillActive($repo, $store, $p, $bl);
                     $store->setValue($xuid, 'skill_active', 0);
                 }
             }

@@ -61,7 +61,7 @@ class UserAccount
         try {
             $repo->setXp($this->xuid, $this->experience, $xpFunc);
             $repo->setSkill($this->xuid, $skillId, $skillFunc);
-            QuestManager::save($this->xuid, $questFunc);
+            QuestManager::save($repo, $this->xuid, $questFunc);
         } catch (Exception $e) {
             Server::getInstance()->getLogger()->error($this->name . 'のデータ保存に失敗しました' . $e->getMessage());
         }

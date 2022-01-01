@@ -11,9 +11,8 @@
 
 namespace ree_jp\coral_reef\gatya\event;
 
-use pocketmine\item\Item;
-use pocketmine\item\ItemIds;
-use pocketmine\Player;
+use pocketmine\item\VanillaItems;
+use pocketmine\player\Player;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat;
 use poggit\libasynql\SqlError;
@@ -26,11 +25,11 @@ use ree_jp\coral_reef\sql\SQLManager;
 
 class Christmas2021
 {
-    static function gatya(Player $p, int $number = 1): void
+    static function gatya(SQLManager $repo, Player $p, int $number = 1): void
     {
         if ($number <= 0) return;
         $xuid = $p->getXuid();
-        SQLManager::$manager->getLog($xuid, SQLConst::LOG_GATYA_CHRISTMAS_2021, function (array $rows) use ($number, $p, $xuid) {
+        $repo->getLog($xuid, SQLConst::LOG_GATYA_CHRISTMAS_2021, function (array $rows) use ($repo, $number, $p, $xuid) {
             $isFirst = true;
 
             while ($resultLog = array_pop($rows)) {
@@ -41,8 +40,8 @@ class Christmas2021
             }
 
             if ($number > 1) { // ガチャの処理が終了後に実行するClosure
-                $func = function () use ($number, $p) {
-                    self::gatya($p, --$number);
+                $func = function () use ($repo, $number, $p) {
+                    self::gatya($repo, $p, --$number);
                 };
             } else $func = null;
 
@@ -77,7 +76,7 @@ class Christmas2021
                         true => "1",
                         false => "0.5"
                     };
-                    GatyaManager::gatyaProcess($p, SQLConst::TICKETS_CHRISTMAS_2021, 1, $item, "reef_rare",
+                    GatyaManager::gatyaProcess($repo, $p, SQLConst::TICKETS_CHRISTMAS_2021, 1, $item, "reef_rare",
                         TextFormat::GREEN . "REEFレア" . TextFormat::DARK_GRAY . "[$percent %]" . TextFormat::RESET, true, $func);
                     break;
 
@@ -93,7 +92,7 @@ class Christmas2021
                             $p->sendMessage("エラーが発生しました");
                             return;
                     }
-                    GatyaManager::gatyaProcess($p, SQLConst::TICKETS_CHRISTMAS_2021, 1, $item, "super_rare",
+                    GatyaManager::gatyaProcess($repo, $p, SQLConst::TICKETS_CHRISTMAS_2021, 1, $item, "super_rare",
                         TextFormat::BLUE . "スーパーレア" . TextFormat::DARK_GRAY . "[15%]" . TextFormat::RESET, false, $func);
                     break;
 
@@ -109,14 +108,14 @@ class Christmas2021
                             $p->sendMessage("エラーが発生しました");
                             return;
                     }
-                    GatyaManager::gatyaProcess($p, SQLConst::TICKETS_CHRISTMAS_2021, 1, $item, "rare",
+                    GatyaManager::gatyaProcess($repo, $p, SQLConst::TICKETS_CHRISTMAS_2021, 1, $item, "rare",
                         TextFormat::AQUA . "レア" . TextFormat::DARK_GRAY . "[34.5%]" . TextFormat::RESET, false, $func);
                     break;
 
                 default:
-                    $items = [Item::get(ItemIds::SNOWBALL, 0, 8), Item::get(ItemIds::STEAK, 0, 4), Item::get(ItemIds::CAKE),
-                        Item::get(ItemIds::COOKED_CHICKEN, 0, 4), Item::get(ItemIds::MUSHROOM_STEW), Item::get(ItemIds::GOLDEN_APPLE)];
-                    GatyaManager::gatyaProcess($p, SQLConst::TICKETS_CHRISTMAS_2021, 1, $items[array_rand($items)], "normal",
+                    $items = [VanillaItems::SNOWBALL()->setCount(8), VanillaItems::STEAK()->setCount(4),
+                        VanillaItems::COOKED_CHICKEN()->setCount(4), VanillaItems::MUSHROOM_STEW(), VanillaItems::GOLDEN_APPLE()];
+                    GatyaManager::gatyaProcess($repo, $p, SQLConst::TICKETS_CHRISTMAS_2021, 1, $items[array_rand($items)], "normal",
                         TextFormat::GOLD . "ノーマル" . TextFormat::DARK_GRAY . "[50%]" . TextFormat::RESET, false, $func);
                     break;
             }

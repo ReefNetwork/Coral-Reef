@@ -14,24 +14,21 @@ namespace ree_jp\coral_reef\skill;
 use pocketmine\block\Air;
 use pocketmine\block\Block;
 use pocketmine\block\BlockFactory;
-use pocketmine\block\BlockIds;
+use pocketmine\block\BlockLegacyIds;
 use pocketmine\block\Ice;
 use pocketmine\block\Liquid;
+use pocketmine\block\tile\Chest;
+use pocketmine\block\tile\Container;
+use pocketmine\block\VanillaBlocks;
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\block\BlockUpdateEvent;
-use pocketmine\item\enchantment\Enchantment;
+use pocketmine\item\enchantment\VanillaEnchantments;
 use pocketmine\item\Item;
-use pocketmine\item\ItemFactory;
-use pocketmine\level\Level;
-use pocketmine\level\particle\DestroyBlockParticle;
 use pocketmine\math\AxisAlignedBB;
 use pocketmine\math\Vector3;
-use pocketmine\nbt\tag\IntTag;
-use pocketmine\nbt\tag\ListTag;
-use pocketmine\nbt\tag\StringTag;
-use pocketmine\Player;
-use pocketmine\tile\Chest;
-use pocketmine\tile\Container;
+use pocketmine\player\Player;
+use pocketmine\world\particle\BlockBreakParticle;
+use pocketmine\world\World;
 use ree_jp\coral_reef\account\SettingManager;
 use ree_jp\coral_reef\sql\SettingConst;
 
@@ -40,46 +37,49 @@ class BreakService
     static function breakBlockBySkill(Player $p, Block $bl): void
     {
         $hand = $p->getInventory()->getItemInHand();
-        self::frozeWater($p, $bl, $hand);
+        self::frozeWater($p, $bl->getPosition(), $hand);
 
-        if ($bl->getHardness() < 0 || $bl instanceof Liquid) return;
+        if ($bl->getBreakInfo()->getHardness() < 0 || $bl instanceof Liquid) return;
 
-        self::silentBreak($p->getLevel(), $bl, $hand, $p);
+        self::silentBreak($p->getWorld(), $bl, $hand, $p);
     }
 
     static function frozeWater(Player $p, Vector3 $vec, Item $hand): void
     {
         if (!SettingManager::isEnableOption($p->getXuid(), SettingConst::NO_FREEZE_WATER)) {
-            $nbt = $hand->getNamedTagEntry("frozen_block");
-            if ($nbt instanceof IntTag) {
-                $block = Block::get($nbt->getValue());
+            $nbt = $hand->getNamedTag();
+            $id = $nbt->getInt("frozen_block", 0);
+
+
+            if ($id === 0) {
+                $block = BlockFactory::getInstance()->get(BlockLegacyIds::STAINED_GLASS, 3);
             } else {
-                $block = Block::get(BlockIds::STAINED_GLASS, 3);
+                $block = BlockFactory::getInstance()->get($id);
             }
 
-            self::changeWater($p->getLevel(), $vec, $block);
-            self::changeWater($p->getLevel(), $vec->add(0, 1), $block);
-            self::changeWater($p->getLevel(), $vec->add(0, -1), $block);
-            self::changeWater($p->getLevel(), $vec->add(1), $block);
-            self::changeWater($p->getLevel(), $vec->add(-1), $block);
-            self::changeWater($p->getLevel(), $vec->add(0, 0, 1), $block);
-            self::changeWater($p->getLevel(), $vec->add(0, 0, -1), $block);
+            self::changeWater($p->getWorld(), $vec, $block);
+            self::changeWater($p->getWorld(), $vec->add(0, 1, 0), $block);
+            self::changeWater($p->getWorld(), $vec->add(0, -1, 0), $block);
+            self::changeWater($p->getWorld(), $vec->add(1, 0, 0), $block);
+            self::changeWater($p->getWorld(), $vec->add(-1, 0, 0), $block);
+            self::changeWater($p->getWorld(), $vec->add(0, 0, 1), $block);
+            self::changeWater($p->getWorld(), $vec->add(0, 0, -1), $block);
         }
     }
 
-    private static function changeWater(?Level $level, Vector3 $vec3, Block $replaceBlock): void // 水を水色のガラスに変える
+    private static function changeWater(?World $level, Vector3 $vec3, Block $replaceBlock): void // 水を水色のガラスに変える
     {
         if (is_null($level)) return;
-        if ($level->getBlock($vec3)->getId() === BlockIds::WATER) { // 水を水色のガラスに変える
-            $level->setBlock($vec3, $replaceBlock, false, false);
+        if ($level->getBlock($vec3)->getId() === BlockLegacyIds::WATER) { // 水を水色のガラスに変える
+            $level->setBlock($vec3, $replaceBlock, false);
         }
     }
 
     /** @noinspection DuplicatedCode */
-    private static function silentBreak(Level $level, Block $bl, Item $item = null, Player $p = null): void
+    private static function silentBreak(World $level, Block $bl, Item $item = null, Player $p = null): void
     {
         $affectedBlocks = $bl->getAffectedBlocks();
-        if ($item === null) $item = ItemFactory::get(BlockIds::AIR, 0, 0);
+        if ($item === null) $item = VanillaBlocks::AIR();
 
         $drops = [];
         if ($p === null or !$p->isCreative()) {
@@ -98,27 +98,11 @@ class BreakService
         if ($p !== null) {
             $ev = new BlockBreakEvent($p, $bl, $item, $p->isCreative(), $drops, $xpDrop);
 
-            if ($bl instanceof Air or ($p->isSurvival() and !$bl->isBreakable($item)) or $p->isSpectator()) {
-                $ev->setCancelled();
-            } elseif ($level->checkSpawnProtection($p, $bl)) {
-                $ev->setCancelled(); //set it to cancelled so plugins can bypass this
+            if ($bl instanceof Air or $p->isSurvival() or $p->isSpectator()) {
+                $ev->cancel();
             }
-
             if ($p->isAdventure(true) and !$ev->isCancelled()) {
-                $tag = $item->getNamedTagEntry("CanDestroy");
-                $canBreak = false;
-                if ($tag instanceof ListTag) {
-                    foreach ($tag as $v) {
-                        if ($v instanceof StringTag) {
-                            $entry = ItemFactory::fromStringSingle($v->getValue());
-                            if ($entry->getId() > 0 and $entry->getBlock()->getId() === $bl->getId()) {
-                                $canBreak = true;
-                                break;
-                            }
-                        }
-                    }
-                }
-                $ev->setCancelled(!$canBreak);
+                $ev->cancel();
             }
 
             $ev->call();
@@ -129,25 +113,25 @@ class BreakService
             $drops = $ev->getDrops();
             $xpDrop = $ev->getXpDropAmount();
 
-        } elseif (!$bl->isBreakable($item)) {
-            return;
         }
 
         foreach ($affectedBlocks as $t) {
-            $level->addParticle(new DestroyBlockParticle($t->add(0.5, 0.5, 0.5), $t));
-            if ($t instanceof Ice && $p->isSurvival() && !$item->hasEnchantment(Enchantment::SILK_TOUCH)) { // 氷をはシルクタッチで取らないと水にする
-                $level->setBlock($t, BlockFactory::get(BlockIds::STAINED_GLASS, 3), false, false);
+            $level->addParticle($t->getPosition()->add(0.5, 0.5, 0.5), new BlockBreakParticle($t));
+            if ($t instanceof Ice && $p->isSurvival() && !$item->hasEnchantment(VanillaEnchantments::SILK_TOUCH())) { // 氷をはシルクタッチで取らないと水にする
+                $level->setBlock($t->getPosition(), BlockFactory::getInstance()->get(BlockLegacyIds::STAINED_GLASS, 3), false);
             } else {
-                $level->setBlock($t, BlockFactory::get(BlockIds::AIR), false, false);
+                $level->setBlock($t->getPosition(), VanillaBlocks::AIR(), false);
             }
 
-            $tile = $level->getTile($t);
+            $tile = $level->getTile($t->getPosition());
             if ($tile !== null) {
                 if ($tile instanceof Container) {
                     if ($tile instanceof Chest) {
                         $tile->unpair();
                     }
-                    $tile->getInventory()->dropContents($level, $p);
+                    foreach ($tile->getInventory()->getContents() as $item) {
+                        $level->dropItem($t->getPosition(), $item);
+                    }
                 }
                 $tile->close();
             }
@@ -156,7 +140,7 @@ class BreakService
         $item->onDestroyBlock($bl);
 
         if (count($drops) > 0) {
-            $dropPos = $bl->add(0.5, 0.5, 0.5);
+            $dropPos = $bl->getPosition()->add(0.5, 0.5, 0.5);
             foreach ($drops as $drop) {
                 if (!$drop->isNull()) {
                     $level->dropItem($dropPos, $drop);
@@ -165,24 +149,23 @@ class BreakService
         }
 
         if ($xpDrop > 0) {
-            $level->dropExperience($bl->add(0.5, 0.5, 0.5), $xpDrop);
+            $level->dropExperience($bl->getPosition()->add(0.5, 0.5, 0.5), $xpDrop);
         }
     }
 
-    static function updateBlock(Level $level, Block $bl): void
+    static function updateBlock(World $world, Block $bl): void
     {
         /** @noinspection DuplicatedCode */
-        $level->updateAllLight($bl);
+        $world->updateAllLight($bl->getPosition()->getFloorX(), $bl->getPosition()->getFloorY(), $bl->getPosition()->getFloorZ());
 
         $ev = new BlockUpdateEvent($bl);
         $ev->call();
         if (!$ev->isCancelled()) {
-            foreach ($level->getNearbyEntities(new AxisAlignedBB($bl->x - 1, $bl->y - 1, $bl->z - 1, $bl->x + 2,
-                $bl->y + 2, $bl->z + 2)) as $entity) {
+            foreach ($world->getNearbyEntities(AxisAlignedBB::one()->offset($bl->getPosition()->getFloorX(), $bl->getPosition()->getFloorY(),
+                $bl->getPosition()->getFloorZ())) as $entity) {
                 $entity->onNearbyBlockChange();
             }
             $ev->getBlock()->onNearbyBlockChange();
-            $level->scheduleNeighbourBlockUpdates($bl);
         }
     }
 }

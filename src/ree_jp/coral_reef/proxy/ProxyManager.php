@@ -12,56 +12,58 @@
 namespace ree_jp\coral_reef\proxy;
 
 use pocketmine\network\mcpe\protocol\TransferPacket;
-use pocketmine\Player;
+use pocketmine\player\Player;
 use pocketmine\scheduler\ClosureTask;
-use ree_jp\coral_reef\account\AccountManager;
+use ree_jp\coral_reef\account\AccountStore;
 use ree_jp\coral_reef\CoralReefPlugin;
 use ree_jp\coral_reef\sql\SQLManager;
 
 class ProxyManager
 {
-    static function transferServerWithSave(Player $p, string $server): void
+    static function transferServerWithSave(SQLManager $repo, AccountStore $store, Player $p, string $server): void
     {
-        AccountManager::setValue($p->getXuid(), 'wait_action');
+        $store->setValue($p->getXuid(), "wait_action");
         $p->setImmobile();
-        $p->sendMessage('サーバー移動の準備中です...');
+        $p->sendMessage("サーバー移動の準備中です...");
 
-        $user = SQLManager::$manager->getUser($p->getXuid());
-        $user->save(function () use ($server, $p) {
-            AccountManager::setValue($p->getXuid(), 'save_xp');
-            self::transferServer($p, $server, true);
-        }, function () use ($server, $p) {
-            AccountManager::setValue($p->getXuid(), 'save_skill');
-            self::transferServer($p, $server, true);
-        }, function () use ($server, $p) {
-            AccountManager::setValue($p->getXuid(), 'save_quest');
-            self::transferServer($p, $server, true);
+        $user = $store->getUser($p->getXuid());
+        $user->save($repo, function () use ($store, $server, $p) {
+            $store->setValue($p->getXuid(), "save_xp");
+            self::transferServer($store, $p, $server, true);
+        }, function () use ($store, $server, $p) {
+            $store->setValue($p->getXuid(), "save_skill");
+            self::transferServer($store, $p, $server, true);
+        }, function () use ($store, $server, $p) {
+            $store->setValue($p->getXuid(), "save_quest");
+            self::transferServer($store, $p, $server, true);
         });
     }
 
-    static private function transferServer(Player $p, string $address, bool $isCheckSafe): void
+    static private function transferServer(AccountStore $store, Player $p, string $address, bool $isCheckSafe): void
     {
         $xuid = $p->getXuid();
         // isCheckSafeの場合すべてセーブされたか確認する
-        if (!$isCheckSafe || AccountManager::hasValue($xuid, 'save_xp') &&
-            AccountManager::hasValue($xuid, 'save_skill') && AccountManager::hasValue($xuid, 'save_quest')) {
+        if (!$isCheckSafe || $store->hasValue($xuid, "save_xp") &&
+            $store->hasValue($xuid, "save_skill") && $store->hasValue($xuid, "save_quest")) {
             if ($isCheckSafe) {
-                AccountManager::setValue($p->getXuid(), 'save_xp', 0);
-                AccountManager::setValue($p->getXuid(), 'save_skill', 0);
-                AccountManager::setValue($p->getXuid(), 'save_quest', 0);
+                $store->setValue($p->getXuid(), "save_xp", 0);
+                $store->setValue($p->getXuid(), "save_skill", 0);
+                $store->setValue($p->getXuid(), "save_quest", 0);
             }
             $pk = new TransferPacket();
             $pk->address = $address;
-            $p->sendMessage('サーバーを移動しています');
-            $p->sendDataPacket($pk);
-            CoralReefPlugin::$plugin->getScheduler()->scheduleDelayedTask(new ClosureTask(function (int $currentTick) use ($p): void {
-                if ($p->isClosed()) return;
-                $xuid = $p->getXuid();
-                AccountManager::setValue($xuid, 'transfer_server', 0);
-                AccountManager::setValue($xuid, 'wait_action', 0);
-                $p->setImmobile(false);
-                $p->sendMessage('サーバーを移動出来ませんでした');
-            }), 20 * 3);
+            $p->sendMessage("サーバーを移動しています");
+            $p->getNetworkSession()->sendDataPacket($pk);
+            CoralReefPlugin::$plugin->getScheduler()->scheduleDelayedTask(new ClosureTask(
+                function () use ($store, $p): void {
+                    if ($p->isClosed()) return;
+                    $xuid = $p->getXuid();
+                    $store->setValue($xuid, "transfer_server", 0);
+                    $store->setValue($xuid, "wait_action", 0);
+                    $p->setImmobile(false);
+                    $p->sendMessage("サーバーを移動出来ませんでした");
+                }
+            ), 20 * 3);
         }
     }
 }

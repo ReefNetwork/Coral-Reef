@@ -22,6 +22,7 @@ use ree_jp\coral_reef\CoralReefPlugin;
 use ree_jp\coral_reef\gatya\GatyaManager;
 use ree_jp\coral_reef\quest\QuestListener;
 use ree_jp\coral_reef\sql\SQLConst;
+use ree_jp\coral_reef\sql\SQLManager;
 
 class SkillManager
 {
@@ -70,7 +71,7 @@ class SkillManager
     /**
      * @throws Exception
      */
-    static function skillActive(AccountStore $store, Player $p, Block $bl): void
+    static function skillActive(SQLManager $repo, AccountStore $store, Player $p, Block $bl): void
     {
         $xuid = $p->getXuid();
         $user = $store->getUser($xuid);
@@ -80,7 +81,7 @@ class SkillManager
         if (!$store->hasValue($xuid, "christmas_ticket_cool_down")) {
             $store->setValue($xuid, "christmas_ticket_cool_down", 20 * 10);
             if (mt_rand(1, 100) === 100) {
-                GatyaManager::addTicket($xuid, SQLConst::TICKETS_CHRISTMAS_2021, 1);
+                GatyaManager::addTicket($repo, $xuid, SQLConst::TICKETS_CHRISTMAS_2021, 1);
                 $p->sendMessage("クリスマスガチャチケットを入手しました");
             }
         }
@@ -93,7 +94,7 @@ class SkillManager
         }
         if ($cool_time > 0) { // クールタイムが0以上のときクールタイムの処理をする
             $store->setValue($xuid, 'skill_cool_time');
-            CoralReefPlugin::$plugin->getScheduler()->scheduleDelayedTask(new ClosureTask(function (int $currentTick) use ($store, $xuid, $p): void {
+            CoralReefPlugin::$plugin->getScheduler()->scheduleDelayedTask(new ClosureTask(function () use ($store, $xuid, $p): void {
                 if ($p->isOnline()) {
                     $p->sendPopup('スキルのクールタイムが終了しました');
                     $store->setValue($xuid, 'skill_cool_time', 0);

@@ -18,7 +18,6 @@ use pocketmine\item\VanillaItems;
 use pocketmine\player\Player;
 use pocketmine\plugin\Plugin;
 use pocketmine\plugin\PluginOwned;
-use ree_jp\coral_reef\form\GatyaForm;
 use ree_jp\coral_reef\quest\QuestListener;
 
 class ReefCommand extends Command implements PluginOwned
@@ -56,9 +55,6 @@ class ReefCommand extends Command implements PluginOwned
                     $food->setNamedTag($nbt);
                     $sender->getInventory()->addItem($food);
                     $sender->sendMessage("無限スイカを配布しました");
-                    return;
-                case "gatya":
-                    GatyaForm::sendGatyaForm($sender);
                     return;
                 case "test":
                     $sender->sendMessage('super test message yeah');

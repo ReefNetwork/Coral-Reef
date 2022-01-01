@@ -48,7 +48,7 @@ class ReefConsoleCommand extends Command implements PluginOwned
 
                 case "tool":
                     if ($sender instanceof Player) {
-                        $sender->getInventory()->addItem(SpecialItemService::getRenewItem($args[1], $args[2], $args[3]));
+                        $sender->getInventory()->addItem(SpecialItemService::getRenewItem($args[1], $args[2], $args[3], $this->store));
                     }
                     break;
                 default:

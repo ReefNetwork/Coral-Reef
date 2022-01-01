@@ -56,7 +56,7 @@ class Shop
     public function buy(SQLManager $repo, Player $p, int $count = 1): void
     {
         $xuid = $p->getXuid();
-        $this->pay($repo, $xuid, $count, function () use ($xuid, $p, $count): void {
+        $this->pay($repo, $xuid, $count, function () use ($repo, $xuid, $p, $count): void {
             $items = $this->getItems();
             $gifts = [];
             while ($count > 0) {
@@ -68,7 +68,7 @@ class Shop
                 $count--;
             }
             if (!empty($gifts)) {
-                GiftService::addGift($xuid, new GiftData(0, "ショップで購入したアイテムです", time() + (7 * 24 * 60 * 60), $gifts),
+                GiftService::addGift($repo, $xuid, new GiftData(0, "ショップで購入したアイテムです", time() + (7 * 24 * 60 * 60), $gifts),
                     null, null);
                 $p->sendMessage("アイテムの一部がインベントリに入らなかったためギフトに送信しました\n1週間以内に受け取ってください");
             }
@@ -120,13 +120,13 @@ class Shop
 
             case "normal_tickets":
                 if ($isSell) {
-                    GatyaManager::addTicket($xuid, SQLConst::TICKETS_NORMAL, $value, $func);
+                    GatyaManager::addTicket($repo, $xuid, SQLConst::TICKETS_NORMAL, $value, $func);
                 } else {
-                    SQLManager::$manager->getValue($xuid, SQLConst::TYPE_TICKETS, SQLConst::TICKETS_NORMAL,
-                        function (array $rows) use ($xuid, $func, $failure, $value): void {
+                    $repo->getValue($xuid, SQLConst::TYPE_TICKETS, SQLConst::TICKETS_NORMAL,
+                        function (array $rows) use ($repo, $xuid, $func, $failure, $value): void {
                             $row = array_shift($rows);
                             if (isset($row['value']) && ($value <= intval($row['value']))) {
-                                GatyaManager::addTicket($xuid, SQLConst::TICKETS_NORMAL, -$value, $func);
+                                GatyaManager::addTicket($repo, $xuid, SQLConst::TICKETS_NORMAL, -$value, $func);
                             } else {
                                 $failure();
                             }

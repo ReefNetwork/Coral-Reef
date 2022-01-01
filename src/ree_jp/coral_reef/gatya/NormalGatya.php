@@ -11,7 +11,7 @@
 
 namespace ree_jp\coral_reef\gatya;
 
-use pocketmine\Player;
+use pocketmine\player\Player;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat;
 use poggit\libasynql\SqlError;
@@ -25,11 +25,11 @@ use ree_jp\coral_reef\sql\SQLManager;
 
 class NormalGatya
 {
-    static function gatya(Player $p, int $number = 1): void
+    static function gatya(SQLManager $repo, Player $p, int $number = 1): void
     {
         if ($number <= 0) return;
         $xuid = $p->getXuid();
-        SQLManager::$manager->getLog($xuid, SQLConst::LOG_GATYA, function (array $rows) use ($number, $p, $xuid) {
+        $repo->getLog($xuid, SQLConst::LOG_GATYA, function (array $rows) use ($repo, $number, $p, $xuid) {
             $firstRand = mt_rand(1, 1000);
             $isLimit = true;
             for ($i = 0; $i < 100; $i++) { // 99回のガチャ履歴を調べてReefRareを引いてなかったら確定
@@ -40,8 +40,8 @@ class NormalGatya
                 }
             }
             if ($number > 1) { // ガチャの処理が終了後に実行するClosure
-                $func = function () use ($number, $p) {
-                    self::gatya($p, --$number);
+                $func = function () use ($repo, $number, $p) {
+                    self::gatya($repo, $p, --$number);
                 };
             } else $func = null;
 
@@ -90,7 +90,7 @@ class NormalGatya
                                 return;
                         }
                     }
-                    GatyaManager::gatyaProcess($p, SQLConst::TICKETS_NORMAL, 1, $item, 'reef_rare',
+                    GatyaManager::gatyaProcess($repo, $p, SQLConst::TICKETS_NORMAL, 1, $item, 'reef_rare',
                         TextFormat::GREEN . 'REEFレア' . TextFormat::DARK_GRAY . '[0.5%]' . TextFormat::RESET, true, $func);
                     break;
 
@@ -109,7 +109,7 @@ class NormalGatya
                             $p->sendMessage('エラーが発生しました');
                             return;
                     }
-                    GatyaManager::gatyaProcess($p, SQLConst::TICKETS_NORMAL, 1, $item, 'ultimate_rare',
+                    GatyaManager::gatyaProcess($repo, $p, SQLConst::TICKETS_NORMAL, 1, $item, 'ultimate_rare',
                         TextFormat::GOLD . 'ウルトラレア' . TextFormat::DARK_GRAY . '[2.5%]' . TextFormat::RESET, false, $func);
                     break;
 
@@ -125,7 +125,7 @@ class NormalGatya
                             $p->sendMessage('エラーが発生しました');
                             return;
                     }
-                    GatyaManager::gatyaProcess($p, SQLConst::TICKETS_NORMAL, 1, $item, 'super_rare',
+                    GatyaManager::gatyaProcess($repo, $p, SQLConst::TICKETS_NORMAL, 1, $item, 'super_rare',
                         TextFormat::BLUE . 'スーパーレア' . TextFormat::DARK_GRAY . '[10%]' . TextFormat::RESET, false, $func);
                     break;
 
@@ -141,13 +141,13 @@ class NormalGatya
                             $p->sendMessage('エラーが発生しました');
                             return;
                     }
-                    GatyaManager::gatyaProcess($p, SQLConst::TICKETS_NORMAL, 1, $item, 'rare',
+                    GatyaManager::gatyaProcess($repo, $p, SQLConst::TICKETS_NORMAL, 1, $item, 'rare',
                         TextFormat::AQUA . 'レア' . TextFormat::DARK_GRAY . '[30%]' . TextFormat::RESET, false, $func);
                     break;
 
                 default:// 残り
                     $item = NormalItems::getItemInt($xuid, mt_rand(1, 7));
-                    GatyaManager::gatyaProcess($p, SQLConst::TICKETS_NORMAL, 1, $item, 'normal',
+                    GatyaManager::gatyaProcess($repo, $p, SQLConst::TICKETS_NORMAL, 1, $item, 'normal',
                         TextFormat::DARK_GRAY . 'ノーマル' . TextFormat::RESET, false, $func);
                     break;
             }

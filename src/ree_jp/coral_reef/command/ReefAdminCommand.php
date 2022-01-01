@@ -28,7 +28,7 @@ class ReefAdminCommand extends Command implements PluginOwned
             $sender->sendMessage('このコマンドはプレイヤー専用です');
             return;
         }
-        ReefAdminForm::sendReefAdminForm($this->repo, $this->accountStore, $this->landStore, $sender);
+        ReefAdminForm::sendForm($this->repo, $this->accountStore, $this->landStore, $sender);
     }
 
     public function getOwningPlugin(): Plugin

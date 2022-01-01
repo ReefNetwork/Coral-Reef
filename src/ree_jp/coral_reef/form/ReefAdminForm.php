@@ -8,17 +8,18 @@ use bbo51dog\bboform\element\Label;
 use bbo51dog\bboform\form\ClosureCustomForm;
 use bbo51dog\bboform\form\ModalForm;
 use bbo51dog\bboform\form\SimpleForm;
-use pocketmine\Player;
+use pocketmine\player\Player;
 use pocketmine\Server;
-use ree_jp\coral_reef\account\AccountManager;
+use ree_jp\coral_reef\account\AccountStore;
 use ree_jp\coral_reef\account\UserAccount;
 use ree_jp\coral_reef\land\LandData;
 use ree_jp\coral_reef\land\LandManager;
+use ree_jp\coral_reef\land\LandStore;
 use ree_jp\coral_reef\sql\SQLManager;
 
 class ReefAdminForm
 {
-    static function sendReefAdminForm(Player $p)
+    static function sendForm(SQLManager $repo, AccountStore $accountStore, LandStore $landStore, Player $p)
     {
         $form = (new SimpleForm())
             ->setTitle("Admin")
@@ -26,43 +27,36 @@ class ReefAdminForm
         foreach (Server::getInstance()->getOnlinePlayers() as $onlinePlayer) {
             if (!$onlinePlayer instanceof Player) return;
             $form->addElement(new ClosureButton(
-                $onlinePlayer->getName(),
-                null,
-                function (Player $p, ClosureButton $button) use ($onlinePlayer) {
-                    self::sendUserAdminForm($p, SQLManager::$manager->getUser($onlinePlayer->getXuid()));
+                $onlinePlayer->getName(), null,
+                function (Player $p) use ($landStore, $accountStore, $repo, $onlinePlayer) {
+                    self::sendUserAdminForm($repo, $accountStore, $landStore, $p, $accountStore->getUser($onlinePlayer->getXuid()));
                 }
             ));
         }
         $p->sendForm($form);
     }
 
-    private static function sendUserAdminForm(Player $p, UserAccount $user)
+    private static function sendUserAdminForm(SQLManager $repo, AccountStore $accountStore, LandStore $landStore, Player $p, UserAccount $user)
     {
         $p->sendForm((new SimpleForm())
             ->setTitle("Admin -> User")
             ->setText($user->name . " さんの管理画面です")
             ->addElements(
                 new ClosureButton(
-                    "経験値",
-                    null,
-                    function (Player $p, ClosureButton $button) use ($user) {
-                        self::sendExpAdminForm($p, $user);
-                    }
-                ),
+                    "経験値", null, function (Player $p) use ($user) {
+                    self::sendExpAdminForm($p, $user);
+                }),
                 new ClosureButton(
-                    "土地保護",
-                    null,
-                    function (Player $p, ClosureButton $button) use ($user) {
-                        self::sendLandAdminForm($p, $user);
-                    }
-                ),
+                    "土地保護", null, function (Player $p) use ($landStore, $accountStore, $repo, $user) {
+                    self::sendLandAdminForm($repo, $accountStore, $landStore, $p, $user);
+                }),
             ));
     }
 
     private static function sendExpAdminForm(Player $p, UserAccount $user)
     {
         $expInput = new Input("経験値");
-        $form = (new ClosureCustomForm(function (Player $p, ClosureCustomForm $form) use ($user, $expInput) {
+        $form = (new ClosureCustomForm(function (Player $p) use ($user, $expInput) {
             /** @var int|false $exp */
             $exp = filter_var($expInput->getValue(), FILTER_VALIDATE_INT, ['options' => ['min_range' => 0]]);
             if ($exp === false) {
@@ -71,7 +65,7 @@ class ReefAdminForm
             }
             $user->setXp($exp);
             $p->sendMessage($user->name . "さんの経験値を" . $exp . "に設定しました");
-            $target = Server::getInstance()->getPlayer($user->name);
+            $target = Server::getInstance()->getPlayerByPrefix($user->name);
             if ($target instanceof Player) {
                 $target->sendMessage("経験値が" . $p->getName() . "さんによって" . $exp . "に設定されました");
             }
@@ -84,51 +78,43 @@ class ReefAdminForm
         $p->sendForm($form);
     }
 
-    private static function sendLandAdminForm(Player $p, UserAccount $user)
+    private static function sendLandAdminForm(SQLManager $repo, AccountStore $accountStore, LandStore $landStore, Player $p, UserAccount $user)
     {
         $form = (new SimpleForm())
             ->setTitle("Admin -> Land")
             ->setText($user->name . "さんの土地一覧");
-        /** @var LandData $land */
-        foreach (LandManager::$instance->getMyLand($user->xuid) as $land) {
+
+        foreach (LandManager::getMyLand($landStore, $user->xuid) as $land) {
             $form->addElement(new ClosureButton(
-                $land->name,
-                null,
-                function (Player $p, ClosureButton $button) use ($land) {
-                    self::sendLandAdminDetailForm($p, $land);
-                }
-            ));
+                $land->name, null, function (Player $p) use ($accountStore, $landStore, $repo, $land) {
+                self::sendLandAdminDetailForm($repo, $accountStore, $landStore, $p, $land);
+            }));
         }
         $p->sendForm($form);
     }
 
-    private static function sendLandAdminDetailForm(Player $p, LandData $land)
+    private static function sendLandAdminDetailForm(SQLManager $repo, AccountStore $accountStore, LandStore $landStore, Player $p, LandData $land)
     {
-        $ownerName = AccountManager::getUserName($land->xuid);
+        $ownerName = $accountStore->getUserName($land->xuid);
         $aabb = $land->aabb;
         $space = (($aabb->maxX - $aabb->minX) + 1) * (($aabb->maxZ - $aabb->minZ) + 1);
         $form = (new SimpleForm())
             ->setTitle("Admin -> Land -> Detail")
-            ->setText("土地保護の名前: $land->name\nワールド: $land->level\nX座標: $aabb->minX - $aabb->maxX\nZ座標: $aabb->minZ - $aabb->maxZ\n大きさ: $space ブロック")
+            ->setText("土地保護の名前: $land->name\nワールド: $land->level\nX座標: $aabb->minX - $aabb->maxX\nZ座標: $aabb->minZ - $aabb->maxZ" .
+                "\n大きさ: $space ブロック")
             ->addElement(new ClosureButton(
                 "土地を削除",
                 null,
-                function (Player $p, ClosureButton $button) use ($ownerName, $land) {
+                function (Player $p) use ($landStore, $repo, $accountStore, $ownerName, $land) {
                     $p->sendForm((new ModalForm(
                         new ClosureButton(
-                            "はい",
-                            null,
-                            function (Player $p, ClosureButton $button) use ($land) {
-                                SQLManager::$manager->deleteProtectLand($land, $p);
-                            }
-                        ),
+                            "はい", null, function (Player $p) use ($landStore, $repo, $land) {
+                            LandManager::deleteLand($repo, $landStore, $land, $p);
+                        }),
                         new ClosureButton(
-                            "いいえ",
-                            null,
-                            function (Player $p, ClosureButton $button) use ($land) {
-                                self::sendLandAdminDetailForm($p, $land);
-                            }
-                        )
+                            "いいえ", null, function (Player $p) use ($landStore, $accountStore, $repo, $land) {
+                            self::sendLandAdminDetailForm($repo, $accountStore, $landStore, $p, $land);
+                        })
                     ))
                         ->setTitle("Admin -> Land -> Delete")
                         ->setText($ownerName . "さんの土地「" . $land->name . "」を削除しますか？")

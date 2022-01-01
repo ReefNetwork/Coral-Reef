@@ -15,8 +15,9 @@ use Exception;
 use pocketmine\block\Air;
 use pocketmine\block\Block;
 use pocketmine\block\Flowable;
+use pocketmine\math\Facing;
 use pocketmine\math\Vector3;
-use pocketmine\Player;
+use pocketmine\player\Player;
 
 class BreakSkill
 {
@@ -59,23 +60,24 @@ class BreakSkill
         BreakService::frozeWater($p, $block, $p->getInventory()->getItemInHand());
 
         /** @var Block[] $needUpdate */
+        /** @noinspection PhpArrayUsedOnlyForWriteInspection */
         $needUpdate = [];
 
-        $level = $p->getLevel();
-        $direction = $p->getDirection();
+        $world = $p->getWorld();
+        $direction = $p->getHorizontalFacing();
         $widthSide = intval(floor($this->width / 2));
         $depthSide = intval(floor($this->depth / 2));
-        if ($p->getFloorY() > $block->getFloorY()) {
+        if ($p->getPosition()->getFloorY() > $block->getFloorY()) {
             $depthCeil = ceil($this->depth / 2);
 
             for ($width = $widthSide; $width >= -$widthSide; --$width) {
                 for ($depth = $depthCeil; $depth >= -$depthSide; --$depth) {
 
-                    $checkVec = $this->getSideFromUserView($block->add(0, 2), $direction, self::RIGHT, $width);
+                    $checkVec = $this->getSideFromUserView($block->add(0, 2, 0), $direction, self::RIGHT, $width);
                     $checkVec = $this->getSideFromUserView($checkVec, $direction, self::FORWARD, $depth);
-                    $checkBl = $p->getLevel()->getBlock($checkVec);
+                    $checkBl = $p->getWorld()->getBlock($checkVec);
                     if (!$checkBl instanceof Flowable && !$checkBl instanceof Air) {
-                        $checkBl2 = $checkBl->getSide(Vector3::SIDE_UP);
+                        $checkBl2 = $checkBl->getSide(Facing::UP);
                         if (!$checkBl2 instanceof Flowable && !$checkBl2 instanceof Air) {
                             $p->sendPopup("上から掘ってください");
                             continue;
@@ -84,9 +86,9 @@ class BreakSkill
 
                     for ($height = 0; $height <= $this->height; ++$height) {
                         if (!($height === 0 && $width === 0 && $depth === 0)) {
-                            $vec = $this->getSideFromUserView($block->add(0, -$height), $direction, self::RIGHT, $width);
+                            $vec = $this->getSideFromUserView($block->add(0, -$height, 0), $direction, self::RIGHT, $width);
                             $vec = $this->getSideFromUserView($vec, $direction, self::FORWARD, $depth);
-                            $bl = $level->getBlock($vec);
+                            $bl = $world->getBlock($vec);
                             BreakService::breakBlockBySkill($p, $bl);
                             $needUpdate[] = $bl;
                         }
@@ -94,8 +96,8 @@ class BreakSkill
                 }
             }
         } else {
-            $isSkillHigh = ($block->getFloorY() - $p->getFloorY()) <= $this->height;
-            $playerY = $p->getFloorY();
+            $isSkillHigh = ($block->getFloorY() - $p->getPosition()->getFloorY()) <= $this->height;
+            $playerY = $p->getPosition()->getFloorY();
 
             for ($width = $widthSide; $width >= -$widthSide; --$width) {
                 for ($depth = 0; $depth <= $this->depth; ++$depth) {
@@ -103,13 +105,13 @@ class BreakSkill
                     if ($isSkillHigh) {
                         $checkVec = new Vector3($block->x, $this->height + $playerY + 1, $block->z);
                     } else {
-                        $checkVec = $block->add(0, $this->height + 1);
+                        $checkVec = $block->add(0, $this->height + 1, 0);
                     }
                     $checkVec = $this->getSideFromUserView($checkVec, $direction, self::RIGHT, $width);
                     $checkVec = $this->getSideFromUserView($checkVec, $direction, self::FORWARD, $depth);
-                    $checkBl = $p->getLevel()->getBlock($checkVec);
+                    $checkBl = $p->getWorld()->getBlock($checkVec);
                     if (!$checkBl instanceof Flowable && !$checkBl instanceof Air) {
-                        $checkBl2 = $checkBl->getSide(Vector3::SIDE_UP);
+                        $checkBl2 = $checkBl->getSide(Facing::UP);
                         if (!$checkBl2 instanceof Flowable && !$checkBl2 instanceof Air) {
                             $p->sendPopup("上から掘ってください");
                             continue;
@@ -122,11 +124,11 @@ class BreakSkill
                             $base = new Vector3($block->x, $height + $playerY, $block->z);
                         } else {
                             if ($height === 0 && $width === 0 && $depth === 0) continue;// スキル起点のブロックへのスキル発動防止
-                            $base = $block->add(0, $height);
+                            $base = $block->add(0, $height, 0);
                         }
                         $vec = $this->getSideFromUserView($base, $direction, self::RIGHT, $width);
                         $vec = $this->getSideFromUserView($vec, $direction, self::FORWARD, $depth);
-                        $bl = $level->getBlock($vec);
+                        $bl = $world->getBlock($vec);
                         BreakService::breakBlockBySkill($p, $bl);
                         $needUpdate[] = $bl;
                     }
@@ -145,15 +147,15 @@ class BreakSkill
     {
         return match ($view) {
             self::NORTH => match ($direction) {
-                self::FORWARD => $vec3->add(-$value),
-                self::BACKWARD => $vec3->add($value),
+                self::FORWARD => $vec3->add(-$value, 0, 0),
+                self::BACKWARD => $vec3->add($value, 0, 0),
                 self::RIGHT => $vec3->add(0, 0, -$value),
                 self::LEFT => $vec3->add(0, 0, $value),
                 default => throw new Exception('不正な方角'),
             },
             self::SOUTH => match ($direction) {
-                self::FORWARD => $vec3->add($value),
-                self::BACKWARD => $vec3->add(-$value),
+                self::FORWARD => $vec3->add($value, 0, 0),
+                self::BACKWARD => $vec3->add(-$value, 0, 0),
                 self::RIGHT => $vec3->add(0, 0, -$value),
                 self::LEFT => $vec3->add(0, 0, $value),
                 default => throw new Exception('不正な方角'),
@@ -161,15 +163,15 @@ class BreakSkill
             self::WEST => match ($direction) {
                 self::FORWARD => $vec3->add(0, 0, $value),
                 self::BACKWARD => $vec3->add(0, 0, -$value),
-                self::RIGHT => $vec3->add(-$value),
-                self::LEFT => $vec3->add($value),
+                self::RIGHT => $vec3->add(-$value, 0, 0),
+                self::LEFT => $vec3->add($value, 0, 0),
                 default => throw new Exception('不正な方角'),
             },
             self::EAST => match ($direction) {
                 self::FORWARD => $vec3->add(0, 0, -$value),
                 self::BACKWARD => $vec3->add(0, 0, $value),
-                self::RIGHT => $vec3->add(-$value),
-                self::LEFT => $vec3->add($value),
+                self::RIGHT => $vec3->add(-$value, 0, 0),
+                self::LEFT => $vec3->add($value, 0, 0),
                 default => throw new Exception('不正な方角'),
             },
             default => throw new Exception('不正な視点の方角'),

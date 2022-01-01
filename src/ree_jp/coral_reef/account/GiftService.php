@@ -19,7 +19,7 @@ use ree_jp\coral_reef\sql\SQLManager;
 
 class GiftService
 {
-    static function addGift($repo, string $target, GiftData $gift, ?Closure $func, ?Closure $failure): void
+    static function addGift(SQLManager $repo, string $target, GiftData $gift, ?Closure $func, ?Closure $failure): void
     {
         $gift->save($repo, $target, $func, $failure);
     }

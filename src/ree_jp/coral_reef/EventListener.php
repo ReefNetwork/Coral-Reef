@@ -80,7 +80,7 @@ class EventListener implements Listener
             $p->setImmobile();
             $p->sendMessage('データを確認しています...');
         }
-        AccountManager::userJoin($this->sqlRepo, $p);
+        AccountManager::userJoin($this->sqlRepo, $this->accountStore, $p);
         $this->sessionStore->createSession($xuid);
 
         $ev->setJoinMessage(""); // プロキシ側で参加メッセージを流す
@@ -95,7 +95,7 @@ class EventListener implements Listener
         $p = $ev->getPlayer();
 
         AccountManager::userQuit($this->sqlRepo, $this->accountStore, $p);
-        $this->sessionStore->destruction($p->getXuid());
+        $this->sessionStore->destruction($this->sqlRepo, $p->getXuid());
         $ev->setQuitMessage(""); // プロキシ側で退出メッセージを流す
     }
 
@@ -243,7 +243,7 @@ class EventListener implements Listener
                 } else {
                     if ($this->accountStore->hasValue($xuid, 'form_cool_time')) return;
                     $this->accountStore->setValue($xuid, 'form_cool_time', 10);
-                    $p->sendForm(LandForm::landCreateAssistForm($xuid, $ev->getBlock()->getPosition()));
+                    LandForm::sendLandCreateAssistForm($this->sqlRepo, $this->accountStore, $this->landStore, $p, $ev->getBlock()->getPosition());
                 }
                 break;
         }
