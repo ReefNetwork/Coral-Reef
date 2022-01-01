@@ -54,7 +54,7 @@ class BreakService
             if ($id === 0) {
                 $block = BlockFactory::getInstance()->get(BlockLegacyIds::STAINED_GLASS, 3);
             } else {
-                $block = BlockFactory::getInstance()->get($id);
+                $block = BlockFactory::getInstance()->get($id, 0);
             }
 
             self::changeWater($p->getWorld(), $vec, $block);
