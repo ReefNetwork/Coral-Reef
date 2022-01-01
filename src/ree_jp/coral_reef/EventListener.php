@@ -273,7 +273,7 @@ class EventListener implements Listener
             $ev->cancel();
             return;
         }
-        if (!LandManager::protect($this->landStore, $this->accountStore, $p, $ev->getBlock()->getPosition(), null, true)) {
+        if (LandManager::protect($this->landStore, $this->accountStore, $p, $ev->getBlock()->getPosition(), null, true)) {
             $ev->cancel();
         }
     }

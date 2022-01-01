@@ -93,12 +93,11 @@ class SkillManager
             $cool_time -= self::$reduceCoolTime[$xuid];
         }
         if ($cool_time > 0) { // クールタイムが0以上のときクールタイムの処理をする
-            $store->setValue($xuid, " 'skill_cool_time'");
+            $store->setValue($xuid, "skill_cool_time");
             CoralReefPlugin::$plugin->getScheduler()->scheduleDelayedTask(new ClosureTask(function () use ($store, $xuid, $p): void {
                 $store->setValue($xuid, "skill_cool_time", 0);
                 if ($p->isOnline()) {
                     $p->sendPopup("スキルのクールタイムが終了しました");
-                    $store->setValue($xuid, "skill_cool_time", 0);
                     $p->getWorld()->addSound($p->getPosition(), new XpLevelUpSound(mt_rand(1, 10)), [$p]);
                 }
             }), $cool_time);
