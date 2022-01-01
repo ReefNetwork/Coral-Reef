@@ -94,7 +94,7 @@ class SQLManager
                 $p->setImmobile(false);
             }
         });
-        $this->getAllSubtypeValue($xuid(), SQLConst::TYPE_SETTINGS, function (array $rows) use ($xuid) {
+        $this->getAllSubtypeValue($xuid, SQLConst::TYPE_SETTINGS, function (array $rows) use ($xuid) {
             foreach ($rows as $option) {
                 if (array_key_exists('subtype', $option) && array_key_exists('value', $option)) {
                     $this->setting[$xuid][$option['subtype']] = $option['value'];
