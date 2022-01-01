@@ -36,6 +36,7 @@ class AccountManager
     static function userJoin(SQLManager $repo, AccountStore $store, Player $p): void
     {
         $xuid = $p->getXuid();
+        $store->setValue($xuid, "skill_cool_time", 0);
 
         $repo->setUser($xuid, $p->getName(), $p->getNetworkSession()->getIp());
         QuestManager::updateQuests($repo, $store, $xuid);

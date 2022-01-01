@@ -146,28 +146,28 @@ class BreakSkill
     private function getSideFromUserView(Vector3 $vec3, int $view, int $direction, int $value): Vector3
     {
         return match ($view) {
-            self::NORTH => match ($direction) {
+            Facing::NORTH => match ($direction) {
                 self::FORWARD => $vec3->add(-$value, 0, 0),
                 self::BACKWARD => $vec3->add($value, 0, 0),
                 self::RIGHT => $vec3->add(0, 0, -$value),
                 self::LEFT => $vec3->add(0, 0, $value),
                 default => throw new Exception('不正な方角'),
             },
-            self::SOUTH => match ($direction) {
+            Facing::SOUTH => match ($direction) {
                 self::FORWARD => $vec3->add($value, 0, 0),
                 self::BACKWARD => $vec3->add(-$value, 0, 0),
                 self::RIGHT => $vec3->add(0, 0, -$value),
                 self::LEFT => $vec3->add(0, 0, $value),
                 default => throw new Exception('不正な方角'),
             },
-            self::WEST => match ($direction) {
+            Facing::WEST => match ($direction) {
                 self::FORWARD => $vec3->add(0, 0, $value),
                 self::BACKWARD => $vec3->add(0, 0, -$value),
                 self::RIGHT => $vec3->add(-$value, 0, 0),
                 self::LEFT => $vec3->add($value, 0, 0),
                 default => throw new Exception('不正な方角'),
             },
-            self::EAST => match ($direction) {
+            Facing::EAST => match ($direction) {
                 self::FORWARD => $vec3->add(0, 0, -$value),
                 self::BACKWARD => $vec3->add(0, 0, $value),
                 self::RIGHT => $vec3->add(-$value, 0, 0),
