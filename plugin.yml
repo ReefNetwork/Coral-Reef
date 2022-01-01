@@ -8,13 +8,7 @@ depend:
   - BboForm
   - StackStorage
 permissions:
-  coral_reef.*:
-    default: false
-    children:
-      coral_reef.command.*:
-        default: false
-        children:
-          coral_reef.command.reef_admin:
-            default: op
-          coral_reef.command.reef_console:
-            default: op
+  coral_reef.command.reef_admin:
+    default: op
+  coral_reef.command.reef_console:
+    default: op
