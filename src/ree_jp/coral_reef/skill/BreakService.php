@@ -15,18 +15,17 @@ use pocketmine\block\Air;
 use pocketmine\block\Block;
 use pocketmine\block\BlockFactory;
 use pocketmine\block\BlockLegacyIds;
-use pocketmine\block\Ice;
 use pocketmine\block\Liquid;
-use pocketmine\block\tile\Chest;
-use pocketmine\block\tile\Container;
 use pocketmine\block\VanillaBlocks;
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\block\BlockUpdateEvent;
-use pocketmine\item\enchantment\VanillaEnchantments;
 use pocketmine\item\Item;
+use pocketmine\item\ItemFactory;
+use pocketmine\item\LegacyStringToItemParser;
 use pocketmine\math\AxisAlignedBB;
 use pocketmine\math\Vector3;
 use pocketmine\player\Player;
+use pocketmine\world\format\Chunk;
 use pocketmine\world\particle\BlockBreakParticle;
 use pocketmine\world\World;
 use ree_jp\coral_reef\account\SettingManager;
@@ -36,7 +35,6 @@ class BreakService
 {
     static function breakBlockBySkill(Player $p, Block $bl): void
     {
-        var_dump("aaa");
         $hand = $p->getInventory()->getItemInHand();
         self::frozeWater($p, $bl->getPosition(), $hand);
 
@@ -77,81 +75,89 @@ class BreakService
     }
 
     /** @noinspection DuplicatedCode */
-    private static function silentBreak(World $level, Block $bl, Item $item = null, Player $p = null): void
+    private static function silentBreak(World $world, Block $bl, Item $item = null, Player $p = null): void
     {
+        $vector = $bl->getPosition()->floor();
+
+        $chunkX = $vector->getFloorX() >> Chunk::COORD_BIT_SIZE;
+        $chunkZ = $vector->getFloorZ() >> Chunk::COORD_BIT_SIZE;
+        if (!$world->isChunkLoaded($chunkX, $chunkZ) || $world->isChunkLocked($chunkX, $chunkZ)) {
+            return;
+        }
+
         $affectedBlocks = $bl->getAffectedBlocks();
-        if ($item === null) $item = VanillaBlocks::AIR();
+
+        if ($item === null) {
+            $item = ItemFactory::air();
+        }
 
         $drops = [];
-        if ($p === null or !$p->isCreative()) {
-            $drops = array_merge(...array_map(function (Block $block) use ($item): array {
-                return $block->getDrops($item);
-            }, $affectedBlocks));
+        if ($p === null or $p->hasFiniteResources()) {
+            $drops = array_merge(...array_map(fn(Block $block) => $block->getDrops($item), $affectedBlocks));
         }
 
         $xpDrop = 0;
-        if ($p !== null and !$p->isCreative()) {
-            $xpDrop = array_sum(array_map(function (Block $block) use ($item): int {
-                return $block->getXpDropForTool($item);
-            }, $affectedBlocks));
+        if ($p !== null and $p->hasFiniteResources()) {
+            $xpDrop = array_sum(array_map(fn(Block $block) => $block->getXpDropForTool($item), $affectedBlocks));
         }
 
         if ($p !== null) {
             $ev = new BlockBreakEvent($p, $bl, $item, $p->isCreative(), $drops, $xpDrop);
 
-            if ($bl instanceof Air or $p->isSurvival() or $p->isSpectator()) {
+            if ($bl instanceof Air or ($p->isSurvival() and !$bl->getBreakInfo()->isBreakable()) or $p->isSpectator()) {
                 $ev->cancel();
             }
+
             if ($p->isAdventure(true) and !$ev->isCancelled()) {
-                $ev->cancel();
+                $canBreak = false;
+                $itemParser = LegacyStringToItemParser::getInstance();
+                foreach ($item->getCanDestroy() as $v) {
+                    $entry = $itemParser->parse($v);
+                    if ($entry->getBlock()->isSameType($bl)) {
+                        $canBreak = true;
+                        break;
+                    }
+                }
+
+                if (!$canBreak) {
+                    $ev->cancel();
+                }
             }
 
             $ev->call();
             if ($ev->isCancelled()) {
-                var_dump("cancelled");
                 return;
             }
 
             $drops = $ev->getDrops();
             $xpDrop = $ev->getXpDropAmount();
 
+        } elseif (!$bl->getBreakInfo()->isBreakable()) {
+            return;
         }
 
         foreach ($affectedBlocks as $t) {
-            $level->addParticle($t->getPosition()->add(0.5, 0.5, 0.5), new BlockBreakParticle($t));
-            if ($t instanceof Ice && $p->isSurvival() && !$item->hasEnchantment(VanillaEnchantments::SILK_TOUCH())) { // 氷をはシルクタッチで取らないと水にする
-                $level->setBlock($t->getPosition(), BlockFactory::getInstance()->get(BlockLegacyIds::STAINED_GLASS, 3), false);
-            } else {
-                $level->setBlock($t->getPosition(), VanillaBlocks::AIR(), false);
-            }
+            $world->addParticle($t->getPosition()->add(0.5, 0.5, 0.5), new BlockBreakParticle($t));
+            $t->onBreak($item, $p);
+            $world->setBlock($t->getPosition(), VanillaBlocks::AIR(), false);
 
-            $tile = $level->getTile($t->getPosition());
-            if ($tile !== null) {
-                if ($tile instanceof Container) {
-                    if ($tile instanceof Chest) {
-                        $tile->unpair();
-                    }
-                    foreach ($tile->getInventory()->getContents() as $item) {
-                        $level->dropItem($t->getPosition(), $item);
-                    }
-                }
-                $tile->close();
-            }
+            $tile = $world->getTile($t->getPosition());
+            $tile?->onBlockDestroyed();
         }
 
         $item->onDestroyBlock($bl);
 
         if (count($drops) > 0) {
-            $dropPos = $bl->getPosition()->add(0.5, 0.5, 0.5);
+            $dropPos = $vector->add(0.5, 0.5, 0.5);
             foreach ($drops as $drop) {
                 if (!$drop->isNull()) {
-                    $level->dropItem($dropPos, $drop);
+                    $world->dropItem($dropPos, $drop);
                 }
             }
         }
 
         if ($xpDrop > 0) {
-            $level->dropExperience($bl->getPosition()->add(0.5, 0.5, 0.5), $xpDrop);
+            $world->dropExperience($vector->add(0.5, 0.5, 0.5), $xpDrop);
         }
     }
 
