@@ -13,6 +13,7 @@ namespace ree_jp\coral_reef\account;
 
 use Closure;
 use pocketmine\network\mcpe\protocol\GameRulesChangedPacket;
+use pocketmine\network\mcpe\protocol\types\BoolGameRule;
 use pocketmine\player\Player;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat;
@@ -50,7 +51,7 @@ class SettingManager
                     if ($row['value'] === 'true') $bool = true;
                 }
                 $pk = new GameRulesChangedPacket();
-                $pk->gameRules["showCoordinates"] = [1, !$bool, true];
+                $pk->gameRules["showCoordinates"] = new BoolGameRule(!$bool, true);
                 $p->getNetworkSession()->sendDataPacket($pk);
             }, function (SqlError $error) use ($p) {
                 $p->sendMessage('座標の設定を読み込み中にエラーが発生しました');
