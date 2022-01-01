@@ -36,6 +36,7 @@ class BreakService
 {
     static function breakBlockBySkill(Player $p, Block $bl): void
     {
+        var_dump("aaa");
         $hand = $p->getInventory()->getItemInHand();
         self::frozeWater($p, $bl->getPosition(), $hand);
 
@@ -107,6 +108,7 @@ class BreakService
 
             $ev->call();
             if ($ev->isCancelled()) {
+                var_dump("cancelled");
                 return;
             }
 
