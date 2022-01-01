@@ -13,24 +13,25 @@ namespace ree_jp\coral_reef\form;
 
 use bbo51dog\bboform\element\ClosureButton;
 use bbo51dog\bboform\form\SimpleForm;
-use pocketmine\Player;
+use pocketmine\player\Player;
+use ree_jp\coral_reef\account\AccountStore;
 use ree_jp\coral_reef\proxy\ProxyManager;
+use ree_jp\coral_reef\sql\SQLManager;
 
 class ServerSelectForm
 {
     const SERVERS = ["lobby", "整地1", '整地2'];
 
-    static function sendServerSelectForm(Player $p): void
+    static function sendForm(SQLManager $repo, AccountStore $store, Player $p): void
     {
         $form = (new SimpleForm())
             ->setTitle("Menu -> Server")
             ->setText("サーバーを移動できます");
         foreach (self::SERVERS as $server) {
             $form->addElement(new ClosureButton(
-                $server,
-                null,
-                function (Player $p, ClosureButton $button) use ($server) {
-                    ProxyManager::transferServerWithSave($p, $server);
+                $server, null,
+                function (Player $p) use ($store, $repo, $server) {
+                    ProxyManager::transferServerWithSave($repo, $store, $p, $server);
                 }
             ));
         }

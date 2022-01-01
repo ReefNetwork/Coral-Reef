@@ -42,9 +42,9 @@ class SessionData
         $this->skillCount++;
     }
 
-    public function quit(): void
+    public function quit(SQLManager $repo): void
     {
         $this->quitTime = time();
-        SQLManager::$manager->recordSession($this->xuid, $this);
+        $repo->recordSession($this->xuid, $this);
     }
 }

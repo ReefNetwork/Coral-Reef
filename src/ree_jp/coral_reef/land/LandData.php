@@ -11,8 +11,8 @@
 
 namespace ree_jp\coral_reef\land;
 
-use pocketmine\level\Position;
 use pocketmine\math\AxisAlignedBB;
+use pocketmine\world\Position;
 
 class LandData
 {
@@ -31,7 +31,7 @@ class LandData
 
     public function isLand(Position $pos): bool
     {
-        if ($pos->getLevelNonNull()->getFolderName() === $this->level) {
+        if ($pos->getWorld()->getFolderName() === $this->level) {
             return $this->aabb->isVectorInXZ($pos);
         }
         return false;

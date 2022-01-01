@@ -14,10 +14,10 @@ namespace ree_jp\coral_reef\skill;
 use Exception;
 use JetBrains\PhpStorm\Pure;
 use pocketmine\block\Block;
-use pocketmine\network\mcpe\protocol\LevelSoundEventPacket;
-use pocketmine\Player;
+use pocketmine\player\Player;
 use pocketmine\scheduler\ClosureTask;
-use ree_jp\coral_reef\account\AccountManager;
+use pocketmine\world\sound\XpLevelUpSound;
+use ree_jp\coral_reef\account\AccountStore;
 use ree_jp\coral_reef\CoralReefPlugin;
 use ree_jp\coral_reef\gatya\GatyaManager;
 use ree_jp\coral_reef\quest\QuestListener;
@@ -71,34 +71,35 @@ class SkillManager
     /**
      * @throws Exception
      */
-    static function skillActive(Player $p, Block $bl): void
+    static function skillActive(SQLManager $repo, AccountStore $store, Player $p, Block $bl): void
     {
         $xuid = $p->getXuid();
-        $user = SQLManager::$manager->getUser($xuid);
+        $user = $store->getUser($xuid);
         $skill = $user->skill;
         if (is_null($skill)) throw new Exception('スキルが設定されていません');
 
-        if (!AccountManager::hasValue($xuid, "christmas_ticket_cool_down")) {
-            AccountManager::setValue($xuid, "christmas_ticket_cool_down", 20 * 10);
+        if (!$store->hasValue($xuid, "christmas_ticket_cool_down")) {
+            $store->setValue($xuid, "christmas_ticket_cool_down", 20 * 10);
             if (mt_rand(1, 100) === 100) {
-                GatyaManager::addTicket($xuid, SQLConst::TICKETS_CHRISTMAS_2021, 1);
+                GatyaManager::addTicket($repo, $xuid, SQLConst::TICKETS_CHRISTMAS_2021, 1);
                 $p->sendMessage("クリスマスガチャチケットを入手しました");
             }
         }
 
         QuestListener::callSubscribedQuest($p->getXuid(), QuestListener::USE_SKILL, $skill);
-        $skill->runSkill($bl, $p);
+        $skill->runSkill($bl->getPosition(), $p);
         $cool_time = $skill->coolTime;
         if (isset(self::$reduceCoolTime[$xuid])) { // クールタイム減らすのを反映
             $cool_time -= self::$reduceCoolTime[$xuid];
         }
         if ($cool_time > 0) { // クールタイムが0以上のときクールタイムの処理をする
-            AccountManager::setValue($xuid, 'skill_cool_time');
-            CoralReefPlugin::$plugin->getScheduler()->scheduleDelayedTask(new ClosureTask(function (int $currentTick) use ($xuid, $p): void {
-                AccountManager::setValue($xuid, 'skill_cool_time', 0);
+            $store->setValue($xuid, " 'skill_cool_time'");
+            CoralReefPlugin::$plugin->getScheduler()->scheduleDelayedTask(new ClosureTask(function () use ($store, $xuid, $p): void {
+                $store->setValue($xuid, "skill_cool_time", 0);
                 if ($p->isOnline()) {
-                    $p->sendPopup('スキルのクールタイムが終了しました');
-                    $p->getLevel()->broadcastLevelSoundEvent($p, LevelSoundEventPacket::SOUND_LEVELUP, 0x10000000);
+                    $p->sendPopup("スキルのクールタイムが終了しました");
+                    $store->setValue($xuid, "skill_cool_time", 0);
+                    $p->getWorld()->addSound($p->getPosition(), new XpLevelUpSound(mt_rand(1, 10)), [$p]);
                 }
             }), $cool_time);
         }

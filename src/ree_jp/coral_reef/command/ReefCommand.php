@@ -11,23 +11,21 @@
 
 namespace ree_jp\coral_reef\command;
 
+use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
-use pocketmine\command\PluginCommand;
 use pocketmine\item\Durable;
-use pocketmine\item\Item;
-use pocketmine\item\ItemIds;
-use pocketmine\nbt\tag\ByteTag;
-use pocketmine\Player;
+use pocketmine\item\VanillaItems;
+use pocketmine\player\Player;
 use pocketmine\plugin\Plugin;
-use ree_jp\coral_reef\form\GatyaForm;
+use pocketmine\plugin\PluginOwned;
 use ree_jp\coral_reef\quest\QuestListener;
 
-class ReefCommand extends PluginCommand
+class ReefCommand extends Command implements PluginOwned
 {
-    public function __construct(Plugin $owner)
+    public function __construct(private Plugin $owner)
     {
-        parent::__construct('reef', $owner);
-        $this->setUsage('Reef Command');
+        parent::__construct("reef");
+        $this->setUsage("Reef Command");
     }
 
     public function execute(CommandSender $sender, string $commandLabel, array $args)
@@ -39,25 +37,24 @@ class ReefCommand extends PluginCommand
         if (isset($args[0])) {
             switch ($args[0]) {
                 case "init_tool":
-                    $pickaxe = Item::get(ItemIds::STONE_PICKAXE);
-                    $pickaxe->setCustomName('初期装備(ツルハシ)');
+                    $pickaxe = VanillaItems::STONE_PICKAXE();
+                    $pickaxe->setCustomName("初期装備(ツルハシ)");
                     if ($pickaxe instanceof Durable) $pickaxe->setUnbreakable();
                     $sender->getInventory()->addItem($pickaxe);
-                    $shovel = Item::get(ItemIds::WOODEN_SHOVEL);
-                    $shovel->setCustomName('初期装備(シャベル)');
+                    $shovel = VanillaItems::WOODEN_AXE();
+                    $shovel->setCustomName("初期装備(シャベル)");
                     if ($shovel instanceof Durable) $shovel->setUnbreakable();
                     $sender->getInventory()->addItem($shovel);
-                    $sender->sendMessage('初期装備を配布しました');
+                    $sender->sendMessage("初期装備を配布しました");
                     QuestListener::callSubscribedQuest($sender->getXuid(), QuestListener::GET_INIT_TOOL, null);
                     return;
                 case "food":
-                    $food = Item::get(ItemIds::MELON)->setCustomName("無限すいか")->setLore(["食べても食べても減らない不思議なすいか"]);
-                    $food->setNamedTagEntry(new ByteTag("reef_infinite_food"));
+                    $food = VanillaItems::STICK()->setCustomName("無限すいか")->setLore(["食べても食べても減らない不思議なすいか"]);
+                    $nbt = $food->getNamedTag();
+                    $nbt->setByte("reef_infinite_food", 1);
+                    $food->setNamedTag($nbt);
                     $sender->getInventory()->addItem($food);
                     $sender->sendMessage("無限スイカを配布しました");
-                    return;
-                case "gatya":
-                    GatyaForm::sendGatyaForm($sender);
                     return;
                 case "test":
                     $sender->sendMessage('super test message yeah');
@@ -65,5 +62,10 @@ class ReefCommand extends PluginCommand
             }
         }
         $sender->sendMessage('そのコマンドは間違っています');
+    }
+
+    public function getOwningPlugin(): Plugin
+    {
+        return $this->owner;
     }
 }

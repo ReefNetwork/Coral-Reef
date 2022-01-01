@@ -13,12 +13,12 @@ namespace ree_jp\coral_reef\gatya;
 
 use Closure;
 use pocketmine\item\Item;
-use pocketmine\Player;
+use pocketmine\player\Player;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat;
 use poggit\libasynql\SqlError;
 use ree_jp\coral_reef\account\GiftData;
-use ree_jp\coral_reef\account\GiftManager;
+use ree_jp\coral_reef\account\GiftService;
 use ree_jp\coral_reef\gatya\items\ReefItems;
 use ree_jp\coral_reef\quest\QuestListener;
 use ree_jp\coral_reef\sql\SQLConst;
@@ -28,23 +28,24 @@ class GatyaManager
 {
     static array $isProcessing = [];
 
-    static function addTicket(string $xuid, string $type, int $count, ?Closure $func = null): void
+    static function addTicket(SQLManager $repo, string $xuid, string $type, int $count, ?Closure $func = null): void
     {
-        SQLManager::$manager->addValue($xuid, SQLConst::TYPE_TICKETS, $type, $count, $func, function (SqlError $error) use ($xuid): void {
+        $repo->addValue($xuid, SQLConst::TYPE_TICKETS, $type, $count, $func, function (SqlError $error) use ($xuid): void {
             Server::getInstance()->getLogger()->error('[TicketAdd] ' . $xuid . 'さんの処理中に' . $error->getErrorMessage());
         });
     }
 
-    static function setTicket(string $xuid, string $type, int $count): void
+    static function setTicket(SQLManager $repo, string $xuid, string $type, int $count): void
     {
-        SQLManager::$manager->setValue($xuid, SQLConst::TYPE_TICKETS, $type, strval($count), null,
+        $repo->setValue($xuid, SQLConst::TYPE_TICKETS, $type, strval($count), null,
             function (SqlError $error) use ($xuid): void {
                 Server::getInstance()->getLogger()->error('[TicketSet] ' . $xuid . 'さんの処理中に' . $error->getErrorMessage());
             });
     }
 
     // チケットの枚数が足りるか確認してチケットを減らしてログに記録してアイテムを送る
-    static function gatyaProcess(Player $p, string $gatyaLog, string $subtype, int $need, Item $item, string $rare, string $stringRare, bool $isBroadcast, ?Closure $func): void
+    static function gatyaProcess(SQLManager $repo, string $gatyaLog, Player $p, string $subtype, int $need, Item $item, string $rare, string $stringRare, bool $isBroadcast,
+                                 ?Closure   $func): void
     {
         if (array_key_exists($p->getXuid(), self::$isProcessing)) {
             $p->sendMessage("ガチャを同時に実行することはできません");
@@ -52,32 +53,35 @@ class GatyaManager
         }
         self::$isProcessing[$p->getXuid()] = true;
         // ガチャチケットが足りるか確認
-        SQLManager::$manager->getValue($p->getXuid(), SQLConst::TYPE_TICKETS, $subtype,
-            function (array $rows) use ($gatyaLog, $stringRare, $func, $isBroadcast, $item, $rare, $subtype, $p, $need) {
+        $repo->getValue($p->getXuid(), SQLConst::TYPE_TICKETS, $subtype,
+            function (array $rows) use ($repo, $gatyaLog, $stringRare, $func, $isBroadcast, $item, $rare, $subtype, $p, $need) {
                 foreach ($rows as $row) {
                     if (isset($row['value']) && intval($row['value']) >= $need) {
                         // ログに追加
-                        SQLManager::$manager->addLog($p->getXuid(), $gatyaLog, $rare,
+                        $repo->addLog($p->getXuid(), $gatyaLog, $rare,
                             $item->getNamedTag()->getString(ReefItems::REEF_SP_ITEM, 'unknown'), SQLConst::NOW_TIME,
-                            function (int $insertId, int $affectedRows) use ($stringRare, $func, $rare, $isBroadcast, $item, $need, $row, $subtype, $p) {
+                            function () use ($repo, $stringRare, $func, $rare, $isBroadcast, $item, $need, $row, $subtype, $p) {
                                 // ガチャチケットを減らす
-                                SQLManager::$manager->setValue($p->getXuid(), SQLConst::TYPE_TICKETS, $subtype, $row['value'] - $need,
-                                    function () use ($stringRare, $func, $isBroadcast, $item, $p) {
-                                        if ($p->getInventory()->canAddItem($item)) { // インベントリに空きがあれば追加
+                                $repo->setValue($p->getXuid(), SQLConst::TYPE_TICKETS, $subtype, $row['value'] - $need,
+                                    function () use ($repo, $stringRare, $func, $isBroadcast, $item, $p) {
+                                        if ($p->getInventory()->canAddItem($item)) {
+                                            // インベントリに空きがあれば追加
                                             $p->getInventory()->addItem($item);
-                                        } else { // なければギフトに送信
-                                            GiftManager::addGift($p->getXuid(), new GiftData('0', 'ノーマルガチャ',
+                                        } else {
+                                            // なければギフトに送信
+                                            GiftService::addGift($repo, $p->getXuid(), new GiftData('0', 'ノーマルガチャ',
                                                 time() + (7 * 24 * 60 * 60), [$item]),
                                                 function () use ($p) {
                                                     $p->sendMessage('ガチャの景品がインベントリに入れるスペースがなかったためプレゼントに送信しました');
-                                                }, function (SqlError $error) use ($item, $p) { // ギフト出来なければ落とす
+                                                }, function () use ($item, $p) { // ギフト出来なければ落とす
                                                     $p->dropItem($item);
                                                     $p->sendMessage('ガチャの景品を地面にドロップしました');
                                                 });
                                         }
                                         $p->sendMessage('ガチャを引きました(レア度: ' . TextFormat::GREEN . $stringRare . TextFormat::RESET . ')');
                                         unset(self::$isProcessing[$p->getXuid()]);
-                                        if ($isBroadcast) { // 一定のレア度以上は$isBroadcastをtrueにしてガチャを引いたことを全体に表示させる
+                                        if ($isBroadcast) {
+                                            // 一定のレア度以上は$isBroadcastをtrueにしてガチャを引いたことを全体に表示させる
                                             $broadMessage = $p->getDisplayName() . 'さんが' . TextFormat::GREEN . 'REEFレア' . TextFormat::RESET . 'を引きました';
                                             Server::getInstance()->broadcastMessage($broadMessage);
                                         }

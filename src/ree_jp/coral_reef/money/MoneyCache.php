@@ -20,17 +20,17 @@ class MoneyCache
 {
     static array $cache = [];
 
-    static function purgeAll(): void
+    static function purgeAll(SQLManager $repo): void
     {
         foreach (self::$cache as $xuid => $money) {
-            self::purge($xuid);
+            self::purge($repo, $xuid);
         }
     }
 
-    static function purge(string $xuid): void
+    static function purge(SQLManager $repo, string $xuid): void
     {
         if (isset(self::$cache[$xuid])) {
-            SQLManager::$manager->addMoney($xuid, self::$cache[$xuid], null);
+            $repo->addMoney($xuid, self::$cache[$xuid], null);
             unset(self::$cache[$xuid]);
         }
     }

@@ -15,7 +15,7 @@ use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\entity\EntityTeleportEvent;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerQuitEvent;
-use pocketmine\Player;
+use pocketmine\player\Player;
 use ree_jp\coral_reef\quest\data\QuestData;
 
 class QuestListener implements Listener
@@ -54,7 +54,7 @@ class QuestListener implements Listener
     {
         $p = $ev->getEntity();
         if ($p instanceof Player) {
-            QuestListener::callSubscribedQuest($p->getXuid(), self::TRANSFER, $ev->getTo()->getLevel()->getFolderName());
+            QuestListener::callSubscribedQuest($p->getXuid(), self::TRANSFER, $ev->getTo()->getWorld()->getFolderName());
         }
     }
 

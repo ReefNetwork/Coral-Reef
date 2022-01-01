@@ -11,11 +11,13 @@
 
 namespace ree_jp\coral_reef\quest\data;
 
+use JetBrains\PhpStorm\Pure;
 use pocketmine\utils\TextFormat;
 use ree_jp\coral_reef\account\AccountManager;
 use ree_jp\coral_reef\gatya\GatyaManager;
 use ree_jp\coral_reef\quest\QuestListener;
 use ree_jp\coral_reef\sql\SQLConst;
+use ree_jp\coral_reef\sql\SQLManager;
 
 class TutorialQuest extends QuestData
 {
@@ -28,7 +30,7 @@ class TutorialQuest extends QuestData
 
     private int $max = 6; // チュートリアル数(今後増やすことも考えて)
 
-    function __construct(string $xuid, ?string $value)
+    function __construct(SQLManager $repo, string $xuid, ?string $value)
     {
         if (is_null($value)) {
             $type = "0";
@@ -37,7 +39,7 @@ class TutorialQuest extends QuestData
             $type = $json["type"];
             $this->progress = $json["progress"];
         }
-        parent::__construct($xuid, $type);
+        parent::__construct($repo, $xuid, $type);
         $this->init();
     }
 
@@ -85,7 +87,7 @@ class TutorialQuest extends QuestData
         }
     }
 
-    function getRewardDetails(): string
+    #[Pure] function getRewardDetails(): string
     {
         if ($this->isComplete()) {
             return "完了済み";
@@ -161,31 +163,23 @@ class TutorialQuest extends QuestData
     private function giveReward(): void
     {
         QuestListener::callSubscribedQuest($this->xuid, QuestListener::CLEAR_QUEST, $this);
-        GatyaManager::addTicket($this->xuid, SQLConst::TICKETS_NORMAL, 1);
+        GatyaManager::addTicket($this->repo, $this->xuid, SQLConst::TICKETS_NORMAL, 1);
         $p = AccountManager::getPlayerByXuid($this->xuid);
         if (!is_null($p)) $p->sendMessage("チュートリアルクエスト報酬としてガチャ券を1枚受け取りました");
     }
 
     function getProgress(): string
     {
-        switch (intval($this->value)) {
-            case 0:
-                return "初期装備を受け取ろう";
-            case 1:
-                return "整地1ワールドに移動しよう";
-            case 2:
-                return "ランダムワープをしよう";
-            case 3:
-                return "ワープ地点を設定しよう";
-            case 4:
-                return "ブロックを掘ってみよう";
-            case 5:
-                return "スキルを設定してみよう";
-            case 6:
-                return "ガチャを10回引いてみよう(" . $this->progress . "/10)";
-            default:
-                return "チュートリアルはすべて完了しました";
-        }
+        return match (intval($this->value)) {
+            0 => "初期装備を受け取ろう",
+            1 => "整地1ワールドに移動しよう",
+            2 => "ランダムワープをしよう",
+            3 => "ワープ地点を設定しよう",
+            4 => "ブロックを掘ってみよう",
+            5 => "スキルを設定してみよう",
+            6 => "ガチャを10回引いてみよう(" . $this->progress . "/10)",
+            default => "チュートリアルはすべて完了しました",
+        };
     }
 
     function outputData(): string

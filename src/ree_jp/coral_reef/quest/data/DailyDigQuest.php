@@ -11,6 +11,7 @@
 
 namespace ree_jp\coral_reef\quest\data;
 
+use JetBrains\PhpStorm\Pure;
 use ree_jp\coral_reef\account\AccountManager;
 use ree_jp\coral_reef\gatya\GatyaManager;
 use ree_jp\coral_reef\quest\QuestListener;
@@ -24,9 +25,9 @@ class DailyDigQuest extends DailyQuest
     const SHORT_DETAILS = "整地しよう!(毎日)";
     const EXPLANATION = "スキルを一定回数使用して整地をしよう。";
 
-    function __construct(string $xuid, ?string $value)
+    function __construct(SQLManager $repo, string $xuid, ?string $value)
     {
-        parent::__construct($xuid, $value);
+        parent::__construct($repo, $xuid, $value);
         if (!$this->isComplete()) {
             QuestListener::subscribeQuest($xuid, QuestListener::USE_SKILL, $this);
         }
@@ -48,9 +49,9 @@ class DailyDigQuest extends DailyQuest
                         QuestListener::unsubscribeQuest($this->xuid, QuestListener::USE_SKILL, $this);
                     case 100:
                         QuestListener::callSubscribedQuest($this->xuid, QuestListener::CLEAR_QUEST, $this);
-                        SQLManager::$manager->addLog($this->xuid, SQLConst::LOG_QUEST, self::ID, $this->value,
+                        $this->repo->addLog($this->xuid, SQLConst::LOG_QUEST, self::ID, $this->value,
                             SQLConst::NOW_TIME, null, null);
-                        GatyaManager::addTicket($this->xuid, SQLConst::TICKETS_NORMAL, 1);
+                        GatyaManager::addTicket($this->repo, $this->xuid, SQLConst::TICKETS_NORMAL, 1);
                         $p = AccountManager::getPlayerByXuid($this->xuid);
                         if (!is_null($p)) $p->sendMessage("デイリー整地ボーナスとしてガチャチケットを受け取りました");
                         break;
@@ -61,16 +62,14 @@ class DailyDigQuest extends DailyQuest
 
     function getProgress(): string
     {
-        switch (true) {
-            case intval($this->value) < 100:
-                return "スキルを100回発動させよう (" . $this->value . "/100)";
-            case intval($this->value) < 1000:
-                return "スキルを1000回発動させよう (" . $this->value . "/1000)";
-        }
-        return "完了";
+        return match (true) {
+            intval($this->value) < 100 => "スキルを100回発動させよう (" . $this->value . "/100)",
+            intval($this->value) < 1000 => "スキルを1000回発動させよう (" . $this->value . "/1000)",
+            default => "完了",
+        };
     }
 
-    function getRewardDetails(): string
+    #[Pure] function getRewardDetails(): string
     {
         if ($this->isComplete()) {
             return "完了済み";

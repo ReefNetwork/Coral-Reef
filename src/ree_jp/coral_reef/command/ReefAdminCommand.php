@@ -2,18 +2,22 @@
 
 namespace ree_jp\coral_reef\command;
 
+use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
-use pocketmine\command\PluginCommand;
-use pocketmine\Player;
+use pocketmine\player\Player;
 use pocketmine\plugin\Plugin;
+use pocketmine\plugin\PluginOwned;
+use ree_jp\coral_reef\account\AccountStore;
 use ree_jp\coral_reef\form\ReefAdminForm;
+use ree_jp\coral_reef\land\LandStore;
+use ree_jp\coral_reef\sql\SQLManager;
 
-class ReefAdminCommand extends PluginCommand
+class ReefAdminCommand extends Command implements PluginOwned
 {
 
-    public function __construct(Plugin $owner)
+    public function __construct(private Plugin $owner, private SQLManager $repo, private AccountStore $accountStore, private LandStore $landStore)
     {
-        parent::__construct("reef-admin", $owner);
+        parent::__construct("reef-admin");
         $this->setUsage("for admin");
         $this->setPermission("coral_reef.command.reef_admin");
     }
@@ -24,6 +28,11 @@ class ReefAdminCommand extends PluginCommand
             $sender->sendMessage('このコマンドはプレイヤー専用です');
             return;
         }
-        ReefAdminForm::sendReefAdminForm($sender);
+        ReefAdminForm::sendForm($this->repo, $this->accountStore, $this->landStore, $sender);
+    }
+
+    public function getOwningPlugin(): Plugin
+    {
+        return $this->owner;
     }
 }

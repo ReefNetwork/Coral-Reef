@@ -6,7 +6,7 @@
  * CC    C oo  oo rr     aa  aaa lll RR  RR  eeeee  eeeee  ff
  *  CCCCC   oooo  rr      aaa aa lll RR   RR  eeeee  eeeee ff
  *
- * Copyright (c) 2021-2021. Ree-jp(https://ree-jp.net)
+ * Copyright (c) 2021. Ree-jp(https://ree-jp.net)
  */
 
 namespace ree_jp\coral_reef\command;
@@ -16,26 +16,29 @@ use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
 use pocketmine\plugin\Plugin;
 use pocketmine\plugin\PluginOwned;
-use ree_jp\coral_reef\account\AccountStore;
-use ree_jp\coral_reef\form\FormManager;
+use ree_jp\coral_reef\form\LandForm;
+use ree_jp\coral_reef\land\LandStore;
 use ree_jp\coral_reef\sql\SQLManager;
 
-class MenuCommand extends Command implements PluginOwned
+class ReefFormCommand extends Command implements PluginOwned
 {
-    public function __construct(private Plugin $owner, private SQLManager $repo, private AccountStore $store)
+    public function __construct(private Plugin $owner, private SQLManager $repo, private LandStore $landStore)
     {
-        parent::__construct("menu");
-        $this->setUsage('メニューを表示します');
-        $this->setAliases(['m']);
+        parent::__construct("reef-form", "reef form command");
     }
 
     public function execute(CommandSender $sender, string $commandLabel, array $args)
     {
-        if (!$sender instanceof Player) {
-            $sender->sendMessage('このコマンドはプレイヤー専用です');
+        if (!$sender instanceof Player || !isset($args[0])) {
+            $sender->sendMessage("コマンドが間違っています");
             return;
         }
-        FormManager::sendMenu($this->repo, $this->store, $sender);
+
+        switch ($args[0]) {
+            case "land":
+                LandForm::sendForm($this->repo, $this->landStore, $sender);
+                break;
+        }
     }
 
     public function getOwningPlugin(): Plugin

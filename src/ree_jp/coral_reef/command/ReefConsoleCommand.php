@@ -11,19 +11,20 @@
 
 namespace ree_jp\coral_reef\command;
 
+use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
-use pocketmine\command\PluginCommand;
-use pocketmine\Player;
+use pocketmine\player\Player;
 use pocketmine\plugin\Plugin;
+use pocketmine\plugin\PluginOwned;
+use ree_jp\coral_reef\account\AccountStore;
 use ree_jp\coral_reef\gatya\items\SpecialItemService;
 use ree_jp\coral_reef\sql\SQLConst;
-use ree_jp\coral_reef\sql\SQLManager;
 
-class ReefConsoleCommand extends PluginCommand
+class ReefConsoleCommand extends Command implements PluginOwned
 {
-    public function __construct(Plugin $owner)
+    public function __construct(private Plugin $owner, private AccountStore $store)
     {
-        parent::__construct("reef-console", $owner);
+        parent::__construct("reef-console");
         $this->setUsage("Reef Manage Command");
         $this->setAliases(["reef-c"]);
         $this->setPermission("coral_reef.command.reef_console");
@@ -41,13 +42,13 @@ class ReefConsoleCommand extends PluginCommand
                         $sender->sendMessage("引数が間違ってる");
                         return;
                     }
-                    SQLManager::$manager->setValue(0, SQLConst::TYPE_ENV, $args[0], $args[1], null);
+                    $this->store->setValue(0, SQLConst::TYPE_ENV, $args[0], $args[1], null);
                     $sender->sendMessage("反映には最大1分かかります");
                     break;
 
                 case "tool":
                     if ($sender instanceof Player) {
-                        $sender->getInventory()->addItem(SpecialItemService::getRenewItem($args[1], $args[2], $args[3]));
+                        $sender->getInventory()->addItem(SpecialItemService::getRenewItem($args[1], $args[2], $args[3], $this->store));
                     }
                     break;
                 default:
@@ -55,5 +56,10 @@ class ReefConsoleCommand extends PluginCommand
                     break;
             }
         }
+    }
+
+    public function getOwningPlugin(): Plugin
+    {
+        return $this->owner;
     }
 }

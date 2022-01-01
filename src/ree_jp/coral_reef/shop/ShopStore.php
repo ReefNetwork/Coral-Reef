@@ -11,8 +11,9 @@
 
 namespace ree_jp\coral_reef\shop;
 
-use pocketmine\level\Position;
+use JsonException;
 use pocketmine\utils\Config;
+use pocketmine\world\Position;
 
 class ShopStore
 {
@@ -50,14 +51,17 @@ class ShopStore
 
     private function createKey(Position $pos): string
     {
-        return $pos->getLevel()->getFolderName() . ":" . $pos->getX() . ":" . $pos->getY() . ":" . $pos->getZ();
+        return $pos->getWorld()->getFolderName() . ":" . $pos->getX() . ":" . $pos->getY() . ":" . $pos->getZ();
     }
 
     public function createShop(Shop $shop): void
     {
         $this->config->reload();
         $this->config->set($this->createKey($shop->pos), $shop->jsonSerialize());
-        $this->config->save();
+        try {
+            $this->config->save();
+        } catch (JsonException $e) {
+        }
         $this->loadShop();
     }
 
@@ -65,7 +69,10 @@ class ShopStore
     {
         $this->config->reload();
         $this->config->remove($this->createKey($pos));
-        $this->config->save();
+        try {
+            $this->config->save();
+        } catch (JsonException $e) {
+        }
         $this->loadShop();
     }
 }
