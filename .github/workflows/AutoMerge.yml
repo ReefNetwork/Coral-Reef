@@ -8,8 +8,9 @@ on:
       - plugin.yml
 jobs:
   merge:
-    name: merge master to stable
+    name: Merge master to stable
     runs-on: ubuntu-latest
+    if: "!contains(github.event.head_commit.message, '[skip]')"
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -32,5 +33,5 @@ jobs:
             update by ${{ github.actor }}.
           draft: false
 
-      - name: merge PR
+      - name: Merge Pull Request
         run: gh pr merge ${{ steps.cpr.outputs.pull-request-url }} --merge

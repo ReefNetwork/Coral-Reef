@@ -54,8 +54,7 @@ class FormManager
                 ->setText("レベル : $level\nレベルアップまで : $necessaryExperience\n経験値 : $exp\nお金 : $money")
                 ->addElements(
                     new ClosureButton(
-                        "ストレージ",
-                        null,
+                        "ストレージ", null,
                         function (Player $p) {
                             Server::getInstance()->dispatchCommand($p, 'stackstorage');
                             $p->sendMessage(TextFormat::DARK_GRAY . "ストレージを開いています(数秒かかることがあります)");
@@ -119,6 +118,12 @@ class FormManager
                         "ランダムワープ", null, function (Player $p) use ($repo, $store) {
                         self::sendRandomWarpForm($repo, $store, $p);
                     }),
+                    new ClosureButton(
+                        "ゴミ箱", null,
+                        function (Player $p) {
+                            Server::getInstance()->dispatchCommand($p, "trash");
+                        }
+                    ),
                     new ClosureButton(
                         "ランキング", null, function (Player $p) use ($repo) {
                         RankingForm::sendForm($repo, $p);

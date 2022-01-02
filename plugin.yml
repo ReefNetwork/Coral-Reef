@@ -8,6 +8,10 @@ depend:
   - BboForm
   - StackStorage
 permissions:
+  coral_reef.command.menu:
+    default: true
+  coral_reef.command.trash:
+    default: true
   coral_reef.command.reef_admin:
     default: op
   coral_reef.command.reef_console:

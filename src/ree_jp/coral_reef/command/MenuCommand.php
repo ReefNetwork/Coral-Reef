@@ -24,15 +24,15 @@ class MenuCommand extends Command implements PluginOwned
 {
     public function __construct(private Plugin $owner, private SQLManager $repo, private AccountStore $store)
     {
-        parent::__construct("menu");
-        $this->setUsage('メニューを表示します');
-        $this->setAliases(['m']);
+        parent::__construct("menu", "メニューを表示します", null, ["m"]);
+        $this->setPermission("coral_reef.command.menu");
     }
 
     public function execute(CommandSender $sender, string $commandLabel, array $args)
     {
+        if (!$this->testPermission($sender)) return;
         if (!$sender instanceof Player) {
-            $sender->sendMessage('このコマンドはプレイヤー専用です');
+            $sender->sendMessage("このコマンドはプレイヤー専用です");
             return;
         }
         FormManager::sendMenu($this->repo, $this->store, $sender);

@@ -24,6 +24,7 @@ use ree_jp\coral_reef\command\ReefAdminCommand;
 use ree_jp\coral_reef\command\ReefCommand;
 use ree_jp\coral_reef\command\ReefConsoleCommand;
 use ree_jp\coral_reef\command\ReefFormCommand;
+use ree_jp\coral_reef\command\TrashCommand;
 use ree_jp\coral_reef\gatya\items\ReefItems;
 use ree_jp\coral_reef\land\LandStore;
 use ree_jp\coral_reef\money\MoneyCache;
@@ -96,11 +97,15 @@ class CoralReefPlugin extends PluginBase
 
     private function registerCommands(): void
     {
-        $this->getServer()->getCommandMap()->register("menu", new MenuCommand($this, $this->sqlRepo, $this->accountStore));
-        $this->getServer()->getCommandMap()->register("reef", new ReefCommand($this));
-        $this->getServer()->getCommandMap()->register("reef-admin", new ReefAdminCommand($this, $this->sqlRepo, $this->accountStore, $this->landStore));
-        $this->getServer()->getCommandMap()->register("reef-console", new ReefConsoleCommand($this, $this->accountStore));
-        $this->getServer()->getCommandMap()->register("reef-form", new ReefFormCommand($this, $this->sqlRepo, $this->landStore));
+        $this->getServer()->getCommandMap()->registerAll("reef", [
+            new MenuCommand($this, $this->sqlRepo, $this->accountStore),
+            new TrashCommand($this),
+            new ReefCommand($this),
+            new ReefAdminCommand($this, $this->sqlRepo, $this->accountStore, $this->landStore),
+            new ReefConsoleCommand($this, $this->accountStore),
+            new ReefFormCommand($this, $this->sqlRepo, $this->landStore),
+            new ReefConsoleCommand($this, $this->accountStore),
+        ]);
     }
 
     private function registerSchedules(): void
