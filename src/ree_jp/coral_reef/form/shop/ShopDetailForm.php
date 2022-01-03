@@ -19,6 +19,7 @@ use bbo51dog\bboform\form\ModalForm;
 use pocketmine\player\Player;
 use pocketmine\utils\TextFormat;
 use ree_jp\coral_reef\shop\Shop;
+use ree_jp\coral_reef\shop\ShopService;
 use ree_jp\coral_reef\sql\SQLRepository;
 
 class ShopDetailForm
@@ -42,10 +43,10 @@ class ShopDetailForm
                 function (Player $p) use ($repo, $amount, $shop): void {
                     switch ($shop->orderType) {
                         case "buy":
-                            $shop->buy($repo, $p, $amount->getValue());
+                            ShopService::buy($repo, $shop, $p, $amount->getValue());
                             break;
                         case "sell":
-                            $shop->sell($repo, $p, $amount->getValue());
+                            ShopService::sell($repo, $shop, $p, $amount->getValue());
                             break;
                         default:
                             $p->sendMessage("エラーが発生しました");
