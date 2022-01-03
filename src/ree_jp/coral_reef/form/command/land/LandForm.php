@@ -9,7 +9,7 @@
  * Copyright (c) 2021-2022. Ree-jp(https://ree-jp.net)
  */
 
-namespace ree_jp\coral_reef\form\command;
+namespace ree_jp\coral_reef\form\command\land;
 
 use bbo51dog\bboform\element\Button;
 use bbo51dog\bboform\element\ClosureButton;
@@ -53,7 +53,7 @@ class LandForm
         $form->addElement(new ClosureButton(
             "パーティー", null,
             function (Player $p) use ($landStore, $accountStore) {
-                PartyForm::sendForm($accountStore, $landStore, $p);
+                LandPartyForm::sendForm($accountStore, $landStore, $p);
             }
         ));
         $form->addElement(new ClosureButton(

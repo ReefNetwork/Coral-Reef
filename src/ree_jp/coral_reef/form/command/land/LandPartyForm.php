@@ -9,7 +9,7 @@
  * Copyright (c) 2021-2022. Ree-jp(https://ree-jp.net)
  */
 
-namespace ree_jp\coral_reef\form\command;
+namespace ree_jp\coral_reef\form\command\land;
 
 use bbo51dog\bboform\element\ClosureButton;
 use bbo51dog\bboform\element\Input;
@@ -22,7 +22,7 @@ use pocketmine\Server;
 use ree_jp\coral_reef\account\AccountStore;
 use ree_jp\coral_reef\land\LandStore;
 
-class PartyForm
+class LandPartyForm
 {
     static function sendForm(AccountStore $accountStore, LandStore $landStore, Player $p): void
     {

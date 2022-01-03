@@ -17,7 +17,7 @@ use pocketmine\player\Player;
 use pocketmine\plugin\Plugin;
 use pocketmine\plugin\PluginOwned;
 use ree_jp\coral_reef\account\AccountStore;
-use ree_jp\coral_reef\form\command\LandForm;
+use ree_jp\coral_reef\form\command\land\LandForm;
 use ree_jp\coral_reef\land\LandStore;
 use ree_jp\coral_reef\sql\SQLRepository;
 

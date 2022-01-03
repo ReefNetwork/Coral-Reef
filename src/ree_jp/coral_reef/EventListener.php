@@ -41,7 +41,7 @@ use pocketmine\utils\TextFormat;
 use ree_jp\coral_reef\account\AccountService;
 use ree_jp\coral_reef\account\AccountStore;
 use ree_jp\coral_reef\account\SettingManager;
-use ree_jp\coral_reef\form\command\LandForm;
+use ree_jp\coral_reef\form\command\land\LandForm;
 use ree_jp\coral_reef\form\item\HerbicideForm;
 use ree_jp\coral_reef\gatya\items\ReefItems;
 use ree_jp\coral_reef\gatya\items\SpecialItemService;
