@@ -32,7 +32,7 @@ class SQLRepository
     private DataConnector $db;
 
     public array $setting = [];
-    private string $server;
+    public string $server;
 
     public function __construct(private AccountStore $accountStore, CoralReefPlugin $plugin, string $path, string $server)
     {
@@ -165,6 +165,12 @@ class SQLRepository
     public function getAllSubtypeValue(string $xuid, string $type, ?Closure $func, ?Closure $failure = null): void
     {
         $this->db->executeSelect('coral_reef.values.get.all_subtype', ['xuid' => $xuid, 'type' => strtolower($type)],
+            $func, $failure);
+    }
+
+    public function getAllUserSubtypeValue(string $type, ?Closure $func, ?Closure $failure = null): void
+    {
+        $this->db->executeSelect("coral_reef.values.get.all_user_subtype", ["type" => strtolower($type)],
             $func, $failure);
     }
 

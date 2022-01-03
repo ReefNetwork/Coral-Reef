@@ -23,6 +23,7 @@ use pocketmine\world\sound\EndermanTeleportSound;
 use poggit\libasynql\SqlError;
 use ree_jp\coral_reef\account\AccountService;
 use ree_jp\coral_reef\account\AccountStore;
+use ree_jp\coral_reef\sql\SQLConst;
 use ree_jp\coral_reef\sql\SQLRepository;
 
 class LandService
@@ -71,6 +72,28 @@ class LandService
             }
         }
         return null;
+    }
+
+    static function addShareMember(SQLRepository $repo, LandData $land, ?Player $p, string $xuid): void
+    {
+        if (!$land->isMember($xuid)) {
+            $land->addMember($xuid);
+            $repo->setValue($land->xuid, SQLConst::TYPE_LAND_KEY, $repo->server . ":" . $land->name, implode(":", $land->members),
+                function () use ($p): void {
+                    if (!is_null($p)) $p->sendMessage("土地保護の共有を追加しました");
+                }
+            );
+        }
+    }
+
+    static function deleteShareMember(SQLRepository $repo, LandData $land, ?Player $p, string $xuid): void
+    {
+        $land->deleteMember($xuid);
+        $repo->setValue($land->xuid, SQLConst::TYPE_LAND_KEY, $repo->server . ":" . $land->name, implode(":", $land->members),
+            function () use ($p): void {
+                if (!is_null($p)) $p->sendMessage("土地保護の共有を削除しました");
+            }
+        );
     }
 
     static function addLand(SQLRepository $sqlRepo, LandStore $store, LandData $land, ?Player $p): void

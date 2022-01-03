@@ -15,6 +15,7 @@ use pocketmine\math\AxisAlignedBB;
 use pocketmine\math\Vector3;
 use poggit\libasynql\SqlError;
 use ree_jp\coral_reef\CoralReefPlugin;
+use ree_jp\coral_reef\sql\SQLConst;
 use ree_jp\coral_reef\sql\SQLRepository;
 
 class LandStore
@@ -34,19 +35,35 @@ class LandStore
      */
     public array $party = [];
 
-    public function __construct(SQLRepository $sqlRepo)
+    public function __construct(SQLRepository $repo)
     {
-        $sqlRepo->loadProtectLand(function (array $rows) {
-            foreach ($rows as $arrayLand) {
-                $level = $arrayLand['level'];
-                if (!isset($this->lands[$level])) $this->lands[$level] = [];
+        // LandKey(土地保護を共有してる人をメモってるやつ)を確認
+        $repo->getAllUserSubtypeValue(SQLConst::TYPE_LAND_KEY, function (array $landKeys) use ($repo): void {
 
-                $this->lands[$level][] = new LandData($arrayLand['xuid'], $arrayLand['name'], $level,
-                    new AxisAlignedBB($arrayLand['sx'], 0, $arrayLand['sz'], $arrayLand['mx'], 0, $arrayLand['mz']));
-            }
+            $repo->loadProtectLand(function (array $rows) use ($repo, $landKeys) {
+                foreach ($rows as $arrayLand) {
+                    $level = $arrayLand['level'];
+                    if (!isset($this->lands[$level])) $this->lands[$level] = [];
+
+                    $land = new LandData($arrayLand['xuid'], $arrayLand['name'], $level,
+                        new AxisAlignedBB($arrayLand['sx'], 0, $arrayLand['sz'], $arrayLand['mx'], 0, $arrayLand['mz']));
+                    $this->lands[$level][] = $land;
+
+                    foreach ($landKeys as $key) {
+                        if ($key["xuid"] === $land->xuid && $repo->server . ":" . $key["subtype"] === $land->name && !is_null($key["value"])) {
+                            foreach (explode(":", $key["value"]) as $member) {
+                                $land->addMember($member);
+                            }
+                        }
+                    }
+                }
+            }, function (SqlError $error) {
+                CoralReefPlugin::$plugin->criticalError("土地情報を取得中に" . $error->getErrorMessage());
+            });
         }, function (SqlError $error) {
-            CoralReefPlugin::$plugin->criticalError("土地情報を取得中に" . $error->getErrorMessage());
+            CoralReefPlugin::$plugin->criticalError("土地キー情報を取得中に" . $error->getErrorMessage());
         });
+
     }
 
     public function isParty(string $ownerXuid, string $userXuid): bool

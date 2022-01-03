@@ -41,8 +41,8 @@ class LandForm
             if ($land instanceof LandData) {
                 $button = new ClosureButton(
                     $land->name, null,
-                    function (Player $p) use ($landStore, $repo, $land) {
-                        self::sendLandEditForm($repo, $landStore, $p, $land);
+                    function (Player $p) use ($accountStore, $landStore, $repo, $land) {
+                        self::sendLandEditForm($repo, $accountStore, $landStore, $p, $land);
                     }
                 );
             } else {
@@ -66,7 +66,7 @@ class LandForm
         $p->sendForm($form);
     }
 
-    static function sendLandEditForm(SQLRepository $repo, LandStore $store, Player $p, LandData $land): void
+    static function sendLandEditForm(SQLRepository $repo, AccountStore $accountStore, LandStore $store, Player $p, LandData $land): void
     {
         $aabb = $land->aabb;
         $space = (($aabb->maxX - $aabb->minX) + 1) * (($aabb->maxZ - $aabb->minZ) + 1);
@@ -74,12 +74,20 @@ class LandForm
             ->setTitle("Land -> Edit")
             ->setText("土地保護の名前: $land->name\nワールド: $land->level\nX座標: $aabb->minX - $aabb->maxX\nZ座標: $aabb->minZ - $aabb->maxZ\n" .
                 "大きさ: $space ブロック")
-            ->addElement(new ClosureButton(
-                "土地を削除する", null,
-                function (Player $p) use ($store, $repo, $land) {
-                    self::sendLandDeleteConfirmForm($repo, $store, $p, $land);
-                }
-            ));
+            ->addElements(
+                new ClosureButton(
+                    "土地保護を共有する", null,
+                    function (Player $p) use ($accountStore, $store, $repo, $land) {
+                        LandShareForm::sendForm($repo, $accountStore, $land, $p);
+                    }
+                ),
+                new ClosureButton(
+                    "土地を削除する", null,
+                    function (Player $p) use ($accountStore, $store, $repo, $land) {
+                        self::sendLandDeleteConfirmForm($repo, $accountStore, $store, $p, $land);
+                    }
+                )
+            );
         $p->sendForm($form);
     }
 
@@ -179,7 +187,7 @@ class LandForm
         $p->sendForm($form);
     }
 
-    private static function sendLandDeleteConfirmForm(SQLRepository $repo, LandStore $store, Player $p, LandData $land): void
+    private static function sendLandDeleteConfirmForm(SQLRepository $repo, AccountStore $accountStore, LandStore $store, Player $p, LandData $land): void
     {
         $form = new ModalForm(
             new ClosureButton(
@@ -190,8 +198,8 @@ class LandForm
             ),
             new ClosureButton(
                 "いいえ", null,
-                function (Player $p) use ($store, $repo, $land) {
-                    self::sendLandEditForm($repo, $store, $p, $land);
+                function (Player $p) use ($accountStore, $store, $repo, $land) {
+                    self::sendLandEditForm($repo, $accountStore, $store, $p, $land);
                 },
             ),
         );

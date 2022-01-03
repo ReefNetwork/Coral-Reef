@@ -24,12 +24,10 @@ use ree_jp\coral_reef\land\LandStore;
 
 class PartyForm
 {
-    static array $members = [];
-
     static function sendForm(AccountStore $accountStore, LandStore $landStore, Player $p): void
     {
         $form = (new SimpleForm())
-            ->setTitle("Menu -> Party")
+            ->setTitle("Land -> Party")
             ->setText("パーティーメンバーを追加するか削除したいメンバーを選択してください\nパーティーメンバーになると土地保護を一緒に掘れるようになります\n" .
                 "サーバーが再起動されるとリセットされます");
 
@@ -47,7 +45,7 @@ class PartyForm
 
         $form->addElement(
             new ClosureButton(
-                "メンバーを追加する", null,
+                "パーティーを追加する", null,
                 function (Player $p) use ($landStore) {
                     self::sendPartyAddForm($landStore, $p);
                 }
@@ -78,7 +76,7 @@ class PartyForm
 
     static function sendPartyAddForm(LandStore $store, Player $p): void
     {
-        $memberNameInput = new Input('追加したいメンバーの名前を入力してください', '名前');
+        $memberNameInput = new Input('追加したいパーティーの名前を入力してください', '名前');
         $form = new ClosureCustomForm(
             function (Player $p) use ($store, $memberNameInput) {
                 $member = Server::getInstance()->getPlayerByPrefix($memberNameInput->getValue());

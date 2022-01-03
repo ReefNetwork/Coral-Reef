@@ -67,6 +67,14 @@ class AccountStore
         return $name;
     }
 
+    public function getXuid(string $name): ?string
+    {
+        $xuid = array_search($name, $this->xuid, true);
+        if ($xuid === false) {
+            return null;
+        } else return $xuid;
+    }
+
     public function getUser(string $xuid): ?UserAccount // 今サーバーに参加してるプレイヤーのみ取得できる
     {
         if (array_key_exists($xuid, $this->users)) return $this->users[$xuid];
