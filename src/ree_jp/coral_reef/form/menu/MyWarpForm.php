@@ -6,10 +6,10 @@
  * CC    C oo  oo rr     aa  aaa lll RR  RR  eeeee  eeeee  ff
  *  CCCCC   oooo  rr      aaa aa lll RR   RR  eeeee  eeeee ff
  *
- * Copyright (c) 2021-2021. Ree-jp(https://ree-jp.net)
+ * Copyright (c) 2021-2022. Ree-jp(https://ree-jp.net)
  */
 
-namespace ree_jp\coral_reef\form;
+namespace ree_jp\coral_reef\form\menu;
 
 use bbo51dog\bboform\element\Button;
 use bbo51dog\bboform\element\ClosureButton;
@@ -22,13 +22,13 @@ use Closure;
 use pocketmine\math\Vector3;
 use pocketmine\player\Player;
 use pocketmine\utils\TextFormat;
-use ree_jp\coral_reef\account\AccountManager;
+use ree_jp\coral_reef\account\AccountService;
 use ree_jp\coral_reef\quest\QuestListener;
-use ree_jp\coral_reef\sql\SQLManager;
+use ree_jp\coral_reef\sql\SQLRepository;
 
 class MyWarpForm
 {
-    static function sendForm(SQLManager $repo, Player $p): void
+    static function sendForm(SQLRepository $repo, Player $p): void
     {
         $xuid = $p->getXuid();
         $repo->getWarps($xuid, function (array $rows) use ($repo, $p) {
@@ -40,7 +40,7 @@ class MyWarpForm
                     self::createWarpButton($warpPoint,
                         function (Player $p) use ($warpPoint) {
                             $p->sendMessage($warpPoint['name'] . 'にワープしています...');
-                            AccountManager::teleport($p, $warpPoint['level'], new Vector3($warpPoint['x'], $warpPoint['y'], $warpPoint['z']));
+                            AccountService::teleport($p, $warpPoint['level'], new Vector3($warpPoint['x'], $warpPoint['y'], $warpPoint['z']));
                         }
                     )
                 );
@@ -55,7 +55,7 @@ class MyWarpForm
         });
     }
 
-    static function sendMyWarpEditForm(SQLManager $repo, Player $p, array $warpPoints): void
+    static function sendMyWarpEditForm(SQLRepository $repo, Player $p, array $warpPoints): void
     {
         $form = (new SimpleForm())
             ->setTitle("MyWarp -> Edit")
@@ -98,7 +98,7 @@ class MyWarpForm
         $p->sendForm($form);
     }
 
-    static function sendWarpCreateForm(SQLManager $repo, Player $p): void
+    static function sendWarpCreateForm(SQLRepository $repo, Player $p): void
     {
         $nameInput = new Input('作成したいワープ地点の名前を入力してください', '新しいワープ地点');
         $form = new ClosureCustomForm(

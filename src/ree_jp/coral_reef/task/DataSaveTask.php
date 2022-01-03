@@ -21,7 +21,7 @@ use pocketmine\utils\TextFormat;
 use ree_jp\coral_reef\account\AccountStore;
 use ree_jp\coral_reef\account\UserAccount;
 use ree_jp\coral_reef\CoralReefPlugin;
-use ree_jp\coral_reef\sql\SQLManager;
+use ree_jp\coral_reef\sql\SQLRepository;
 
 class DataSaveTask extends Task
 {
@@ -34,7 +34,7 @@ class DataSaveTask extends Task
      */
     private array $entities = [];
 
-    public function __construct(private SQLManager $repo, private AccountStore $store)
+    public function __construct(private SQLRepository $repo, private AccountStore $store)
     {
     }
 

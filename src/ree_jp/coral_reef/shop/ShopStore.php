@@ -14,6 +14,7 @@ namespace ree_jp\coral_reef\shop;
 use JsonException;
 use pocketmine\utils\Config;
 use pocketmine\world\Position;
+use ree_jp\coral_reef\CoralReefPlugin;
 
 class ShopStore
 {
@@ -61,6 +62,7 @@ class ShopStore
         try {
             $this->config->save();
         } catch (JsonException $e) {
+            CoralReefPlugin::$plugin->getLogger()->warning("ショップの作成に失敗しました:" . $e->getMessage());
         }
         $this->loadShop();
     }
@@ -72,6 +74,7 @@ class ShopStore
         try {
             $this->config->save();
         } catch (JsonException $e) {
+            CoralReefPlugin::$plugin->getLogger()->warning("ショップの削除に失敗しました:" . $e->getMessage());
         }
         $this->loadShop();
     }

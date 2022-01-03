@@ -12,7 +12,7 @@
 
 namespace ree_jp\coral_reef\session;
 
-use ree_jp\coral_reef\sql\SQLManager;
+use ree_jp\coral_reef\sql\SQLRepository;
 
 class SessionStore
 {
@@ -24,7 +24,7 @@ class SessionStore
         $this->sessions[$xuid] = new SessionData($xuid);
     }
 
-    public function destruction(SQLManager $repo, string $xuid): void
+    public function destruction(SQLRepository $repo, string $xuid): void
     {
         $session = $this->getSessionData($xuid);
         if (!is_null($session)) {

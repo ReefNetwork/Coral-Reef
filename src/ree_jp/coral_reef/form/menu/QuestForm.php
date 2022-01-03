@@ -6,10 +6,10 @@
  * CC    C oo  oo rr     aa  aaa lll RR  RR  eeeee  eeeee  ff
  *  CCCCC   oooo  rr      aaa aa lll RR   RR  eeeee  eeeee ff
  *
- * Copyright (c) 2021. Ree-jp(https://ree-jp.net)
+ * Copyright (c) 2021-2022. Ree-jp(https://ree-jp.net)
  */
 
-namespace ree_jp\coral_reef\form;
+namespace ree_jp\coral_reef\form\menu;
 
 use bbo51dog\bboform\element\ClosureButton;
 use bbo51dog\bboform\form\SimpleForm;

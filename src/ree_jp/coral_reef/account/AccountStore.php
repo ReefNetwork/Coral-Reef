@@ -13,7 +13,7 @@ namespace ree_jp\coral_reef\account;
 
 use pocketmine\scheduler\ClosureTask;
 use ree_jp\coral_reef\CoralReefPlugin;
-use ree_jp\coral_reef\sql\SQLManager;
+use ree_jp\coral_reef\sql\SQLRepository;
 
 class AccountStore
 {
@@ -73,7 +73,7 @@ class AccountStore
         return null;
     }
 
-    public function updateUserNameList(SQLManager $repo): void
+    public function updateUserNameList(SQLRepository $repo): void
     {
         $repo->getAllUser(function (array $rows): void {
             $list = [];

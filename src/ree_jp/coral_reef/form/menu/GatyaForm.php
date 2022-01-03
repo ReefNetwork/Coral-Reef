@@ -20,11 +20,11 @@ use pocketmine\player\Player;
 use ree_jp\coral_reef\gatya\event\Christmas2021;
 use ree_jp\coral_reef\gatya\NormalGatya;
 use ree_jp\coral_reef\sql\SQLConst;
-use ree_jp\coral_reef\sql\SQLManager;
+use ree_jp\coral_reef\sql\SQLRepository;
 
 class GatyaForm
 {
-    static function sendForm(SQLManager $repo, Player $p): void
+    static function sendForm(SQLRepository $repo, Player $p): void
     {
         $repo->getAllSubtypeValue($p->getXuid(), SQLConst::TYPE_TICKETS, function (array $rows) use ($repo, $p) {
             $normal = 0;
@@ -60,7 +60,7 @@ class GatyaForm
         });
     }
 
-    private static function sendGatyaNumberChoices(SQLManager $repo, Player $p, string $ticketType, int $tickets)
+    private static function sendGatyaNumberChoices(SQLRepository $repo, Player $p, string $ticketType, int $tickets)
     {
         $min = 1;
         if ($tickets < 1) $min = 0;
@@ -78,7 +78,7 @@ class GatyaForm
         return str_replace(SQLConst::TICKETS_CHRISTMAS_2021, "クリスマスガチャチケット", $text);
     }
 
-    private static function sendGatyaConfirmForm(SQLManager $repo, Player $p, string $ticketType, int $num, int $tickets)
+    private static function sendGatyaConfirmForm(SQLRepository $repo, Player $p, string $ticketType, int $num, int $tickets)
     {
         $after = $tickets - $num;
         $form = new ModalForm(

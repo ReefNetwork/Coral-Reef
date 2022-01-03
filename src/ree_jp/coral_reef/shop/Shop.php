@@ -24,7 +24,7 @@ use ree_jp\coral_reef\account\GiftService;
 use ree_jp\coral_reef\gatya\GatyaManager;
 use ree_jp\coral_reef\money\MoneyService;
 use ree_jp\coral_reef\sql\SQLConst;
-use ree_jp\coral_reef\sql\SQLManager;
+use ree_jp\coral_reef\sql\SQLRepository;
 
 class Shop
 {
@@ -53,7 +53,7 @@ class Shop
             "order_type" => $this->orderType, "payment" => $this->payment];
     }
 
-    public function buy(SQLManager $repo, Player $p, int $count = 1): void
+    public function buy(SQLRepository $repo, Player $p, int $count = 1): void
     {
         $xuid = $p->getXuid();
         $this->pay($repo, $xuid, $count, function () use ($repo, $xuid, $p, $count): void {
@@ -78,7 +78,7 @@ class Shop
         });
     }
 
-    public function sell(SQLManager $repo, Player $p, int $count = 1): void
+    public function sell(SQLRepository $repo, Player $p, int $count = 1): void
     {
         foreach ($this->getItems() as $item) {
             $item = $item->setCount($item->getCount() * $count);
@@ -98,7 +98,7 @@ class Shop
         }, true);
     }
 
-    private function pay(SQLManager $repo, string $xuid, int $count, Closure $func, Closure $failure, bool $isSell = false): void
+    private function pay(SQLRepository $repo, string $xuid, int $count, Closure $func, Closure $failure, bool $isSell = false): void
     {
         $value = $this->payment["amount"] * $count;
         switch ($this->payment["type"]) {

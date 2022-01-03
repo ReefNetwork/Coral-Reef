@@ -21,13 +21,13 @@ use ree_jp\coral_reef\quest\data\TutorialQuest;
 use ree_jp\coral_reef\quest\data\WeeklyAchieveQuest;
 use ree_jp\coral_reef\quest\data\WeeklyDigQuest;
 use ree_jp\coral_reef\sql\SQLConst;
-use ree_jp\coral_reef\sql\SQLManager;
+use ree_jp\coral_reef\sql\SQLRepository;
 
 class QuestManager
 {
     static array $quests = [];
 
-    static function updateQuests(SQLManager $repo, AccountStore $store, string $xuid, ?Closure $func = null): void
+    static function updateQuests(SQLRepository $repo, AccountStore $store, string $xuid, ?Closure $func = null): void
     {
         $repo->getAllSubtypeValue($xuid, SQLConst::TYPE_QUEST, function (array $rows) use ($store, $repo, $func, $xuid) {
             if (isset(self::$quests[$xuid])) unset(self::$quests[$xuid]);
@@ -45,7 +45,7 @@ class QuestManager
         });
     }
 
-    static function registerQuest(SQLManager $repo, string $xuid, string $questID, ?string $value, ?AccountStore $store = null): void // クエストがなかったら与える
+    static function registerQuest(SQLRepository $repo, string $xuid, string $questID, ?string $value, ?AccountStore $store = null): void // クエストがなかったら与える
     {
         foreach (QuestManager::getUserQuests($xuid) as $alreadyQuest) {
             if ($questID === $alreadyQuest::ID) return;
@@ -53,7 +53,7 @@ class QuestManager
         self::$quests[$xuid][] = self::getQuest($repo, $store, $xuid, $questID, $value);
     }
 
-    static function getQuest(SQLManager $repo, ?AccountStore $store, string $xuid, string $questID, ?string $value): ?QuestData
+    static function getQuest(SQLRepository $repo, ?AccountStore $store, string $xuid, string $questID, ?string $value): ?QuestData
     {
         return match ($questID) {
             TutorialQuest::ID => new TutorialQuest($repo, $xuid, $value),
@@ -71,13 +71,13 @@ class QuestManager
         return self::$quests[$xuid] ?? [];
     }
 
-    static function save(SQLManager $repo, string $xuid, ?Closure $func = null): void
+    static function save(SQLRepository $repo, string $xuid, ?Closure $func = null): void
     {
         $quests = self::getUserQuests($xuid);
         self::saveQuestLoop($repo, $xuid, $quests, $func);
     }
 
-    private static function saveQuestLoop(SQLManager $repo, string $xuid, array $quests, ?Closure $lastFunc): void
+    private static function saveQuestLoop(SQLRepository $repo, string $xuid, array $quests, ?Closure $lastFunc): void
     {
         $quest = array_shift($quests);
         if (empty($quest)) {

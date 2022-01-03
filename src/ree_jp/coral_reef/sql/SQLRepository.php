@@ -27,7 +27,7 @@ use ree_jp\coral_reef\land\LandData;
 use ree_jp\coral_reef\money\MoneyCache;
 use ree_jp\coral_reef\session\SessionData;
 
-class SQLManager
+class SQLRepository
 {
     private DataConnector $db;
 

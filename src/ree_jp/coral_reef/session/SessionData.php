@@ -11,7 +11,7 @@
 
 namespace ree_jp\coral_reef\session;
 
-use ree_jp\coral_reef\sql\SQLManager;
+use ree_jp\coral_reef\sql\SQLRepository;
 
 class SessionData
 {
@@ -42,7 +42,7 @@ class SessionData
         $this->skillCount++;
     }
 
-    public function quit(SQLManager $repo): void
+    public function quit(SQLRepository $repo): void
     {
         $this->quitTime = time();
         $repo->recordSession($this->xuid, $this);

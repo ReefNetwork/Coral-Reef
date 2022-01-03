@@ -21,11 +21,11 @@ use ree_jp\coral_reef\gatya\items\ReefItems;
 use ree_jp\coral_reef\gatya\items\SuperItems;
 use ree_jp\coral_reef\gatya\items\UltimateItems;
 use ree_jp\coral_reef\sql\SQLConst;
-use ree_jp\coral_reef\sql\SQLManager;
+use ree_jp\coral_reef\sql\SQLRepository;
 
 class NormalGatya
 {
-    static function gatya(SQLManager $repo, Player $p, int $number = 1): void
+    static function gatya(SQLRepository $repo, Player $p, int $number = 1): void
     {
         if ($number <= 0) return;
         $xuid = $p->getXuid();

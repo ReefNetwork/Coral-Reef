@@ -12,11 +12,11 @@
 namespace ree_jp\coral_reef\money;
 
 use Closure;
-use ree_jp\coral_reef\sql\SQLManager;
+use ree_jp\coral_reef\sql\SQLRepository;
 
 class MoneyService
 {
-    static function getMoney(SQLManager $repo, string $xuid, Closure $func): void
+    static function getMoney(SQLRepository $repo, string $xuid, Closure $func): void
     {
         MoneyCache::purge($repo, $xuid);
         $repo->getMoney($xuid, function (array $rows) use ($func): void {
@@ -29,12 +29,12 @@ class MoneyService
         });
     }
 
-    static function reduceMoney(SQLManager $repo, string $xuid, int $money, bool $force = false): void
+    static function reduceMoney(SQLRepository $repo, string $xuid, int $money, bool $force = false): void
     {
         self::addMoney($repo, $xuid, -$money, $force);
     }
 
-    static function addMoney(SQLManager $repo, string $xuid, int $money, bool $force = false): void
+    static function addMoney(SQLRepository $repo, string $xuid, int $money, bool $force = false): void
     {
         if ($force) {
             $repo->addMoney($xuid, $money, null);

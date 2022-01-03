@@ -1,6 +1,15 @@
 <?php
+/*
+ *  CCCCC                        lll RRRRRR                 fff
+ * CC    C  oooo  rr rr    aa aa lll RR   RR   eee    eee  ff
+ * CC      oo  oo rrr  r  aa aaa lll RRRRRR  ee   e ee   e ffff
+ * CC    C oo  oo rr     aa  aaa lll RR  RR  eeeee  eeeee  ff
+ *  CCCCC   oooo  rr      aaa aa lll RR   RR  eeeee  eeeee ff
+ *
+ * Copyright (c) 2022. Ree-jp(https://ree-jp.net)
+ */
 
-namespace ree_jp\coral_reef\form;
+namespace ree_jp\coral_reef\form\command;
 
 use bbo51dog\bboform\element\ClosureButton;
 use bbo51dog\bboform\element\Input;
@@ -13,13 +22,13 @@ use pocketmine\Server;
 use ree_jp\coral_reef\account\AccountStore;
 use ree_jp\coral_reef\account\UserAccount;
 use ree_jp\coral_reef\land\LandData;
-use ree_jp\coral_reef\land\LandManager;
+use ree_jp\coral_reef\land\LandService;
 use ree_jp\coral_reef\land\LandStore;
-use ree_jp\coral_reef\sql\SQLManager;
+use ree_jp\coral_reef\sql\SQLRepository;
 
 class ReefAdminForm
 {
-    static function sendForm(SQLManager $repo, AccountStore $accountStore, LandStore $landStore, Player $p)
+    static function sendForm(SQLRepository $repo, AccountStore $accountStore, LandStore $landStore, Player $p)
     {
         $form = (new SimpleForm())
             ->setTitle("Admin")
@@ -36,7 +45,7 @@ class ReefAdminForm
         $p->sendForm($form);
     }
 
-    private static function sendUserAdminForm(SQLManager $repo, AccountStore $accountStore, LandStore $landStore, Player $p, UserAccount $user)
+    private static function sendUserAdminForm(SQLRepository $repo, AccountStore $accountStore, LandStore $landStore, Player $p, UserAccount $user)
     {
         $p->sendForm((new SimpleForm())
             ->setTitle("Admin -> User")
@@ -78,13 +87,13 @@ class ReefAdminForm
         $p->sendForm($form);
     }
 
-    private static function sendLandAdminForm(SQLManager $repo, AccountStore $accountStore, LandStore $landStore, Player $p, UserAccount $user)
+    private static function sendLandAdminForm(SQLRepository $repo, AccountStore $accountStore, LandStore $landStore, Player $p, UserAccount $user)
     {
         $form = (new SimpleForm())
             ->setTitle("Admin -> Land")
             ->setText($user->name . "さんの土地一覧");
 
-        foreach (LandManager::getMyLand($landStore, $user->xuid) as $land) {
+        foreach (LandService::getMyLand($landStore, $user->xuid) as $land) {
             $form->addElement(new ClosureButton(
                 $land->name, null, function (Player $p) use ($accountStore, $landStore, $repo, $land) {
                 self::sendLandAdminDetailForm($repo, $accountStore, $landStore, $p, $land);
@@ -93,7 +102,7 @@ class ReefAdminForm
         $p->sendForm($form);
     }
 
-    private static function sendLandAdminDetailForm(SQLManager $repo, AccountStore $accountStore, LandStore $landStore, Player $p, LandData $land)
+    private static function sendLandAdminDetailForm(SQLRepository $repo, AccountStore $accountStore, LandStore $landStore, Player $p, LandData $land)
     {
         $ownerName = $accountStore->getUserName($land->xuid);
         $aabb = $land->aabb;
@@ -109,7 +118,7 @@ class ReefAdminForm
                     $p->sendForm((new ModalForm(
                         new ClosureButton(
                             "はい", null, function (Player $p) use ($landStore, $repo, $land) {
-                            LandManager::deleteLand($repo, $landStore, $land, $p);
+                            LandService::deleteLand($repo, $landStore, $land, $p);
                         }),
                         new ClosureButton(
                             "いいえ", null, function (Player $p) use ($landStore, $accountStore, $repo, $land) {

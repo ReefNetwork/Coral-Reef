@@ -38,28 +38,27 @@ use pocketmine\player\Player;
 use pocketmine\scheduler\ClosureTask;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat;
-use ree_jp\coral_reef\account\AccountManager;
+use ree_jp\coral_reef\account\AccountService;
 use ree_jp\coral_reef\account\AccountStore;
 use ree_jp\coral_reef\account\SettingManager;
 use ree_jp\coral_reef\form\command\LandForm;
-use ree_jp\coral_reef\form\FormManager;
 use ree_jp\coral_reef\form\item\HerbicideForm;
 use ree_jp\coral_reef\gatya\items\ReefItems;
 use ree_jp\coral_reef\gatya\items\SpecialItemService;
-use ree_jp\coral_reef\land\LandManager;
+use ree_jp\coral_reef\land\LandService;
 use ree_jp\coral_reef\land\LandStore;
 use ree_jp\coral_reef\session\SessionStore;
 use ree_jp\coral_reef\shop\ShopService;
 use ree_jp\coral_reef\shop\ShopStore;
 use ree_jp\coral_reef\sql\SettingConst;
-use ree_jp\coral_reef\sql\SQLManager;
+use ree_jp\coral_reef\sql\SQLRepository;
 use ree_jp\coral_reef\task\EffectTask;
 use Throwable;
 
 class EventListener implements Listener
 {
-    public function __construct(private ?SQLManager $sqlRepo, private AccountStore $accountStore, private LandStore $landStore,
-                                private ShopStore   $shopStore, private SessionStore $sessionStore)
+    public function __construct(private ?SQLRepository $sqlRepo, private AccountStore $accountStore, private LandStore $landStore,
+                                private ShopStore      $shopStore, private SessionStore $sessionStore)
     {
     }
 
@@ -82,7 +81,7 @@ class EventListener implements Listener
             $p->setImmobile();
             $p->sendMessage('データを確認しています...');
         }
-        AccountManager::userJoin($this->sqlRepo, $this->accountStore, $p);
+        AccountService::userJoin($this->sqlRepo, $this->accountStore, $p);
         $this->sessionStore->createSession($xuid);
 
         $ev->setJoinMessage(""); // プロキシ側で参加メッセージを流す
@@ -96,7 +95,7 @@ class EventListener implements Listener
     {
         $p = $ev->getPlayer();
 
-        AccountManager::userQuit($this->sqlRepo, $this->accountStore, $p);
+        AccountService::userQuit($this->sqlRepo, $this->accountStore, $p);
         $this->sessionStore->destruction($this->sqlRepo, $p->getXuid());
         $ev->setQuitMessage(""); // プロキシ側で退出メッセージを流す
     }
@@ -147,7 +146,7 @@ class EventListener implements Listener
             $ev->cancel();
             return;
         }
-        if (LandManager::protect($this->landStore, $this->accountStore, $p, $ev->getBlock()->getPosition(), 'このワールドでブロックを掘ることはできません')) {
+        if (LandService::protect($this->landStore, $this->accountStore, $p, $ev->getBlock()->getPosition(), 'このワールドでブロックを掘ることはできません')) {
             $ev->cancel();
         }
         if ($this->accountStore->hasValue($p->getXuid(), 'skill_cool_time') &&
@@ -167,7 +166,7 @@ class EventListener implements Listener
         if ($this->accountStore->hasValue($p->getXuid(), "herbicide_break")) return;
 
         try {
-            AccountManager::blockBroken($this->sqlRepo, $this->accountStore, $p, $ev->getBlock(), $this->sessionStore->getSessionData($p->getXuid()));
+            AccountService::blockBroken($this->sqlRepo, $this->accountStore, $p, $ev->getBlock(), $this->sessionStore->getSessionData($p->getXuid()));
         } catch (Exception $e) {
             $p->sendMessage('エラーが発生しました');
             Server::getInstance()->getLogger()->error('[blockBroke]' . $p->getName() . 'の処理中に' . $e->getMessage());
@@ -198,7 +197,7 @@ class EventListener implements Listener
             return;
         }
 
-        if (LandManager::protect($this->landStore, $this->accountStore, $p, $ev->getBlock()->getPosition(),
+        if (LandService::protect($this->landStore, $this->accountStore, $p, $ev->getBlock()->getPosition(),
             "このワールドでブロックを設置することはできません")) {
             $ev->cancel();
         }
@@ -236,14 +235,14 @@ class EventListener implements Listener
                 break;
 
             case ItemIds::STICK:
-                FormManager::sendMenu($this->sqlRepo, $this->accountStore, $p);
+                Server::getInstance()->dispatchCommand($p, "menu");
                 break;
 
             case ItemIds::CLOCK:
                 if ($p->isSneaking()) {
                     if ($this->accountStore->hasValue($xuid, 'particle_cool_time')) return;
                     $this->accountStore->setValue($xuid, 'particle_cool_time', 20);
-                    LandManager::checkSpace($this->landStore, $p);
+                    LandService::checkSpace($this->landStore, $p);
                 } else {
                     if ($this->accountStore->hasValue($xuid, 'form_cool_time')) return;
                     $this->accountStore->setValue($xuid, 'form_cool_time', 10);
@@ -269,11 +268,11 @@ class EventListener implements Listener
                 break;
         }
         if (($ev->getBlock()->getId() === BlockLegacyIds::FRAME_BLOCK) &&
-            LandManager::protect($this->landStore, $this->accountStore, $p, $ev->getBlock()->getPosition(), "このワールドで額縁を変更することはできません")) {
+            LandService::protect($this->landStore, $this->accountStore, $p, $ev->getBlock()->getPosition(), "このワールドで額縁を変更することはできません")) {
             $ev->cancel();
             return;
         }
-        if (LandManager::protect($this->landStore, $this->accountStore, $p, $ev->getBlock()->getPosition(), null, true)) {
+        if (LandService::protect($this->landStore, $this->accountStore, $p, $ev->getBlock()->getPosition(), null, true)) {
             $ev->cancel();
         }
     }
@@ -290,7 +289,7 @@ class EventListener implements Listener
         $toLevelName = $ev->getTo()->getWorld()->getFolderName();
         $isWorldChange = $fromLevelName !== $toLevelName;
 
-        if (in_array($toLevelName, AccountManager::STOP_FLY_WORLD) && $this->accountStore->hasValue($p->getXuid(), 'fly')) {
+        if (in_array($toLevelName, AccountService::STOP_FLY_WORLD) && $this->accountStore->hasValue($p->getXuid(), 'fly')) {
             $this->accountStore->setValue($p->getXuid(), 'fly', 0);
             $p->setFlying(false);
             $p->setAllowFlight(false);

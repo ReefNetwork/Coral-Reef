@@ -15,7 +15,7 @@ use pocketmine\Server;
 use ree_jp\coral_reef\gatya\GatyaManager;
 use ree_jp\coral_reef\quest\QuestListener;
 use ree_jp\coral_reef\sql\SQLConst;
-use ree_jp\coral_reef\sql\SQLManager;
+use ree_jp\coral_reef\sql\SQLRepository;
 
 class DailyLoginQuest extends DailyQuest
 {
@@ -24,7 +24,7 @@ class DailyLoginQuest extends DailyQuest
     const SHORT_DETAILS = "毎日サーバーにログインして報酬を受け取ろう";
     const EXPLANATION = "サーバーにログインすると報酬が受け取れます。毎日受け取れるので忘れずに受け取りましょう。";
 
-    function __construct(SQLManager $repo, string $xuid, ?string $value)
+    function __construct(SQLRepository $repo, string $xuid, ?string $value)
     {
         parent::__construct($repo, $xuid, $value);
         if ($this->value !== "true") {

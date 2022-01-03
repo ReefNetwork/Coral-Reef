@@ -16,11 +16,11 @@ use pocketmine\player\Player;
 use pocketmine\scheduler\ClosureTask;
 use ree_jp\coral_reef\account\AccountStore;
 use ree_jp\coral_reef\CoralReefPlugin;
-use ree_jp\coral_reef\sql\SQLManager;
+use ree_jp\coral_reef\sql\SQLRepository;
 
-class ProxyManager
+class ProxyService
 {
-    static function transferServerWithSave(SQLManager $repo, AccountStore $store, Player $p, string $server): void
+    static function transferServerWithSave(SQLRepository $repo, AccountStore $store, Player $p, string $server): void
     {
         $store->setValue($p->getXuid(), "wait_action");
         $p->setImmobile();

@@ -15,7 +15,7 @@ use Closure;
 use JetBrains\PhpStorm\ArrayShape;
 use pocketmine\item\Item;
 use ree_jp\coral_reef\sql\SQLConst;
-use ree_jp\coral_reef\sql\SQLManager;
+use ree_jp\coral_reef\sql\SQLRepository;
 
 class GiftData
 {
@@ -93,7 +93,7 @@ class GiftData
         return ($this->expiry - time()) < 0;
     }
 
-    public function save(SQLManager $repo, string $xuid, ?Closure $func, ?Closure $failure): void
+    public function save(SQLRepository $repo, string $xuid, ?Closure $func, ?Closure $failure): void
     {
         if (is_null($this->uniqueID)) {
             $id = uniqid();

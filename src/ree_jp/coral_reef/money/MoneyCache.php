@@ -11,7 +11,7 @@
 
 namespace ree_jp\coral_reef\money;
 
-use ree_jp\coral_reef\sql\SQLManager;
+use ree_jp\coral_reef\sql\SQLRepository;
 
 /**
  * 1回のスキル発動で数十回呼び出されることを考慮した簡易的なキャッシュ
@@ -20,14 +20,14 @@ class MoneyCache
 {
     static array $cache = [];
 
-    static function purgeAll(SQLManager $repo): void
+    static function purgeAll(SQLRepository $repo): void
     {
         foreach (self::$cache as $xuid => $money) {
             self::purge($repo, $xuid);
         }
     }
 
-    static function purge(SQLManager $repo, string $xuid): void
+    static function purge(SQLRepository $repo, string $xuid): void
     {
         if (isset(self::$cache[$xuid])) {
             $repo->addMoney($xuid, self::$cache[$xuid], null);

@@ -13,13 +13,13 @@ namespace ree_jp\coral_reef\shop;
 
 use pocketmine\player\Player;
 use pocketmine\world\Position;
-use ree_jp\coral_reef\shop\form\ShopDetailForm;
-use ree_jp\coral_reef\shop\form\ShopManageForm;
-use ree_jp\coral_reef\sql\SQLManager;
+use ree_jp\coral_reef\form\shop\ShopDetailForm;
+use ree_jp\coral_reef\form\shop\ShopManageForm;
+use ree_jp\coral_reef\sql\SQLRepository;
 
 class ShopService
 {
-    static function showShop(SQLManager $repo, Player $p, ShopStore $store, Position $pos): void
+    static function showShop(SQLRepository $repo, Player $p, ShopStore $store, Position $pos): void
     {
         if ($pos->getWorld()->getFolderName() !== "lobby") return;
 

@@ -15,7 +15,7 @@ use pocketmine\math\AxisAlignedBB;
 use pocketmine\math\Vector3;
 use poggit\libasynql\SqlError;
 use ree_jp\coral_reef\CoralReefPlugin;
-use ree_jp\coral_reef\sql\SQLManager;
+use ree_jp\coral_reef\sql\SQLRepository;
 
 class LandStore
 {
@@ -34,7 +34,7 @@ class LandStore
      */
     public array $party = [];
 
-    public function __construct(SQLManager $sqlRepo)
+    public function __construct(SQLRepository $sqlRepo)
     {
         $sqlRepo->loadProtectLand(function (array $rows) {
             foreach ($rows as $arrayLand) {

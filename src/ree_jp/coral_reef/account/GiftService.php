@@ -15,16 +15,16 @@ use Closure;
 use pocketmine\Server;
 use poggit\libasynql\SqlError;
 use ree_jp\coral_reef\sql\SQLConst;
-use ree_jp\coral_reef\sql\SQLManager;
+use ree_jp\coral_reef\sql\SQLRepository;
 
 class GiftService
 {
-    static function addGift(SQLManager $repo, string $target, GiftData $gift, ?Closure $func, ?Closure $failure): void
+    static function addGift(SQLRepository $repo, string $target, GiftData $gift, ?Closure $func, ?Closure $failure): void
     {
         $gift->save($repo, $target, $func, $failure);
     }
 
-    static function checkAllExpired(SQLManager $repo, string $xuid): void
+    static function checkAllExpired(SQLRepository $repo, string $xuid): void
     {
         $repo->getAllSubtypeValue($xuid, SQLConst::TYPE_GIFT, function (array $rows) use ($repo, $xuid) {
             foreach ($rows as $row) {

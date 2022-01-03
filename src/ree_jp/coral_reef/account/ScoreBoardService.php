@@ -20,7 +20,7 @@ use pocketmine\utils\TextFormat;
 use ree_jp\coral_reef\CoralReefPlugin;
 use ree_jp\coral_reef\task\ServerUpdateTask;
 
-class ScoreBoardManager
+class ScoreBoardService
 {
     const board = 'board';
     const object = 'sidebar';

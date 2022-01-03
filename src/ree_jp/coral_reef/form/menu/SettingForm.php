@@ -6,10 +6,10 @@
  * CC    C oo  oo rr     aa  aaa lll RR  RR  eeeee  eeeee  ff
  *  CCCCC   oooo  rr      aaa aa lll RR   RR  eeeee  eeeee ff
  *
- * Copyright (c) 2021-2021. Ree-jp(https://ree-jp.net)
+ * Copyright (c) 2021-2022. Ree-jp(https://ree-jp.net)
  */
 
-namespace ree_jp\coral_reef\form;
+namespace ree_jp\coral_reef\form\menu;
 
 use bbo51dog\bboform\element\ClosureButton;
 use bbo51dog\bboform\element\Input;
@@ -24,11 +24,11 @@ use poggit\libasynql\SqlError;
 use ree_jp\coral_reef\account\SettingManager;
 use ree_jp\coral_reef\sql\SettingConst;
 use ree_jp\coral_reef\sql\SQLConst;
-use ree_jp\coral_reef\sql\SQLManager;
+use ree_jp\coral_reef\sql\SQLRepository;
 
 class SettingForm
 {
-    static function sendForm(SQLManager $repo, Player $p): void
+    static function sendForm(SQLRepository $repo, Player $p): void
     {
         $form = (new SimpleForm())
             ->setTitle("Setting")
@@ -121,7 +121,7 @@ class SettingForm
         $p->sendForm($form);
     }
 
-    static function sendBoolForm(SQLManager $repo, Player $p, string $label, string $toggleMessage, string $settingType, ?Closure $func = null): void
+    static function sendBoolForm(SQLRepository $repo, Player $p, string $label, string $toggleMessage, string $settingType, ?Closure $func = null): void
     {
         $xuid = $p->getXuid();
         $repo->getValue($xuid, SQLConst::TYPE_SETTINGS, $settingType, function (array $rows)
@@ -148,8 +148,8 @@ class SettingForm
         });
     }
 
-    static function sendInputForm(SQLManager $repo, Player $p, string $label, string $inputMessage, string $holder, string $settingType,
-                                  int        $limit, ?Closure $func = null): void
+    static function sendInputForm(SQLRepository $repo, Player $p, string $label, string $inputMessage, string $holder, string $settingType,
+                                  int           $limit, ?Closure $func = null): void
     {
         $xuid = $p->getXuid();
         $repo->getValue($xuid, SQLConst::TYPE_SETTINGS, $settingType, function (array $rows)

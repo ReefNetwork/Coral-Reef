@@ -6,10 +6,10 @@
  * CC    C oo  oo rr     aa  aaa lll RR  RR  eeeee  eeeee  ff
  *  CCCCC   oooo  rr      aaa aa lll RR   RR  eeeee  eeeee ff
  *
- * Copyright (c) 2021-2021. Ree-jp(https://ree-jp.net)
+ * Copyright (c) 2021-2022. Ree-jp(https://ree-jp.net)
  */
 
-namespace ree_jp\coral_reef\form;
+namespace ree_jp\coral_reef\form\menu;
 
 use bbo51dog\bboform\element\ClosureButton;
 use bbo51dog\bboform\form\ModalForm;
@@ -19,18 +19,15 @@ use pocketmine\math\Vector3;
 use pocketmine\player\Player;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat;
-use ree_jp\coral_reef\account\AccountManager;
+use ree_jp\coral_reef\account\AccountService;
 use ree_jp\coral_reef\account\AccountStore;
-use ree_jp\coral_reef\form\menu\BonusCodeForm;
-use ree_jp\coral_reef\form\menu\GatyaForm;
-use ree_jp\coral_reef\form\menu\SkillSelectForm;
 use ree_jp\coral_reef\money\MoneyService;
 use ree_jp\coral_reef\quest\QuestListener;
-use ree_jp\coral_reef\sql\SQLManager;
+use ree_jp\coral_reef\sql\SQLRepository;
 
-class FormManager
+class MenuForm
 {
-    static function sendMenu(SQLManager $repo, AccountStore $store, Player $p): void
+    static function sendMenu(SQLRepository $repo, AccountStore $store, Player $p): void
     {
         $xuid = $p->getXuid();
         if ($store->hasValue($xuid, 'form_cool_time')) return;
@@ -67,7 +64,7 @@ class FormManager
                             $p->setAllowFlight(false);
                             $p->sendMessage('飛行を無効にしました');
                         } else {
-                            if (in_array($p->getWorld()->getFolderName(), AccountManager::STOP_FLY_WORLD)) {
+                            if (in_array($p->getWorld()->getFolderName(), AccountService::STOP_FLY_WORLD)) {
                                 $p->sendMessage('このワールドで飛行することはできません');
                                 return;
                             }
@@ -144,25 +141,25 @@ class FormManager
             ->addElements(
                 new ClosureButton(
                     "ロビー", null, function (Player $p) {
-                    AccountManager::teleport($p, "lobby");
+                    AccountService::teleport($p, "lobby");
                 }),
                 new ClosureButton(
                     "ショップ", null, function (Player $p) {
-                    AccountManager::teleport($p, "lobby", new Vector3(512, 5, 512));
+                    AccountService::teleport($p, "lobby", new Vector3(512, 5, 512));
                 }),
                 new ClosureButton(
                     "整地ワールド1", null, function (Player $p) {
-                    AccountManager::teleport($p, "main_1");
+                    AccountService::teleport($p, "main_1");
                 }),
                 new ClosureButton(
                     "整地ワールド2", null, function (Player $p) {
-                    AccountManager::teleport($p, "main_2");
+                    AccountService::teleport($p, "main_2");
                 }),
             );
         $p->sendForm($form);
     }
 
-    private static function sendRandomWarpForm(SQLManager $repo, AccountStore $store, Player $p): void
+    private static function sendRandomWarpForm(SQLRepository $repo, AccountStore $store, Player $p): void
     {
         $form = new ModalForm(
             new ClosureButton(
@@ -196,7 +193,7 @@ class FormManager
             ),
             new ClosureButton(
                 "いいえ", null, function (Player $p) use ($store, $repo) {
-                FormManager::sendMenu($repo, $store, $p);
+                MenuForm::sendMenu($repo, $store, $p);
             })
         );
         $form->setTitle("RandomWarp")

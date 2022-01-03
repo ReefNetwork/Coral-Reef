@@ -22,7 +22,7 @@ use ree_jp\coral_reef\account\GiftService;
 use ree_jp\coral_reef\gatya\GatyaManager;
 use ree_jp\coral_reef\quest\QuestListener;
 use ree_jp\coral_reef\sql\SQLConst;
-use ree_jp\coral_reef\sql\SQLManager;
+use ree_jp\coral_reef\sql\SQLRepository;
 
 class LevelUpQuest extends QuestData
 {
@@ -31,7 +31,7 @@ class LevelUpQuest extends QuestData
     const SHORT_DETAILS = "レベルアップしよう!";
     const EXPLANATION = "ブロックを掘ると経験値を入手できます。経験値を一定量集めてサーバーのレベルを上げましょう。";
 
-    function __construct(SQLManager $repo, private AccountStore $store, string $xuid, ?string $value)
+    function __construct(SQLRepository $repo, private AccountStore $store, string $xuid, ?string $value)
     {
         if (is_null($value)) $value = "0";
         parent::__construct($repo, $xuid, $value);

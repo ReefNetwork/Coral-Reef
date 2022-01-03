@@ -20,13 +20,13 @@ use pocketmine\utils\TextFormat;
 use poggit\libasynql\SqlError;
 use ree_jp\coral_reef\sql\SettingConst;
 use ree_jp\coral_reef\sql\SQLConst;
-use ree_jp\coral_reef\sql\SQLManager;
+use ree_jp\coral_reef\sql\SQLRepository;
 
 class SettingManager
 {
     static array $settingCache = [];
 
-    static function updateNickName(SQLManager $repo, Player $p): void
+    static function updateNickName(SQLRepository $repo, Player $p): void
     {
         $repo->getValue($p->getXuid(), SQLConst::TYPE_SETTINGS, SettingConst::NICK_NAME,
             function (array $rows) use ($p) {
@@ -41,7 +41,7 @@ class SettingManager
             });
     }
 
-    static function updateShowCoordinates(SQLManager $repo, Player $p): void
+    static function updateShowCoordinates(SQLRepository $repo, Player $p): void
     {
         $repo->getValue($p->getXuid(), SQLConst::TYPE_SETTINGS, SettingConst::COORDINATES,
             function (array $rows) use ($p) {
@@ -59,7 +59,7 @@ class SettingManager
             });
     }
 
-    static function updateOption(SQLManager $repo, Player $p, string $type): void
+    static function updateOption(SQLRepository $repo, Player $p, string $type): void
     {
         self::updateBoolOption($repo, $p->getXuid(), $type, function (SqlError $error) use ($p) {
             $p->sendMessage('設定を読み込み中にエラーが発生しました');
@@ -75,7 +75,7 @@ class SettingManager
         return false;
     }
 
-    static function updateBoolOption(SQLManager $repo, string $xuid, string $type, Closure $failure): void
+    static function updateBoolOption(SQLRepository $repo, string $xuid, string $type, Closure $failure): void
     {
         $repo->getValue($xuid, SQLConst::TYPE_SETTINGS, $type,
             function (array $rows) use ($type, $xuid) {

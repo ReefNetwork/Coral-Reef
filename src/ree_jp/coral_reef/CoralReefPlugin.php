@@ -18,7 +18,7 @@ use pocketmine\world\generator\Flat;
 use pocketmine\world\generator\normal\Normal;
 use pocketmine\world\WorldCreationOptions;
 use ree_jp\coral_reef\account\AccountStore;
-use ree_jp\coral_reef\account\ScoreBoardManager;
+use ree_jp\coral_reef\account\ScoreBoardService;
 use ree_jp\coral_reef\command\MenuCommand;
 use ree_jp\coral_reef\command\ReefAdminCommand;
 use ree_jp\coral_reef\command\ReefCommand;
@@ -31,7 +31,7 @@ use ree_jp\coral_reef\money\MoneyCache;
 use ree_jp\coral_reef\quest\QuestListener;
 use ree_jp\coral_reef\session\SessionStore;
 use ree_jp\coral_reef\shop\ShopStore;
-use ree_jp\coral_reef\sql\SQLManager;
+use ree_jp\coral_reef\sql\SQLRepository;
 use ree_jp\coral_reef\task\DataSaveTask;
 use ree_jp\coral_reef\task\EffectTask;
 use ree_jp\coral_reef\task\SendServerTipTask;
@@ -43,7 +43,7 @@ class CoralReefPlugin extends PluginBase
 
     public bool $isDev = false;
 
-    private SQLManager $sqlRepo;
+    private SQLRepository $sqlRepo;
     private AccountStore $accountStore;
     private LandStore $landStore;
     private ShopStore $shopStore;
@@ -59,7 +59,7 @@ class CoralReefPlugin extends PluginBase
     {
         date_default_timezone_set('Asia/Tokyo');
         $this->accountStore = new AccountStore();
-        $this->sqlRepo = new SQLManager($this->accountStore, $this, $this->getDataFolder(), $this->getConfig()->get(ConfigConst::SERVER_NAME));
+        $this->sqlRepo = new SQLRepository($this->accountStore, $this, $this->getDataFolder(), $this->getConfig()->get(ConfigConst::SERVER_NAME));
         $this->landStore = new LandStore($this->sqlRepo);
         $this->shopStore = new ShopStore($this->getDataFolder());
         $this->sessionStore = new SessionStore();
@@ -115,7 +115,7 @@ class CoralReefPlugin extends PluginBase
         $this->getScheduler()->scheduleRepeatingTask(new EffectTask(), 200);
         $this->getScheduler()->scheduleRepeatingTask(new ServerUpdateTask($this->sqlRepo), 200);
         $this->getScheduler()->scheduleRepeatingTask(new ClosureTask(function (): void {
-            foreach (Server::getInstance()->getOnlinePlayers() as $p) ScoreBoardManager::sendScoreBoard($this->accountStore, $p);
+            foreach (Server::getInstance()->getOnlinePlayers() as $p) ScoreBoardService::sendScoreBoard($this->accountStore, $p);
         }), 15);
         $this->getScheduler()->scheduleRepeatingTask(new ClosureTask(function (): void {
             MoneyCache::purgeAll($this->sqlRepo);

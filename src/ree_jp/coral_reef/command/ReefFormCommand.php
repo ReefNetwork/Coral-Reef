@@ -19,11 +19,11 @@ use pocketmine\plugin\PluginOwned;
 use ree_jp\coral_reef\account\AccountStore;
 use ree_jp\coral_reef\form\command\LandForm;
 use ree_jp\coral_reef\land\LandStore;
-use ree_jp\coral_reef\sql\SQLManager;
+use ree_jp\coral_reef\sql\SQLRepository;
 
 class ReefFormCommand extends Command implements PluginOwned
 {
-    public function __construct(private Plugin $owner, private SQLManager $repo, private AccountStore $accountStore, private LandStore $landStore)
+    public function __construct(private Plugin $owner, private SQLRepository $repo, private AccountStore $accountStore, private LandStore $landStore)
     {
         parent::__construct("reef-form", "reef form command");
     }

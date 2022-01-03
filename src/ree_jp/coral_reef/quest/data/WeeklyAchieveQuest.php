@@ -12,11 +12,11 @@
 namespace ree_jp\coral_reef\quest\data;
 
 use JetBrains\PhpStorm\Pure;
-use ree_jp\coral_reef\account\AccountManager;
+use ree_jp\coral_reef\account\AccountService;
 use ree_jp\coral_reef\gatya\GatyaManager;
 use ree_jp\coral_reef\quest\QuestListener;
 use ree_jp\coral_reef\sql\SQLConst;
-use ree_jp\coral_reef\sql\SQLManager;
+use ree_jp\coral_reef\sql\SQLRepository;
 
 class WeeklyAchieveQuest extends WeeklyQuest
 {
@@ -25,7 +25,7 @@ class WeeklyAchieveQuest extends WeeklyQuest
     const SHORT_DETAILS = "デイリークエストをクリアしよう";
     const EXPLANATION = "毎日サーバーをプレイしてデイリークエストをクリアしよう";
 
-    function __construct(SQLManager $repo, string $xuid, ?string $value)
+    function __construct(SQLRepository $repo, string $xuid, ?string $value)
     {
         parent::__construct($repo, $xuid, $value);
         if (!$this->isComplete()) {
@@ -56,7 +56,7 @@ class WeeklyAchieveQuest extends WeeklyQuest
                 $this->repo->addLog($this->xuid, SQLConst::LOG_QUEST, self::ID, $this->value,
                     SQLConst::NOW_TIME, null, null);
                 GatyaManager::addTicket($this->repo, $this->xuid, SQLConst::TICKETS_NORMAL, 3);
-                $p = AccountManager::getPlayerByXuid($this->xuid);
+                $p = AccountService::getPlayerByXuid($this->xuid);
                 if (!is_null($p)) $p->sendMessage("デイリークエスト達成報酬としてガチャチケットを受け取りました");
                 break;
         }

@@ -22,20 +22,20 @@ use ree_jp\coral_reef\account\GiftService;
 use ree_jp\coral_reef\gatya\items\ReefItems;
 use ree_jp\coral_reef\quest\QuestListener;
 use ree_jp\coral_reef\sql\SQLConst;
-use ree_jp\coral_reef\sql\SQLManager;
+use ree_jp\coral_reef\sql\SQLRepository;
 
 class GatyaManager
 {
     static array $isProcessing = [];
 
-    static function addTicket(SQLManager $repo, string $xuid, string $type, int $count, ?Closure $func = null): void
+    static function addTicket(SQLRepository $repo, string $xuid, string $type, int $count, ?Closure $func = null): void
     {
         $repo->addValue($xuid, SQLConst::TYPE_TICKETS, $type, $count, $func, function (SqlError $error) use ($xuid): void {
             Server::getInstance()->getLogger()->error('[TicketAdd] ' . $xuid . 'さんの処理中に' . $error->getErrorMessage());
         });
     }
 
-    static function setTicket(SQLManager $repo, string $xuid, string $type, int $count): void
+    static function setTicket(SQLRepository $repo, string $xuid, string $type, int $count): void
     {
         $repo->setValue($xuid, SQLConst::TYPE_TICKETS, $type, strval($count), null,
             function (SqlError $error) use ($xuid): void {
@@ -44,8 +44,8 @@ class GatyaManager
     }
 
     // チケットの枚数が足りるか確認してチケットを減らしてログに記録してアイテムを送る
-    static function gatyaProcess(SQLManager $repo, string $gatyaLog, Player $p, string $subtype, int $need, Item $item, string $rare, string $stringRare, bool $isBroadcast,
-                                 ?Closure   $func): void
+    static function gatyaProcess(SQLRepository $repo, string $gatyaLog, Player $p, string $subtype, int $need, Item $item, string $rare, string $stringRare, bool $isBroadcast,
+                                 ?Closure      $func): void
     {
         if (array_key_exists($p->getXuid(), self::$isProcessing)) {
             $p->sendMessage("ガチャを同時に実行することはできません");

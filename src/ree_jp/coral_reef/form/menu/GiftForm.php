@@ -6,10 +6,10 @@
  * CC    C oo  oo rr     aa  aaa lll RR  RR  eeeee  eeeee  ff
  *  CCCCC   oooo  rr      aaa aa lll RR   RR  eeeee  eeeee ff
  *
- * Copyright (c) 2021. Ree-jp(https://ree-jp.net)
+ * Copyright (c) 2021-2022. Ree-jp(https://ree-jp.net)
  */
 
-namespace ree_jp\coral_reef\form;
+namespace ree_jp\coral_reef\form\menu;
 
 use bbo51dog\bboform\element\ClosureButton;
 use bbo51dog\bboform\form\SimpleForm;
@@ -18,12 +18,12 @@ use pocketmine\utils\TextFormat;
 use ree_jp\coral_reef\account\AccountStore;
 use ree_jp\coral_reef\account\GiftData;
 use ree_jp\coral_reef\sql\SQLConst;
-use ree_jp\coral_reef\sql\SQLManager;
+use ree_jp\coral_reef\sql\SQLRepository;
 use Throwable;
 
 class GiftForm
 {
-    static function sendForm(SQLManager $repo, AccountStore $store, Player $p): void
+    static function sendForm(SQLRepository $repo, AccountStore $store, Player $p): void
     {
         $repo->getAllSubtypeValue($p->getXuid(), SQLConst::TYPE_GIFT, function (array $rows) use ($store, $repo, $p): void {
             /** @var GiftData[] $gifts */
@@ -63,7 +63,7 @@ class GiftForm
         });
     }
 
-    static function sendGiftDetailForm(SQLManager $repo, AccountStore $store, Player $p, GiftData $gift): void
+    static function sendGiftDetailForm(SQLRepository $repo, AccountStore $store, Player $p, GiftData $gift): void
     {
         $itemString = "\n";
         foreach ($gift->getItems() as $item) {
@@ -110,7 +110,7 @@ class GiftForm
         $p->sendForm($form);
     }
 
-    static private function receiveItems(SQLManager $repo, Player $p, GiftData $gift): bool
+    static private function receiveItems(SQLRepository $repo, Player $p, GiftData $gift): bool
     {
         foreach ($gift->getItems() as $item) {
             if ($gift->markReceived($item)) {

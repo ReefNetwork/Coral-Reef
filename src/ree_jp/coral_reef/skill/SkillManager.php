@@ -22,7 +22,7 @@ use ree_jp\coral_reef\CoralReefPlugin;
 use ree_jp\coral_reef\gatya\GatyaManager;
 use ree_jp\coral_reef\quest\QuestListener;
 use ree_jp\coral_reef\sql\SQLConst;
-use ree_jp\coral_reef\sql\SQLManager;
+use ree_jp\coral_reef\sql\SQLRepository;
 
 class SkillManager
 {
@@ -71,7 +71,7 @@ class SkillManager
     /**
      * @throws Exception
      */
-    static function skillActive(SQLManager $repo, AccountStore $store, Player $p, Block $bl): void
+    static function skillActive(SQLRepository $repo, AccountStore $store, Player $p, Block $bl): void
     {
         $xuid = $p->getXuid();
         $user = $store->getUser($xuid);

@@ -16,7 +16,7 @@ use pocketmine\entity\effect\VanillaEffects;
 use pocketmine\scheduler\Task;
 use pocketmine\Server;
 use ree_jp\coral_reef\sql\SQLConst;
-use ree_jp\coral_reef\sql\SQLManager;
+use ree_jp\coral_reef\sql\SQLRepository;
 
 class ServerUpdateTask extends Task
 {
@@ -25,7 +25,7 @@ class ServerUpdateTask extends Task
 
     private int $count = 0;
 
-    public function __construct(private SQLManager $repo)
+    public function __construct(private SQLRepository $repo)
     {
     }
 

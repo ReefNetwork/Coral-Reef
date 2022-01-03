@@ -21,7 +21,7 @@ use ree_jp\coral_reef\quest\QuestListener;
 use ree_jp\coral_reef\quest\QuestManager;
 use ree_jp\coral_reef\skill\BreakSkill;
 use ree_jp\coral_reef\skill\SkillManager;
-use ree_jp\coral_reef\sql\SQLManager;
+use ree_jp\coral_reef\sql\SQLRepository;
 
 class UserAccount
 {
@@ -51,7 +51,7 @@ class UserAccount
         $this->skill = SkillManager::getSkill($skill);
     }
 
-    function save(SQLManager $repo, ?Closure $xpFunc = null, ?Closure $skillFunc = null, ?Closure $questFunc = null): void
+    function save(SQLRepository $repo, ?Closure $xpFunc = null, ?Closure $skillFunc = null, ?Closure $questFunc = null): void
     {
         if (is_null($this->skill)) {
             $skillId = null;

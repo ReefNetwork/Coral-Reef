@@ -21,11 +21,11 @@ use pocketmine\world\particle\PortalParticle;
 use pocketmine\world\Position;
 use pocketmine\world\sound\EndermanTeleportSound;
 use poggit\libasynql\SqlError;
-use ree_jp\coral_reef\account\AccountManager;
+use ree_jp\coral_reef\account\AccountService;
 use ree_jp\coral_reef\account\AccountStore;
-use ree_jp\coral_reef\sql\SQLManager;
+use ree_jp\coral_reef\sql\SQLRepository;
 
-class LandManager
+class LandService
 {
     const CAN_CREATE_LAND = array("main_2");
     const LOBBY_WORLD = array("lobby");
@@ -73,7 +73,7 @@ class LandManager
         return null;
     }
 
-    static function addLand(SQLManager $sqlRepo, LandStore $store, LandData $land, ?Player $p): void
+    static function addLand(SQLRepository $sqlRepo, LandStore $store, LandData $land, ?Player $p): void
     {
         $sqlRepo->addProtectLand($land, function () use ($store, $p, $land) {
             if (!isset($store->lands[$land->level])) $store->lands[$land->level] = [];
@@ -91,7 +91,7 @@ class LandManager
         });
     }
 
-    static function deleteLand(SQLManager $sqlRepo, LandStore $store, LandData $land, ?Player $p): void
+    static function deleteLand(SQLRepository $sqlRepo, LandStore $store, LandData $land, ?Player $p): void
     {
         $sqlRepo->deleteProtectLand($land, function () use ($store, $p, $land) {
             foreach ($store->lands as $level => $cacheLands) {
@@ -113,7 +113,7 @@ class LandManager
 
     static function protect(LandStore $landStore, AccountStore $accountStore, Player $p, Position $pos, ?string $message, bool $isTouch = false): bool
     {
-        if (in_array($p->getWorld()->getFolderName(), self::LOBBY_WORLD) && !(AccountManager::isOp($p) && $p->isCreative())) {
+        if (in_array($p->getWorld()->getFolderName(), self::LOBBY_WORLD) && !(AccountService::isOp($p) && $p->isCreative())) {
             if (is_null($message)) return false;
             $p->sendPopup($message);
         } else {
@@ -122,7 +122,7 @@ class LandManager
                 if (in_array($p->getWorld()->getFolderName(), self::NEED_LAND_PROTECT)) { // 土地保護しないと掘れないワールド
                     if ($isTouch) return false;
                     $p->sendPopup("このワールドは土地保護が必要です");
-                    if (AccountManager::isOp($p) && $p->isCreative()) return false;
+                    if (AccountService::isOp($p) && $p->isCreative()) return false;
                 } else {
                     return false;
                 }
@@ -130,7 +130,7 @@ class LandManager
                 if ($land->xuid === $p->getXuid() || $landStore->isParty($land->xuid, $p->getXuid())) return false;
                 $name = $accountStore->getUserName($land->xuid);
                 $p->sendPopup("この土地は$name によって保護されています($land->name)");
-                if (AccountManager::isOp($p) && $p->isCreative()) return false;
+                if (AccountService::isOp($p) && $p->isCreative()) return false;
             }
         }
         if (!$accountStore->hasValue($p->getXuid(), 'protect_warning')) {

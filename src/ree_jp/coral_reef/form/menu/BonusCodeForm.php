@@ -19,11 +19,11 @@ use pocketmine\player\Player;
 use pocketmine\utils\TextFormat;
 use ree_jp\coral_reef\gatya\GatyaManager;
 use ree_jp\coral_reef\sql\SQLConst;
-use ree_jp\coral_reef\sql\SQLManager;
+use ree_jp\coral_reef\sql\SQLRepository;
 
 class BonusCodeForm
 {
-    static function sendForm(SQLManager $repo, Player $p): void
+    static function sendForm(SQLRepository $repo, Player $p): void
     {
         $codeElement = new Input("コードを入力してください", "bonus");
         $p->sendForm((new ClosureCustomForm(function (Player $p) use ($repo, $codeElement): void {
@@ -37,7 +37,7 @@ class BonusCodeForm
             new Label("コードを入力するとボーナスを受け取れます\nコードはDiscordやウェブサイトで不定期に配布しています"), $codeElement));
     }
 
-    static function bonusCode(SQLManager $repo, Player $p, string $code): void
+    static function bonusCode(SQLRepository $repo, Player $p, string $code): void
     {
         switch ($code) {
             case "2022":
@@ -61,7 +61,7 @@ class BonusCodeForm
         }
     }
 
-    private static function useCode(SQLManager $repo, Player $p, string $code, Closure $func): void
+    private static function useCode(SQLRepository $repo, Player $p, string $code, Closure $func): void
     {
         $repo->getValue($p->getXuid(), SQLConst::TYPE_BONUS, $code, function (array $rows) use ($repo, $func, $p, $code): void {
             $row = array_shift($rows);

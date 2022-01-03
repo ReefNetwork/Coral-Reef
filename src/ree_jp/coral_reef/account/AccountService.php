@@ -26,14 +26,14 @@ use ree_jp\coral_reef\session\SessionData;
 use ree_jp\coral_reef\skill\BreakSkill;
 use ree_jp\coral_reef\skill\SkillManager;
 use ree_jp\coral_reef\sql\SettingConst;
-use ree_jp\coral_reef\sql\SQLManager;
+use ree_jp\coral_reef\sql\SQLRepository;
 use ree_jp\coral_reef\task\ServerUpdateTask;
 
-class AccountManager
+class AccountService
 {
     const STOP_FLY_WORLD = array('lobby');
 
-    static function userJoin(SQLManager $repo, AccountStore $store, Player $p): void
+    static function userJoin(SQLRepository $repo, AccountStore $store, Player $p): void
     {
         $xuid = $p->getXuid();
         $store->setValue($xuid, "skill_cool_time", 0);
@@ -50,7 +50,7 @@ class AccountManager
         SettingManager::updateOption($repo, $p, SettingConst::ALLOW_COOL_TIME_DIG);
     }
 
-    static function userQuit(SQLManager $repo, AccountStore $store, Player $p): void
+    static function userQuit(SQLRepository $repo, AccountStore $store, Player $p): void
     {
         $xuid = $p->getXuid();
 
@@ -68,7 +68,7 @@ class AccountManager
     }
 
     /**
-     * @param SQLManager $repo
+     * @param SQLRepository $repo
      * @param AccountStore $store
      * @param Player $p
      * @param Block $bl
@@ -76,7 +76,7 @@ class AccountManager
      * @return void
      * @throws Exception
      */
-    static function blockBroken(SQLManager $repo, AccountStore $store, Player $p, Block $bl, SessionData $session): void
+    static function blockBroken(SQLRepository $repo, AccountStore $store, Player $p, Block $bl, SessionData $session): void
     {
         $xuid = $p->getXuid();
         $user = $store->getUser($xuid);

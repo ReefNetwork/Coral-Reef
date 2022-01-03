@@ -13,11 +13,11 @@ namespace ree_jp\coral_reef\quest\data;
 
 use JetBrains\PhpStorm\Pure;
 use pocketmine\utils\TextFormat;
-use ree_jp\coral_reef\account\AccountManager;
+use ree_jp\coral_reef\account\AccountService;
 use ree_jp\coral_reef\gatya\GatyaManager;
 use ree_jp\coral_reef\quest\QuestListener;
 use ree_jp\coral_reef\sql\SQLConst;
-use ree_jp\coral_reef\sql\SQLManager;
+use ree_jp\coral_reef\sql\SQLRepository;
 
 class TutorialQuest extends QuestData
 {
@@ -30,7 +30,7 @@ class TutorialQuest extends QuestData
 
     private int $max = 6; // チュートリアル数(今後増やすことも考えて)
 
-    function __construct(SQLManager $repo, string $xuid, ?string $value)
+    function __construct(SQLRepository $repo, string $xuid, ?string $value)
     {
         if (is_null($value)) {
             $type = "0";
@@ -46,7 +46,7 @@ class TutorialQuest extends QuestData
     private function init(): void
     {
         QuestListener::allUnsubscribeQuest($this->xuid, $this);
-        $p = AccountManager::getPlayerByXuid($this->xuid);
+        $p = AccountService::getPlayerByXuid($this->xuid);
         switch (intval($this->value)) {
             case 0:
                 QuestListener::subscribeQuest($this->xuid, QuestListener::GET_INIT_TOOL, $this);
@@ -164,7 +164,7 @@ class TutorialQuest extends QuestData
     {
         QuestListener::callSubscribedQuest($this->xuid, QuestListener::CLEAR_QUEST, $this);
         GatyaManager::addTicket($this->repo, $this->xuid, SQLConst::TICKETS_NORMAL, 1);
-        $p = AccountManager::getPlayerByXuid($this->xuid);
+        $p = AccountService::getPlayerByXuid($this->xuid);
         if (!is_null($p)) $p->sendMessage("チュートリアルクエスト報酬としてガチャ券を1枚受け取りました");
     }
 
