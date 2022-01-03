@@ -6,10 +6,10 @@
  * CC    C oo  oo rr     aa  aaa lll RR  RR  eeeee  eeeee  ff
  *  CCCCC   oooo  rr      aaa aa lll RR   RR  eeeee  eeeee ff
  *
- * Copyright (c) 2021-2021. Ree-jp(https://ree-jp.net)
+ * Copyright (c) 2021-2022. Ree-jp(https://ree-jp.net)
  */
 
-namespace ree_jp\coral_reef\form\menu;
+namespace ree_jp\coral_reef\form\command;
 
 use bbo51dog\bboform\element\ClosureButton;
 use bbo51dog\bboform\element\Input;
@@ -20,58 +20,55 @@ use bbo51dog\bboform\form\SimpleForm;
 use pocketmine\player\Player;
 use pocketmine\Server;
 use ree_jp\coral_reef\account\AccountStore;
+use ree_jp\coral_reef\land\LandStore;
 
 class PartyForm
 {
     static array $members = [];
 
-    static function sendPartyForm(AccountStore $store, Player $p): void
+    static function sendForm(AccountStore $accountStore, LandStore $landStore, Player $p): void
     {
-        $xuid = $p->getXuid();
         $form = (new SimpleForm())
             ->setTitle("Menu -> Party")
             ->setText("パーティーメンバーを追加するか削除したいメンバーを選択してください\nパーティーメンバーになると土地保護を一緒に掘れるようになります\n" .
                 "サーバーが再起動されるとリセットされます");
 
-        if (isset(self::$members[$xuid])) {
-            foreach (self::$members[$xuid] as $member) {
-                $name = $store->getUserName($member);
-                $form->addElement(
-                    new ClosureButton(
-                        $name, null,
-                        function (Player $p) use ($store, $name, $member) {
-                            self::sendPartyDeleteConfirmForm($store, $p, $name, $member);
-                        }
-                    )
-                );
-            }
+        foreach ($landStore->allPartyMember($p->getXuid()) as $member) {
+            $name = $accountStore->getUserName($member);
+            $form->addElement(
+                new ClosureButton(
+                    $name, null,
+                    function (Player $p) use ($landStore, $accountStore, $name, $member) {
+                        self::sendPartyDeleteConfirmForm($accountStore, $landStore, $p, $name, $member);
+                    }
+                )
+            );
         }
+
         $form->addElement(
             new ClosureButton(
                 "メンバーを追加する", null,
-                function (Player $p) {
-                    self::sendPartyAddForm($p);
+                function (Player $p) use ($landStore) {
+                    self::sendPartyAddForm($landStore, $p);
                 }
             )
         );
         $p->sendForm($form);
     }
 
-    private static function sendPartyDeleteConfirmForm(AccountStore $store, Player $p, string $name, string $xuid): void
+    private static function sendPartyDeleteConfirmForm(AccountStore $accountStore, LandStore $landStore, Player $p, string $name, string $xuid): void
     {
         $form = new ModalForm(
             new ClosureButton(
                 "はい", null,
-                function (Player $p) use ($name, $xuid) {
-                    if (self::isParty($p->getXuid(), $xuid)) {
-                        array_splice(self::$members[$p->getXuid()], $xuid);
-                        $p->sendMessage($name . 'さんをパーティーから削除しました');
-                    } else $p->sendMessage('エラーが発生しました');
+                function (Player $p) use ($landStore, $name, $xuid) {
+                    $landStore->deleteParty($p->getXuid(), $xuid);
+                    $p->sendMessage($name . 'さんをパーティーから削除しました');
                 }
             ),
             new ClosureButton(
-                "いいえ", null, function (Player $p) use ($store) {
-                self::sendPartyForm($store, $p);
+                "いいえ", null, function (Player $p) use ($accountStore, $landStore) {
+                self::sendForm($accountStore, $landStore, $p);
             })
         );
         $form->setTitle("Party -> Delete")
@@ -79,22 +76,17 @@ class PartyForm
         $p->sendForm($form);
     }
 
-    static function isParty(string $party, string $xuid): bool
-    {
-        return !empty(self::$members[$party]) && in_array($xuid, self::$members[$party]);
-    }
-
-    static function sendPartyAddForm(Player $p): void
+    static function sendPartyAddForm(LandStore $store, Player $p): void
     {
         $memberNameInput = new Input('追加したいメンバーの名前を入力してください', '名前');
         $form = new ClosureCustomForm(
-            function (Player $p) use ($memberNameInput) {
+            function (Player $p) use ($store, $memberNameInput) {
                 $member = Server::getInstance()->getPlayerByPrefix($memberNameInput->getValue());
                 if ($member instanceof Player) {
                     if ($member->getName() === $p->getName()) {
                         $p->sendMessage("パーティーに自分を追加することはできません");
                     } else {
-                        self::sendPartyAddConfirmForm($p, $member);
+                        self::sendPartyAddConfirmForm($store, $p, $member);
                     }
                 } else {
                     $p->sendMessage($memberNameInput->getValue() . "さんはサーバーにいないためパーティーに追加出来ませんでした");
@@ -106,21 +98,21 @@ class PartyForm
         $p->sendForm($form);
     }
 
-    private static function sendPartyAddConfirmForm(Player $p, Player $member): void
+    private static function sendPartyAddConfirmForm(LandStore $store, Player $p, Player $member): void
     {
         $form = new ModalForm(
             new ClosureButton(
                 "はい", null,
-                function (Player $p) use ($member) {
-                    self::$members[$p->getXuid()][] = $member->getXuid();
+                function (Player $p) use ($store, $member) {
+                    $store->addParty($p->getXuid(), $member->getXuid());
                     $p->sendMessage($member->getName() . 'さんをパーティーに追加しました');
                     $member->sendMessage($p->getName() . 'さんのパーティーに追加されました');
                 }
             ),
             new ClosureButton(
                 "いいえ", null,
-                function (Player $p) use ($member) {
-                    self::sendPartyAddForm($p);
+                function (Player $p) use ($store, $member) {
+                    self::sendPartyAddForm($store, $p);
                 }
             )
         );

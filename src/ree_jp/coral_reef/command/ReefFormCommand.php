@@ -16,13 +16,14 @@ use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
 use pocketmine\plugin\Plugin;
 use pocketmine\plugin\PluginOwned;
-use ree_jp\coral_reef\form\LandForm;
+use ree_jp\coral_reef\account\AccountStore;
+use ree_jp\coral_reef\form\command\LandForm;
 use ree_jp\coral_reef\land\LandStore;
 use ree_jp\coral_reef\sql\SQLManager;
 
 class ReefFormCommand extends Command implements PluginOwned
 {
-    public function __construct(private Plugin $owner, private SQLManager $repo, private LandStore $landStore)
+    public function __construct(private Plugin $owner, private SQLManager $repo, private AccountStore $accountStore, private LandStore $landStore)
     {
         parent::__construct("reef-form", "reef form command");
     }
@@ -36,7 +37,7 @@ class ReefFormCommand extends Command implements PluginOwned
 
         switch ($args[0]) {
             case "land":
-                LandForm::sendForm($this->repo, $this->landStore, $sender);
+                LandForm::sendForm($this->repo, $this->accountStore, $this->landStore, $sender);
                 break;
         }
     }

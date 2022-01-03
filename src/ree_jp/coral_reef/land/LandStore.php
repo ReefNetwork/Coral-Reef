@@ -27,7 +27,12 @@ class LandStore
     /**
      * @var Vector3[][]
      */
-    public array $pos;
+    public array $pos = [];
+
+    /**
+     * @var string[][]
+     */
+    public array $party = [];
 
     public function __construct(SQLManager $sqlRepo)
     {
@@ -42,5 +47,25 @@ class LandStore
         }, function (SqlError $error) {
             CoralReefPlugin::$plugin->criticalError("土地情報を取得中に" . $error->getErrorMessage());
         });
+    }
+
+    public function isParty(string $ownerXuid, string $userXuid): bool
+    {
+        return !empty($this->party[$ownerXuid]) && in_array($userXuid, $this->party[$userXuid]);
+    }
+
+    public function addParty(string $ownerXuid, string $userXuid): void
+    {
+        $this->party[$ownerXuid][] = $userXuid;
+    }
+
+    public function deleteParty(string $ownerXuid, string $userXuid): void
+    {
+        array_splice($this->party[$ownerXuid], $userXuid);
+    }
+
+    public function allPartyMember($ownerXuid): array
+    {
+        return $this->party[$ownerXuid] ?? [];
     }
 }

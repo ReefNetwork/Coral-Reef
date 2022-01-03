@@ -23,7 +23,6 @@ use ree_jp\coral_reef\account\AccountManager;
 use ree_jp\coral_reef\account\AccountStore;
 use ree_jp\coral_reef\form\menu\BonusCodeForm;
 use ree_jp\coral_reef\form\menu\GatyaForm;
-use ree_jp\coral_reef\form\menu\PartyForm;
 use ree_jp\coral_reef\form\menu\SkillSelectForm;
 use ree_jp\coral_reef\money\MoneyService;
 use ree_jp\coral_reef\quest\QuestListener;
@@ -87,32 +86,12 @@ class FormManager
                         self::sendWorldTeleportForm($p);
                     }),
                     new ClosureButton(
-                        "サーバー移動", null, function (Player $p) use ($store, $repo) {
-                        ServerSelectForm::sendForm($repo, $store, $p);
-                    }),
-                    new ClosureButton(
                         "スキル設定", null, function (Player $p) use ($store) {
                         SkillSelectForm::sendForm($store, $p);
                     }),
                     new ClosureButton(
-                        "パーティー", null, function (Player $p) use ($store) {
-                        PartyForm::sendPartyForm($store, $p);
-                    }),
-                    new ClosureButton(
-                        "土地保護", null, function (Player $p) {
-                        Server::getInstance()->dispatchCommand($p, "reef-form land");
-                    }),
-                    new ClosureButton(
                         "クエスト", null, function (Player $p) {
                         QuestForm::sendForm($p);
-                    }),
-                    new ClosureButton(
-                        "ガチャ", null, function (Player $p) use ($repo) {
-                        GatyaForm::sendForm($repo, $p);
-                    }),
-                    new ClosureButton(
-                        "ギフト", null, function (Player $p) use ($repo, $store) {
-                        GiftForm::sendForm($repo, $store, $p);
                     }),
                     new ClosureButton(
                         "ランダムワープ", null, function (Player $p) use ($repo, $store) {
@@ -125,12 +104,28 @@ class FormManager
                         }
                     ),
                     new ClosureButton(
+                        "土地保護", null, function (Player $p) {
+                        Server::getInstance()->dispatchCommand($p, "reef-form land");
+                    }),
+                    new ClosureButton(
                         "ランキング", null, function (Player $p) use ($repo) {
                         RankingForm::sendForm($repo, $p);
                     }),
                     new ClosureButton(
+                        "ガチャ", null, function (Player $p) use ($repo) {
+                        GatyaForm::sendForm($repo, $p);
+                    }),
+                    new ClosureButton(
+                        "ギフト", null, function (Player $p) use ($repo, $store) {
+                        GiftForm::sendForm($repo, $store, $p);
+                    }),
+                    new ClosureButton(
                         "ボーナスコード", null, function (Player $p) use ($repo) {
                         BonusCodeForm::sendForm($repo, $p);
+                    }),
+                    new ClosureButton(
+                        "サーバー移動", null, function (Player $p) use ($store, $repo) {
+                        ServerSelectForm::sendForm($repo, $store, $p);
                     }),
                     new ClosureButton(
                         "設定", null, function (Player $p) use ($repo) {

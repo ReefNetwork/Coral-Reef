@@ -23,7 +23,6 @@ use pocketmine\world\sound\EndermanTeleportSound;
 use poggit\libasynql\SqlError;
 use ree_jp\coral_reef\account\AccountManager;
 use ree_jp\coral_reef\account\AccountStore;
-use ree_jp\coral_reef\form\PartyForm;
 use ree_jp\coral_reef\sql\SQLManager;
 
 class LandManager
@@ -128,7 +127,7 @@ class LandManager
                     return false;
                 }
             } else {
-                if ($land->xuid === $p->getXuid() || PartyForm::isParty($land->xuid, $p->getXuid())) return false;
+                if ($land->xuid === $p->getXuid() || $landStore->isParty($land->xuid, $p->getXuid())) return false;
                 $name = $accountStore->getUserName($land->xuid);
                 $p->sendPopup("この土地は$name によって保護されています($land->name)");
                 if (AccountManager::isOp($p) && $p->isCreative()) return false;

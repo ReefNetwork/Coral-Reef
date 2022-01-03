@@ -6,10 +6,10 @@
  * CC    C oo  oo rr     aa  aaa lll RR  RR  eeeee  eeeee  ff
  *  CCCCC   oooo  rr      aaa aa lll RR   RR  eeeee  eeeee ff
  *
- * Copyright (c) 2021-2021. Ree-jp(https://ree-jp.net)
+ * Copyright (c) 2021-2022. Ree-jp(https://ree-jp.net)
  */
 
-namespace ree_jp\coral_reef\form;
+namespace ree_jp\coral_reef\form\command;
 
 use bbo51dog\bboform\element\Button;
 use bbo51dog\bboform\element\ClosureButton;
@@ -31,18 +31,18 @@ use ree_jp\coral_reef\sql\SQLManager;
 
 class LandForm
 {
-    static function sendForm(SQLManager $repo, LandStore $store, Player $p): void
+    static function sendForm(SQLManager $repo, AccountStore $accountStore, LandStore $landStore, Player $p): void
     {
         $form = (new SimpleForm())
             ->setTitle("Land")
             ->setText("土地を保護できます");
-        $lands = LandManager::getMyLand($store, $p->getXuid());
+        $lands = LandManager::getMyLand($landStore, $p->getXuid());
         foreach ($lands as $land) {
             if ($land instanceof LandData) {
                 $button = new ClosureButton(
                     $land->name, null,
-                    function (Player $p) use ($store, $repo, $land) {
-                        self::sendLandEditForm($repo, $store, $p, $land);
+                    function (Player $p) use ($landStore, $repo, $land) {
+                        self::sendLandEditForm($repo, $landStore, $p, $land);
                     }
                 );
             } else {
@@ -50,6 +50,12 @@ class LandForm
             }
             $form->addElement($button);
         }
+        $form->addElement(new ClosureButton(
+            "パーティー", null,
+            function (Player $p) use ($landStore, $accountStore) {
+                PartyForm::sendForm($accountStore, $landStore, $p);
+            }
+        ));
         $form->addElement(new ClosureButton(
             "新しく土地保護を作成する", null,
             function (Player $p) {
