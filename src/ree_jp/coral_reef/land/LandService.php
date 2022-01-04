@@ -14,6 +14,7 @@ namespace ree_jp\coral_reef\land;
 use JetBrains\PhpStorm\Pure;
 use pocketmine\math\AxisAlignedBB;
 use pocketmine\math\Vector3;
+use pocketmine\player\GameMode;
 use pocketmine\player\Player;
 use pocketmine\scheduler\ClosureTask;
 use pocketmine\Server;
@@ -161,18 +162,20 @@ class LandService
         }
         if ($isSlidingBrock && !$accountStore->hasValue($p->getXuid(), "sliding_brock")) {
             $accountStore->setValue($p->getXuid(), "sliding_brock", 3);
+
             $originPos = $p->getPosition();
-            $p->setImmobile();
             CoralReefPlugin::$plugin->getScheduler()->scheduleDelayedTask(new ClosureTask(function () use ($originPos, $p): void {
                 if ($p->isOnline()) {
                     $p->teleport($originPos);
                 }
             }), 3);
+
+            $p->setGamemode(GameMode::ADVENTURE());
             CoralReefPlugin::$plugin->getScheduler()->scheduleDelayedTask(new ClosureTask(function () use ($originPos, $p): void {
                 if ($p->isOnline()) {
-                    $p->setImmobile(false);
+                    $p->setGamemode(GameMode::SURVIVAL());
                 }
-            }), 8);
+            }), 10);
         }
         if (!$accountStore->hasValue($p->getXuid(), 'protect_warning')) {
             $accountStore->setValue($p->getXuid(), 'protect_warning', 10);
