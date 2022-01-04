@@ -136,7 +136,8 @@ class LandService
         });
     }
 
-    static function protect(LandStore $landStore, AccountStore $accountStore, Player $p, Position $pos, ?string $message, bool $isTouch = false): bool
+    static function protect(LandStore $landStore, AccountStore $accountStore, Player $p, Position $pos, ?string $message,
+                            bool      $isTouch = false, bool $isSlidingBrock = false): bool
     {
         if (in_array($p->getWorld()->getFolderName(), self::LOBBY_WORLD) && !(AccountService::isOp($p) && $p->isCreative())) {
             if (is_null($message)) return false;
@@ -158,8 +159,8 @@ class LandService
                 if (AccountService::isOp($p) && $p->isCreative()) return false;
             }
         }
-        if (!$accountStore->hasValue($p->getXuid(), "sliding_brock")) {
-            $accountStore->setValue($p->getXuid(), "sliding_brock", 3);
+        if ($isSlidingBrock && !$accountStore->hasValue($p->getXuid(), "sliding_brock")) {
+            $accountStore->setValue($p->getXuid(), "sliding_brock", 5);
             $originPos = $p->getPosition();
             CoralReefPlugin::$plugin->getScheduler()->scheduleDelayedTask(new ClosureTask(function () use ($originPos, $p): void {
                 if ($p->isOnline()) {

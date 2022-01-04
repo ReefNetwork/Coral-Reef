@@ -15,6 +15,7 @@ namespace ree_jp\coral_reef;
 
 use Exception;
 use pocketmine\block\BlockLegacyIds;
+use pocketmine\block\Flowable;
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\block\BlockPlaceEvent;
 use pocketmine\event\block\BlockUpdateEvent;
@@ -146,7 +147,8 @@ class EventListener implements Listener
             $ev->cancel();
             return;
         }
-        if (LandService::protect($this->landStore, $this->accountStore, $p, $ev->getBlock()->getPosition(), 'このワールドでブロックを掘ることはできません')) {
+        if (LandService::protect($this->landStore, $this->accountStore, $p, $ev->getBlock()->getPosition(),
+            "このワールドでブロックを掘ることはできません", false, !$ev->getBlock() instanceof Flowable)) {
             $ev->cancel();
             return;
         }
@@ -199,7 +201,7 @@ class EventListener implements Listener
         }
 
         if (LandService::protect($this->landStore, $this->accountStore, $p, $ev->getBlock()->getPosition(),
-            "このワールドでブロックを設置することはできません")) {
+            "このワールドでブロックを設置することはできません", false, true)) {
             $ev->cancel();
         }
     }
