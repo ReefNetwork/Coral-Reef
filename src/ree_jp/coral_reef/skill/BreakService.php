@@ -96,13 +96,13 @@ class BreakService
             $drops = array_merge(...array_map(fn(Block $block) => $block->getDrops($item), $affectedBlocks));
         }
 
-        $xpDrop = 0;
+        $xp = 0;
         if ($p !== null and $p->hasFiniteResources()) {
-            $xpDrop = array_sum(array_map(fn(Block $block) => $block->getXpDropForTool($item), $affectedBlocks));
+            $xp = array_sum(array_map(fn(Block $block) => $block->getXpDropForTool($item), $affectedBlocks));
         }
 
         if ($p !== null) {
-            $ev = new BlockBreakEvent($p, $bl, $item, $p->isCreative(), $drops, $xpDrop);
+            $ev = new BlockBreakEvent($p, $bl, $item, $p->isCreative(), $drops, $xp);
 
             if ($bl instanceof Air or ($p->isSurvival() and !$bl->getBreakInfo()->isBreakable()) or $p->isSpectator()) {
                 $ev->cancel();
@@ -130,7 +130,7 @@ class BreakService
             }
 
             $drops = $ev->getDrops();
-            $xpDrop = $ev->getXpDropAmount();
+            $xp = $ev->getXpDropAmount();
 
         } elseif (!$bl->getBreakInfo()->isBreakable()) {
             return;
@@ -156,8 +156,8 @@ class BreakService
             }
         }
 
-        if ($xpDrop > 0) {
-            $world->dropExperience($vector->add(0.5, 0.5, 0.5), $xpDrop);
+        if ($xp > 0) {
+            $p->getXpManager()->addXp($xp);
         }
     }
 
