@@ -147,7 +147,9 @@ class EventListener implements Listener
             return;
         }
         if (LandService::protect($this->landStore, $this->accountStore, $p, $ev->getBlock()->getPosition(), 'このワールドでブロックを掘ることはできません')) {
+            $p->teleport($p->getPosition());
             $ev->cancel();
+            return;
         }
         if ($this->accountStore->hasValue($p->getXuid(), 'skill_cool_time') &&
             !SettingManager::isEnableOption($p->getXuid(), SettingConst::ALLOW_COOL_TIME_DIG)) {
@@ -199,6 +201,7 @@ class EventListener implements Listener
 
         if (LandService::protect($this->landStore, $this->accountStore, $p, $ev->getBlock()->getPosition(),
             "このワールドでブロックを設置することはできません")) {
+            $p->teleport($p->getPosition());
             $ev->cancel();
         }
     }
