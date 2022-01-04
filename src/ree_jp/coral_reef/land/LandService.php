@@ -162,9 +162,15 @@ class LandService
         if ($isSlidingBrock && !$accountStore->hasValue($p->getXuid(), "sliding_brock")) {
             $accountStore->setValue($p->getXuid(), "sliding_brock", 5);
             $originPos = $p->getPosition();
+            $p->setImmobile(true);
             CoralReefPlugin::$plugin->getScheduler()->scheduleDelayedTask(new ClosureTask(function () use ($originPos, $p): void {
                 if ($p->isOnline()) {
                     $p->teleport($originPos);
+                }
+            }), 3);
+            CoralReefPlugin::$plugin->getScheduler()->scheduleDelayedTask(new ClosureTask(function () use ($originPos, $p): void {
+                if ($p->isOnline()) {
+                    $p->setImmobile(false);
                 }
             }), 5);
         }
