@@ -242,6 +242,10 @@ class EventListener implements Listener
         }
 
         switch ($ev->getItem()->getId()) {
+            case ItemIds::BUCKET:
+                if ($ev->getItem()->getDamage() !== 10) {
+                    break;
+                }
             case ItemIds::FLINT_STEEL:
                 $ev->setCancelled();
                 $p->kick(TextFormat::DARK_RED . "このアイテムは使用出来ません");
