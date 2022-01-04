@@ -166,7 +166,7 @@ class LandService
                 if ($p->isOnline()) {
                     $p->teleport($originPos);
                 }
-            }), 3);
+            }), 5);
         }
         if (!$accountStore->hasValue($p->getXuid(), 'protect_warning')) {
             $accountStore->setValue($p->getXuid(), 'protect_warning', 10);
