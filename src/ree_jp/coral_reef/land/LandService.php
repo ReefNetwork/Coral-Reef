@@ -15,6 +15,7 @@ use JetBrains\PhpStorm\Pure;
 use pocketmine\math\AxisAlignedBB;
 use pocketmine\math\Vector3;
 use pocketmine\player\Player;
+use pocketmine\scheduler\ClosureTask;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat;
 use pocketmine\world\particle\PortalParticle;
@@ -23,6 +24,7 @@ use pocketmine\world\sound\EndermanTeleportSound;
 use poggit\libasynql\SqlError;
 use ree_jp\coral_reef\account\AccountService;
 use ree_jp\coral_reef\account\AccountStore;
+use ree_jp\coral_reef\CoralReefPlugin;
 use ree_jp\coral_reef\sql\SQLConst;
 use ree_jp\coral_reef\sql\SQLRepository;
 
@@ -155,6 +157,15 @@ class LandService
                 $p->sendPopup("この土地は$name によって保護されています($land->name)");
                 if (AccountService::isOp($p) && $p->isCreative()) return false;
             }
+        }
+        if (!$accountStore->hasValue($p->getXuid(), "sliding_brock")) {
+            $accountStore->setValue($p->getXuid(), "sliding_brock", 3);
+            $originPos = $p->getPosition();
+            CoralReefPlugin::$plugin->getScheduler()->scheduleDelayedTask(new ClosureTask(function () use ($originPos, $p): void {
+                if ($p->isOnline()) {
+                    $p->teleport($originPos);
+                }
+            }), 3);
         }
         if (!$accountStore->hasValue($p->getXuid(), 'protect_warning')) {
             $accountStore->setValue($p->getXuid(), 'protect_warning', 10);

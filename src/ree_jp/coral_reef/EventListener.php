@@ -147,7 +147,6 @@ class EventListener implements Listener
             return;
         }
         if (LandService::protect($this->landStore, $this->accountStore, $p, $ev->getBlock()->getPosition(), 'このワールドでブロックを掘ることはできません')) {
-            $p->teleport($p->getPosition());
             $ev->cancel();
             return;
         }
@@ -201,7 +200,6 @@ class EventListener implements Listener
 
         if (LandService::protect($this->landStore, $this->accountStore, $p, $ev->getBlock()->getPosition(),
             "このワールドでブロックを設置することはできません")) {
-            $p->teleport($p->getPosition());
             $ev->cancel();
         }
     }
