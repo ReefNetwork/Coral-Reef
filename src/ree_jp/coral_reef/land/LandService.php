@@ -160,9 +160,9 @@ class LandService
             }
         }
         if ($isSlidingBrock && !$accountStore->hasValue($p->getXuid(), "sliding_brock")) {
-            $accountStore->setValue($p->getXuid(), "sliding_brock", 5);
+            $accountStore->setValue($p->getXuid(), "sliding_brock", 3);
             $originPos = $p->getPosition();
-            $p->setImmobile(true);
+            $p->setImmobile();
             CoralReefPlugin::$plugin->getScheduler()->scheduleDelayedTask(new ClosureTask(function () use ($originPos, $p): void {
                 if ($p->isOnline()) {
                     $p->teleport($originPos);
@@ -172,7 +172,7 @@ class LandService
                 if ($p->isOnline()) {
                     $p->setImmobile(false);
                 }
-            }), 5);
+            }), 8);
         }
         if (!$accountStore->hasValue($p->getXuid(), 'protect_warning')) {
             $accountStore->setValue($p->getXuid(), 'protect_warning', 10);
