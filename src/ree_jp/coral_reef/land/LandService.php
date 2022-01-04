@@ -161,14 +161,14 @@ class LandService
             }
         }
         if ($isSlidingBrock && !$accountStore->hasValue($p->getXuid(), "sliding_brock")) {
-            $accountStore->setValue($p->getXuid(), "sliding_brock", 3);
+            $accountStore->setValue($p->getXuid(), "sliding_brock", 5);
 
             $originPos = $p->getPosition();
             CoralReefPlugin::$plugin->getScheduler()->scheduleDelayedTask(new ClosureTask(function () use ($originPos, $p): void {
                 if ($p->isOnline()) {
                     $p->teleport($originPos);
                 }
-            }), 3);
+            }), 5);
 
             $p->setGamemode(GameMode::ADVENTURE());
             CoralReefPlugin::$plugin->getScheduler()->scheduleDelayedTask(new ClosureTask(function () use ($originPos, $p): void {
