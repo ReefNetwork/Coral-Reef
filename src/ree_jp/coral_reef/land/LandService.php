@@ -14,7 +14,6 @@ namespace ree_jp\coral_reef\land;
 use JetBrains\PhpStorm\Pure;
 use pocketmine\math\AxisAlignedBB;
 use pocketmine\math\Vector3;
-use pocketmine\player\GameMode;
 use pocketmine\player\Player;
 use pocketmine\scheduler\ClosureTask;
 use pocketmine\Server;
@@ -169,13 +168,6 @@ class LandService
                     $p->teleport($originPos);
                 }
             }), 5);
-
-            $p->setGamemode(GameMode::ADVENTURE());
-            CoralReefPlugin::$plugin->getScheduler()->scheduleDelayedTask(new ClosureTask(function () use ($originPos, $p): void {
-                if ($p->isOnline()) {
-                    $p->setGamemode(GameMode::SURVIVAL());
-                }
-            }), 10);
         }
         if (!$accountStore->hasValue($p->getXuid(), 'protect_warning')) {
             $accountStore->setValue($p->getXuid(), 'protect_warning', 10);
