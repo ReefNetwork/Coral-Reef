@@ -46,7 +46,7 @@ class CoralReefPlugin extends PluginBase
     public function onLoad()
     {
         self::$plugin = $this;
-        $this->isDev = !str_contains($this->getDescription()->getVersion(), 'stable');
+//        $this->isDev = !str_contains($this->getDescription()->getVersion(), 'stable');
     }
 
     public function onEnable()
