@@ -292,15 +292,7 @@ class EventListener implements Listener
         $toLevelName = $ev->getTo()->getWorld()->getFolderName();
         $isWorldChange = $fromLevelName !== $toLevelName;
 
-        if (in_array($toLevelName, AccountService::STOP_FLY_WORLD)) {
-            $p->setFlying(false);
-            $p->setAllowFlight(false);
-            $p->sendPopup("このワールドでは飛行することはできません");
-        } else {
-            $p->setAllowFlight(true);
-            $p->setFlying(true);
-            $p->sendPopup("このワールドは飛行できます");
-        }
+        AccountService::updateFly($p);
         if ($isWorldChange) {
             unset($this->landStore->pos[$p->getXuid()]);
         }
@@ -361,12 +353,6 @@ class EventListener implements Listener
      */
     public function onModeChangeMonitor(PlayerGameModeChangeEvent $ev): void
     {
-        $p = $ev->getPlayer();
-        if ($this->accountStore->hasValue($p->getXuid(), 'fly')) {
-            $this->accountStore->setValue($p->getXuid(), 'fly', 0);
-            $p->setFlying(false);
-            $p->setAllowFlight(false);
-            $p->sendMessage('モードが変わったため飛行を無効化しました');
-        }
+        AccountService::updateFly($ev->getPlayer());
     }
 }

@@ -48,6 +48,8 @@ class AccountService
         SettingManager::updateOption($repo, $p, SettingConst::NO_FREEZE_WATER);
         SettingManager::updateOption($repo, $p, SettingConst::BREAK_UNDER_GROUND);
         SettingManager::updateOption($repo, $p, SettingConst::ALLOW_COOL_TIME_DIG);
+
+        self::updateFly($p);
     }
 
     static function userQuit(SQLRepository $repo, AccountStore $store, Player $p): void
@@ -62,8 +64,7 @@ class AccountService
         }
 
         // フライを無効にする
-        $p->setFlying(false);
-        $p->setAllowFlight(false);
+        self::updateFly($p, false);
     }
 
     /**
@@ -137,6 +138,22 @@ class AccountService
                 $pos = Position::fromObject($pos, $world);
             }
             $p->teleport($pos);
+        }
+    }
+
+    static function updateFly(Player $p, ?bool $allow = null): void
+    {
+        if (is_null($allow)) {
+            $allow = !in_array($p->getWorld()->getFolderName(), AccountService::STOP_FLY_WORLD);
+        }
+        if ($allow && $p->isSurvival()) {
+            $p->setAllowFlight(true);
+            $p->setFlying(true);
+            $p->sendPopup("このワールドでは飛行できます");
+        } else {
+            $p->setFlying(false);
+            $p->setAllowFlight(false);
+            $p->sendPopup("このワールドでは飛行することはできません");
         }
     }
 }
