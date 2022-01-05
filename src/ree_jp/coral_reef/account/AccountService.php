@@ -60,11 +60,10 @@ class AccountService
             $account = $store->getUser($xuid);
             $account->save($repo);
         }
-        if ($store->hasValue($p->getXuid(), 'fly')) { // フライを無効にする
-            $store->setValue($p->getXuid(), 'fly', 0);
-            $p->setFlying(false);
-            $p->setAllowFlight(false);
-        }
+
+        // フライを無効にする
+        $p->setFlying(false);
+        $p->setAllowFlight(false);
     }
 
     /**

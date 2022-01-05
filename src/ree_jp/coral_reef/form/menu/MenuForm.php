@@ -39,12 +39,6 @@ class MenuForm
             $necessaryExperience = is_null($user) ? 'error' : $user->necessaryExperience;
             $exp = is_null($user) ? 'error' : $user->experience;
 
-            if ($store->hasValue($xuid, 'fly')) {
-                $fly_status = '無効';
-            } else {
-                $fly_status = '有効';
-            }
-
             $form = (new SimpleForm())
                 ->setTitle("ReefServer Menu")
                 ->setText("レベル : $level\nレベルアップまで : $necessaryExperience\n経験値 : $exp\nお金 : $money")
@@ -56,24 +50,6 @@ class MenuForm
                             $p->sendMessage(TextFormat::DARK_GRAY . "ストレージを開いています(数秒かかることがあります)");
                         }
                     ),
-                    new ClosureButton(
-                        "飛行を$fly_status にする", null, function (Player $p) use ($store, $xuid) {
-                        if ($store->hasValue($xuid, 'fly')) {
-                            $store->setValue($xuid, 'fly', 0);
-                            $p->setFlying(false);
-                            $p->setAllowFlight(false);
-                            $p->sendMessage('飛行を無効にしました');
-                        } else {
-                            if (in_array($p->getWorld()->getFolderName(), AccountService::STOP_FLY_WORLD)) {
-                                $p->sendMessage('このワールドで飛行することはできません');
-                                return;
-                            }
-                            $store->setValue($xuid, 'fly');
-                            $p->setAllowFlight(true);
-                            $p->setFlying(true);
-                            $p->sendMessage('飛行を有効にしました');
-                        }
-                    }),
                     new ClosureButton(
                         "ワープ地点", null, function (Player $p) use ($repo) {
                         MyWarpForm::sendForm($repo, $p);

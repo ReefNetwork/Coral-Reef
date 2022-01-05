@@ -292,11 +292,14 @@ class EventListener implements Listener
         $toLevelName = $ev->getTo()->getWorld()->getFolderName();
         $isWorldChange = $fromLevelName !== $toLevelName;
 
-        if (in_array($toLevelName, AccountService::STOP_FLY_WORLD) && $this->accountStore->hasValue($p->getXuid(), 'fly')) {
-            $this->accountStore->setValue($p->getXuid(), 'fly', 0);
+        if (in_array($toLevelName, AccountService::STOP_FLY_WORLD)) {
             $p->setFlying(false);
             $p->setAllowFlight(false);
-            $p->sendMessage('このワールドで飛行することはできません');
+            $p->sendPopup("このワールドでは飛行することはできません");
+        } else {
+            $p->setAllowFlight(true);
+            $p->setFlying(true);
+            $p->sendPopup("このワールドは飛行できます");
         }
         if ($isWorldChange) {
             unset($this->landStore->pos[$p->getXuid()]);
