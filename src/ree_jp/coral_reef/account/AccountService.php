@@ -49,7 +49,7 @@ class AccountService
         SettingManager::updateOption($repo, $p, SettingConst::BREAK_UNDER_GROUND);
         SettingManager::updateOption($repo, $p, SettingConst::ALLOW_COOL_TIME_DIG);
 
-        self::updateFly($p);
+        self::updateFly($p, $p->getWorld()->getFolderName());
     }
 
     static function userQuit(SQLRepository $repo, AccountStore $store, Player $p): void
@@ -64,7 +64,7 @@ class AccountService
         }
 
         // フライを無効にする
-        self::updateFly($p, false);
+        self::updateFly($p, $p->getWorld()->getFolderName(), false);
     }
 
     /**
@@ -141,10 +141,10 @@ class AccountService
         }
     }
 
-    static function updateFly(Player $p, ?bool $allow = null): void
+    static function updateFly(Player $p, string $world, ?bool $allow = null): void
     {
         if (is_null($allow)) {
-            $allow = !in_array($p->getWorld()->getFolderName(), AccountService::STOP_FLY_WORLD);
+            $allow = !in_array($world, AccountService::STOP_FLY_WORLD);
         }
         if ($allow && $p->isSurvival()) {
             $p->setAllowFlight(true);

@@ -292,7 +292,7 @@ class EventListener implements Listener
         $toLevelName = $ev->getTo()->getWorld()->getFolderName();
         $isWorldChange = $fromLevelName !== $toLevelName;
 
-        AccountService::updateFly($p);
+        AccountService::updateFly($p, $ev->getTo()->world->getFolderName());
         if ($isWorldChange) {
             unset($this->landStore->pos[$p->getXuid()]);
         }
@@ -353,6 +353,6 @@ class EventListener implements Listener
      */
     public function onModeChangeMonitor(PlayerGameModeChangeEvent $ev): void
     {
-        AccountService::updateFly($ev->getPlayer());
+        AccountService::updateFly($ev->getPlayer(), $ev->getPlayer()->getWorld()->getFolderName());
     }
 }
