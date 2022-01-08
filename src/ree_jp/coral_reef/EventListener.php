@@ -275,6 +275,11 @@ class EventListener implements Listener
             $ev->cancel();
             return;
         }
+        if (($ev->getBlock()->getId() === BlockLegacyIds::CHEST) &&
+            LandService::protect($this->landStore, $this->accountStore, $p, $ev->getBlock()->getPosition(), "このワールドでチェストを開くことはできません")) {
+            $ev->cancel();
+            return;
+        }
         if (LandService::protect($this->landStore, $this->accountStore, $p, $ev->getBlock()->getPosition(), null, true)) {
             $ev->cancel();
         }

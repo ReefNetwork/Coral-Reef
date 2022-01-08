@@ -19,9 +19,7 @@ use pocketmine\scheduler\ClosureTask;
 use pocketmine\world\sound\XpLevelUpSound;
 use ree_jp\coral_reef\account\AccountStore;
 use ree_jp\coral_reef\CoralReefPlugin;
-use ree_jp\coral_reef\gatya\GatyaManager;
 use ree_jp\coral_reef\quest\QuestListener;
-use ree_jp\coral_reef\sql\SQLConst;
 use ree_jp\coral_reef\sql\SQLRepository;
 
 class SkillManager
@@ -77,14 +75,6 @@ class SkillManager
         $user = $store->getUser($xuid);
         $skill = $user->skill;
         if (is_null($skill)) throw new Exception('スキルが設定されていません');
-
-        if (!$store->hasValue($xuid, "christmas_ticket_cool_down")) {
-            $store->setValue($xuid, "christmas_ticket_cool_down", 20 * 10);
-            if (mt_rand(1, 100) === 100) {
-                GatyaManager::addTicket($repo, $xuid, SQLConst::TICKETS_CHRISTMAS_2021, 1);
-                $p->sendMessage("クリスマスガチャチケットを入手しました");
-            }
-        }
 
         QuestListener::callSubscribedQuest($p->getXuid(), QuestListener::USE_SKILL, $skill);
         $skill->runSkill($bl->getPosition(), $p);
