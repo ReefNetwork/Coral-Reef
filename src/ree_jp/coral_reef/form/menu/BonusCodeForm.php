@@ -47,7 +47,7 @@ class BonusCodeForm
                     GatyaManager::addTicket($repo, $p->getXuid(), SQLConst::TICKETS_NORMAL, 10);
                 });
                 break;
-            case "Cyclone200m":
+            case "cyclone200m":
                 self::useCode($repo, $p, $code, function () use ($repo, $p): void {
                     $p->sendMessage(TextFormat::GREEN . "Cyclone0849さんの経験値量が2億を超えました!!!!おめでとう!!!");
                     $p->sendMessage(TextFormat::AQUA . "ガチャチケットを" . TextFormat::RED . "2枚" . TextFormat::AQUA . "受け取りました");
