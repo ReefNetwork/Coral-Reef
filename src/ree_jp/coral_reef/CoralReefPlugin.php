@@ -42,6 +42,7 @@ class CoralReefPlugin extends PluginBase
     static CoralReefPlugin $plugin;
 
     public bool $isDev = false;
+    public bool $isMain = false;
 
     private SQLRepository $sqlRepo;
     private AccountStore $accountStore;
@@ -53,6 +54,8 @@ class CoralReefPlugin extends PluginBase
     {
         self::$plugin = $this;
         $this->isDev = !str_contains($this->getDescription()->getVersion(), 'stable');
+        /** @noinspection SpellCheckingInspection */
+        $this->isMain = $this->getConfig()->get(ConfigConst::SERVER_NAME) === "seichi_1";
     }
 
     public function onEnable(): void
