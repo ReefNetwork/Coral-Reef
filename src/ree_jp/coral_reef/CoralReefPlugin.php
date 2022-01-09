@@ -11,6 +11,7 @@
 
 namespace ree_jp\coral_reef;
 
+use muqsit\invmenu\InvMenuHandler;
 use pocketmine\plugin\PluginBase;
 use pocketmine\scheduler\ClosureTask;
 use pocketmine\Server;
@@ -60,6 +61,9 @@ class CoralReefPlugin extends PluginBase
 
     public function onEnable(): void
     {
+        if (!InvMenuHandler::isRegistered()) {
+            InvMenuHandler::register($this);
+        }
         date_default_timezone_set('Asia/Tokyo');
         $this->accountStore = new AccountStore();
         $this->sqlRepo = new SQLRepository($this->accountStore, $this, $this->getDataFolder(), $this->getConfig()->get(ConfigConst::SERVER_NAME));
