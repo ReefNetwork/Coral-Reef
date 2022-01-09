@@ -69,7 +69,7 @@ class AccountStore
 
     public function getXuid(string $name): ?string
     {
-        $xuid = array_search($name, $this->xuid, true);
+        $xuid = array_search(strtolower($name), $this->xuid, true);
         if ($xuid === false) {
             return null;
         } else return $xuid;
@@ -86,7 +86,7 @@ class AccountStore
         $repo->getAllUser(function (array $rows): void {
             $list = [];
             foreach ($rows as $row) {
-                $list[$row["xuid"]] = $row["name"];
+                $list[$row["xuid"]] = strtolower($row["name"]);
             }
             $this->xuid = $list;
         });
