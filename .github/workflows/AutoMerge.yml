@@ -25,5 +25,5 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           pr_title: "Pulling ${{ github.ref }} into master"
 
-      name: Merge pull request
-      run: gh pr merge ${{ steps.pr.outputs.pr_url }} --merge
+      - name: Merge pull request
+        run: gh pr merge ${{ steps.pr.outputs.pr_url }} --merge
