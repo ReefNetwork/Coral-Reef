@@ -43,8 +43,8 @@ class ShopService
     static function buy(SQLRepository $repo, Shop $shop, Player $p, int $count): void
     {
         $xuid = $p->getXuid();
-        self::pay($repo, $shop, $xuid, $count, true, function () use ($repo, $xuid, $p, $count): void {
-            $items = $this->getItems();
+        self::pay($repo, $shop, $xuid, $count, true, function () use ($shop, $repo, $xuid, $p, $count): void {
+            $items = $shop->getItems();
             $gifts = [];
             while ($count > 0) {
                 foreach ($items as $item) {
