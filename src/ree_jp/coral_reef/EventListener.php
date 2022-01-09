@@ -232,6 +232,11 @@ class EventListener implements Listener
         }
 
         switch ($ev->getItem()->getId()) {
+            /** @noinspection PhpMissingBreakStatementInspection */
+            case ItemIds::BUCKET:
+                if ($ev->getItem()->getMeta() !== 10) {
+                    break;
+                }
             case ItemIds::FLINT_STEEL:
                 $ev->cancel();
                 $p->kick(TextFormat::DARK_RED . "このアイテムは使用出来ません");
