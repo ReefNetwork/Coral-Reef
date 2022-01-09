@@ -21,6 +21,7 @@ use pocketmine\Server;
 use pocketmine\utils\TextFormat;
 use ree_jp\coral_reef\account\AccountService;
 use ree_jp\coral_reef\account\AccountStore;
+use ree_jp\coral_reef\CoralReefPlugin;
 use ree_jp\coral_reef\money\MoneyService;
 use ree_jp\coral_reef\quest\QuestListener;
 use ree_jp\coral_reef\sql\SQLRepository;
@@ -121,7 +122,11 @@ class MenuForm
                 }),
                 new ClosureButton(
                     "ショップ", null, function (Player $p) {
-                    AccountService::teleport($p, "lobby", new Vector3(512, 5, 512));
+                    if (CoralReefPlugin::$plugin->isMain) {
+                        AccountService::teleport($p, "lobby", new Vector3(512, 5, 512));
+                    } else {
+                        $p->sendMessage("ショップは整地サーバー1のみです");
+                    }
                 }),
                 new ClosureButton(
                     "整地ワールド1", null, function (Player $p) {
