@@ -15,8 +15,4 @@ namespace ree_jp\coral_reef;
 class ConfigConst
 {
     const SERVER_NAME = "server_0";
-    const DISCORD_TOKEN = "discordToken";
-    const DISCORD_SERVER_ID = "discordServerId";
-    const DISCORD_CHAT_CHANNEL_ID = "chatChannelId";
-    const DISCORD_LOG_CHANNEL_ID = "logChannelId";
 }

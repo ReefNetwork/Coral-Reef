@@ -6,31 +6,32 @@
  * CC    C oo  oo rr     aa  aaa lll RR  RR  eeeee  eeeee  ff
  *  CCCCC   oooo  rr      aaa aa lll RR   RR  eeeee  eeeee ff
  *
- * Copyright (c) 2021-2021. Ree-jp(https://ree-jp.net)
+ * Copyright (c) 2021-2022. Ree-jp(https://ree-jp.net)
  */
 
-namespace ree_jp\coral_reef\form;
+namespace ree_jp\coral_reef\form\menu;
 
 use bbo51dog\bboform\element\ClosureButton;
 use bbo51dog\bboform\form\SimpleForm;
-use pocketmine\Player;
-use ree_jp\coral_reef\proxy\ProxyManager;
+use pocketmine\player\Player;
+use ree_jp\coral_reef\account\AccountStore;
+use ree_jp\coral_reef\proxy\ProxyService;
+use ree_jp\coral_reef\sql\SQLRepository;
 
 class ServerSelectForm
 {
     const SERVERS = ["lobby", "整地1", '整地2'];
 
-    static function sendServerSelectForm(Player $p): void
+    static function sendForm(SQLRepository $repo, AccountStore $store, Player $p): void
     {
         $form = (new SimpleForm())
             ->setTitle("Menu -> Server")
             ->setText("サーバーを移動できます");
         foreach (self::SERVERS as $server) {
             $form->addElement(new ClosureButton(
-                $server,
-                null,
-                function (Player $p, ClosureButton $button) use ($server) {
-                    ProxyManager::transferServerWithSave($p, $server);
+                $server, null,
+                function (Player $p) use ($store, $repo, $server) {
+                    ProxyService::transferServerWithSave($repo, $store, $p, $server);
                 }
             ));
         }

@@ -6,52 +6,54 @@
  * CC    C oo  oo rr     aa  aaa lll RR  RR  eeeee  eeeee  ff
  *  CCCCC   oooo  rr      aaa aa lll RR   RR  eeeee  eeeee ff
  *
- * Copyright (c) 2021. Ree-jp(https://ree-jp.net)
+ * Copyright (c) 2021-2021. Ree-jp(https://ree-jp.net)
  */
 
-namespace ree_jp\coral_reef\form;
+namespace ree_jp\coral_reef\form\menu;
 
 use bbo51dog\bboform\element\Input;
 use bbo51dog\bboform\element\Label;
 use bbo51dog\bboform\form\ClosureCustomForm;
 use Closure;
-use pocketmine\Player;
+use pocketmine\player\Player;
 use pocketmine\utils\TextFormat;
-use poggit\libasynql\SqlError;
 use ree_jp\coral_reef\gatya\GatyaManager;
 use ree_jp\coral_reef\sql\SQLConst;
-use ree_jp\coral_reef\sql\SQLManager;
+use ree_jp\coral_reef\sql\SQLRepository;
 
 class BonusCodeForm
 {
-    static function sendForm(Player $p): void
+    static function sendForm(SQLRepository $repo, Player $p): void
     {
         $codeElement = new Input("コードを入力してください", "bonus");
-        $p->sendForm((new ClosureCustomForm(function (Player $p, ClosureCustomForm $form) use ($codeElement): void {
+        $p->sendForm((new ClosureCustomForm(function (Player $p) use ($repo, $codeElement): void {
+
             $code = strtolower($codeElement->getValue());
             $code = str_replace(["-", "_", " "], "", $code);
+
             if (empty($code)) return;
-            self::bonusCode($p, $code);
-        }))->addElements(new Label("コードを入力するとボーナスを受け取れます\nコードはDiscordやウェブサイトで不定期に配布しています"), $codeElement));
+            self::bonusCode($repo, $p, $code);
+        }))->setTitle("Bonus")->addElements(
+            new Label("コードを入力するとボーナスを受け取れます\nコードはDiscordやウェブサイトで不定期に配布しています"), $codeElement));
     }
 
-    static function bonusCode(Player $p, string $code): void
+    static function bonusCode(SQLRepository $repo, Player $p, string $code): void
     {
         switch ($code) {
             case "2022":
-                self::useCode($p, $code, function () use ($p): void {
+                self::useCode($repo, $p, $code, function () use ($repo, $p): void {
                     $p->sendMessage(TextFormat::GREEN . "これからもReefServerをよろしくお願いいたします");
-                    $p->sendMessage(TextFormat::AQUA . "ガチャチケットを" . TextFormat::RED . "5枚" . TextFormat::AQUA . "受け取りました");
-                    GatyaManager::addTicket($p->getXuid(), SQLConst::TICKETS_NORMAL, 5);
+                    $p->sendMessage(TextFormat::AQUA . "ガチャチケットを" . TextFormat::RED . "10枚" . TextFormat::AQUA . "受け取りました");
+                    GatyaManager::addTicket($repo, $p->getXuid(), SQLConst::TICKETS_NORMAL, 10);
                 });
                 break;
-            case "Cyclone200m":
-                self::useCode($p, $code, function () use ($p): void {
+            case "cyclone200m":
+                self::useCode($repo, $p, $code, function () use ($repo, $p): void {
                     $p->sendMessage(TextFormat::GREEN . "Cyclone0849さんの経験値量が2億を超えました!!!!おめでとう!!!");
                     $p->sendMessage(TextFormat::AQUA . "ガチャチケットを" . TextFormat::RED . "2枚" . TextFormat::AQUA . "受け取りました");
-                    GatyaManager::addTicket($p->getXuid(), SQLConst::TICKETS_NORMAL, 2);
+                    GatyaManager::addTicket($repo, $p->getXuid(), SQLConst::TICKETS_NORMAL, 2);
                     $p->sendMessage(TextFormat::RED . "クリスマスガチャチケットを" . TextFormat::RED . "2枚" . TextFormat::AQUA . "受け取りました");
-                    GatyaManager::addTicket($p->getXuid(), SQLConst::TICKETS_CHRISTMAS_2021, 2);
+                    GatyaManager::addTicket($repo, $p->getXuid(), SQLConst::TICKETS_CHRISTMAS_2021, 2);
                 });
                 break;
             default:
@@ -59,20 +61,19 @@ class BonusCodeForm
         }
     }
 
-    private static function useCode(Player $p, string $code, Closure $func): void
+    private static function useCode(SQLRepository $repo, Player $p, string $code, Closure $func): void
     {
-        SQLManager::$manager->getValue($p->getXuid(), SQLConst::TYPE_BONUS, $code, function (array $rows) use ($func, $p, $code): void {
+        $repo->getValue($p->getXuid(), SQLConst::TYPE_BONUS, $code, function (array $rows) use ($repo, $func, $p, $code): void {
             $row = array_shift($rows);
             if (!empty($row)) {
                 $p->sendMessage("そのコードは使用済みです");
                 return;
             }
-            SQLManager::$manager->setValue($p->getXuid(), SQLConst::TYPE_BONUS, $code, SQLConst::COMPLETE, function () use ($func, $code, $p): void {
-                SQLManager::$manager->addLog($p->getXuid(), SQLConst::LOG_BONUS, $code, SQLConst::COMPLETE,
-                    SQLConst::NOW_TIME, null, null);
+            $repo->setValue($p->getXuid(), SQLConst::TYPE_BONUS, $code, SQLConst::COMPLETE, function () use ($repo, $func, $code, $p): void {
+                $repo->addLog($p->getXuid(), SQLConst::LOG_BONUS, $code, SQLConst::COMPLETE, SQLConst::NOW_TIME, null, null);
                 $func();
             });
-        }, function (SqlError $error) use ($p): void {
+        }, function () use ($p): void {
             $p->sendMessage("エラーが発生しました");
         });
     }

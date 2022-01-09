@@ -6,82 +6,76 @@
  * CC    C oo  oo rr     aa  aaa lll RR  RR  eeeee  eeeee  ff
  *  CCCCC   oooo  rr      aaa aa lll RR   RR  eeeee  eeeee ff
  *
- * Copyright (c) 2021-2021. Ree-jp(https://ree-jp.net)
+ * Copyright (c) 2021-2022. Ree-jp(https://ree-jp.net)
  */
 
-namespace ree_jp\coral_reef\form;
+namespace ree_jp\coral_reef\form\menu;
 
 use bbo51dog\bboform\element\Button;
 use bbo51dog\bboform\element\ClosureButton;
 use bbo51dog\bboform\element\Input;
 use bbo51dog\bboform\element\Label;
 use bbo51dog\bboform\form\ClosureCustomForm;
-use bbo51dog\bboform\form\CustomForm;
 use bbo51dog\bboform\form\ModalForm;
 use bbo51dog\bboform\form\SimpleForm;
 use Closure;
 use pocketmine\math\Vector3;
-use pocketmine\Player;
+use pocketmine\player\Player;
 use pocketmine\utils\TextFormat;
-use ree_jp\coral_reef\account\AccountManager;
+use ree_jp\coral_reef\account\AccountService;
 use ree_jp\coral_reef\quest\QuestListener;
-use ree_jp\coral_reef\sql\SQLManager;
+use ree_jp\coral_reef\sql\SQLRepository;
 
 class MyWarpForm
 {
-    static function sendWarpForm(Player $p): void
+    static function sendForm(SQLRepository $repo, Player $p): void
     {
         $xuid = $p->getXuid();
-        SQLManager::$manager->getWarps($xuid, function (array $rows) use ($p) {
+        $repo->getWarps($xuid, function (array $rows) use ($repo, $p) {
             $form = (new SimpleForm())
                 ->setTitle("Menu -> MyWarp")
                 ->setText("自分だけのワープ地点を設定できます");
             foreach ($rows as $warpPoint) {
                 $form->addElement(
-                    self::createWarpButton(
-                        $warpPoint,
-                        function (Player $p, ClosureButton $button) use ($warpPoint) {
+                    self::createWarpButton($warpPoint,
+                        function (Player $p) use ($warpPoint) {
                             $p->sendMessage($warpPoint['name'] . 'にワープしています...');
-                            AccountManager::teleport($p, $warpPoint['level'], new Vector3($warpPoint['x'], $warpPoint['y'], $warpPoint['z']));
+                            AccountService::teleport($p, $warpPoint['level'], new Vector3($warpPoint['x'], $warpPoint['y'], $warpPoint['z']));
                         }
                     )
                 );
             }
             $form->addElement(new ClosureButton(
-                "ワープ地点を 作成/削除 する",
-                null,
-                function (Player $p, ClosureButton $button) use ($rows) {
-                    $p->sendForm(self::myWarpEditForm($p, $rows));
+                "ワープ地点を 作成/削除 する", null,
+                function (Player $p) use ($repo, $rows) {
+                    self::sendMyWarpEditForm($repo, $p, $rows);
                 }
             ));
             $p->sendForm($form);
         });
     }
 
-    static function myWarpEditForm(Player $p, array $warpPoints): SimpleForm
+    static function sendMyWarpEditForm(SQLRepository $repo, Player $p, array $warpPoints): void
     {
         $form = (new SimpleForm())
             ->setTitle("MyWarp -> Edit")
             ->setText("ワープ地点を作成するか削除したいワープ地点を選択してください");
         foreach ($warpPoints as $warpPoint) {
             $form->addElement(
-                self::createWarpButton(
-                    $warpPoint,
-                    function (Player $p, ClosureButton $button) use ($warpPoint) {
+                self::createWarpButton($warpPoint,
+                    function (Player $p) use ($repo, $warpPoint) {
                         $p->sendForm(
                             (new ModalForm(
                                 new ClosureButton(
-                                    "はい",
-                                    null,
-                                    function (Player $p, ClosureButton $button) use ($warpPoint) {
-                                        SQLManager::$manager->deleteWarp($p->getXuid(), $warpPoint['name']);
+                                    "はい", null,
+                                    function (Player $p) use ($repo, $warpPoint) {
+                                        $repo->deleteWarp($p->getXuid(), $warpPoint['name']);
                                     }
                                 ),
                                 new ClosureButton(
-                                    "いいえ",
-                                    null,
-                                    function (Player $p, ClosureButton $button) use ($warpPoint) {
-                                        self::sendWarpForm($p);
+                                    "いいえ", null,
+                                    function (Player $p) use ($repo, $warpPoint) {
+                                        self::sendForm($repo, $p);
                                     }
                                 )
                             ))
@@ -95,40 +89,36 @@ class MyWarpForm
         }
         $form->addElement(
             new ClosureButton(
-                "ワープ地点を作成する",
-                null,
-                function (Player $p, ClosureButton $button) {
-                    $p->sendForm(self::myWarpCreateForm());
+                "ワープ地点を作成する", null,
+                function (Player $p) use ($repo) {
+                    self::sendWarpCreateForm($repo, $p);
                 }
             )
         );
-        return $form;
+        $p->sendForm($form);
     }
 
-    static function myWarpCreateForm(): CustomForm
+    static function sendWarpCreateForm(SQLRepository $repo, Player $p): void
     {
         $nameInput = new Input('作成したいワープ地点の名前を入力してください', '新しいワープ地点');
-        return (new ClosureCustomForm(
-            function (Player $p, ClosureCustomForm $form) use ($nameInput) {
+        $form = new ClosureCustomForm(
+            function (Player $p) use ($repo, $nameInput) {
                 if (mb_strlen($nameInput->getValue()) < 1) {
                     $p->sendMessage('ワープ地点の名前が短すぎます');
                 } else {
-                    SQLManager::$manager->addWarp(
-                        $p->getXuid(),
-                        $nameInput->getValue(),
-                        $p->getLevel()->getFolderName(),
-                        $p->getFloorX(), $p->getFloorY(),
-                        $p->getFloorZ()
+                    $repo->addWarp($p->getXuid(), $nameInput->getValue(),
+                        $p->getWorld()->getFolderName(), $p->getPosition()->getFloorX(), $p->getPosition()->getFloorY(),
+                        $p->getPosition()->getFloorZ()
                     );
                     QuestListener::callSubscribedQuest($p->getXuid(), QuestListener::CREATE_WARP_POINT, null);
                 }
             }
-        ))
-            ->setTitle("MyWarpEdit -> Create")
-            ->addElements(
-                new Label("現在の位置にワープ地点を作成します\n重複する名前の場合上書きされます"),
-                $nameInput
-            );
+        );
+        $form->setTitle("MyWarpEdit -> Create")->addElements(
+            new Label("現在の位置にワープ地点を作成します\n重複する名前の場合上書きされます"),
+            $nameInput
+        );
+        $p->sendForm($form);
     }
 
     private static function createWarpButton(array $warpPoint, Closure $closure): Button

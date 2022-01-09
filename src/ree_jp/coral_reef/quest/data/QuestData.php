@@ -11,6 +11,8 @@
 
 namespace ree_jp\coral_reef\quest\data;
 
+use ree_jp\coral_reef\sql\SQLRepository;
+
 abstract class QuestData
 {
     const ID = "unknown";
@@ -20,9 +22,11 @@ abstract class QuestData
 
     public string $xuid;
     protected string $value;
+    protected SQLRepository $repo;
 
-    function __construct(string $xuid, string $value)
+    function __construct(SQLRepository $repo, string $xuid, string $value)
     {
+        $this->repo = $repo;
         $this->xuid = $xuid;
         $this->value = $value;
     }

@@ -1,20 +1,18 @@
 name: CoralReef
 main: ree_jp\coral_reef\CoralReefPlugin
-api: 3.0.0
+api: 4.0.0
 author: Ree-jp
 website: https://reef.ree-jp.net/
-version: 0.0.1
+version: 1.0.4
 depend:
   - BboForm
   - StackStorage
 permissions:
-  coral_reef.*:
-    default: false
-    children:
-      coral_reef.command.*:
-        default: false
-        children:
-          coral_reef.command.reef_admin:
-            default: op
-          coral_reef.command.reef_console:
-            default: op
+  coral_reef.command.menu:
+    default: true
+  coral_reef.command.trash:
+    default: true
+  coral_reef.command.reef_admin:
+    default: op
+  coral_reef.command.reef_console:
+    default: op

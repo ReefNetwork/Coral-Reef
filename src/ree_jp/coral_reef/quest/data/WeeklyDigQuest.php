@@ -11,11 +11,12 @@
 
 namespace ree_jp\coral_reef\quest\data;
 
-use ree_jp\coral_reef\account\AccountManager;
+use JetBrains\PhpStorm\Pure;
+use ree_jp\coral_reef\account\AccountService;
 use ree_jp\coral_reef\gatya\GatyaManager;
 use ree_jp\coral_reef\quest\QuestListener;
 use ree_jp\coral_reef\sql\SQLConst;
-use ree_jp\coral_reef\sql\SQLManager;
+use ree_jp\coral_reef\sql\SQLRepository;
 
 class WeeklyDigQuest extends WeeklyQuest
 {
@@ -24,9 +25,9 @@ class WeeklyDigQuest extends WeeklyQuest
     const SHORT_DETAILS = "整地しよう!(毎週)";
     const EXPLANATION = "スキルを一定回数使用して整地をしよう。";
 
-    function __construct(string $xuid, ?string $value)
+    function __construct(SQLRepository $repo, string $xuid, ?string $value)
     {
-        parent::__construct($xuid, $value);
+        parent::__construct($repo, $xuid, $value);
         if (!$this->isComplete()) {
             QuestListener::subscribeQuest($xuid, QuestListener::USE_SKILL, $this);
         }
@@ -48,10 +49,10 @@ class WeeklyDigQuest extends WeeklyQuest
             case 10000:
                 QuestListener::unsubscribeQuest($this->xuid, QuestListener::USE_SKILL, $this);
                 QuestListener::callSubscribedQuest($this->xuid, QuestListener::CLEAR_QUEST, $this);
-                SQLManager::$manager->addLog($this->xuid, SQLConst::LOG_QUEST, self::ID, $this->value,
+                $this->repo->addLog($this->xuid, SQLConst::LOG_QUEST, self::ID, $this->value,
                     SQLConst::NOW_TIME, null, null);
-                GatyaManager::addTicket($this->xuid, SQLConst::TICKETS_NORMAL, 3);
-                $p = AccountManager::getPlayerByXuid($this->xuid);
+                GatyaManager::addTicket($this->repo, $this->xuid, SQLConst::TICKETS_NORMAL, 3);
+                $p = AccountService::getPlayerByXuid($this->xuid);
                 if (!is_null($p)) $p->sendMessage("デイリー整地ボーナスとしてガチャチケットを受け取りました");
                 break;
         }
@@ -66,7 +67,7 @@ class WeeklyDigQuest extends WeeklyQuest
         return "完了";
     }
 
-    function getRewardDetails(): string
+    #[Pure] function getRewardDetails(): string
     {
         if ($this->isComplete()) {
             return "完了済み";

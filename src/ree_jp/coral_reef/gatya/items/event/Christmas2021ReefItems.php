@@ -11,16 +11,13 @@
 
 namespace ree_jp\coral_reef\gatya\items\event;
 
-use pocketmine\block\BlockIds;
-use pocketmine\item\Durable;
-use pocketmine\item\enchantment\Enchantment;
+use pocketmine\block\BlockLegacyIds;
+use pocketmine\inventory\CreativeInventory;
 use pocketmine\item\enchantment\EnchantmentInstance;
+use pocketmine\item\enchantment\VanillaEnchantments;
 use pocketmine\item\Item;
-use pocketmine\item\ItemIds;
-use pocketmine\nbt\tag\IntTag;
-use pocketmine\nbt\tag\StringTag;
+use pocketmine\item\VanillaItems;
 use pocketmine\utils\TextFormat;
-use ree_jp\coral_reef\account\AccountManager;
 use ree_jp\coral_reef\gatya\items\ReefItems;
 
 class Christmas2021ReefItems extends ReefItems
@@ -33,7 +30,7 @@ class Christmas2021ReefItems extends ReefItems
     static function registerItems(): void
     {
         foreach ([self::PICKAXE, self::SHOVEL, self::AXE, self::HOE] as $key) {
-            Item::addCreativeItem(self::getItem(0, $key));
+            CreativeInventory::getInstance()->add(self::getItem(0, $key));
         }
     }
 
@@ -41,55 +38,56 @@ class Christmas2021ReefItems extends ReefItems
     {
         switch ($type) {
             case self::PICKAXE:
-                $item = Item::get(ItemIds::DIAMOND_PICKAXE);
-                if (!$item instanceof Durable) return null;
-
-                $item->setNamedTagEntry(new StringTag(self::REEF_SP_ITEM, self::PICKAXE));
+                $item = VanillaItems::DIAMOND_PICKAXE();
+                $nbt = $item->getNamedTag();
+                $nbt->setString(self::REEF_SP_ITEM, self::PICKAXE);
+                $item->setNamedTag($nbt);
                 $item->setCustomName(TextFormat::DARK_GREEN . "Christmas" . TextFormat::RED . "2021" .
                     TextFormat::GREEN . 'Reef' . TextFormat::GOLD . 'Pickaxe');
-                $item->addEnchantment(new EnchantmentInstance(Enchantment::getEnchantment(Enchantment::EFFICIENCY), 10));
-                $item->addEnchantment(new EnchantmentInstance(Enchantment::getEnchantment(Enchantment::SILK_TOUCH), 10));
+                $item->addEnchantment(new EnchantmentInstance(VanillaEnchantments::EFFICIENCY(), 10));
+                $item->addEnchantment(new EnchantmentInstance(VanillaEnchantments::SILK_TOUCH(), 10));
                 break;
             case self::SHOVEL:
-                $item = Item::get(ItemIds::DIAMOND_SHOVEL);
-                if (!$item instanceof Durable) return null;
-
-                $item->setNamedTagEntry(new StringTag(self::REEF_SP_ITEM, self::SHOVEL));
+                $item = VanillaItems::DIAMOND_SHOVEL();
+                $nbt = $item->getNamedTag();
+                $nbt->setString(self::REEF_SP_ITEM, self::SHOVEL);
+                $item->setNamedTag($nbt);
                 $item->setCustomName(TextFormat::DARK_GREEN . "Christmas" . TextFormat::RED . "2021" .
                     TextFormat::GREEN . 'Reef' . TextFormat::GOLD . 'Shovel');
-                $item->addEnchantment(new EnchantmentInstance(Enchantment::getEnchantment(Enchantment::EFFICIENCY), 10));
-                $item->addEnchantment(new EnchantmentInstance(Enchantment::getEnchantment(Enchantment::SILK_TOUCH), 10));
+                $item->addEnchantment(new EnchantmentInstance(VanillaEnchantments::EFFICIENCY(), 10));
+                $item->addEnchantment(new EnchantmentInstance(VanillaEnchantments::SILK_TOUCH(), 10));
                 break;
             case self::AXE:
-                $item = Item::get(ItemIds::DIAMOND_AXE);
-                if (!$item instanceof Durable) return null;
-
-                $item->setNamedTagEntry(new StringTag(self::REEF_SP_ITEM, self::AXE));
+                $item = VanillaItems::DIAMOND_AXE();
+                $nbt = $item->getNamedTag();
+                $nbt->setString(self::REEF_SP_ITEM, self::AXE);
+                $item->setNamedTag($nbt);
                 $item->setCustomName(TextFormat::DARK_GREEN . "Christmas" . TextFormat::RED . "2021" .
                     TextFormat::GREEN . 'Reef' . TextFormat::GOLD . 'Axe');
-                $item->addEnchantment(new EnchantmentInstance(Enchantment::getEnchantment(Enchantment::EFFICIENCY), 10));
-                $item->addEnchantment(new EnchantmentInstance(Enchantment::getEnchantment(Enchantment::SILK_TOUCH), 10));
+                $item->addEnchantment(new EnchantmentInstance(VanillaEnchantments::EFFICIENCY(), 10));
+                $item->addEnchantment(new EnchantmentInstance(VanillaEnchantments::SILK_TOUCH(), 10));
                 break;
             case self::HOE:
-                $item = Item::get(ItemIds::DIAMOND_HOE);
-                if (!$item instanceof Durable) return null;
-
-                $item->setNamedTagEntry(new StringTag(self::REEF_SP_ITEM, self::HOE));
+                $item = VanillaItems::DIAMOND_HOE();
+                $nbt = $item->getNamedTag();
+                $nbt->setString(self::REEF_SP_ITEM, self::HOE);
+                $item->setNamedTag($nbt);
                 $item->setCustomName(TextFormat::DARK_GREEN . "Christmas" . TextFormat::RED . "2021" .
                     TextFormat::GREEN . 'Reef' . TextFormat::GOLD . 'Hoe');
-                $item->addEnchantment(new EnchantmentInstance(Enchantment::getEnchantment(Enchantment::EFFICIENCY), 10));
-                $item->addEnchantment(new EnchantmentInstance(Enchantment::getEnchantment(Enchantment::SILK_TOUCH), 10));
+                $item->addEnchantment(new EnchantmentInstance(VanillaEnchantments::EFFICIENCY(), 10));
+                $item->addEnchantment(new EnchantmentInstance(VanillaEnchantments::SILK_TOUCH(), 10));
                 break;
             default:
                 return null;
         }
         $item->setUnbreakable();
         $item->setLore(["使用時:水を凍らすブロックが雪に変わります"]);
-        $item->setNamedTagEntry(new IntTag("frozen_block", BlockIds::SNOW_BLOCK));
-        $lore = $item->getLore();
-        $lore[] = "所有者: " . AccountManager::getUserName($xuid);
-        $item->setLore($lore);
-        $item->setNamedTagEntry(new StringTag("owner", $xuid));
+
+        $nbt = $item->getNamedTag();
+        $nbt->setInt("frozen_block", BlockLegacyIds::SNOW_BLOCK);
+        $nbt->setString("owner", $xuid);
+        $item->setNamedTag($nbt);
+
         return $item;
     }
 }

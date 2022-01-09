@@ -11,8 +11,8 @@
 
 namespace ree_jp\coral_reef\land;
 
-use pocketmine\level\Position;
 use pocketmine\math\AxisAlignedBB;
+use pocketmine\world\Position;
 
 class LandData
 {
@@ -20,6 +20,11 @@ class LandData
     public string $name;
     public string $level;
     public AxisAlignedBB $aabb;
+
+    /**
+     * @var string[]
+     */
+    public array $members = [];
 
     public function __construct(string $xuid, string $name, string $level, AxisAlignedBB $aabb)
     {
@@ -31,9 +36,26 @@ class LandData
 
     public function isLand(Position $pos): bool
     {
-        if ($pos->getLevelNonNull()->getFolderName() === $this->level) {
+        if ($pos->getWorld()->getFolderName() === $this->level) {
             return $this->aabb->isVectorInXZ($pos);
         }
         return false;
+    }
+
+    public function isMember(string $xuid): bool
+    {
+        return in_array($xuid, $this->members);
+    }
+
+    public function addMember(string $xuid): void
+    {
+        if (!$this->isMember($xuid)) {
+            $this->members[] = $xuid;
+        }
+    }
+
+    public function deleteMember(string $xuid): void
+    {
+        array_splice($this->members, $xuid);
     }
 }

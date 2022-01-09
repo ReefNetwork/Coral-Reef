@@ -12,6 +12,7 @@
 namespace ree_jp\coral_reef\quest;
 
 use Closure;
+use ree_jp\coral_reef\account\AccountStore;
 use ree_jp\coral_reef\quest\data\DailyDigQuest;
 use ree_jp\coral_reef\quest\data\DailyLoginQuest;
 use ree_jp\coral_reef\quest\data\LevelUpQuest;
@@ -20,56 +21,49 @@ use ree_jp\coral_reef\quest\data\TutorialQuest;
 use ree_jp\coral_reef\quest\data\WeeklyAchieveQuest;
 use ree_jp\coral_reef\quest\data\WeeklyDigQuest;
 use ree_jp\coral_reef\sql\SQLConst;
-use ree_jp\coral_reef\sql\SQLManager;
+use ree_jp\coral_reef\sql\SQLRepository;
 
 class QuestManager
 {
     static array $quests = [];
 
-    static function updateQuests(string $xuid, ?Closure $func = null): void
+    static function updateQuests(SQLRepository $repo, AccountStore $store, string $xuid, ?Closure $func = null): void
     {
-        SQLManager::$manager->getAllSubtypeValue($xuid, SQLConst::TYPE_QUEST, function (array $rows) use ($func, $xuid) {
+        $repo->getAllSubtypeValue($xuid, SQLConst::TYPE_QUEST, function (array $rows) use ($store, $repo, $func, $xuid) {
             if (isset(self::$quests[$xuid])) unset(self::$quests[$xuid]);
             foreach ($rows as $row) {
-                self::$quests[$xuid][] = self::getQuest($xuid, $row['subtype'], $row['value']);
+                self::$quests[$xuid][] = self::getQuest($repo, $store, $xuid, $row['subtype'], $row['value']);
             }
 
-            self::registerQuest($xuid, TutorialQuest::ID, null);
-            self::registerQuest($xuid, LevelUpQuest::ID, null);
-            self::registerQuest($xuid, DailyDigQuest::ID, null);
-            self::registerQuest($xuid, DailyLoginQuest::ID, null);
-            self::registerQuest($xuid, WeeklyDigQuest::ID, null);
-            self::registerQuest($xuid, WeeklyAchieveQuest::ID, null);
+            self::registerQuest($repo, $xuid, TutorialQuest::ID, null);
+            self::registerQuest($repo, $xuid, LevelUpQuest::ID, null);
+            self::registerQuest($repo, $xuid, DailyDigQuest::ID, null);
+            self::registerQuest($repo, $xuid, DailyLoginQuest::ID, null);
+            self::registerQuest($repo, $xuid, WeeklyDigQuest::ID, null);
+            self::registerQuest($repo, $xuid, WeeklyAchieveQuest::ID, null);
             if ($func instanceof Closure) $func($rows);
         });
     }
 
-    static function registerQuest(string $xuid, string $questID, ?string $value): void // クエストがなかったら与える
+    static function registerQuest(SQLRepository $repo, string $xuid, string $questID, ?string $value, ?AccountStore $store = null): void // クエストがなかったら与える
     {
         foreach (QuestManager::getUserQuests($xuid) as $alreadyQuest) {
             if ($questID === $alreadyQuest::ID) return;
         }
-        self::$quests[$xuid][] = self::getQuest($xuid, $questID, $value);
+        self::$quests[$xuid][] = self::getQuest($repo, $store, $xuid, $questID, $value);
     }
 
-    static function getQuest(string $xuid, string $questID, ?string $value): ?QuestData
+    static function getQuest(SQLRepository $repo, ?AccountStore $store, string $xuid, string $questID, ?string $value): ?QuestData
     {
-        switch ($questID) {
-            case TutorialQuest::ID:
-                return new TutorialQuest($xuid, $value);
-            case LevelUpQuest::ID:
-                return new LevelUpQuest($xuid, $value);
-            case DailyDigQuest::ID:
-                return new DailyDigQuest($xuid, $value);
-            case DailyLoginQuest::ID:
-                return new DailyLoginQuest($xuid, $value);
-            case WeeklyDigQuest::ID:
-                return new WeeklyDigQuest($xuid, $value);
-            case WeeklyAchieveQuest::ID:
-                return new WeeklyAchieveQuest($xuid, $value);
-            default:
-                return null;
-        }
+        return match ($questID) {
+            TutorialQuest::ID => new TutorialQuest($repo, $xuid, $value),
+            LevelUpQuest::ID => new LevelUpQuest($repo, $store, $xuid, $value),
+            DailyDigQuest::ID => new DailyDigQuest($repo, $xuid, $value),
+            DailyLoginQuest::ID => new DailyLoginQuest($repo, $xuid, $value),
+            WeeklyDigQuest::ID => new WeeklyDigQuest($repo, $xuid, $value),
+            WeeklyAchieveQuest::ID => new WeeklyAchieveQuest($repo, $xuid, $value),
+            default => null,
+        };
     }
 
     static function getUserQuests(string $xuid): array
@@ -77,24 +71,24 @@ class QuestManager
         return self::$quests[$xuid] ?? [];
     }
 
-    static function save(string $xuid, ?Closure $func = null): void
+    static function save(SQLRepository $repo, string $xuid, ?Closure $func = null): void
     {
         $quests = self::getUserQuests($xuid);
-        self::saveQuestLoop($xuid, $quests, $func);
+        self::saveQuestLoop($repo, $xuid, $quests, $func);
     }
 
-    private static function saveQuestLoop(string $xuid, array $quests, ?Closure $lastFunc): void
+    private static function saveQuestLoop(SQLRepository $repo, string $xuid, array $quests, ?Closure $lastFunc): void
     {
         $quest = array_shift($quests);
         if (empty($quest)) {
             if (!is_null($lastFunc)) $lastFunc();
             return;
         } else {
-            $func = function () use ($lastFunc, $quests, $xuid): void {
-                self::saveQuestLoop($xuid, $quests, $lastFunc);
+            $func = function () use ($repo, $lastFunc, $quests, $xuid): void {
+                self::saveQuestLoop($repo, $xuid, $quests, $lastFunc);
             };
         }
-        if (!$quest instanceof QuestData) self::saveQuestLoop($xuid, $quests, $func);
-        SQLManager::$manager->setValue($xuid, SQLConst::TYPE_QUEST, $quest::ID, $quest->outputData(), $func, $func);
+        if (!$quest instanceof QuestData) self::saveQuestLoop($repo, $xuid, $quests, $func);
+        $repo->setValue($xuid, SQLConst::TYPE_QUEST, $quest::ID, $quest->outputData(), $func, $func);
     }
 }

@@ -15,7 +15,7 @@ use pocketmine\Server;
 use ree_jp\coral_reef\gatya\GatyaManager;
 use ree_jp\coral_reef\quest\QuestListener;
 use ree_jp\coral_reef\sql\SQLConst;
-use ree_jp\coral_reef\sql\SQLManager;
+use ree_jp\coral_reef\sql\SQLRepository;
 
 class DailyLoginQuest extends DailyQuest
 {
@@ -24,14 +24,15 @@ class DailyLoginQuest extends DailyQuest
     const SHORT_DETAILS = "毎日サーバーにログインして報酬を受け取ろう";
     const EXPLANATION = "サーバーにログインすると報酬が受け取れます。毎日受け取れるので忘れずに受け取りましょう。";
 
-    function __construct(string $xuid, ?string $value)
+    function __construct(SQLRepository $repo, string $xuid, ?string $value)
     {
-        parent::__construct($xuid, $value);
+        parent::__construct($repo, $xuid, $value);
         if ($this->value !== "true") {
             $this->value = "true";
             QuestListener::callSubscribedQuest($this->xuid, QuestListener::CLEAR_QUEST, $this);
-            SQLManager::$manager->addLog($this->xuid, SQLConst::LOG_QUEST, self::ID, SQLConst::COMPLETE, SQLConst::NOW_TIME, null, null);
-            GatyaManager::addTicket($this->xuid, SQLConst::TICKETS_NORMAL, 1);
+            $this->repo->addLog($this->xuid, SQLConst::LOG_QUEST, self::ID, SQLConst::COMPLETE,
+                SQLConst::NOW_TIME, null, null);
+            GatyaManager::addTicket($this->repo, $this->xuid, SQLConst::TICKETS_NORMAL, 1);
             foreach (Server::getInstance()->getOnlinePlayers() as $p) {
                 if ($p->getXuid() === $xuid) $p->sendMessage("ログインボーナスでノーマルガチャチケット×1枚を受け取りました");
             }

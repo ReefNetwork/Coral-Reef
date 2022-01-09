@@ -11,25 +11,27 @@
 
 namespace ree_jp\coral_reef;
 
-use Exception;
-use PDOException;
-use pocketmine\level\generator\GeneratorManager;
 use pocketmine\plugin\PluginBase;
 use pocketmine\scheduler\ClosureTask;
 use pocketmine\Server;
-use ree_jp\coral_reef\account\AccountManager;
-use ree_jp\coral_reef\account\ScoreBoardManager;
+use pocketmine\world\generator\Flat;
+use pocketmine\world\generator\normal\Normal;
+use pocketmine\world\WorldCreationOptions;
+use ree_jp\coral_reef\account\AccountStore;
+use ree_jp\coral_reef\account\ScoreBoardService;
 use ree_jp\coral_reef\command\MenuCommand;
 use ree_jp\coral_reef\command\ReefAdminCommand;
 use ree_jp\coral_reef\command\ReefCommand;
 use ree_jp\coral_reef\command\ReefConsoleCommand;
+use ree_jp\coral_reef\command\ReefFormCommand;
+use ree_jp\coral_reef\command\TrashCommand;
 use ree_jp\coral_reef\gatya\items\ReefItems;
-use ree_jp\coral_reef\land\LandManager;
+use ree_jp\coral_reef\land\LandStore;
 use ree_jp\coral_reef\money\MoneyCache;
 use ree_jp\coral_reef\quest\QuestListener;
 use ree_jp\coral_reef\session\SessionStore;
 use ree_jp\coral_reef\shop\ShopStore;
-use ree_jp\coral_reef\sql\SQLManager;
+use ree_jp\coral_reef\sql\SQLRepository;
 use ree_jp\coral_reef\task\DataSaveTask;
 use ree_jp\coral_reef\task\EffectTask;
 use ree_jp\coral_reef\task\SendServerTipTask;
@@ -40,76 +42,104 @@ class CoralReefPlugin extends PluginBase
     static CoralReefPlugin $plugin;
 
     public bool $isDev = false;
+    public bool $isMain = false;
 
-    private array $errors = [];
+    private SQLRepository $sqlRepo;
+    private AccountStore $accountStore;
+    private LandStore $landStore;
+    private ShopStore $shopStore;
+    private SessionStore $sessionStore;
 
-    public function onLoad()
+    public function onLoad(): void
     {
         self::$plugin = $this;
         $this->isDev = !str_contains($this->getDescription()->getVersion(), 'stable');
+        /** @noinspection SpellCheckingInspection */
+        $this->isMain = $this->getConfig()->get(ConfigConst::SERVER_NAME) === "seichi_1";
     }
 
-    public function onEnable()
+    public function onEnable(): void
     {
         date_default_timezone_set('Asia/Tokyo');
-        try {
-            SQLManager::$manager = new SQLManager($this->getDataFolder(), $this->getConfig()->get(ConfigConst::SERVER_NAME));
-        } catch (PDOException $e) {
-            $this->getLogger()->critical("[SQL]" . $e->getMessage());
-        }
-        try {
-            LandManager::$instance = new LandManager();
-        } catch (Exception $e) {
-            $this->getLogger()->critical("[LandManager]" . $e->getMessage());
-        }
+        $this->accountStore = new AccountStore();
+        $this->sqlRepo = new SQLRepository($this->accountStore, $this, $this->getDataFolder(), $this->getConfig()->get(ConfigConst::SERVER_NAME));
+        $this->landStore = new LandStore($this->sqlRepo);
+        $this->shopStore = new ShopStore($this->getDataFolder());
+        $this->sessionStore = new SessionStore();
 
-        $this->getServer()->generateLevel("lobby", time(), GeneratorManager::getGenerator("flat"));
-        $this->getServer()->generateLevel("main_1", time(), generatorManager::getGenerator("default"));
-        $this->getServer()->generateLevel("main_2", time(), generatorManager::getGenerator("default"));
-        $this->getServer()->loadLevel("lobby");
-        $this->getServer()->loadLevel("main_1");
-        $this->getServer()->loadLevel("main_2");
+        $this->registerCommands();
+        $this->registerListeners();
+        $this->registerSchedules();
+        $this->loadWorlds();
 
-        $this->getServer()->getPluginManager()->registerEvents(new EventListener(new ShopStore($this->getDataFolder()), new SessionStore()), $this);
-        $this->getServer()->getPluginManager()->registerEvents(new QuestListener(), $this); // クエスト用
-        $this->getServer()->getCommandMap()->register('menu', new MenuCommand($this));
-        $this->getServer()->getCommandMap()->register('reef', new ReefCommand($this));
-        $this->getServer()->getCommandMap()->register('reef-admin', new ReefAdminCommand($this));
-        $this->getServer()->getCommandMap()->register('reef-console', new ReefConsoleCommand($this));
-        $this->getScheduler()->scheduleRepeatingTask(new SendServerTipTask(), 15);
-        $this->getScheduler()->scheduleRepeatingTask(new DataSaveTask(), 20);
-        $this->getScheduler()->scheduleRepeatingTask(new EffectTask(), 200);
-        $this->getScheduler()->scheduleRepeatingTask(new ServerUpdateTask(), 20);
-        $this->getScheduler()->scheduleRepeatingTask(new ClosureTask(function (int $currentTick): void {
-            foreach (Server::getInstance()->getOnlinePlayers() as $p) ScoreBoardManager::sendScoreBoard($p);
-        }), 15);
-        $this->getScheduler()->scheduleRepeatingTask(new ClosureTask(function (int $currentTick): void {
-            MoneyCache::purgeAll();
-        }), 20);
-
-        AccountManager::setUp();
+        $this->accountStore->updateUserNameList($this->sqlRepo);
         ReefItems::registerAll();
         $this->pluginInformation();
     }
 
-    public function onDisable()
+    public function onDisable(): void
     {
         foreach ($this->getServer()->getOnlinePlayers() as $p) {
             $p->kick("サーバーを停止します", false);
         }
-        if (!is_null(SQLManager::$manager)) SQLManager::$manager->close();
+        $this->sqlRepo->close();
     }
 
-    public function setError(string $error): void
+    public function criticalError(string $detail): void
     {
-        $this->getLogger()->emergency($error);
-        $this->errors[] = $error;
+        $this->getLogger()->critical("致命的なエラーが発生しました: " . $detail);
+        $this->getServer()->getPluginManager()->disablePlugin($this);
     }
 
-    public function isError(): ?array
+    private function registerListeners(): void
     {
-        if (empty($this->errors)) return null;
-        return $this->errors;
+        $this->getServer()->getPluginManager()->registerEvents(new EventListener($this->sqlRepo, $this->accountStore, $this->landStore,
+            $this->shopStore, $this->sessionStore), $this);
+        $this->getServer()->getPluginManager()->registerEvents(new QuestListener(), $this); // クエスト用
+    }
+
+    private function registerCommands(): void
+    {
+        $this->getServer()->getCommandMap()->registerAll("reef", [
+            new MenuCommand($this, $this->sqlRepo, $this->accountStore),
+            new TrashCommand($this),
+            new ReefCommand($this),
+            new ReefAdminCommand($this, $this->sqlRepo, $this->accountStore, $this->landStore),
+            new ReefConsoleCommand($this, $this->accountStore),
+            new ReefFormCommand($this, $this->sqlRepo, $this->accountStore, $this->landStore),
+            new ReefConsoleCommand($this, $this->accountStore),
+        ]);
+    }
+
+    private function registerSchedules(): void
+    {
+        $this->getScheduler()->scheduleRepeatingTask(new SendServerTipTask(), 15);
+        $this->getScheduler()->scheduleRepeatingTask(new DataSaveTask($this->sqlRepo, $this->accountStore), 20);
+        $this->getScheduler()->scheduleRepeatingTask(new EffectTask(), 200);
+        $this->getScheduler()->scheduleRepeatingTask(new ServerUpdateTask($this->sqlRepo), 200);
+        $this->getScheduler()->scheduleRepeatingTask(new ClosureTask(function (): void {
+            foreach (Server::getInstance()->getOnlinePlayers() as $p) ScoreBoardService::sendScoreBoard($this->accountStore, $p);
+        }), 15);
+        $this->getScheduler()->scheduleRepeatingTask(new ClosureTask(function (): void {
+            MoneyCache::purgeAll($this->sqlRepo);
+        }), 20);
+    }
+
+    private function loadWorlds(): void
+    {
+        $wm = $this->getServer()->getWorldManager();
+        if (!$wm->isWorldGenerated("lobby")) {
+            $wm->generateWorld("lobby", WorldCreationOptions::create()->setGeneratorClass(Flat::class));
+        }
+        if (!$wm->isWorldGenerated("main_1")) {
+            $wm->generateWorld("main_1", WorldCreationOptions::create()->setGeneratorClass(Normal::class));
+        }
+        if (!$wm->isWorldGenerated("main_2")) {
+            $wm->generateWorld("main_2", WorldCreationOptions::create()->setGeneratorClass(Normal::class));
+        }
+        $wm->loadWorld("lobby");
+        $wm->loadWorld("main_1");
+        $wm->loadWorld("main_2");
     }
 
     private function pluginInformation(): void

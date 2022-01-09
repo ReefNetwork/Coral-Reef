@@ -206,6 +206,12 @@ FROM VIRTUAL_VALUES
 WHERE xuid = :xuid
   AND type = :type;
 -- #            }
+-- #            { all_user_subtype
+-- #            :type string
+SELECT xuid, subtype, value
+FROM VIRTUAL_VALUES
+WHERE type = :type;
+-- #            }
 -- #        }
 -- #        { add
 -- #        :xuid int

@@ -11,8 +11,10 @@
 
 namespace ree_jp\coral_reef\shop;
 
-use pocketmine\level\Position;
+use JsonException;
 use pocketmine\utils\Config;
+use pocketmine\world\Position;
+use ree_jp\coral_reef\CoralReefPlugin;
 
 class ShopStore
 {
@@ -50,14 +52,18 @@ class ShopStore
 
     private function createKey(Position $pos): string
     {
-        return $pos->getLevel()->getFolderName() . ":" . $pos->getX() . ":" . $pos->getY() . ":" . $pos->getZ();
+        return $pos->getWorld()->getFolderName() . ":" . $pos->getX() . ":" . $pos->getY() . ":" . $pos->getZ();
     }
 
     public function createShop(Shop $shop): void
     {
         $this->config->reload();
         $this->config->set($this->createKey($shop->pos), $shop->jsonSerialize());
-        $this->config->save();
+        try {
+            $this->config->save();
+        } catch (JsonException $e) {
+            CoralReefPlugin::$plugin->getLogger()->warning("ショップの作成に失敗しました:" . $e->getMessage());
+        }
         $this->loadShop();
     }
 
@@ -65,7 +71,11 @@ class ShopStore
     {
         $this->config->reload();
         $this->config->remove($this->createKey($pos));
-        $this->config->save();
+        try {
+            $this->config->save();
+        } catch (JsonException $e) {
+            CoralReefPlugin::$plugin->getLogger()->warning("ショップの削除に失敗しました:" . $e->getMessage());
+        }
         $this->loadShop();
     }
 }

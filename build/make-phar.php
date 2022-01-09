@@ -17,7 +17,7 @@ $dir = getcwd() . DIRECTORY_SEPARATOR;
 
 $exclusions = ["github", ".gitignore", "composer.json", "composer.lock", "build", ".git", ".idea", "LICENCES", "deploy.bat", "docker-compose.yml", "docs", "setup"];
 
-foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($dir)) as $path => $file) {
+foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator($dir)) as $path => $file) {
     $bool = true;
     foreach ($exclusions as $exclusion) {
         if (strpos($path, $exclusion) !== false) {
@@ -37,7 +37,7 @@ foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($dir)) a
 
 if (isset($argv[1])) {
     date_default_timezone_set('Asia/Tokyo');
-    $time = date('ymdH');
+    $time = date('ymd');
     str_replace('master', 'dev', $argv[1]);
     $yaml = yaml_parse_file('plugin.yml');
     $yaml['version'] = $yaml['version'] . '.' . $time . '.' . $argv[1];
@@ -47,8 +47,8 @@ if (isset($argv[1])) {
 echo "Compressing..." . PHP_EOL;
 $phar = new Phar($file_phar, 0);
 $phar->startBuffering();
-$phar->setSignatureAlgorithm(\Phar::SHA1);
-$phar->buildFromIterator(new \ArrayIterator($files));
+$phar->setSignatureAlgorithm(Phar::SHA1);
+$phar->buildFromIterator(new ArrayIterator($files));
 $phar->setStub("<?php __HALT_COMPILER(); ?>");
 $phar->compressFiles(Phar::GZ);
 $phar->stopBuffering();

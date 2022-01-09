@@ -12,9 +12,10 @@
     "ext-pdo": "*",
     "ext-yaml": "*",
     "ext-json": "*",
-    "pocketmine/pocketmine-mp": "3.*",
-    "bbo51dog/bboform": "1.2.1",
-    "reef_network/libasynql": "3.2.0.*",
+    "pocketmine/pocketmine-mp": "4.0.*",
+    "bbo51dog/bboform": "2.0.*",
+    "sof3/libasynql": "4.0.*",
+    "ree_jp_minecraft/invmenu": "4.3.*",
     "reef_network/stargate_atlantis": "1.0.1",
     "ext-mbstring": "*"
   },
@@ -29,7 +30,11 @@
     },
     {
       "type": "git",
-      "url": "https://github.com/ReefNetwork/libasynql"
+      "url": "https://github.com/poggit/libasynql.git"
+    },
+    {
+      "type": "git",
+      "url": "https://github.com/ree-jp-minecraft/InvMenu.git"
     },
     {
       "type": "git",

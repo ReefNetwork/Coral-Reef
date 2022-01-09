@@ -5,6 +5,7 @@ name: CI
 on:
   push:
   pull_request:
+  workflow_dispatch:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -24,8 +25,10 @@ jobs:
 
       - name: virion install
         run: |
-          wget https://cloud.ree-jp.net/s/3mB3j46Ytsj2q7A/download -O libasynql.phar
+          wget https://poggit.pmmp.io/r/152920/libasynql.phar -O libasynql.phar
           php -d phar.readonly=0 libasynql.phar ./build/CoralReef.phar "ree_jp\\coral_reef\\libs\\"
+          wget https://poggit.pmmp.io/r/154019/InvMenu.phar -O InvMenu.phar
+          php -d phar.readonly=0 InvMenu.phar ./build/CoralReef.phar "ree_jp\\coral_reef\\libs\\"
 
       - name: LICENSES
         run: |

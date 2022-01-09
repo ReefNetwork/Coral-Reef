@@ -6,23 +6,25 @@
  * CC    C oo  oo rr     aa  aaa lll RR  RR  eeeee  eeeee  ff
  *  CCCCC   oooo  rr      aaa aa lll RR   RR  eeeee  eeeee ff
  *
- * Copyright (c) 2021. Ree-jp(https://ree-jp.net)
+ * Copyright (c) 2021-2022. Ree-jp(https://ree-jp.net)
  */
 
-namespace ree_jp\coral_reef\shop\form;
+namespace ree_jp\coral_reef\form\shop;
 
 use bbo51dog\bboform\element\ClosureButton;
 use bbo51dog\bboform\element\Label;
 use bbo51dog\bboform\element\Slider;
 use bbo51dog\bboform\form\ClosureCustomForm;
 use bbo51dog\bboform\form\ModalForm;
-use pocketmine\Player;
+use pocketmine\player\Player;
 use pocketmine\utils\TextFormat;
 use ree_jp\coral_reef\shop\Shop;
+use ree_jp\coral_reef\shop\ShopService;
+use ree_jp\coral_reef\sql\SQLRepository;
 
 class ShopDetailForm
 {
-    static function sendForm(Player $p, Shop $shop): void
+    static function sendForm(SQLRepository $repo, Player $p, Shop $shop): void
     {
         $itemString = "\n\nアイテム\n";
         $items = $shop->getItems();
@@ -36,21 +38,21 @@ class ShopDetailForm
         $text = "金額\n" . $shop->payment["type"] . $shop->payment["amount"] . TextFormat::RESET;
         $amount = new Slider(self::replaceOrderType($shop->orderType) . "するセット数を選択してください", 1, 64, 1);
 
-        $form = (new ClosureCustomForm(function (Player $p, ClosureCustomForm $form) use ($shop, $amount): void {
+        $form = (new ClosureCustomForm(function (Player $p) use ($repo, $shop, $amount): void {
             $p->sendForm((new ModalForm(new ClosureButton(self::replaceOrderType($shop->orderType) . "する", null,
-                function (Player $p, ClosureButton $button) use ($amount, $shop): void {
+                function (Player $p) use ($repo, $amount, $shop): void {
                     switch ($shop->orderType) {
                         case "buy":
-                            $shop->buy($p, $amount->getValue());
+                            ShopService::buy($repo, $shop, $p, $amount->getValue());
                             break;
                         case "sell":
-                            $shop->sell($p, $amount->getValue());
+                            ShopService::sell($repo, $shop, $p, $amount->getValue());
                             break;
                         default:
                             $p->sendMessage("エラーが発生しました");
                     }
-                }), new ClosureButton("戻る", null, function (Player $p, ClosureButton $button) use ($shop): void {
-                self::sendForm($p, $shop);
+                }), new ClosureButton("戻る", null, function (Player $p) use ($repo, $shop): void {
+                self::sendForm($repo, $p, $shop);
             })))->setTitle("Shop -> Confirm")->setText("本当にこのアイテムを" . self::replaceOrderType($shop->orderType) . "しますか?\n" .
                 self::replacePaymentType("金額\n" . $shop->payment["type"] . $shop->payment["amount"] * $amount->getValue() . TextFormat::RESET)));
 

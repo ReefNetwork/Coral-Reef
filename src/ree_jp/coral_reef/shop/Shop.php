@@ -11,20 +11,12 @@
 
 namespace ree_jp\coral_reef\shop;
 
-use Closure;
 use JetBrains\PhpStorm\ArrayShape;
-use pocketmine\block\BlockIds;
+use pocketmine\block\BlockLegacyIds;
+use pocketmine\block\tile\Chest;
 use pocketmine\item\Item;
-use pocketmine\level\Position;
-use pocketmine\Player;
 use pocketmine\Server;
-use pocketmine\tile\Chest;
-use ree_jp\coral_reef\account\GiftData;
-use ree_jp\coral_reef\account\GiftManager;
-use ree_jp\coral_reef\gatya\GatyaManager;
-use ree_jp\coral_reef\money\MoneyService;
-use ree_jp\coral_reef\sql\SQLConst;
-use ree_jp\coral_reef\sql\SQLManager;
+use pocketmine\world\Position;
 
 class Shop
 {
@@ -41,7 +33,7 @@ class Shop
 
     static function jsonDeserialize(array $array): Shop
     {
-        $level = Server::getInstance()->getLevelByName($array["level"]);
+        $level = Server::getInstance()->getWorldManager()->getWorldByName($array["level"]);
         $orderType = $array["order_type"] ?? "buy";
         return new Shop(new Position($array["x"], $array["y"], $array["z"], $level), $orderType, $array["payment"]);
     }
@@ -49,91 +41,8 @@ class Shop
     #[ArrayShape(["level" => "string", "x" => "int", "y" => "int", "z" => "int", "order_type" => "string", "payment" => "array"])]
     public function jsonSerialize(): array
     {
-        return ["level" => $this->pos->getLevel()->getFolderName(), "x" => $this->pos->getFloorX(), "y" => $this->pos->getFloorY(), "z" => $this->pos->getFloorZ(),
+        return ["level" => $this->pos->getWorld()->getFolderName(), "x" => $this->pos->getFloorX(), "y" => $this->pos->getFloorY(), "z" => $this->pos->getFloorZ(),
             "order_type" => $this->orderType, "payment" => $this->payment];
-    }
-
-    public function buy(Player $p, int $count = 1): void
-    {
-        $xuid = $p->getXuid();
-        $this->pay($xuid, $count, function () use ($xuid, $p, $count): void {
-            $items = $this->getItems();
-            $gifts = [];
-            while ($count > 0) {
-                foreach ($items as $item) {
-                    if ($p->getInventory()->canAddItem($item)) {
-                        $p->getInventory()->addItem($item);
-                    } else $gifts[] = $item;
-                }
-                $count--;
-            }
-            if (!empty($gifts)) {
-                GiftManager::addGift($xuid, new GiftData(0, "ショップで購入したアイテムです", time() + (7 * 24 * 60 * 60), $gifts),
-                    null, null);
-                $p->sendMessage("アイテムの一部がインベントリに入らなかったためギフトに送信しました\n1週間以内に受け取ってください");
-            }
-            $p->sendMessage("購入しました");
-        }, function () use ($p): void {
-            $p->sendMessage("購入できませんでした");
-        });
-    }
-
-    public function sell(Player $p, int $count = 1): void
-    {
-        foreach ($this->getItems() as $item) {
-            $item = $item->setCount($item->getCount() * $count);
-            if (!$p->getInventory()->contains($item)) {
-                $p->sendMessage("所持してるアイテムが足りなかったため売却できませんでした");
-                return;
-            }
-        }
-        $this->pay($p->getXuid(), $count, function () use ($p, $count): void {
-            foreach ($this->getItems() as $item) {
-                $item = $item->setCount($item->getCount() * $count);
-                $p->getInventory()->removeItem($item);
-            }
-            $p->sendMessage("売却しました");
-        }, function () use ($p): void {
-            $p->sendMessage("売却できませんでした");
-        }, true);
-    }
-
-    private function pay(string $xuid, int $count, Closure $func, Closure $failure, bool $isSell = false): void
-    {
-        $value = $this->payment["amount"] * $count;
-        switch ($this->payment["type"]) {
-            case "money":
-                if ($isSell) {
-                    MoneyService::addMoney($xuid, $value);
-                    $func();
-                } else {
-                    MoneyService::getMoney($xuid, function (int $money) use ($xuid, $func, $failure, $value): void {
-                        if ($value <= $money) {
-                            MoneyService::reduceMoney($xuid, $value);
-                            $func();
-                        } else {
-                            $failure();
-                        }
-                    });
-                }
-                break;
-
-            case "normal_tickets":
-                if ($isSell) {
-                    GatyaManager::addTicket($xuid, SQLConst::TICKETS_NORMAL, $value, $func);
-                } else {
-                    SQLManager::$manager->getValue($xuid, SQLConst::TYPE_TICKETS, SQLConst::TICKETS_NORMAL,
-                        function (array $rows) use ($xuid, $func, $failure, $value): void {
-                            $row = array_shift($rows);
-                            if (isset($row['value']) && ($value <= intval($row['value']))) {
-                                GatyaManager::addTicket($xuid, SQLConst::TICKETS_NORMAL, -$value, $func);
-                            } else {
-                                $failure();
-                            }
-                        });
-                }
-                break;
-        }
     }
 
     /**
@@ -144,11 +53,11 @@ class Shop
         $i = 0;
         while ($i < 5) {
             $i++;
-            $nowPos = $this->pos->subtract(0, $i);
-            $item = $this->pos->getLevel()->getBlock($nowPos);
-            if ($item->getId() !== BlockIds::CHEST) continue;
+            $nowPos = $this->pos->subtract(0, $i, 0);
+            $item = $this->pos->getWorld()->getBlock($nowPos);
+            if ($item->getId() !== BlockLegacyIds::CHEST) continue;
 
-            $tile = $this->pos->getLevel()->getTile($nowPos);
+            $tile = $this->pos->getWorld()->getTile($nowPos);
             if (!$tile instanceof Chest) continue;
 
             return $tile->getInventory()->getContents();

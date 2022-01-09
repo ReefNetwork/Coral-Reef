@@ -11,10 +11,11 @@
 
 namespace ree_jp\coral_reef\task;
 
-use pocketmine\entity\Effect;
-use pocketmine\entity\EffectInstance;
+use pocketmine\entity\effect\Effect;
+use pocketmine\entity\effect\EffectInstance;
+use pocketmine\entity\effect\VanillaEffects;
 use pocketmine\nbt\tag\CompoundTag;
-use pocketmine\Player;
+use pocketmine\player\Player;
 use pocketmine\scheduler\Task;
 use pocketmine\Server;
 use ree_jp\coral_reef\gatya\items\ReefItems;
@@ -25,7 +26,7 @@ class EffectTask extends Task
     /**
      * @inheritDoc
      */
-    public function onRun(int $currentTick)
+    public function onRun(): void
     {
         foreach (Server::getInstance()->getOnlinePlayers() as $p) {
             self::updateEffect($p);
@@ -37,13 +38,16 @@ class EffectTask extends Task
         $contexts = [];
         for ($slot = 0; $slot <= 3; $slot++) {
             $item = $p->getArmorInventory()->getItem($slot);
-            $effectTag = $item->getNamedTagEntry(ReefItems::SPECIAL_EFFECT);
+
+            $nbt = $item->getNamedTag();
+            $effectTag = $nbt->getCompoundTag(ReefItems::SPECIAL_EFFECT);
             if (!$effectTag instanceof CompoundTag) continue;
+
             $contexts = self::checkContext($effectTag, $contexts);
-            self::setEffect($p, Effect::NIGHT_VISION, $effectTag->getInt("night_vision", -1));
-            self::setEffect($p, Effect::SATURATION, $effectTag->getInt("saturation", -1));
-            self::setEffect($p, Effect::JUMP_BOOST, $effectTag->getInt("jump_boost", -1));
-            self::setEffect($p, Effect::SPEED, $effectTag->getInt("speed", -1));
+            self::setEffect($p, VanillaEffects::NIGHT_VISION(), $effectTag->getInt("night_vision", -1));
+            self::setEffect($p, VanillaEffects::SATURATION(), $effectTag->getInt("saturation", -1));
+            self::setEffect($p, VanillaEffects::JUMP_BOOST(), $effectTag->getInt("jump_boost", -1));
+            self::setEffect($p, VanillaEffects::SPEED(), $effectTag->getInt("speed", -1));
         }
         self::contextReflect($p, $contexts);
     }
@@ -59,10 +63,10 @@ class EffectTask extends Task
         return $contexts;
     }
 
-    private static function setEffect(Player $p, int $effect, int $level): void
+    private static function setEffect(Player $p, Effect $effect, int $level): void
     {
         if ($level < 0) return;
-        $p->addEffect(new EffectInstance(Effect::getEffect($effect), 30 * 20, $level, false));
+        $p->getEffects()->add(new EffectInstance($effect, 30 * 20, $level, false));
     }
 
     private static function contextReflect(Player $p, array $contexts): void // 属性を反映させる

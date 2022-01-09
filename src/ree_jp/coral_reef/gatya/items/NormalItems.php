@@ -11,17 +11,18 @@
 
 namespace ree_jp\coral_reef\gatya\items;
 
-use pocketmine\item\enchantment\Enchantment;
+use pocketmine\inventory\CreativeInventory;
 use pocketmine\item\enchantment\EnchantmentInstance;
+use pocketmine\item\enchantment\VanillaEnchantments;
 use pocketmine\item\Item;
-use pocketmine\item\ItemIds;
+use pocketmine\item\VanillaItems;
 
 class NormalItems extends ReefItems
 {
     static function registerItems(): void
     {
         foreach ([1, 2, 3, 4, 5, 6] as $key) {
-            Item::addCreativeItem(self::getItemInt(0, $key));
+            CreativeInventory::getInstance()->add(self::getItem(0, $key));
         }
     }
 
@@ -34,37 +35,37 @@ class NormalItems extends ReefItems
     {
         switch (intval($type)) {
             case 1:
-                $item = Item::get(ItemIds::IRON_PICKAXE, $durable);
+                $item = VanillaItems::IRON_PICKAXE()->setDamage($durable);
                 $item->setCustomName('かたいツルハシ');
-                $item->addEnchantment(new EnchantmentInstance(Enchantment::getEnchantment(Enchantment::UNBREAKING), 3));
+                $item->addEnchantment(new EnchantmentInstance(VanillaEnchantments::UNBREAKING(), 3));
                 break;
             case 2:
-                $item = Item::get(ItemIds::IRON_SHOVEL, $durable);
+                $item = VanillaItems::IRON_SHOVEL()->setDamage($durable);
                 $item->setCustomName('かたいシャベル');
-                $item->addEnchantment(new EnchantmentInstance(Enchantment::getEnchantment(Enchantment::UNBREAKING), 3));
+                $item->addEnchantment(new EnchantmentInstance(VanillaEnchantments::UNBREAKING(), 3));
                 break;
             case 3:
-                $item = Item::get(ItemIds::IRON_AXE, $durable);
+                $item = VanillaItems::IRON_AXE()->setDamage($durable);
                 $item->setCustomName('かたい斧');
-                $item->addEnchantment(new EnchantmentInstance(Enchantment::getEnchantment(Enchantment::UNBREAKING), 3));
+                $item->addEnchantment(new EnchantmentInstance(VanillaEnchantments::UNBREAKING(), 3));
                 break;
             case 4:
-                $item = Item::get(ItemIds::IRON_PICKAXE, $durable);
+                $item = VanillaItems::IRON_PICKAXE();
                 $item->setCustomName('はやいツルハシ');
-                $item->addEnchantment(new EnchantmentInstance(Enchantment::getEnchantment(Enchantment::EFFICIENCY), 2));
+                $item->addEnchantment(new EnchantmentInstance(VanillaEnchantments::EFFICIENCY(), 2));
                 break;
             case 5:
-                $item = Item::get(ItemIds::IRON_SHOVEL, $durable);
+                $item = VanillaItems::IRON_SHOVEL()->setDamage($durable);
                 $item->setCustomName('かたいシャベル');
-                $item->addEnchantment(new EnchantmentInstance(Enchantment::getEnchantment(Enchantment::EFFICIENCY), 2));
+                $item->addEnchantment(new EnchantmentInstance(VanillaEnchantments::EFFICIENCY(), 2));
                 break;
             case 6:
-                $item = Item::get(ItemIds::IRON_AXE, $durable);
+                $item = VanillaItems::IRON_AXE()->setDamage($durable);
                 $item->setCustomName('はやい斧');
-                $item->addEnchantment(new EnchantmentInstance(Enchantment::getEnchantment(Enchantment::EFFICIENCY), 2));
+                $item->addEnchantment(new EnchantmentInstance(VanillaEnchantments::EFFICIENCY(), 2));
                 break;
             case 7:
-                $item = Item::get(ItemIds::STEAK, 0, 4);
+                $item = VanillaItems::STEAK()->setCount(4);
                 break;
             default:
                 return null;

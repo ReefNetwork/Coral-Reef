@@ -13,51 +13,44 @@ namespace ree_jp\coral_reef\sql;
 
 
 use Closure;
-use PDOException;
-use pocketmine\Player;
+use pocketmine\player\Player;
 use pocketmine\Server;
 use pocketmine\utils\Config;
 use pocketmine\utils\TextFormat;
 use poggit\libasynql\DataConnector;
 use poggit\libasynql\libasynql;
 use poggit\libasynql\SqlError;
-use ree_jp\coral_reef\account\AccountManager;
+use ree_jp\coral_reef\account\AccountStore;
 use ree_jp\coral_reef\account\UserAccount;
 use ree_jp\coral_reef\CoralReefPlugin;
 use ree_jp\coral_reef\land\LandData;
-use ree_jp\coral_reef\land\LandManager;
 use ree_jp\coral_reef\money\MoneyCache;
 use ree_jp\coral_reef\session\SessionData;
 
-class SQLManager
+class SQLRepository
 {
-    static ?SQLManager $manager = null;
-
     private DataConnector $db;
 
-    public array $users = [];
-    public array $ban = [];
     public array $setting = [];
-    private string $server;
+    public string $server;
 
-    /**
-     * @throws PDOException
-     */
-    public function __construct(string $path, string $server)
+    public function __construct(private AccountStore $accountStore, CoralReefPlugin $plugin, string $path, string $server)
     {
         $config = new Config($path . 'sql.yml');
         Server::getInstance()->getLogger()->info('[SQL] サーバーに接続中...');
-        $this->db = libasynql::create(CoralReefPlugin::$plugin, $config->get('database'), [
-            "mysql" => "mysql.sql",
-        ]);
-        Server::getInstance()->getLogger()->info('[SQL] 準備しています');
-        $this->createFunction();
+        try {
+            $this->db = libasynql::create(CoralReefPlugin::$plugin, $config->get('database'), [
+                "mysql" => "mysql.sql",
+            ]);
+        } catch (SqlError $error) {
+            $plugin->criticalError("SQLサーバーに接続中に" . $error->getErrorMessage());
+        }
+        Server::getInstance()->getLogger()->info("[SQL] 準備しています");
+//        $this->createFunction();
         $this->createTable();
 
-        // BANデータを用意しとく
-        $this->loadBan();
         // サーバーアカウントを作成(初期スポーンの保護などに使う)
-        $this->setUser('0', TextFormat::GREEN . 'Reef ' . TextFormat::YELLOW . 'Server' . TextFormat::RESET, '0.0.0.0');
+        $this->setUser("0", TextFormat::GREEN . "Reef " . TextFormat::YELLOW . "Server" . TextFormat::RESET, "0.0.0.0");
 
         $this->db->waitAll();
         Server::getInstance()->getLogger()->info('[SQL] complete');
@@ -66,61 +59,38 @@ class SQLManager
 
     public function close(): void
     {
-        MoneyCache::purgeAll();
+        MoneyCache::purgeAll($this);
         Server::getInstance()->getLogger()->info('[SQL] クエリの終了を待っています');
         $this->db->waitAll();
         $this->db->close();
         Server::getInstance()->getLogger()->info('[SQL] complete');
     }
 
-    public function loadBan(): void
+    public function loadUser(Player $p): void
     {
-        $this->db->executeSelect('coral_reef.ban.get', [], function (array $rows) {
-            $this->ban = $rows;
-        }, function (SqlError $error) {
-            CoralReefPlugin::$plugin->setError('BAN情報を読み込み中に' . $error->getErrorMessage());
-        });
-    }
+        $xuid = $p->getXuid();
 
-    /**
-     * Banされている時はその理由、されていないときはnull
-     */
-    public function getBanReason(string $xuid, string $ip): ?string
-    {
-        foreach ($this->ban as $ban) {
-            switch ($ban['type']) {
-                case 'XUID':
-                    if ($xuid === $ban['value']) return $ban['reason'];
-                    break;
-                case 'IP':
-                    if ($ip === $ban['value']) return $ban['reason'];
-                    break;
-            }
-        }
-        return null;
-    }
-
-    public function loadUser(string $xuid, string $name): void
-    {
         // ユーザーデータを読み込む
-        $this->db->executeSelect('coral_reef.user.get', ['xuid' => intval($xuid)], function (array $rows) use ($name, $xuid) {
+        $this->db->executeSelect('coral_reef.user.get', ['xuid' => intval($p->getXuid())], function (array $rows) use ($p) {
+            if (!$p->isOnline()) return;
+
+            $xuid = $p->getXuid();
+            $name = $p->getName();
             $arrayAccount = array_shift($rows);
             if (isset($arrayAccount['xuid']) && isset($arrayAccount['name']) && isset($arrayAccount['experience'])) {
                 $skill = $arrayAccount['skill'] ?? null;
                 $account = new UserAccount($arrayAccount['xuid'], $arrayAccount['name'], intval($arrayAccount['experience']), $skill);
-                $this->users[$account->xuid] = $account;
+                $this->accountStore->users[$account->xuid] = $account;
             } elseif (empty($arrayAccount)) { // データが存在しないとき新しくデータを作る
-                $this->users[$xuid] = new UserAccount($xuid, $name, 0, null);
+                $this->accountStore->users[$xuid] = new UserAccount($xuid, $name, 0, null);
             } else { // データ壊れてるよ
                 Server::getInstance()->getLogger()->warning($xuid . 'のデータの読み込みに失敗しました');
                 return;
             }
-            $p = Server::getInstance()->getPlayer($name);
-            if (is_null($p)) return;
             $p->sendMessage('データを読み込みました');
             // クライアント側の準備が整ったのにデータを読み込めてなかったら動けなくしているため解除する
-            if (AccountManager::hasValue($xuid, 'wait_action')) {
-                AccountManager::setValue($xuid, 'wait_action', 0);
+            if ($this->accountStore->hasValue($xuid, 'wait_action')) {
+                $this->accountStore->setValue($xuid, 'wait_action', 0);
                 $p->setImmobile(false);
             }
         });
@@ -128,7 +98,7 @@ class SQLManager
             foreach ($rows as $option) {
                 if (array_key_exists('subtype', $option) && array_key_exists('value', $option)) {
                     $this->setting[$xuid][$option['subtype']] = $option['value'];
-                } elseif (!empty($rows)) {
+                } else {
                     Server::getInstance()->getLogger()->warning($xuid . 'の設定の読み込みに失敗しました');
                 }
             }
@@ -140,21 +110,16 @@ class SQLManager
         $this->db->executeSelect("coral_reef.user.all", [], $func);
     }
 
-    public function getUser(string $xuid): ?UserAccount // 今サーバーに参加してるプレイヤーのみ取得できる
-    {
-        if (array_key_exists($xuid, $this->users)) return $this->users[$xuid];
-        return null;
-    }
-
     public function setUser(string $xuid, string $name, string $ip): void
     {
         $this->db->executeSelect('coral_reef.user.get_ip', ['xuid' => intval($xuid)], function (array $rows) use ($ip, $name, $xuid) {
             // 新しいipアドレスからのログインだったら記録する
+            $row = array_shift($rows);
             $ips = [];
-            if (isset($rows['ips'])) {
-                $ips = explode(':', $rows['ips']);
+            if (isset($row['ips'])) {
+                $ips = explode(':', $row['ips']);
             }
-            if (!in_array($ip, $ips)) array_push($ips, $ip);
+            if (!in_array($ip, $ips)) $ips[] = $ip;
             $this->db->executeInsert('coral_reef.user.set.account',
                 ['xuid' => intval($xuid), 'name' => $name, 'ips' => implode(':', $ips)], null,
                 function (SqlError $error) use ($name) {
@@ -203,6 +168,12 @@ class SQLManager
             $func, $failure);
     }
 
+    public function getAllUserSubtypeValue(string $type, ?Closure $func, ?Closure $failure = null): void
+    {
+        $this->db->executeSelect("coral_reef.values.get.all_user_subtype", ["type" => strtolower($type)],
+            $func, $failure);
+    }
+
     public function setValue(string $xuid, string $type, string $subtype, ?string $value, ?Closure $func, ?Closure $failure = null): void
     {
         $this->db->executeInsert('coral_reef.values.set',
@@ -245,41 +216,17 @@ class SQLManager
         $this->db->executeSelect('coral_reef.land.get', ['server' => $this->server], $func, $failure);
     }
 
-    public function addProtectLand(LandData $land, Player $p): void
+    public function addProtectLand(LandData $land, Closure $func, Closure $failure): void
     {
         $this->db->executeInsert('coral_reef.land.create', ['xuid' => intval($land->xuid), 'name' => $land->name, 'server' => $this->server,
             'level' => $land->level, 'mx' => $land->aabb->maxX, 'sx' => $land->aabb->minX, 'mz' => $land->aabb->maxZ, 'sz' => $land->aabb->minZ],
-            function (int $insertId, int $affectedRows) use ($p, $land) {
-                if (!isset(LandManager::$instance->lands[$land->level])) LandManager::$instance->lands[$land->level] = [];
-
-                LandManager::$instance->lands[$land->level][] = $land;
-                $p->sendMessage($land->name . 'を作成しました');
-            }, function (SqlError $error) use ($p, $land) {
-                Server::getInstance()->getLogger()->error("[LandSQL] $land->name の作成中に" . $error->getErrorMessage());
-                $p->sendMessage('エラーが発生しました');
-            });
+            $func, $failure);
     }
 
-    public function deleteProtectLand(LandData $land, Player $p): void
+    public function deleteProtectLand(LandData $land, Closure $func, Closure $failure): void
     {
         $this->db->executeGeneric('coral_reef.land.delete', ['xuid' => intval($land->xuid), 'name' => $land->name, 'server' => $this->server],
-            function () use ($p, $land) {
-                foreach (LandManager::$instance->lands as $level => $cacheLands) {
-                    if ($level !== $land->level) continue;
-
-                    foreach ($cacheLands as $key => $cacheLand) {
-                        if ($cacheLand->xuid === $land->xuid && $cacheLand->name === $land->name) {
-                            array_splice(LandManager::$instance->lands[$level], $key, 1);
-                            $p->sendMessage('土地を削除しました');
-                            return;
-                        }
-                    }
-                }
-                $p->sendMessage("エラーが発生しました");
-            }, function (SqlError $error) use ($p, $land) {
-                Server::getInstance()->getLogger()->error("[LandSQL] $land->name の削除中に" . $error->getErrorMessage());
-                $p->sendMessage('エラーが発生しました');
-            });
+            $func, $failure);
     }
 
     public function addLog(string $xuid, string $type, ?string $subType, ?string $value, ?string $time, ?Closure $func, ?Closure $failure): void

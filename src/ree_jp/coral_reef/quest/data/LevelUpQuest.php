@@ -12,17 +12,17 @@
 
 namespace ree_jp\coral_reef\quest\data;
 
-use pocketmine\item\enchantment\Enchantment;
 use pocketmine\item\enchantment\EnchantmentInstance;
-use pocketmine\item\Item;
-use pocketmine\item\ItemIds;
+use pocketmine\item\enchantment\VanillaEnchantments;
+use pocketmine\item\VanillaItems;
 use pocketmine\Server;
+use ree_jp\coral_reef\account\AccountStore;
 use ree_jp\coral_reef\account\GiftData;
-use ree_jp\coral_reef\account\GiftManager;
+use ree_jp\coral_reef\account\GiftService;
 use ree_jp\coral_reef\gatya\GatyaManager;
 use ree_jp\coral_reef\quest\QuestListener;
 use ree_jp\coral_reef\sql\SQLConst;
-use ree_jp\coral_reef\sql\SQLManager;
+use ree_jp\coral_reef\sql\SQLRepository;
 
 class LevelUpQuest extends QuestData
 {
@@ -31,10 +31,10 @@ class LevelUpQuest extends QuestData
     const SHORT_DETAILS = "レベルアップしよう!";
     const EXPLANATION = "ブロックを掘ると経験値を入手できます。経験値を一定量集めてサーバーのレベルを上げましょう。";
 
-    function __construct(string $xuid, ?string $value)
+    function __construct(SQLRepository $repo, private AccountStore $store, string $xuid, ?string $value)
     {
         if (is_null($value)) $value = "0";
-        parent::__construct($xuid, $value);
+        parent::__construct($repo, $xuid, $value);
         QuestListener::subscribeQuest($xuid, QuestListener::LEVEL_UP, $this);
         $this->check();
     }
@@ -50,46 +50,46 @@ class LevelUpQuest extends QuestData
 
     private function check(): void
     {
-        $user = SQLManager::$manager->getUser($this->xuid);
+        $user = $this->store->getUser($this->xuid);
         if (is_null($user)) return;
-        $p = Server::getInstance()->getPlayer($user->name);
+        $p = Server::getInstance()->getPlayerByPrefix($user->name);
         $questLevel = intval($this->value);
         if ($user->level > $questLevel) {
             $questLevel++;
             $this->value = strval($questLevel);
 
             QuestListener::callSubscribedQuest($this->xuid, QuestListener::CLEAR_QUEST, $this);
-            SQLManager::$manager->addLog($this->xuid, SQLConst::LOG_QUEST, self::ID, $questLevel, SQLConst::NOW_TIME, null, null);
+            $this->repo->addLog($this->xuid, SQLConst::LOG_QUEST, self::ID, $questLevel, SQLConst::NOW_TIME, null, null);
             switch ($questLevel) {
                 case 1:
-                    $item = Item::get(ItemIds::IRON_PICKAXE);
-                    $item->addEnchantment(new EnchantmentInstance(Enchantment::getEnchantment(Enchantment::UNBREAKING), 3));
-                    GatyaManager::addTicket($this->xuid, SQLConst::TICKETS_NORMAL, 10);
+                    $item = VanillaItems::IRON_PICKAXE();
+                    $item->addEnchantment(new EnchantmentInstance(VanillaEnchantments::UNBREAKING(), 3));
+                    GatyaManager::addTicket($this->repo, $this->xuid, SQLConst::TICKETS_NORMAL, 10);
                     $this->sendGift($questLevel, [$item]);
                     break;
                 case 2:
-                    GatyaManager::addTicket($this->xuid, SQLConst::TICKETS_NORMAL, 2);
-                    $this->sendGift($questLevel, [Item::get(ItemIds::APPLE, 0, 8)]);
+                    GatyaManager::addTicket($this->repo, $this->xuid, SQLConst::TICKETS_NORMAL, 2);
+                    $this->sendGift($questLevel, [VanillaItems::APPLE()->setCount(8)]);
                     break;
                 case 3:
-                    GatyaManager::addTicket($this->xuid, SQLConst::TICKETS_NORMAL, 2);
-                    $this->sendGift($questLevel, [Item::get(ItemIds::APPLE, 0, 16)]);
+                    GatyaManager::addTicket($this->repo, $this->xuid, SQLConst::TICKETS_NORMAL, 2);
+                    $this->sendGift($questLevel, [VanillaItems::APPLE()->setCount(16)]);
                     break;
                 case 4:
-                    GatyaManager::addTicket($this->xuid, SQLConst::TICKETS_NORMAL, 2);
-                    $this->sendGift($questLevel, [Item::get(ItemIds::APPLE, 0, 32)]);
+                    GatyaManager::addTicket($this->repo, $this->xuid, SQLConst::TICKETS_NORMAL, 2);
+                    $this->sendGift($questLevel, [VanillaItems::APPLE()->setCount(32)]);
                     break;
                 case 5:
-                    $item = Item::get(ItemIds::IRON_PICKAXE);
-                    $item->addEnchantment(new EnchantmentInstance(Enchantment::getEnchantment(Enchantment::UNBREAKING), 3));
-                    GatyaManager::addTicket($this->xuid, SQLConst::TICKETS_NORMAL, 5);
+                    $item = VanillaItems::IRON_PICKAXE();
+                    $item->addEnchantment(new EnchantmentInstance(VanillaEnchantments::UNBREAKING(), 3));
+                    GatyaManager::addTicket($this->repo, $this->xuid, SQLConst::TICKETS_NORMAL, 5);
                     $this->sendGift($questLevel, [$item]);
                     break;
                 default:
                     $give = ceil($questLevel / 5) + 2;
                     if (($questLevel % 5) === 0) $give += 3;
 
-                    GatyaManager::addTicket($this->xuid, SQLConst::TICKETS_NORMAL, $give);
+                    GatyaManager::addTicket($this->repo, $this->xuid, SQLConst::TICKETS_NORMAL, $give);
                     break;
             }
             $p->sendMessage("レベルアップ報酬として" . $this->getRewardDetails($questLevel) .
@@ -100,7 +100,7 @@ class LevelUpQuest extends QuestData
 
     private function sendGift(int $level, array $items): void
     {
-        GiftManager::addGift($this->xuid, new GiftData(0, $level . "レベルのレベルアップ報酬です",
+        GiftService::addGift($this->repo, $this->xuid, new GiftData(0, $level . "レベルのレベルアップ報酬です",
             time() + (7 * 24 * 60 * 60), $items), null, null);
     }
 

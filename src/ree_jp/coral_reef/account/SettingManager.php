@@ -13,21 +13,22 @@ namespace ree_jp\coral_reef\account;
 
 use Closure;
 use pocketmine\network\mcpe\protocol\GameRulesChangedPacket;
-use pocketmine\Player;
+use pocketmine\network\mcpe\protocol\types\BoolGameRule;
+use pocketmine\player\Player;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat;
 use poggit\libasynql\SqlError;
 use ree_jp\coral_reef\sql\SettingConst;
 use ree_jp\coral_reef\sql\SQLConst;
-use ree_jp\coral_reef\sql\SQLManager;
+use ree_jp\coral_reef\sql\SQLRepository;
 
 class SettingManager
 {
     static array $settingCache = [];
 
-    static function updateNickName(Player $p): void
+    static function updateNickName(SQLRepository $repo, Player $p): void
     {
-        SQLManager::$manager->getValue($p->getXuid(), SQLConst::TYPE_SETTINGS, SettingConst::NICK_NAME,
+        $repo->getValue($p->getXuid(), SQLConst::TYPE_SETTINGS, SettingConst::NICK_NAME,
             function (array $rows) use ($p) {
                 $row = array_shift($rows);
                 if (!isset($row['value'])) return;
@@ -40,9 +41,9 @@ class SettingManager
             });
     }
 
-    static function updateShowCoordinates(Player $p, bool $bool = null): void
+    static function updateShowCoordinates(SQLRepository $repo, Player $p): void
     {
-        SQLManager::$manager->getValue($p->getXuid(), SQLConst::TYPE_SETTINGS, SettingConst::COORDINATES,
+        $repo->getValue($p->getXuid(), SQLConst::TYPE_SETTINGS, SettingConst::COORDINATES,
             function (array $rows) use ($p) {
                 $row = array_shift($rows);
                 $bool = false;
@@ -50,17 +51,17 @@ class SettingManager
                     if ($row['value'] === 'true') $bool = true;
                 }
                 $pk = new GameRulesChangedPacket();
-                $pk->gameRules["showCoordinates"] = [1, !$bool, true];
-                $p->dataPacket($pk);
+                $pk->gameRules["showCoordinates"] = new BoolGameRule(!$bool, true);
+                $p->getNetworkSession()->sendDataPacket($pk);
             }, function (SqlError $error) use ($p) {
                 $p->sendMessage('座標の設定を読み込み中にエラーが発生しました');
                 Server::getInstance()->getLogger()->warning("[setting showCoordinates]" . $error->getMessage());
             });
     }
 
-    static function updateOption(Player $p, string $type): void
+    static function updateOption(SQLRepository $repo, Player $p, string $type): void
     {
-        self::updateBoolOption($p->getXuid(), $type, function (SqlError $error) use ($p) {
+        self::updateBoolOption($repo, $p->getXuid(), $type, function (SqlError $error) use ($p) {
             $p->sendMessage('設定を読み込み中にエラーが発生しました');
             Server::getInstance()->getLogger()->warning("[setting]" . $error->getMessage());
         });
@@ -74,9 +75,9 @@ class SettingManager
         return false;
     }
 
-    static function updateBoolOption(string $xuid, string $type, Closure $failure): void
+    static function updateBoolOption(SQLRepository $repo, string $xuid, string $type, Closure $failure): void
     {
-        SQLManager::$manager->getValue($xuid, SQLConst::TYPE_SETTINGS, $type,
+        $repo->getValue($xuid, SQLConst::TYPE_SETTINGS, $type,
             function (array $rows) use ($type, $xuid) {
                 $row = array_shift($rows);
                 $bool = false;
