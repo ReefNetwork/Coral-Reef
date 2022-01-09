@@ -153,7 +153,7 @@ class LandService
                     return false;
                 }
             } else {
-                if ($land->xuid === $p->getXuid() || $landStore->isParty($land->xuid, $p->getXuid())) return false;
+                if ($land->xuid === $p->getXuid() || $land->isMember($p->getXuid()) || $landStore->isParty($land->xuid, $p->getXuid())) return false;
                 $name = $accountStore->getUserName($land->xuid);
                 $p->sendPopup("この土地は$name によって保護されています($land->name)");
                 if (AccountService::isOp($p) && $p->isCreative()) return false;

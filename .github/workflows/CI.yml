@@ -25,6 +25,8 @@ jobs:
         run: |
           wget https://poggit.pmmp.io/r/152920/libasynql.phar -O libasynql.phar
           php -d phar.readonly=0 libasynql.phar ./build/CoralReef.phar "ree_jp\\coral_reef\\libs\\"
+          wget https://poggit.pmmp.io/r/154019/InvMenu.phar -O InvMenu.phar
+          php -d phar.readonly=0 InvMenu.phar ./build/CoralReef.phar "ree_jp\\coral_reef\\libs\\"
 
       - name: LICENSES
         run: |
