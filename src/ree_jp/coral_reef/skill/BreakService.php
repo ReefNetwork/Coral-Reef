@@ -138,11 +138,10 @@ class BreakService
 
         foreach ($affectedBlocks as $t) {
             $world->addParticle($t->getPosition()->add(0.5, 0.5, 0.5), new BlockBreakParticle($t));
-            $t->onBreak($item, $p);
-            $world->setBlock($t->getPosition(), VanillaBlocks::AIR(), false);
-
             $tile = $world->getTile($t->getPosition());
             $tile?->onBlockDestroyed();
+
+            $world->setBlock($t->getPosition(), VanillaBlocks::AIR(), false);
         }
 
         $item->onDestroyBlock($bl);
