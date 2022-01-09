@@ -74,8 +74,8 @@ class ShopService
                 return;
             }
         }
-        self::pay($repo, $shop, $p->getXuid(), $count, false, function () use ($p, $count): void {
-            foreach ($this->getItems() as $item) {
+        self::pay($repo, $shop, $p->getXuid(), $count, false, function () use ($shop, $p, $count): void {
+            foreach ($shop->getItems() as $item) {
                 $item = $item->setCount($item->getCount() * $count);
                 $p->getInventory()->removeItem($item);
             }
