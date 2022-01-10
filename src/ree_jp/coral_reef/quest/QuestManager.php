@@ -36,7 +36,7 @@ class QuestManager
             }
 
             self::registerQuest($repo, $xuid, TutorialQuest::ID, null);
-            self::registerQuest($repo, $xuid, LevelUpQuest::ID, null);
+            self::registerQuest($repo, $xuid, LevelUpQuest::ID, null, $store);
             self::registerQuest($repo, $xuid, DailyDigQuest::ID, null);
             self::registerQuest($repo, $xuid, DailyLoginQuest::ID, null);
             self::registerQuest($repo, $xuid, WeeklyDigQuest::ID, null);
