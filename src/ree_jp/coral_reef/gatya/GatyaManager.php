@@ -64,7 +64,7 @@ class GatyaManager
                                 // ガチャチケットを減らす
                                 $repo->setValue($p->getXuid(), SQLConst::TYPE_TICKETS, $subtype, $row['value'] - $need,
                                     function () use ($repo, $stringRare, $func, $isBroadcast, $item, $p) {
-                                        if ($p->getInventory()->canAddItem($item)) {
+                                        if ($p->isOnline() && $p->getInventory()->canAddItem($item)) {
                                             // インベントリに空きがあれば追加
                                             $p->getInventory()->addItem($item);
                                         } else {
