@@ -143,6 +143,9 @@ class AccountService
 
     static function updateFly(Player $p, string $world, ?bool $allow = null): void
     {
+        if ($p->isCreative()) {
+            return;
+        }
         if (is_null($allow)) {
             $allow = !in_array($world, AccountService::STOP_FLY_WORLD);
         }
