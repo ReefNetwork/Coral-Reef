@@ -39,7 +39,7 @@ class LandStore
     {
         // LandKey(土地保護を共有してる人をメモってるやつ)を確認
         $repo->getAllUserSubtypeValue(SQLConst::TYPE_LAND_KEY, function (array $landKeys) use ($repo): void {
-
+            var_dump($landKeys);
             $repo->loadProtectLand(function (array $rows) use ($repo, $landKeys) {
                 foreach ($rows as $arrayLand) {
                     $level = $arrayLand['level'];
@@ -50,7 +50,8 @@ class LandStore
                     $this->lands[$level][] = $land;
 
                     foreach ($landKeys as $key) {
-                        if ($key["xuid"] === $land->xuid && $repo->server . ":" . $land->name === $key["subtype"] && !is_null($key["value"])) {
+                        var_dump($repo->server . ":" . $land->name);
+                        if (($key["xuid"] === $land->xuid) && ($key["subtype"] === $repo->server . ":" . $land->name) && !is_null($key["value"])) {
                             foreach (explode(":", $key["value"]) as $member) {
                                 $land->addMember($member);
                             }
