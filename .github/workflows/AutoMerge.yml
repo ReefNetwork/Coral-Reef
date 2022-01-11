@@ -22,7 +22,7 @@ jobs:
       - name: Merge master to stable
         run: |
           git fetch
-          git merge origin/master
+          git merge --allow-unrelated-histories origin/master
 
       - name: Push
         run: git push
