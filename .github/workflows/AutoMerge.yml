@@ -20,7 +20,9 @@ jobs:
           ref: stable
 
       - name: Merge master to stable
-        run: git merge origin/master
+        run: |
+          git fetch
+          git merge master
 
       - name: Push
         run: git push
