@@ -38,7 +38,9 @@ jobs:
             ./build/*
             !./build/make-phar.php
 
-  #                          ※ <注意> ここよりした変えたら AutoMerge.yml も変えてね
+  # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+  #                          ※ <注意> ここよりした変えたら AutoMerge.yml も変えてね                         #
+  # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
   deploy_debug:
     environment: deploy debug

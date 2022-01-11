@@ -8,7 +8,7 @@ on:
       - plugin.yml
 jobs:
   merge:
-    name: Merge master to stable
+    name: Merge and deploy
     runs-on: ubuntu-latest
     if: "!contains(github.event.head_commit.message, '[skip]')"
     env:
@@ -44,7 +44,7 @@ jobs:
       - name: prepare deploy
         run: |
           mkdir ~/install_plugins
-          cd ./build/CoralReef.phar ./install_plugins/CoralReef.phar
+          mv ./build/CoralReef.phar ./install_plugins/CoralReef.phar
 
       - name: deploy seichi_1
         uses: sand4rt/ftp-deployer@v1.3
