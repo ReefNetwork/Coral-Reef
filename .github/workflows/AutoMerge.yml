@@ -21,8 +21,8 @@ jobs:
 
       - name: Merge master to stable
         run: |
-          git config --global user.email "noreply@github.com"
-          git config --global user.name "Github"
+          git config --global user.email "${{ github.actor }}@users.noreply.github.com"
+          git config --global user.name "${{ github.actor }}"
           git fetch
           git merge --allow-unrelated-histories origin/master
 
