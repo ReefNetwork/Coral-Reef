@@ -16,9 +16,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-
-      - name: Checkout to stable
-        run: git checkout -b stable origin/stable
+        with:
+          ref: stable
 
       - name: Merge master to stable
         run: git merge master
