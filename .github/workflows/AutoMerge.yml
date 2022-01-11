@@ -28,3 +28,34 @@ jobs:
 
       - name: Push
         run: git push
+
+      # Github Actionsからどう頑張っても別のActionsを起動できなかったからかなしくなってdeployも一緒に書く
+
+      - name: build
+        run: php -d phar.readonly=0 ./build/make-phar.php ${{ github.run_number }}-${GITHUB_REF##*/}
+
+      - name: virion install
+        run: |
+          wget https://poggit.pmmp.io/r/152920/libasynql.phar -O libasynql.phar
+          php -d phar.readonly=0 libasynql.phar ./build/CoralReef.phar "ree_jp\\coral_reef\\libs\\"
+          wget https://poggit.pmmp.io/r/154019/InvMenu.phar -O InvMenu.phar
+          php -d phar.readonly=0 InvMenu.phar ./build/CoralReef.phar "ree_jp\\coral_reef\\libs\\"
+
+      - name: prepare deploy
+        run: |
+          mkdir ~/install_plugins
+          cd ./build/CoralReef.phar ./install_plugins/CoralReef.phar
+
+      - name: deploy seichi_1
+        uses: sand4rt/ftp-deployer@v1.3
+        with:
+          sftp: true
+          host: ${{ secrets.SEICHI_1_HOST }}
+          port: ${{ secrets.SEICHI_1_PORT}}
+          username: ${{ secrets.SEICHI_1_USERNAME }}
+          password: ${{ secrets.SEICHI_1_PASSWORD }}
+          remote_folder: /install_plugins/
+          local_folder: ./install_plugins/
+          cleanup: false
+          inclued: |
+            '*.phar'
