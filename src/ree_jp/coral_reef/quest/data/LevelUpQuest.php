@@ -86,14 +86,14 @@ class LevelUpQuest extends QuestData
                     $this->sendGift($questLevel, [$item]);
                     break;
                 default:
-                    $give = ceil($questLevel / 5) + 2;
-                    if (($questLevel % 5) === 0) $give += 3;
-
-                    GatyaManager::addTicket($this->repo, $this->xuid, SQLConst::TICKETS_NORMAL, $give);
+                    GatyaManager::addTicket($this->repo, $this->xuid, SQLConst::TICKETS_NORMAL, $this->getGiveTicket($questLevel));
                     break;
             }
             $p->sendMessage("レベルアップ報酬として" . $this->getRewardDetails($questLevel) .
-                "を受け取りました\n報酬にアイテムが含まれている場合はギフトから1週間以内に受け取れます");
+                "を受け取りました");
+            if ($questLevel <= 5) {
+                $p->sendMessage("報酬にアイテムが含まれている場合はギフトから1週間以内に受け取れます");
+            }
             $this->check();
         }
     }
@@ -124,10 +124,18 @@ class LevelUpQuest extends QuestData
             case 5:
                 return "ガチャ券×5枚と鉄のツルハシ(耐久3)×3個";
             default:
-                $give = ceil($level / 5) + 2;
-                if (($level % 5) === 0) $give += 3;
-                return "ガチャ券×$give 枚";
+                return "ガチャ券×" . $this->getGiveTicket($level) . "枚";
         }
+    }
+
+    private function getGiveTicket(int $level): int
+    {
+        $give = ceil($level / 5) + 2;
+        if ($give > 10) {
+            $give = 10;
+        }
+        if (($level % 5) === 0) $give += 3;
+        return $give;
     }
 
     function isComplete(): bool
