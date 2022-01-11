@@ -43,7 +43,7 @@ jobs:
 
       - name: prepare deploy
         run: |
-          mkdir ~/install_plugins
+          mkdir ./install_plugins
           mv ./build/CoralReef.phar ./install_plugins/CoralReef.phar
 
       - name: deploy seichi_1
