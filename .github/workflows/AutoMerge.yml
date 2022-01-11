@@ -32,7 +32,7 @@ jobs:
       # Github Actionsからどう頑張っても別のActionsを起動できなかったからかなしくなってdeployも一緒に書く
 
       - name: build
-        run: php -d phar.readonly=0 ./build/make-phar.php ${{ github.run_number }}-${GITHUB_REF##*/}
+        run: php -d phar.readonly=0 ./build/make-phar.php ${{ github.run_number }}-stable
 
       - name: virion install
         run: |
