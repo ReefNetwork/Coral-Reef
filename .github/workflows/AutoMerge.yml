@@ -11,8 +11,6 @@ jobs:
     name: Merge master to stable
     runs-on: ubuntu-latest
     if: "!contains(github.event.head_commit.message, '[skip]')"
-    env:
-      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     steps:
       - uses: actions/checkout@v2
@@ -27,3 +25,6 @@ jobs:
 
       - name: Merge pull request
         run: gh pr merge ${{ steps.pr.outputs.pr_url }} --merge
+
+      - name: Run Stable CI
+        run: gh workflow run CI.yml --ref stable
