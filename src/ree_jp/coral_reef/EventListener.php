@@ -28,6 +28,7 @@ use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerGameModeChangeEvent;
 use pocketmine\event\player\PlayerInteractEvent;
 use pocketmine\event\player\PlayerItemConsumeEvent;
+use pocketmine\event\player\PlayerItemUseEvent;
 use pocketmine\event\player\PlayerJoinEvent;
 use pocketmine\event\player\PlayerLoginEvent;
 use pocketmine\event\player\PlayerQuitEvent;
@@ -222,7 +223,7 @@ class EventListener implements Listener
         }
     }
 
-    public function onTouch(PlayerInteractEvent $ev): void
+    public function onUse(PlayerItemUseEvent $ev): void
     {
         $p = $ev->getPlayer();
         $xuid = $p->getXuid();
@@ -246,18 +247,6 @@ class EventListener implements Listener
                 Server::getInstance()->dispatchCommand($p, "menu");
                 break;
 
-            case ItemIds::CLOCK:
-                if ($p->isSneaking()) {
-                    if ($this->accountStore->hasValue($xuid, 'particle_cool_time')) return;
-                    $this->accountStore->setValue($xuid, 'particle_cool_time', 20);
-                    LandService::checkSpace($this->landStore, $p);
-                } else {
-                    if ($this->accountStore->hasValue($xuid, 'form_cool_time')) return;
-                    $this->accountStore->setValue($xuid, 'form_cool_time', 10);
-                    LandForm::sendLandCreateAssistForm($this->sqlRepo, $this->accountStore, $this->landStore, $p, $ev->getBlock()->getPosition());
-                }
-                break;
-
             case ItemIds::DYE:
                 $nbt = $ev->getItem()->getNamedTag();
                 if ($nbt->getCompoundTag("herbicide_scale") instanceof CompoundTag) {
@@ -267,6 +256,29 @@ class EventListener implements Listener
                 }
                 break;
         }
+    }
+
+    public function onTouch(PlayerInteractEvent $ev): void
+    {
+        $p = $ev->getPlayer();
+        $xuid = $p->getXuid();
+        if ($this->accountStore->hasValue($xuid, 'wait_action')) {
+            $ev->cancel();
+            return;
+        }
+
+        if ($ev->getItem()->getId() == ItemIds::CLOCK) {
+            if ($p->isSneaking()) {
+                if ($this->accountStore->hasValue($xuid, 'particle_cool_time')) return;
+                $this->accountStore->setValue($xuid, 'particle_cool_time', 20);
+                LandService::checkSpace($this->landStore, $p);
+            } else {
+                if ($this->accountStore->hasValue($xuid, 'form_cool_time')) return;
+                $this->accountStore->setValue($xuid, 'form_cool_time', 10);
+                LandForm::sendLandCreateAssistForm($this->sqlRepo, $this->accountStore, $this->landStore, $p, $ev->getBlock()->getPosition());
+            }
+        }
+
         switch ($ev->getBlock()->getId()) {
             case BlockLegacyIds::SIGN_POST:
             case BlockLegacyIds::WALL_SIGN:
