@@ -21,7 +21,7 @@ jobs:
         with:
           filters: |
             plugin-yml:
-             - 'plugins.yml'
+             - 'plugin.yml'
 
   merge_stable:
     runs-on: ubuntu-latest
