@@ -91,7 +91,7 @@ class BreakSkill
             // 掘られた場所が範囲より高かったらその場所を一番下にして範囲を計算する
             $isSkillHigh = ($blockVec->getFloorY() - $p->getPosition()->getFloorY()) <= $this->height;
             $playerY = $p->getPosition()->getFloorY();
-            var_dump("base - " . $playerY);
+            var_dump("base - " . $playerY . "actually - " . $p->getPosition()->getY());
 
             for ($width = $widthSide; $width >= -$widthSide; --$width) {
                 for ($depth = 0; $depth <= $this->depth; ++$depth) {
