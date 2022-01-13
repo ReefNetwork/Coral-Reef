@@ -13,7 +13,6 @@ namespace ree_jp\coral_reef\skill;
 
 use Exception;
 use pocketmine\block\Air;
-use pocketmine\block\Block;
 use pocketmine\block\Flowable;
 use pocketmine\math\Facing;
 use pocketmine\math\Vector3;
@@ -55,89 +54,96 @@ class BreakSkill
     /**
      * @throws Exception
      */
-    public function runSkill(Vector3 $block, Player $p): void
+    public function runSkill(Vector3 $blockVec, Player $p): void
     {
-        BreakService::frozeWater($p, $block, $p->getInventory()->getItemInHand());
-
-        /** @var Block[] $needUpdate */
-        /** @noinspection PhpArrayUsedOnlyForWriteInspection */
-        $needUpdate = [];
+        BreakService::frozeWater($p, $blockVec, $p->getInventory()->getItemInHand());
 
         $world = $p->getWorld();
         $direction = $p->getHorizontalFacing();
         $widthSide = intval(floor($this->width / 2));
         $depthSide = intval(floor($this->depth / 2));
-        if ($p->getPosition()->getFloorY() > $block->getFloorY()) {
+        if ($p->getPosition()->getFloorY() > $blockVec->getFloorY()) {
+            // 下のブロックを掘ったとき
+
             $depthCeil = ceil($this->depth / 2);
 
             for ($width = $widthSide; $width >= -$widthSide; --$width) {
                 for ($depth = $depthCeil; $depth >= -$depthSide; --$depth) {
 
-                    $checkVec = $this->getSideFromUserView($block->add(0, 2, 0), $direction, self::RIGHT, $width);
-                    $checkVec = $this->getSideFromUserView($checkVec, $direction, self::FORWARD, $depth);
-                    $checkBl = $p->getWorld()->getBlock($checkVec);
-                    if (!$checkBl instanceof Flowable && !$checkBl instanceof Air) {
-                        $checkBl2 = $checkBl->getSide(Facing::UP);
-                        if (!$checkBl2 instanceof Flowable && !$checkBl2 instanceof Air) {
-                            $p->sendPopup("上から掘ってください");
-                            continue;
-                        }
+                    if (!$this->checkRough($p, $blockVec, $direction, $width, $depth)) {
+                        continue;
                     }
 
                     for ($height = 0; $height <= $this->height; ++$height) {
                         if (!($height === 0 && $width === 0 && $depth === 0)) {
-                            $vec = $this->getSideFromUserView($block->add(0, -$height, 0), $direction, self::RIGHT, $width);
+                            $vec = $this->getSideFromUserView($blockVec->add(0, -$height, 0), $direction, self::RIGHT, $width);
                             $vec = $this->getSideFromUserView($vec, $direction, self::FORWARD, $depth);
                             $bl = $world->getBlock($vec);
                             BreakService::breakBlockBySkill($p, $bl);
-                            $needUpdate[] = $bl;
                         }
                     }
                 }
             }
         } else {
-            $isSkillHigh = ($block->getFloorY() - $p->getPosition()->getFloorY()) <= $this->height;
+            // ブロックがプレイヤーより上の場合
+
+            // プレイヤーの足を一番下としてスキルの範囲の高さにはいっていた場合スキルを発動する範囲がその範囲に自動調整される
+            // 掘られた場所が範囲より高かったらその場所を一番下にして範囲を計算する
+            $isSkillHigh = ($blockVec->getFloorY() - $p->getPosition()->getFloorY()) <= $this->height;
             $playerY = $p->getPosition()->getFloorY();
 
             for ($width = $widthSide; $width >= -$widthSide; --$width) {
                 for ($depth = 0; $depth <= $this->depth; ++$depth) {
 
                     if ($isSkillHigh) {
-                        $checkVec = new Vector3($block->x, $this->height + $playerY + 1, $block->z);
+                        $checkVec = new Vector3($blockVec->x, $this->height + $playerY + 1, $blockVec->z);
                     } else {
-                        $checkVec = $block->add(0, $this->height + 1, 0);
+                        $checkVec = $blockVec->add(0, $this->height + 1, 0);
                     }
-                    $checkVec = $this->getSideFromUserView($checkVec, $direction, self::RIGHT, $width);
-                    $checkVec = $this->getSideFromUserView($checkVec, $direction, self::FORWARD, $depth);
-                    $checkBl = $p->getWorld()->getBlock($checkVec);
-                    if (!$checkBl instanceof Flowable && !$checkBl instanceof Air) {
-                        $checkBl2 = $checkBl->getSide(Facing::UP);
-                        if (!$checkBl2 instanceof Flowable && !$checkBl2 instanceof Air) {
-                            $p->sendPopup("上から掘ってください");
-                            continue;
-                        }
+
+                    if (!$this->checkRough($p, $checkVec, $direction, $width, $depth)) {
+                        continue;
                     }
+
                     for ($height = 0; $height <= $this->height; ++$height) {
                         if ($isSkillHigh) {
                             $baseY = intval($height + $playerY);
-                            if ($baseY === $block->getFloorY() && $width === 0 && $depth === 0) continue;
-                            $base = new Vector3($block->x, $height + $playerY, $block->z);
+                            if ($baseY === $blockVec->getFloorY() && $width === 0 && $depth === 0) continue;
+                            $base = new Vector3($blockVec->x, $height + $playerY, $blockVec->z);
                         } else {
                             if ($height === 0 && $width === 0 && $depth === 0) continue;// スキル起点のブロックへのスキル発動防止
-                            $base = $block->add(0, $height, 0);
+                            $base = $blockVec->add(0, $height, 0);
                         }
                         $vec = $this->getSideFromUserView($base, $direction, self::RIGHT, $width);
                         $vec = $this->getSideFromUserView($vec, $direction, self::FORWARD, $depth);
                         $bl = $world->getBlock($vec);
                         BreakService::breakBlockBySkill($p, $bl);
-                        $needUpdate[] = $bl;
                     }
                 }
             }
         }
-//        foreach ($needUpdate as $update) {
-//            BreakService::updateBlock($p->getLevel(), $update);
-//        }
+    }
+
+    /**
+     * @throws Exception
+     */
+    private function checkRough(Player $p, Vector3 $blockVec, int $direction, int $width, int $depth): bool
+    {
+        // 雑彫りをチェックする
+        // 雑彫りならfalse
+
+        $checkVec = $this->getSideFromUserView($blockVec->add(0, 2, 0), $direction, self::RIGHT, $width);
+        $checkVec = $this->getSideFromUserView($checkVec, $direction, self::FORWARD, $depth);
+        $checkBl = $p->getWorld()->getBlock($checkVec);
+        if (!$checkBl instanceof Flowable && !$checkBl instanceof Air) {
+            $checkBl2 = $checkBl->getSide(Facing::UP);
+            if (!$checkBl2 instanceof Flowable && !$checkBl2 instanceof Air) {
+                $p->sendPopup("上から掘ってください");
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**

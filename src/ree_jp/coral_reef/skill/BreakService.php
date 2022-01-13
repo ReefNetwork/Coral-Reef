@@ -18,11 +18,9 @@ use pocketmine\block\BlockLegacyIds;
 use pocketmine\block\Liquid;
 use pocketmine\block\VanillaBlocks;
 use pocketmine\event\block\BlockBreakEvent;
-use pocketmine\event\block\BlockUpdateEvent;
 use pocketmine\item\Item;
 use pocketmine\item\ItemFactory;
 use pocketmine\item\LegacyStringToItemParser;
-use pocketmine\math\AxisAlignedBB;
 use pocketmine\math\Vector3;
 use pocketmine\player\Player;
 use pocketmine\world\format\Chunk;
@@ -162,17 +160,6 @@ class BreakService
 
     static function updateBlock(World $world, Block $bl): void
     {
-        /** @noinspection DuplicatedCode */
-        $world->updateAllLight($bl->getPosition()->getFloorX(), $bl->getPosition()->getFloorY(), $bl->getPosition()->getFloorZ());
-
-        $ev = new BlockUpdateEvent($bl);
-        $ev->call();
-        if (!$ev->isCancelled()) {
-            foreach ($world->getNearbyEntities(AxisAlignedBB::one()->offset($bl->getPosition()->getFloorX(), $bl->getPosition()->getFloorY(),
-                $bl->getPosition()->getFloorZ())) as $entity) {
-                $entity->onNearbyBlockChange();
-            }
-            $ev->getBlock()->onNearbyBlockChange();
-        }
+        $world->setBlock($bl->getPosition(), $bl);
     }
 }
