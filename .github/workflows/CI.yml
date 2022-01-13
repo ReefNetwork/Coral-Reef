@@ -10,7 +10,7 @@ on:
 jobs:
   stable_checker:
     runs-on: ubuntu-latest
-    if: "!contains(github.event.head_commit.message, '[skip]')"
+    if: "github.ref == 'refs/heads/master' && !contains(github.event.head_commit.message, '[skip]')"
     outputs:
       stable: ${{ steps.filter.outputs.plugin-yml }}
     steps:
