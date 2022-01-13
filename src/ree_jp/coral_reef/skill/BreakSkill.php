@@ -62,7 +62,8 @@ class BreakSkill
         $direction = $p->getHorizontalFacing();
         $widthSide = intval(floor($this->width / 2));
         $depthSide = intval(floor($this->depth / 2));
-        if ($p->getPosition()->getFloorY() > $blockVec->getFloorY()) {
+        $playerY = $this->exactFloorY($p);
+        if ($playerY > $blockVec->getFloorY()) {
             // 下のブロックを掘ったとき
 
             $depthCeil = ceil($this->depth / 2);
@@ -89,10 +90,7 @@ class BreakSkill
 
             // プレイヤーの足を一番下としてスキルの範囲の高さにはいっていた場合スキルを発動する範囲がその範囲に自動調整される
             // 掘られた場所が範囲より高かったらその場所を一番下にして範囲を計算する
-            $isSkillHigh = ($blockVec->getFloorY() - $p->getPosition()->getFloorY()) <= $this->height;
-            $playerY = $p->getPosition()->getFloorY();
-            var_dump($p->getPosition()->getFloorY());
-            var_dump($p->getPosition()->getY());
+            $isSkillHigh = ($blockVec->getFloorY() - $playerY) <= $this->height;
 
             for ($width = $widthSide; $width >= -$widthSide; --$width) {
                 for ($depth = 0; $depth <= $this->depth; ++$depth) {
@@ -124,6 +122,15 @@ class BreakSkill
                 }
             }
         }
+    }
+
+    private function exactFloorY(Player $p): int
+    {
+        $stupidFloorY = $p->getPosition()->getFloorY();
+        if ($stupidFloorY > $p->getPosition()->getY()) {
+            return ++$stupidFloorY;
+        }
+        return $stupidFloorY;
     }
 
     /**
