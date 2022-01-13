@@ -126,11 +126,8 @@ class BreakSkill
 
     private function exactFloorY(Player $p): int
     {
-        $stupidFloorY = $p->getPosition()->getFloorY();
-        if ($stupidFloorY > $p->getPosition()->getY()) {
-            return ++$stupidFloorY;
-        }
-        return $stupidFloorY;
+        $stupidY = $p->getPosition()->getY();
+        return round($stupidY, 5);
     }
 
     /**
