@@ -10,18 +10,23 @@ on:
 jobs:
   stable_checker:
     runs-on: ubuntu-latest
-    if: "!contains(github.event.head_commit.message, '[ci skip]')"
+    if: "!contains(github.event.head_commit.message, '[skip]')"
+    outputs:
+      stable: ${{ steps.filter.outputs.plugin-yml }}
     steps:
+      - uses: actions/checkout@v2
+
       - uses: dorny/paths-filter@v2
         id: filter
         with:
           filters: |
-            yml:
+            plugin-yml:
              - 'plugins.yml'
 
   merge_stable:
     runs-on: ubuntu-latest
-    if: "!contains(github.event.head_commit.message, '[skip]') && github.ref == 'refs/heads/master'"
+    needs: stable_checker
+    if: ${{ needs.stable_checker.outputs.stable == 'true' }}
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
