@@ -43,7 +43,7 @@ jobs:
           git merge --allow-unrelated-histories --squash origin/master
 
       - name: Push
-        run: git push
+        run: git push origin stable
 
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
   #                          ※ <注意> build_debugを変えたらbuild_stableも変えるのを忘れずに                 #
