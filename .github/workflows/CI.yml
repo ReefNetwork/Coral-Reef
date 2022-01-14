@@ -84,8 +84,6 @@ jobs:
     if: "!contains(github.event.head_commit.message, '[ci skip]')"
     steps:
       - uses: actions/checkout@v2
-        with:
-          ref: "stable"
 
       - name: build
         run: php -d phar.readonly=0 ./build/make-phar.php ${{ github.run_number }}-stable
