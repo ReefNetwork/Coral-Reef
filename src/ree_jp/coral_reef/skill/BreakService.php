@@ -67,7 +67,8 @@ class BreakService
     private static function changeWater(?World $level, Vector3 $vec3, Block $replaceBlock): void // 水を水色のガラスに変える
     {
         if (is_null($level)) return;
-        if ($level->getBlock($vec3)->getId() === BlockLegacyIds::WATER) { // 水を水色のガラスに変える
+        $checkId = $level->getBlock($vec3)->getId();
+        if (($checkId === BlockLegacyIds::WATER) || ($checkId === BlockLegacyIds::FLOWING_WATER)) { // 水を水色のガラスに変える
             $level->setBlock($vec3, $replaceBlock, false);
         }
     }
@@ -127,7 +128,6 @@ class BreakService
                 return;
             }
 
-            $drops = $ev->getDrops();
             $xp = $ev->getXpDropAmount();
 
         } elseif (!$bl->getBreakInfo()->isBreakable()) {
@@ -143,15 +143,6 @@ class BreakService
         }
 
         $item->onDestroyBlock($bl);
-
-        if (count($drops) > 0) {
-            $dropPos = $vector->add(0.5, 0.5, 0.5);
-            foreach ($drops as $drop) {
-                if (!$drop->isNull()) {
-                    $world->dropItem($dropPos, $drop);
-                }
-            }
-        }
 
         if ($xp > 0) {
             $p->getXpManager()->addXp($xp);
