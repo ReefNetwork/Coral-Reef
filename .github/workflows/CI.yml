@@ -37,6 +37,7 @@ jobs:
 
       - name: Merge master to stable
         run: |
+          git remote set-url origin https://github-actions:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}
           git config --global user.email "action@github.com"
           git config --global user.name "Github Actions by ${{ github.actor }}"
           git fetch
