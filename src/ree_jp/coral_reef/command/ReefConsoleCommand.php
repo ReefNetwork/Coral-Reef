@@ -19,6 +19,7 @@ use pocketmine\plugin\PluginOwned;
 use ree_jp\coral_reef\account\AccountStore;
 use ree_jp\coral_reef\gatya\items\SpecialItemService;
 use ree_jp\coral_reef\sql\SQLConst;
+use ree_jp\coral_reef\task\ServerUpdateTask;
 
 class ReefConsoleCommand extends Command implements PluginOwned
 {
@@ -37,15 +38,21 @@ class ReefConsoleCommand extends Command implements PluginOwned
 
             switch ($args[0]) {
                 case SQLConst::ENV_EXP_BUF:
+                    if (!isset($args[1]) || !is_numeric($args[1])) {
+                        $sender->sendMessage("引数が間違ってる");
+                        return;
+                    }
+                    ServerUpdateTask::$exp_buff = $args[1];
+                    $sender->sendMessage("反映には最大1分かかります");
+                    break;
                 case SQLConst::ENV_HASTE_EFFECT:
                     if (!isset($args[1]) || !is_numeric($args[1])) {
                         $sender->sendMessage("引数が間違ってる");
                         return;
                     }
-                    $this->store->setValue(0, SQLConst::TYPE_ENV, $args[0], $args[1], null);
+                    ServerUpdateTask::$haste_effect = $args[1];
                     $sender->sendMessage("反映には最大1分かかります");
                     break;
-
                 case "tool":
                     if ($sender instanceof Player) {
                         $sender->getInventory()->addItem(SpecialItemService::getRenewItem($args[1], $args[2], $args[3], $this->store));

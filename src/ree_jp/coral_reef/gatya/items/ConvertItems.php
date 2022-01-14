@@ -62,7 +62,7 @@ class ConvertItems extends ReefItems
                 $nbt = $item->getNamedTag();
                 $nbt->setString(self::REEF_SP_ITEM, self::NORMAL_TICKETS_FRAGMENT);
                 $item->setNamedTag($nbt);
-                $item->addEnchantment(new EnchantmentInstance(VanillaEnchantments::FLAME(), 1));
+                $item->addEnchantment(new EnchantmentInstance(VanillaEnchantments::INFINITY(), 1));
 
                 $item->setCustomName("ノーマルガチャチケットのかけら");
                 $item->setLore(["このかけらを10個集めるとノーマルガチャチケットを受け取れます"]);
