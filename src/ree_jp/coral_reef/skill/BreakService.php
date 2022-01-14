@@ -31,17 +31,17 @@ use ree_jp\coral_reef\sql\SettingConst;
 
 class BreakService
 {
-    static function breakBlockBySkill(Player $p, Block $bl): void
+    static function breakBlockBySkill(Player $p, Block $bl, array &$store): void
     {
         $hand = $p->getInventory()->getItemInHand();
-        self::frozeWater($p, $bl->getPosition(), $hand);
+        self::frozeWater($p, $bl->getPosition(), $hand, $store);
 
         if ($bl->getBreakInfo()->getHardness() < 0 || $bl instanceof Liquid) return;
 
         self::silentBreak($p->getWorld(), $bl, $hand, $p);
     }
 
-    static function frozeWater(Player $p, Vector3 $vec, Item $hand): void
+    static function frozeWater(Player $p, Vector3 $vec, Item $hand, array &$store): void
     {
         if (!SettingManager::isEnableOption($p->getXuid(), SettingConst::NO_FREEZE_WATER)) {
             $nbt = $hand->getNamedTag();
@@ -54,19 +54,27 @@ class BreakService
                 $block = BlockFactory::getInstance()->get($id, 0);
             }
 
-            self::changeWater($p->getWorld(), $vec, $block);
-            self::changeWater($p->getWorld(), $vec->add(0, 1, 0), $block);
-            self::changeWater($p->getWorld(), $vec->add(0, -1, 0), $block);
-            self::changeWater($p->getWorld(), $vec->add(1, 0, 0), $block);
-            self::changeWater($p->getWorld(), $vec->add(-1, 0, 0), $block);
-            self::changeWater($p->getWorld(), $vec->add(0, 0, 1), $block);
-            self::changeWater($p->getWorld(), $vec->add(0, 0, -1), $block);
+            self::changeWater($p->getWorld(), $vec, $block, $store);
+            self::changeWater($p->getWorld(), $vec->add(0, 1, 0), $block, $store);
+            self::changeWater($p->getWorld(), $vec->add(0, -1, 0), $block, $store);
+            self::changeWater($p->getWorld(), $vec->add(1, 0, 0), $block, $store);
+            self::changeWater($p->getWorld(), $vec->add(-1, 0, 0), $block, $store);
+            self::changeWater($p->getWorld(), $vec->add(0, 0, 1), $block, $store);
+            self::changeWater($p->getWorld(), $vec->add(0, 0, -1), $block, $store);
         }
     }
 
-    private static function changeWater(?World $level, Vector3 $vec3, Block $replaceBlock): void // 水を水色のガラスに変える
+    /**
+     * @param World|null $level
+     * @param Vector3 $vec3
+     * @param Block $replaceBlock
+     * @param Vector3[] $store
+     * @return void
+     */
+    private static function changeWater(?World $level, Vector3 $vec3, Block $replaceBlock, array &$store): void // 水を水色のガラスに変える
     {
-        if (is_null($level)) return;
+        if (is_null($level) || in_array($vec3, $store)) return;
+        $store[] = $vec3;
         $checkId = $level->getBlock($vec3)->getId();
         if (($checkId === BlockLegacyIds::WATER) || ($checkId === BlockLegacyIds::FLOWING_WATER)) { // 水を水色のガラスに変える
             $level->setBlock($vec3, $replaceBlock, false);

@@ -56,7 +56,8 @@ class BreakSkill
      */
     public function runSkill(Vector3 $blockVec, Player $p): void
     {
-        BreakService::frozeWater($p, $blockVec, $p->getInventory()->getItemInHand());
+        $store = [];
+        BreakService::frozeWater($p, $blockVec, $p->getInventory()->getItemInHand(), $store);
 
         $world = $p->getWorld();
         $direction = $p->getHorizontalFacing();
@@ -80,7 +81,7 @@ class BreakSkill
                             $vec = $this->getSideFromUserView($blockVec->add(0, -$height, 0), $direction, self::RIGHT, $width);
                             $vec = $this->getSideFromUserView($vec, $direction, self::FORWARD, $depth);
                             $bl = $world->getBlock($vec);
-                            BreakService::breakBlockBySkill($p, $bl);
+                            BreakService::breakBlockBySkill($p, $bl, $store);
                         }
                     }
                 }
@@ -117,7 +118,7 @@ class BreakSkill
                         $vec = $this->getSideFromUserView($base, $direction, self::RIGHT, $width);
                         $vec = $this->getSideFromUserView($vec, $direction, self::FORWARD, $depth);
                         $bl = $world->getBlock($vec);
-                        BreakService::breakBlockBySkill($p, $bl);
+                        BreakService::breakBlockBySkill($p, $bl, $store);
                     }
                 }
             }
