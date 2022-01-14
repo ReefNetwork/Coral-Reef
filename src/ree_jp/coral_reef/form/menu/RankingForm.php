@@ -24,7 +24,7 @@ class RankingForm
             $list[] = [];
             foreach ($rows as $row) {
                 if ($row["xuid"] === 0) continue; // サーバー管理用アカウントをランキングに入れない
-                $list[$row["experience"]][] = $row["name"] . "さん(" . $row["experience"] . ")";
+                $list[$row["experience"]][] = $row["name"];
             }
             krsort($list, SORT_NUMERIC);
             $string = "";
@@ -37,7 +37,7 @@ class RankingForm
                         $my = $ranking;
                     }
                     $equal++;
-                    $string = $string . $ranking . "位: " . $user . "\n";
+                    $string = $string . "$ranking 位: $user さん($exp)" . "\n";
                 }
                 $ranking += $equal;
             }
