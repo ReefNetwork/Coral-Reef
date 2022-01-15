@@ -36,7 +36,7 @@ class ShopManageForm
             $p->sendForm((new SimpleForm())->setTitle("Shop Manage")->setText("このショップに対して行う動作を選んでください")
                 ->addElements(new ClosureButton("ショップを変更する", null,
                     function (Player $p) use ($pos, $store, $shop): void {
-                        $p->sendForm(self::shopCreateForm($store, $pos, $shop->orderType, $shop->payment["type"], $shop->payment["amount"]));
+                        $p->sendForm(self::shopCreateForm($store, $pos, $shop->orderType, $shop->payment["type"], $shop->payment["amount"], $shop->dayLimit));
                     }
                 ), new ClosureButton("毎日の購入制限記録をリセットする", null, function (Player $p) use ($store, $shop) {
                     $shop->resetDayLimitCounter($store);
@@ -53,7 +53,7 @@ class ShopManageForm
         $orderElement = new Dropdown("買わせる(buy)か買い取る(sell)か (もともとは$orderType)", self::TYPE);
         $typeElement = new Dropdown("このショップの支払い方法を設定してください(もともとは$payType)", self::PAYMENT);
         $amountElement = new Input("このショップの支払う量を設定してください", "100", $amount);
-        $dayLimitElement = new Input("一日に買える量(もともとは$dayLimit)0に設定すると無限", "0", $amount);
+        $dayLimitElement = new Input("一日に買える量(もともとは$dayLimit)0に設定すると無限", "0", $dayLimit);
         return (new ClosureCustomForm(function (Player $p) use ($dayLimitElement, $orderElement, $pos, $store, $amountElement, $typeElement): void {
             $order = self::TYPE[$orderElement->getValue()];
             $payment = self::PAYMENT[$typeElement->getValue()];

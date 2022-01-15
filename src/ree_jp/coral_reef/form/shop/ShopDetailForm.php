@@ -43,7 +43,7 @@ class ShopDetailForm
         if ($shop->dayLimit > 0) {
             $dayCount = $shop->getDayLimitCounter($p->getXuid());
 
-            $text = $text . "\n\n1日の購入制限\n$dayCount /" . $shop->dayLimit;
+            $text = $text . "\n\n1日の" . self::replaceOrderType($shop->orderType) . "制限\n$dayCount /" . $shop->dayLimit;
             $remain = $shop->dayLimit - $dayCount;
             if ($remain >= 1) {
                 $maxAmount = $remain;
