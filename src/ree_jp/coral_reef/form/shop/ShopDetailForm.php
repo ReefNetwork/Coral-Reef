@@ -20,11 +20,12 @@ use pocketmine\player\Player;
 use pocketmine\utils\TextFormat;
 use ree_jp\coral_reef\shop\Shop;
 use ree_jp\coral_reef\shop\ShopService;
+use ree_jp\coral_reef\shop\ShopStore;
 use ree_jp\coral_reef\sql\SQLRepository;
 
 class ShopDetailForm
 {
-    static function sendForm(SQLRepository $repo, Player $p, Shop $shop): void
+    static function sendForm(SQLRepository $repo, ShopStore $store, Player $p, Shop $shop): void
     {
         $itemString = "\n\nアイテム\n";
         $items = $shop->getItems();
@@ -35,24 +36,37 @@ class ShopDetailForm
         foreach ($items as $item) {
             $itemString .= $item->getName() . TextFormat::RESET . " ×" . $item->getCount() . "\n";
         }
-        $text = "金額\n" . $shop->payment["type"] . $shop->payment["amount"] . TextFormat::RESET;
-        $amount = new Slider(self::replaceOrderType($shop->orderType) . "するセット数を選択してください", 1, 64, 1);
 
-        $form = (new ClosureCustomForm(function (Player $p) use ($repo, $shop, $amount): void {
+        $text = "金額\n" . $shop->payment["type"] . $shop->payment["amount"] . TextFormat::RESET;
+        $maxAmount = 64;
+
+        if ($shop->dayLimit > 0) {
+            $dayCount = $shop->getDayLimitCounter($p->getXuid());
+
+            $text = $text . "\n1日の購入制限: $dayCount /" . $shop->dayLimit;
+            $remain = $shop->dayLimit - $dayCount;
+            if ($remain >= 1) {
+                $maxAmount = $remain;
+            }
+        }
+
+        $amount = new Slider(self::replaceOrderType($shop->orderType) . "するセット数を選択してください", 1, $maxAmount, 1);
+
+        $form = (new ClosureCustomForm(function (Player $p) use ($store, $repo, $shop, $amount): void {
             $p->sendForm((new ModalForm(new ClosureButton(self::replaceOrderType($shop->orderType) . "する", null,
-                function (Player $p) use ($repo, $amount, $shop): void {
+                function (Player $p) use ($store, $repo, $amount, $shop): void {
                     switch ($shop->orderType) {
                         case "buy":
-                            ShopService::buy($repo, $shop, $p, $amount->getValue());
+                            ShopService::buy($repo, $store, $shop, $p, $amount->getValue());
                             break;
                         case "sell":
-                            ShopService::sell($repo, $shop, $p, $amount->getValue());
+                            ShopService::sell($repo, $store, $shop, $p, $amount->getValue());
                             break;
                         default:
                             $p->sendMessage("エラーが発生しました");
                     }
-                }), new ClosureButton("戻る", null, function (Player $p) use ($repo, $shop): void {
-                self::sendForm($repo, $p, $shop);
+                }), new ClosureButton("戻る", null, function (Player $p) use ($store, $repo, $shop): void {
+                self::sendForm($repo, $store, $p, $shop);
             })))->setTitle("Shop -> Confirm")->setText("本当にこのアイテムを" . self::replaceOrderType($shop->orderType) . "しますか?\n" .
                 self::replacePaymentType("金額\n" . $shop->payment["type"] . $shop->payment["amount"] * $amount->getValue() . TextFormat::RESET)));
 

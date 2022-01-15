@@ -32,7 +32,6 @@ class ShopStore
 
     private function loadShop(): void
     {
-        unset($this->shops);
         $this->shops = [];
         $this->config->reload();
         foreach ($this->config->getAll() as $key => $shopData) {
@@ -50,15 +49,19 @@ class ShopStore
         return null;
     }
 
-    private function createKey(Position $pos): string
+    public function updateShop(Shop $shop): void
     {
-        return $pos->getWorld()->getFolderName() . ":" . $pos->getX() . ":" . $pos->getY() . ":" . $pos->getZ();
+        $this->config->set(ShopService::createKey($shop->pos), $shop->jsonSerialize());
+        try {
+            $this->config->save();
+        } catch (JsonException $e) {
+            CoralReefPlugin::$plugin->getLogger()->warning("ショップの更新に失敗しました:" . $e->getMessage());
+        }
     }
 
     public function createShop(Shop $shop): void
     {
-        $this->config->reload();
-        $this->config->set($this->createKey($shop->pos), $shop->jsonSerialize());
+        $this->config->set(ShopService::createKey($shop->pos), $shop->jsonSerialize());
         try {
             $this->config->save();
         } catch (JsonException $e) {
@@ -69,8 +72,7 @@ class ShopStore
 
     public function removeShop(Position $pos): void
     {
-        $this->config->reload();
-        $this->config->remove($this->createKey($pos));
+        $this->config->remove(ShopService::createKey($pos));
         try {
             $this->config->save();
         } catch (JsonException $e) {

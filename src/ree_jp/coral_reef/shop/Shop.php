@@ -23,19 +23,27 @@ class Shop
     public Position $pos;
     public string $orderType;
     public array $payment;
+    public int $dayLimit;
 
-    public function __construct(Position $pos, string $orderType, array $payment)
+    /**
+     * @var int[]
+     */
+    public array $dayLimitCounter;
+
+    public function __construct(Position $pos, string $orderType, array $payment, int $dayLimit, array $dayLimitCounter)
     {
         $this->pos = $pos;
         $this->orderType = $orderType;
         $this->payment = $payment;
+        $this->dayLimit = $dayLimit;
+        $this->dayLimitCounter = $dayLimitCounter;
     }
 
     static function jsonDeserialize(array $array): Shop
     {
         $level = Server::getInstance()->getWorldManager()->getWorldByName($array["level"]);
-        $orderType = $array["order_type"] ?? "buy";
-        return new Shop(new Position($array["x"], $array["y"], $array["z"], $level), $orderType, $array["payment"]);
+        return new Shop(new Position($array["x"], $array["y"], $array["z"], $level), $array["order_type"] ?? "buy",
+            $array["payment"] ?? "money", $array["day_limit"] ?? "0", $array["day_limit_counter"] ?? "0");
     }
 
     #[ArrayShape(["level" => "string", "x" => "int", "y" => "int", "z" => "int", "order_type" => "string", "payment" => "array"])]
@@ -63,5 +71,48 @@ class Shop
             return $tile->getInventory()->getContents();
         }
         return null;
+    }
+
+    public function resetDayLimitCounter(ShopStore $store): void
+    {
+        $this->dayLimitCounter = [];
+        $store->updateShop($this);
+    }
+
+    public function checkDayLimitCounterExpired(): void
+    {
+        $todayResetTime = $this->getDayResetTime();
+        if (isset($this->dayLimitCounter["expiry"]) && ($this->dayLimitCounter["expiry"] == $todayResetTime)) return;
+
+        $this->dayLimitCounter = ["expiry" => $todayResetTime];
+    }
+
+    public function getDayLimitCounter(string $xuid): int
+    {
+        $this->checkDayLimitCounterExpired();
+        return $this->dayLimitCounter[$xuid] ?? 0;
+    }
+
+    public function addDayLimitCounter(ShopStore $store, string $xuid, int $count): bool
+    {
+        if ($this->dayLimit <= 0) return true;
+        $after = $this->getDayLimitCounter($xuid) + $count;
+        if ($after > $this->dayLimit) {
+            return false;
+        } else {
+            $this->dayLimitCounter[$xuid] = $after;
+            $store->updateShop($this);
+            return true;
+        }
+    }
+
+    private function getDayResetTime(): int
+    {
+        // 5時でリセットする
+        if (date("H") < 5) { //5時を下回っていたらその日の5時
+            return strtotime("today 5hour");
+        } else { // 5時より上だったら次の日の5時
+            return strtotime("tomorrow 5hour");
+        }
     }
 }
