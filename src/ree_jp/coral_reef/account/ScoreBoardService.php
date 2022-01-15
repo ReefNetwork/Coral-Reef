@@ -48,7 +48,7 @@ class ScoreBoardService
         self::setScore($pk, 1, '現在のスキル : ' . $skillName);
 
         $nextExp = $user->necessaryExperience;
-        if ($user->level === array_key_last(UserAccount::LEVEL_EXPERIMENT)) $nextExp = "レベル上限";
+        if ($user->level === array_key_last(Experiment::LEVEL_EXPERIMENT)) $nextExp = "レベル上限";
         self::setScore($pk, 2, '次のレベルまで : ' . $nextExp);
 
         if (ServerUpdateTask::$exp_buff > 1) {

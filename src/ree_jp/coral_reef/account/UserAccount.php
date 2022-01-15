@@ -25,16 +25,6 @@ use ree_jp\coral_reef\sql\SQLRepository;
 
 class UserAccount
 {
-    const LEVEL_EXPERIMENT = [ // 16から18まではスキルで35ブロック破壊と計算する
-        1 => 1, 2 => 1000, 3 => 2500, 4 => 6500, 5 => 11500, 6 => 20500, 7 => 31000, 8 => 43000, 9 => 63250, 10 => 85750,
-        11 => 135250, 12 => 189250, 13 => 247750, 14 => 342250, 15 => 443500, 16 => 548500, 17 => 656000, 18 => 766000, 19 => 879000, 20 => 995000,
-        21 => 1114500, 22 => 1237500, 23 => 1364000, 24 => 1494500, 25 => 1629000, 26 => 1768500, 27 => 1913000, 28 => 2062500, 29 => 2218000, 30 => 2379500,
-        31 => 2548000, 32 => 2724000, 33 => 2908000, 34 => 3101000, 35 => 3304000, 36 => 3519500, 37 => 3750000, 38 => 3980500, 39 => 4248500, 40 => 4538000,
-        41 => 4852500, 42 => 5194500, 43 => 5566500, 44 => 5971500, 45 => 6412500, 46 => 6893000, 47 => 7416500, 48 => 7986500, 49 => 8606500, 50 => 9281000,
-        51 => 10015500, 52 => 10817500, 53 => 11694500, 54 => 12659000, 55 => 13723500, 56 => 14913500, 57 => 16254500, 58 => 17772000, 59 => 19491500,
-        60 => 21438500
-    ];
-
     public string $xuid;
     public string $name;
     public int $experience;
@@ -71,7 +61,7 @@ class UserAccount
     {
         $this->experience = $xp + $this->experience;
         $this->necessaryExperience -= $xp;
-        if ($this->necessaryExperience <= 0 && ($this->level !== array_key_last(self::LEVEL_EXPERIMENT))) {
+        if ($this->necessaryExperience <= 0 && ($this->level !== array_key_last(Experiment::LEVEL_EXPERIMENT))) {
             $beforeLevel = $this->level;
             $this->setLevelAndNecessaryExperience();
             QuestListener::callSubscribedQuest($p->getXuid(), QuestListener::LEVEL_UP, $this->level);
@@ -93,14 +83,14 @@ class UserAccount
 
     private function setLevelAndNecessaryExperience(): void
     {
-        foreach (self::LEVEL_EXPERIMENT as $constLevel => $constExperience) {
+        foreach (Experiment::LEVEL_EXPERIMENT as $constLevel => $constExperience) {
             if ($constExperience > $this->experience) {
                 $this->level = --$constLevel;
                 $this->necessaryExperience = $constExperience - $this->experience;
                 return;
             }
         }
-        $this->level = array_key_last(self::LEVEL_EXPERIMENT);
+        $this->level = array_key_last(Experiment::LEVEL_EXPERIMENT);
         $this->necessaryExperience = -999;
     }
 }
