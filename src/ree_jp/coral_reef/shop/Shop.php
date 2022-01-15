@@ -43,14 +43,15 @@ class Shop
     {
         $level = Server::getInstance()->getWorldManager()->getWorldByName($array["level"]);
         return new Shop(new Position($array["x"], $array["y"], $array["z"], $level), $array["order_type"] ?? "buy",
-            $array["payment"] ?? "money", $array["day_limit"] ?? "0", $array["day_limit_counter"] ?? "0");
+            $array["payment"] ?? "money", $array["day_limit"] ?? 0, $array["day_limit_counter"] ?? []);
     }
 
-    #[ArrayShape(["level" => "string", "x" => "int", "y" => "int", "z" => "int", "order_type" => "string", "payment" => "array"])]
+    #[ArrayShape(["level" => "string", "x" => "int", "y" => "int", "z" => "int", "order_type" => "string", "payment" => "array",
+        "day_limit" => "int", "day_limit_counter" => "array|int[]"])]
     public function jsonSerialize(): array
     {
         return ["level" => $this->pos->getWorld()->getFolderName(), "x" => $this->pos->getFloorX(), "y" => $this->pos->getFloorY(), "z" => $this->pos->getFloorZ(),
-            "order_type" => $this->orderType, "payment" => $this->payment];
+            "order_type" => $this->orderType, "payment" => $this->payment, "day_limit" => $this->dayLimit, "day_limit_counter" => $this->dayLimitCounter];
     }
 
     /**
