@@ -62,6 +62,6 @@ class ShopManageForm
 
             $store->createShop(new Shop($pos, $order, ["type" => $payment, "amount" => $amount], $dayLimit, []));
             $p->sendMessage("ショップを作成しました");
-        }))->setTitle("Shop Edit")->addElements($orderElement, $typeElement, $amountElement);
+        }))->setTitle("Shop Edit")->addElements($orderElement, $typeElement, $amountElement, $dayLimitElement);
     }
 }
