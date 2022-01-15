@@ -267,16 +267,41 @@ class EventListener implements Listener
             return;
         }
 
-        if ($ev->getItem()->getId() == ItemIds::CLOCK) {
-            if ($p->isSneaking()) {
-                if ($this->accountStore->hasValue($xuid, 'particle_cool_time')) return;
-                $this->accountStore->setValue($xuid, 'particle_cool_time', 20);
-                LandService::checkSpace($this->landStore, $p);
-            } else {
-                if ($this->accountStore->hasValue($xuid, 'form_cool_time')) return;
-                $this->accountStore->setValue($xuid, 'form_cool_time', 10);
-                LandForm::sendLandCreateAssistForm($this->sqlRepo, $this->accountStore, $this->landStore, $p, $ev->getBlock()->getPosition());
-            }
+        switch ($ev->getItem()->getId()) {
+            /** @noinspection PhpMissingBreakStatementInspection */
+            case ItemIds::BUCKET:
+                if ($ev->getItem()->getMeta() !== 10) {
+                    break;
+                }
+            case ItemIds::FLINT_STEEL:
+                $ev->cancel();
+                $p->kick(TextFormat::DARK_RED . "このアイテムは使用出来ません");
+                break;
+
+            case ItemIds::CLOCK:
+                if ($p->isSneaking()) {
+                    if ($this->accountStore->hasValue($xuid, 'particle_cool_time')) return;
+                    $this->accountStore->setValue($xuid, 'particle_cool_time', 20);
+                    LandService::checkSpace($this->landStore, $p);
+                } else {
+                    if ($this->accountStore->hasValue($xuid, 'form_cool_time')) return;
+                    $this->accountStore->setValue($xuid, 'form_cool_time', 10);
+                    LandForm::sendLandCreateAssistForm($this->sqlRepo, $this->accountStore, $this->landStore, $p, $ev->getBlock()->getPosition());
+                }
+                break;
+
+            case ItemIds::STICK:
+                Server::getInstance()->dispatchCommand($p, "menu");
+                break;
+
+            case ItemIds::DYE:
+                $nbt = $ev->getItem()->getNamedTag();
+                if ($nbt->getCompoundTag("herbicide_scale") instanceof CompoundTag) {
+                    if ($this->accountStore->hasValue($xuid, 'form_cool_time')) break;
+                    $this->accountStore->setValue($xuid, 'form_cool_time', 10);
+                    HerbicideForm::sendForm($this->accountStore, $p);
+                }
+                break;
         }
 
         switch ($ev->getBlock()->getId()) {
