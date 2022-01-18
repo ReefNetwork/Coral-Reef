@@ -68,7 +68,7 @@ class LandStore
 
     public function isParty(string $ownerXuid, string $userXuid): bool
     {
-        return !empty($this->party[$ownerXuid]) && in_array($userXuid, $this->party[$userXuid]);
+        return !empty($this->party[$ownerXuid]) && in_array($userXuid, $this->party[$ownerXuid]);
     }
 
     public function addParty(string $ownerXuid, string $userXuid): void

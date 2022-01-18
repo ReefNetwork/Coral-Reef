@@ -137,8 +137,6 @@ jobs:
           remote_folder: /install_plugins/
           local_folder: ./install_plugins/
           cleanup: false
-          inclued: |
-            '*.phar'
 
   deploy_stable:
     environment: deploy seichi
@@ -169,5 +167,15 @@ jobs:
           remote_folder: /install_plugins/
           local_folder: ./install_plugins/
           cleanup: false
-          inclued: |
-            '*.phar'
+
+      - name: deploy seichi_2
+        uses: sand4rt/ftp-deployer@v1.3
+        with:
+          sftp: true
+          host: ${{ secrets.SEICHI_2_HOST }}
+          port: ${{ secrets.SEICHI_2_PORT}}
+          username: ${{ secrets.SEICHI_2_USERNAME }}
+          password: ${{ secrets.SEICHI_2_PASSWORD }}
+          remote_folder: /install_plugins/
+          local_folder: ./install_plugins/
+          cleanup: false
