@@ -40,6 +40,7 @@ use pocketmine\player\Player;
 use pocketmine\scheduler\ClosureTask;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat;
+use pocketmine\world\Position;
 use ree_jp\coral_reef\account\AccountService;
 use ree_jp\coral_reef\account\AccountStore;
 use ree_jp\coral_reef\account\SettingManager;
@@ -255,6 +256,11 @@ class EventListener implements Listener
                     HerbicideForm::sendForm($this->accountStore, $p);
                 }
                 break;
+        }
+
+        if (LandService::protect($this->landStore, $this->accountStore, $p, Position::fromObject($ev->getDirectionVector(), $p->getWorld()),
+            "このワールドでアイテムを使用することはできません", false, true)) {
+            $ev->cancel();
         }
     }
 
