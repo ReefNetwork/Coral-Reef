@@ -371,7 +371,7 @@ class EventListener implements Listener
         $p = $ev->getPlayer();
         $food = $ev->getItem();
         $nbt = $food->getNamedTag();
-        $tag = $nbt->getByte(ReefItems::REEF_SP_ITEM, 99999);
+        $tag = $nbt->getByte("reef_infinite_food", 99999);
         if (($tag !== 99999) && $p->getHungerManager()->isHungry()) {
             CoralReefPlugin::$plugin->getScheduler()->scheduleDelayedTask(new ClosureTask(function () use ($food, $p): void {
                 $p->getInventory()->addItem($food->setCount(1));
