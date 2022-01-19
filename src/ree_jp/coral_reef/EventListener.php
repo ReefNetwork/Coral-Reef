@@ -17,6 +17,7 @@ use Exception;
 use pocketmine\block\BlockLegacyIds;
 use pocketmine\block\Flowable;
 use pocketmine\event\block\BlockBreakEvent;
+use pocketmine\event\block\BlockBurnEvent;
 use pocketmine\event\block\BlockPlaceEvent;
 use pocketmine\event\block\BlockUpdateEvent;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
@@ -40,7 +41,6 @@ use pocketmine\player\Player;
 use pocketmine\scheduler\ClosureTask;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat;
-use pocketmine\world\Position;
 use ree_jp\coral_reef\account\AccountService;
 use ree_jp\coral_reef\account\AccountStore;
 use ree_jp\coral_reef\account\SettingManager;
@@ -257,11 +257,6 @@ class EventListener implements Listener
                 }
                 break;
         }
-
-        if (LandService::protect($this->landStore, $this->accountStore, $p, Position::fromObject($ev->getDirectionVector(), $p->getWorld()),
-            "このワールドでアイテムを使用することはできません", false, true)) {
-            $ev->cancel();
-        }
     }
 
     public function onTouch(PlayerInteractEvent $ev): void
@@ -317,6 +312,13 @@ class EventListener implements Listener
                 $this->accountStore->setValue($xuid, 'form_cool_time', 10);
                 ShopService::showShop($this->sqlRepo, $p, $this->shopStore, $ev->getBlock()->getPosition());
                 break;
+
+            case BlockLegacyIds::GRASS:
+            case BlockLegacyIds::DIRT:
+                if (LandService::protect($this->landStore, $this->accountStore, $p, $ev->getBlock()->getPosition(), "このワールドでブロックに変更を加えることはできません")) {
+                    $ev->cancel();
+                    return;
+                }
         }
         if (($ev->getBlock()->getId() === BlockLegacyIds::FRAME_BLOCK) &&
             LandService::protect($this->landStore, $this->accountStore, $p, $ev->getBlock()->getPosition(), "このワールドで額縁を変更することはできません")) {
@@ -343,10 +345,10 @@ class EventListener implements Listener
         }
         $fromLevelName = $ev->getFrom()->getWorld()->getFolderName();
         $toLevelName = $ev->getTo()->getWorld()->getFolderName();
-        $isWorldChange = $fromLevelName !== $toLevelName;
+        $isWorldChange = $fromLevelName === $toLevelName;
 
-        AccountService::updateFly($p, $ev->getTo()->world->getFolderName());
         if ($isWorldChange) {
+            AccountService::updateFly($p, $ev->getTo()->world->getFolderName());
             unset($this->landStore->pos[$p->getXuid()]);
         }
     }
@@ -386,6 +388,14 @@ class EventListener implements Listener
     }
 
     /**
+     * @priority LOWEST
+     */
+    public function onBurn(BlockBurnEvent $ev): void
+    {
+        $ev->cancel();
+    }
+
+    /**
      * @priority MONITOR
      */
     public function onTransactionMonitor(InventoryTransactionEvent $ev): void
@@ -406,6 +416,10 @@ class EventListener implements Listener
      */
     public function onModeChangeMonitor(PlayerGameModeChangeEvent $ev): void
     {
-        AccountService::updateFly($ev->getPlayer(), $ev->getPlayer()->getWorld()->getFolderName());
+        CoralReefPlugin::$plugin->getScheduler()->scheduleDelayedTask(new ClosureTask(function () use ($ev): void {
+            if ($ev->getPlayer()->isOnline()) {
+                AccountService::updateFly($ev->getPlayer(), $ev->getPlayer()->getWorld()->getFolderName());
+            }
+        }), 3);
     }
 }
