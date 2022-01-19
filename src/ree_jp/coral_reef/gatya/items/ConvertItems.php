@@ -68,7 +68,7 @@ class ConvertItems extends ReefItems
                 $item->setLore(["このかけらを10個集めるとノーマルガチャチケットを受け取れます"]);
                 break;
             case self::HERBICIDE:
-                $item = VanillaItems::GREEN_DYE();
+                $item = VanillaItems::LIME_DYE();
 
                 $nbt = $item->getNamedTag();
                 $nbt->setString(self::REEF_SP_ITEM, self::HERBICIDE);
