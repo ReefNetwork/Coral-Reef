@@ -30,6 +30,8 @@ class SettingManager
     {
         $repo->getValue($p->getXuid(), SQLConst::TYPE_SETTINGS, SettingConst::NICK_NAME,
             function (array $rows) use ($p) {
+                if (!$p->isOnline()) return;
+
                 $row = array_shift($rows);
                 if (!isset($row['value'])) return;
                 $nick = $row['value'];
@@ -45,6 +47,8 @@ class SettingManager
     {
         $repo->getValue($p->getXuid(), SQLConst::TYPE_SETTINGS, SettingConst::COORDINATES,
             function (array $rows) use ($p) {
+                if (!$p->isOnline()) return;
+
                 $row = array_shift($rows);
                 $bool = false;
                 if (isset($row['value'])) {
@@ -62,6 +66,7 @@ class SettingManager
     static function updateOption(SQLRepository $repo, Player $p, string $type): void
     {
         self::updateBoolOption($repo, $p->getXuid(), $type, function (SqlError $error) use ($p) {
+            if (!$p->isOnline()) return;
             $p->sendMessage('設定を読み込み中にエラーが発生しました');
             Server::getInstance()->getLogger()->warning("[setting]" . $error->getMessage());
         });
