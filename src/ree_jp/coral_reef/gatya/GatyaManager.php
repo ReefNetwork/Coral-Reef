@@ -64,6 +64,15 @@ class GatyaManager
                                 // ガチャチケットを減らす
                                 $repo->setValue($p->getXuid(), SQLConst::TYPE_TICKETS, $subtype, $row['value'] - $need,
                                     function () use ($repo, $stringRare, $func, $isBroadcast, $item, $p) {
+                                        if ($p->isOnline()) {
+                                            $p->sendMessage('ガチャを引きました(レア度: ' . TextFormat::GREEN . $stringRare . TextFormat::RESET . ')');
+                                            if ($isBroadcast) {
+                                                // 一定のレア度以上は$isBroadcastをtrueにしてガチャを引いたことを全体に表示させる
+                                                $broadMessage = $p->getDisplayName() . 'さんが' . TextFormat::GREEN . 'REEFレア' . TextFormat::RESET . 'を引きました';
+                                                Server::getInstance()->broadcastMessage($broadMessage);
+                                            }
+                                        }
+
                                         if ($p->isOnline() && $p->getInventory()->canAddItem($item)) {
                                             // インベントリに空きがあれば追加
                                             $p->getInventory()->addItem($item);
@@ -78,13 +87,8 @@ class GatyaManager
                                                     $p->sendMessage('ガチャの景品を地面にドロップしました');
                                                 });
                                         }
-                                        $p->sendMessage('ガチャを引きました(レア度: ' . TextFormat::GREEN . $stringRare . TextFormat::RESET . ')');
+
                                         unset(self::$isProcessing[$p->getXuid()]);
-                                        if ($isBroadcast) {
-                                            // 一定のレア度以上は$isBroadcastをtrueにしてガチャを引いたことを全体に表示させる
-                                            $broadMessage = $p->getDisplayName() . 'さんが' . TextFormat::GREEN . 'REEFレア' . TextFormat::RESET . 'を引きました';
-                                            Server::getInstance()->broadcastMessage($broadMessage);
-                                        }
                                         QuestListener::callSubscribedQuest($p->getXuid(), QuestListener::GATYA, $item);
                                         if (!is_null($func)) $func();
                                     }, function (SqlError $error) use ($p) {
