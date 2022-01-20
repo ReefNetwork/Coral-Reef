@@ -15,6 +15,7 @@ namespace ree_jp\coral_reef\quest\data;
 use pocketmine\item\enchantment\EnchantmentInstance;
 use pocketmine\item\enchantment\VanillaEnchantments;
 use pocketmine\item\VanillaItems;
+use pocketmine\player\Player;
 use pocketmine\Server;
 use ree_jp\coral_reef\account\AccountStore;
 use ree_jp\coral_reef\account\GiftData;
@@ -52,7 +53,6 @@ class LevelUpQuest extends QuestData
     {
         $user = $this->store->getUser($this->xuid);
         if (is_null($user)) return;
-        $p = Server::getInstance()->getPlayerByPrefix($user->name);
         $questLevel = intval($this->value);
         if ($user->level > $questLevel) {
             $questLevel++;
@@ -89,10 +89,13 @@ class LevelUpQuest extends QuestData
                     GatyaManager::addTicket($this->repo, $this->xuid, SQLConst::TICKETS_NORMAL, $this->getGiveTicket($questLevel));
                     break;
             }
-            $p->sendMessage("レベルアップ報酬として" . $this->getRewardDetails($questLevel) .
-                "を受け取りました");
-            if ($questLevel <= 5) {
-                $p->sendMessage("報酬にアイテムが含まれている場合はギフトから1週間以内に受け取れます");
+            $p = Server::getInstance()->getPlayerByPrefix($user->name);
+            if ($p instanceof Player) {
+                $p->sendMessage("レベルアップ報酬として" . $this->getRewardDetails($questLevel) .
+                    "を受け取りました");
+                if ($questLevel <= 5) {
+                    $p->sendMessage("報酬にアイテムが含まれている場合はギフトから1週間以内に受け取れます");
+                }
             }
             $this->check();
         }
