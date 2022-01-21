@@ -11,8 +11,7 @@
 
 namespace ree_jp\coral_reef\form\menu;
 
-use bbo51dog\bboform\element\Button;
-use bbo51dog\bboform\form\SimpleForm;
+use PageViewForm;
 use pocketmine\player\Player;
 use ree_jp\coral_reef\sql\SQLRepository;
 
@@ -21,13 +20,15 @@ class RankingForm
     static function sendForm(SQLRepository $repo, Player $p): void
     {
         $repo->getAllUser(function (array $rows) use ($p): void {
+            if (!$p->isOnline()) return;
+
             $list[] = [];
             foreach ($rows as $row) {
                 if ($row["xuid"] === 0) continue; // サーバー管理用アカウントをランキングに入れない
                 $list[$row["experience"]][] = $row["name"];
             }
             krsort($list, SORT_NUMERIC);
-            $string = "";
+            $content = [];
             $ranking = 1;
             $my = 0;
             foreach ($list as $exp => $users) {
@@ -37,12 +38,11 @@ class RankingForm
                         $my = $ranking;
                     }
                     $equal++;
-                    $string = $string . "$ranking 位: $user さん($exp)" . "\n";
+                    $content[] = "$ranking 位: $user さん($exp)" . "\n";
                 }
                 $ranking += $equal;
             }
-            $p->sendForm((new SimpleForm())->setTitle("ランキング")->setText("あなたは" . $my . "位です\n\n" . $string)
-                ->addElement(new Button("閉じる")));
+            PageViewForm::sendForm($p, "ランキング", "あなたは" . $my . "位です\n\n", $content, 100);
         });
     }
 }

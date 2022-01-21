@@ -6,10 +6,10 @@
  * CC    C oo  oo rr     aa  aaa lll RR  RR  eeeee  eeeee  ff
  *  CCCCC   oooo  rr      aaa aa lll RR   RR  eeeee  eeeee ff
  *
- * Copyright (c) 2021-2021. Ree-jp(https://ree-jp.net)
+ * Copyright (c) 2021-2022. Ree-jp(https://ree-jp.net)
  */
 
-namespace ree_jp\coral_reef\form\menu;
+namespace ree_jp\coral_reef\form\gatya;
 
 use bbo51dog\bboform\element\ClosureButton;
 use bbo51dog\bboform\element\Slider;
@@ -53,6 +53,12 @@ class GatyaForm
                         "クリスマスガチャ", null,
                         function (Player $p) use ($repo, $christmas) {
                             self::sendGatyaNumberChoices($repo, $p, SQLConst::TICKETS_CHRISTMAS_2021, $christmas);
+                        }
+                    ),
+                    new ClosureButton(
+                        "ガチャ履歴", null,
+                        function (Player $p) use ($repo, $christmas) {
+                            GatyaHistoryForm::sendForm($p, $repo);
                         }
                     ),
                 );
