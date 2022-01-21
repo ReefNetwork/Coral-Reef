@@ -11,8 +11,8 @@
 
 namespace ree_jp\coral_reef\form\menu;
 
-use PageViewForm;
 use pocketmine\player\Player;
+use ree_jp\coral_reef\form\PageViewForm;
 use ree_jp\coral_reef\sql\SQLRepository;
 
 class RankingForm

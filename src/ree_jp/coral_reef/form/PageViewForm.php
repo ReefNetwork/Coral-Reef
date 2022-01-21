@@ -9,6 +9,8 @@
  * Copyright (c) 2022. Ree-jp(https://ree-jp.net)
  */
 
+namespace ree_jp\coral_reef\form;
+
 use bbo51dog\bboform\element\Dropdown;
 use bbo51dog\bboform\element\Label;
 use bbo51dog\bboform\form\ClosureCustomForm;
