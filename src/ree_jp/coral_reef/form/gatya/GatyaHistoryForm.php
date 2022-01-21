@@ -13,10 +13,10 @@ namespace ree_jp\coral_reef\form\gatya;
 
 use bbo51dog\bboform\element\ClosureButton;
 use bbo51dog\bboform\form\SimpleForm;
-use PageViewForm;
 use pocketmine\player\Player;
 use pocketmine\Server;
 use poggit\libasynql\SqlError;
+use ree_jp\coral_reef\form\PageViewForm;
 use ree_jp\coral_reef\gatya\items\SpecialItemService;
 use ree_jp\coral_reef\sql\SQLConst;
 use ree_jp\coral_reef\sql\SQLRepository;
