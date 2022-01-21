@@ -55,7 +55,7 @@ class GatyaHistoryForm
 
                 $item = SpecialItemService::getRenewItem($p->getXuid(), $row["value"], 0, null);
                 $history[] = "$historyCount |レア度 [$rare] : アイテム名 [" . $item?->getCustomName() . TextFormat::RESET . "]" .
-                    TextFormat::DARK_GRAY . "(" . date("y年m月d日 H時i分s秒", $row["time"]) . ").";
+                    TextFormat::DARK_GRAY . "(" . $row["time"] . ").";
                 $historyCount--;
             }
             PageViewForm::sendForm($p, "GatyaHistory -> $id", "最後に引いたReefToolは" . $historyCount - $lastReef . "回前です",
