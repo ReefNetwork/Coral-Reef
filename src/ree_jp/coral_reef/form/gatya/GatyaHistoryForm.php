@@ -58,7 +58,7 @@ class GatyaHistoryForm
                     TextFormat::DARK_GRAY . "(" . $row["time"] . ")" . TextFormat::RESET;
                 $historyCount--;
             }
-            PageViewForm::sendForm($p, "GatyaHistory -> $id", "最後に引いたReefToolは" . $historyCount - $lastReef . "回前です",
+            PageViewForm::sendForm($p, "GatyaHistory -> $id", "最後に引いたReefToolは" . count($rows) - $lastReef . "回前です",
                 $history, 100);
         }, function (SqlError $error) use ($p) {
             $p->sendMessage("エラーが発生しました");
