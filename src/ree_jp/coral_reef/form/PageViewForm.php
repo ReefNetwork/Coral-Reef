@@ -43,7 +43,7 @@ class PageViewForm
         $maxPage = count($contents);
         $pageList = [];
         for ($i = 1; $i <= $maxPage; $i++) {
-            $pageList[] = $i;
+            $pageList[] = "$i";
         }
 
         $content = $contents[$page];
