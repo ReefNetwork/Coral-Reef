@@ -345,7 +345,7 @@ class EventListener implements Listener
         }
         $fromLevelName = $ev->getFrom()->getWorld()->getFolderName();
         $toLevelName = $ev->getTo()->getWorld()->getFolderName();
-        $isWorldChange = $fromLevelName === $toLevelName;
+        $isWorldChange = $fromLevelName !== $toLevelName;
 
         if ($isWorldChange) {
             AccountService::updateFly($p, $ev->getTo()->world->getFolderName());
