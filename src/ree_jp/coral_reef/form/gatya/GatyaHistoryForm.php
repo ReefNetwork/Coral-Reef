@@ -42,7 +42,7 @@ class GatyaHistoryForm
 
     static function sendHistoryForm(Player $p, SQLRepository $repo, string $id): void
     {
-        $repo->getLog($p->getXuid(), $id, function (array $rows) use ($id, $p): void {
+        $repo->getLogNewest($p->getXuid(), $id, function (array $rows) use ($id, $p): void {
             $history = [];
             $historyCount = count($rows);
             $lastReef = 0;
@@ -55,7 +55,7 @@ class GatyaHistoryForm
 
                 $item = SpecialItemService::getRenewItem($p->getXuid(), $row["value"], 0, null);
                 $history[] = "$historyCount |レア度 [$rare] : アイテム名 [" . $item?->getCustomName() . TextFormat::RESET . "]" .
-                    TextFormat::DARK_GRAY . "(" . $row["time"] . ").";
+                    TextFormat::DARK_GRAY . "(" . $row["time"] . ")" . TextFormat::RESET;
                 $historyCount--;
             }
             PageViewForm::sendForm($p, "GatyaHistory -> $id", "最後に引いたReefToolは" . $historyCount - $lastReef . "回前です",

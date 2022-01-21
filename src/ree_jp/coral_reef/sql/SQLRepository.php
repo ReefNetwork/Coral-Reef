@@ -241,6 +241,11 @@ class SQLRepository
         $this->db->executeSelect('coral_reef.log.get.type', ['xuid' => intval($xuid), 'type' => $type], $func, $failure);
     }
 
+    public function getLogNewest(string $xuid, string $type, Closure $func, Closure $failure): void
+    {
+        $this->db->executeSelect("coral_reef.log.get.type_sort_newest", ["xuid" => intval($xuid), "type" => $type], $func, $failure);
+    }
+
     public function recordSession(string $xuid, SessionData $session): void
     {
         $this->db->executeGeneric("coral_reef.session.add", ["xuid" => $xuid, "server" => $this->server,

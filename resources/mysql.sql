@@ -330,6 +330,15 @@ FROM LOG
 WHERE xuid = :xuid
   AND type = :type;
 -- #            }
+-- #            { type_sort_newest
+-- #        :xuid int
+-- #        :type string
+SELECT *
+FROM LOG
+WHERE xuid = :xuid
+  AND type = :type
+ORDER BY time DESC;
+-- #            }
 -- #        }
 -- #    }
 -- #    { session
