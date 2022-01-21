@@ -52,7 +52,8 @@ class PageViewForm
             $contentString .= $string . "\n";
         }
 
-        $pageSelectElement = new Dropdown("表示したいページを選択してください" . TextFormat::DARK_GRAY . "($page/$maxPage ページ)", $pageList);
+        $pageSelectElement = new Dropdown("表示したいページを選択してください" . TextFormat::DARK_GRAY . "(" . $page + 1 .
+            "/$maxPage ページ)", $pageList);
         $form = new ClosureCustomForm(function (Player $p) use ($contents, $label, $title, $pageSelectElement): void {
             $nextPage = intval($pageSelectElement->getSelectedOption()) - 1;
             self::sendPageForm($p, $title, $label, $contents, $nextPage);

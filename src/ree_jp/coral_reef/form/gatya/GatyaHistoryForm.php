@@ -15,6 +15,7 @@ use bbo51dog\bboform\element\ClosureButton;
 use bbo51dog\bboform\form\SimpleForm;
 use pocketmine\player\Player;
 use pocketmine\Server;
+use pocketmine\utils\TextFormat;
 use poggit\libasynql\SqlError;
 use ree_jp\coral_reef\form\PageViewForm;
 use ree_jp\coral_reef\gatya\items\SpecialItemService;
@@ -43,12 +44,21 @@ class GatyaHistoryForm
     {
         $repo->getLog($p->getXuid(), $id, function (array $rows) use ($id, $p): void {
             $history = [];
+            $historyCount = count($rows);
+            $lastReef = 0;
             foreach ($rows as $row) {
                 $rare = $row["subtype"] ?? "不明";
-                $item = SpecialItemService::getRenewItem($p->getXuid(), $id, 0, null);
-                $history[] = "レア度 [$rare] : アイテム名 [" . $item?->getCustomName() . "]";
+                if ($rare === "reef_rare") {
+                    $rare = TextFormat::GREEN . $rare . TextFormat::RESET;
+                    if ($lastReef === 0) $lastReef = $historyCount;
+                }
+
+                $item = SpecialItemService::getRenewItem($p->getXuid(), $row["value"], 0, null);
+                $history[] = "$historyCount |レア度 [$rare] : アイテム名 [" . $item?->getCustomName() . "]";
+                $historyCount++;
             }
-            PageViewForm::sendForm($p, "GatyaHistory -> $id", "", $history, 100);
+            PageViewForm::sendForm($p, "GatyaHistory -> $id", "最後に引いたReefToolは" . $historyCount - $lastReef . "回前です",
+                $history, 100);
         }, function (SqlError $error) use ($p) {
             $p->sendMessage("エラーが発生しました");
             Server::getInstance()->getLogger()->error("[GatyaHistory] " . $p->getName() . "さんの処理中に" . $error->getErrorMessage());
