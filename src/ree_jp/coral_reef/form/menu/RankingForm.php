@@ -38,7 +38,7 @@ class RankingForm
                         $my = $ranking;
                     }
                     $equal++;
-                    $content[] = "$ranking 位: $user さん($exp)" . "\n";
+                    $content[] = "$ranking 位: $user さん($exp)";
                 }
                 $ranking += $equal;
             }

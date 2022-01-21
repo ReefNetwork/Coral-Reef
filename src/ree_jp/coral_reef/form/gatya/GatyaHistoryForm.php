@@ -44,9 +44,9 @@ class GatyaHistoryForm
         $repo->getLog($p->getXuid(), $id, function (array $rows) use ($id, $p): void {
             $history = [];
             foreach ($rows as $row) {
+                $rare = $row["subtype"] ?? "不明";
                 $item = SpecialItemService::getRenewItem($p->getXuid(), $id, 0, null);
-
-                $history[] = "レア度 [" . $row["subtype"] ?? "不明" . "] : アイテム名 [" . $item?->getCustomName() . "]";
+                $history[] = "レア度 [$rare] : アイテム名 [" . $item?->getCustomName() . "]";
             }
             PageViewForm::sendForm($p, "GatyaHistory -> $id", "", $history, 100);
         }, function (SqlError $error) use ($p) {

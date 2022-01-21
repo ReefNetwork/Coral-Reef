@@ -57,7 +57,7 @@ class PageViewForm
             $nextPage = intval($pageSelectElement->getSelectedOption()) - 1;
             self::sendPageForm($p, $title, $label, $contents, $nextPage);
         });
-        $form->setTitle($title)->addElements(new Label($label), new Label($contentString));
+        $form->setTitle($title)->addElements(new Label($label), new Label($contentString), $pageSelectElement);
         $p->sendForm($form);
     }
 }
