@@ -26,6 +26,7 @@ use pocketmine\event\entity\EntityTeleportEvent;
 use pocketmine\event\inventory\InventoryCloseEvent;
 use pocketmine\event\inventory\InventoryTransactionEvent;
 use pocketmine\event\Listener;
+use pocketmine\event\player\PlayerDropItemEvent;
 use pocketmine\event\player\PlayerGameModeChangeEvent;
 use pocketmine\event\player\PlayerInteractEvent;
 use pocketmine\event\player\PlayerItemConsumeEvent;
@@ -332,6 +333,18 @@ class EventListener implements Listener
         }
         if (LandService::protect($this->landStore, $this->accountStore, $p, $ev->getBlock()->getPosition(), null, true)) {
             $ev->cancel();
+        }
+    }
+
+    public function onDrop(PlayerDropItemEvent $ev): void
+    {
+        $p = $ev->getPlayer();
+        if (!in_array($p, $p->getInventory()->getViewers())) {
+            if (!$this->accountStore->hasValue($p->getXuid(), "allow_drop")) {
+                $this->accountStore->setValue($p->getXuid(), "allow_drop", 20 * 10);
+                $p->sendPopup("10秒以内にもう一度アイテムを落とそうとすると落とすことができます");
+                $ev->cancel();
+            }
         }
     }
 
