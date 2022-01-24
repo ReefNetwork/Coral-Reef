@@ -339,7 +339,7 @@ class EventListener implements Listener
     public function onDrop(PlayerDropItemEvent $ev): void
     {
         $p = $ev->getPlayer();
-        if (!in_array($p, $p->getInventory()->getViewers())) {
+        if ($p->getInventory()->getItemInHand()->equals($ev->getItem())) {
             if (!$this->accountStore->hasValue($p->getXuid(), "allow_drop")) {
                 $this->accountStore->setValue($p->getXuid(), "allow_drop", 20 * 10);
                 $p->sendPopup("10秒以内にもう一度アイテムを落とそうとすると落とすことができます");
