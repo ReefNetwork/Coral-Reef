@@ -81,7 +81,7 @@ class BreakService
     }
 
     /** @noinspection DuplicatedCode */
-    private static function silentBreak(World $world, Block $bl, Item $item = null, Player $p = null): void
+    static function silentBreak(World $world, Block $bl, Item $item = null, Player $p = null): void
     {
         $vector = $bl->getPosition()->floor();
 

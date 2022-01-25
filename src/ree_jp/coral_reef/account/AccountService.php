@@ -25,6 +25,7 @@ use ree_jp\coral_reef\quest\QuestManager;
 use ree_jp\coral_reef\session\SessionData;
 use ree_jp\coral_reef\skill\BreakSkill;
 use ree_jp\coral_reef\skill\SkillManager;
+use ree_jp\coral_reef\skill\TreeBreakService;
 use ree_jp\coral_reef\sql\SettingConst;
 use ree_jp\coral_reef\sql\SQLRepository;
 use ree_jp\coral_reef\task\ServerUpdateTask;
@@ -89,11 +90,11 @@ class AccountService
         }
 
         $session->breakBlock();
-        if ($store->hasValue($xuid, 'skill_active')) {
+        if ($store->hasValue($xuid, 'skill_active') | $store->hasValue($xuid, "tree_cut")) {
             MoneyService::addMoney($repo, $xuid, 1);
         } else {
-            MoneyService::addMoney($repo, $xuid, 10);
             $session->runSkill();
+            MoneyService::addMoney($repo, $xuid, 10);
 
             if ($skill instanceof BreakSkill && $p->isSurvival()) {
                 if (!$store->hasValue($xuid, 'skill_cool_time') && !($p->isSneaking() &&
@@ -105,6 +106,15 @@ class AccountService
                         $p->sendPopup("地面にスキルをは発動できません\n設定で変更できます");
                         return;
                     }
+
+                    $handItem = $p->getInventory()->getItemInHand();
+                    $handItemTag = $handItem->getNamedTag();
+                    if ($handItemTag->getByte(TreeBreakService::TREE_CUT, 0) === 1) {
+                        $store->setValue($xuid, "tree_cut");
+                        TreeBreakService::runBreak($p, $handItem, $bl->getPosition());
+                        $store->setValue($xuid, "tree_cut", 0);
+                    }
+
                     $store->setValue($xuid, 'skill_active');
                     SkillManager::skillActive($repo, $store, $p, $bl);
                     $store->setValue($xuid, 'skill_active', 0);

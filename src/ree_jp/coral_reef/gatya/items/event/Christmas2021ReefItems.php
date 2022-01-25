@@ -19,6 +19,7 @@ use pocketmine\item\Item;
 use pocketmine\item\VanillaItems;
 use pocketmine\utils\TextFormat;
 use ree_jp\coral_reef\gatya\items\ReefItems;
+use ree_jp\coral_reef\skill\TreeBreakService;
 
 class Christmas2021ReefItems extends ReefItems
 {
@@ -51,11 +52,13 @@ class Christmas2021ReefItems extends ReefItems
                 $item = VanillaItems::DIAMOND_SHOVEL();
                 $nbt = $item->getNamedTag();
                 $nbt->setString(self::REEF_SP_ITEM, self::SHOVEL);
+                $nbt->setByte(TreeBreakService::TREE_CUT, 1);
                 $item->setNamedTag($nbt);
                 $item->setCustomName(TextFormat::DARK_GREEN . "Christmas" . TextFormat::RED . "2021" .
                     TextFormat::GREEN . 'Reef' . TextFormat::GOLD . 'Shovel');
                 $item->addEnchantment(new EnchantmentInstance(VanillaEnchantments::EFFICIENCY(), 10));
                 $item->addEnchantment(new EnchantmentInstance(VanillaEnchantments::SILK_TOUCH(), 10));
+                $item->setLore(["使用時:木を一括破壊します"]);
                 break;
             case self::AXE:
                 $item = VanillaItems::DIAMOND_AXE();
@@ -81,7 +84,10 @@ class Christmas2021ReefItems extends ReefItems
                 return null;
         }
         $item->setUnbreakable();
-        $item->setLore(["使用時:水を凍らすブロックが雪に変わります"]);
+
+        $lore = $item->getLore();
+        $lore[] = "使用時:水を凍らすブロックが雪に変わります";
+        $item->setLore($lore);
 
         $nbt = $item->getNamedTag();
         $nbt->setInt("frozen_block", BlockLegacyIds::SNOW_BLOCK);
