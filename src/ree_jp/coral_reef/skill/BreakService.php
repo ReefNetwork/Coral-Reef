@@ -155,9 +155,4 @@ class BreakService
             $p->getXpManager()->addXp($xp);
         }
     }
-
-    static function updateBlock(World $world, Block $bl): void
-    {
-        $world->setBlock($bl->getPosition(), $bl);
-    }
 }
