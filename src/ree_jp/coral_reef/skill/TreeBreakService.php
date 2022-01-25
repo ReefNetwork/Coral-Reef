@@ -40,8 +40,8 @@ class TreeBreakService
             $count++;
             BreakService::silentBreak($p->getWorld(), $bl, $item, $p);
 
-            if ($count > 50) {
-                // 50以上は一括破壊できないように
+            if ($count > 80) {
+                // 80以上は一括破壊できないように
                 return;
             }
 
