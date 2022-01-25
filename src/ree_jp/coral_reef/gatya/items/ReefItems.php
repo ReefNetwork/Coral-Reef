@@ -65,7 +65,7 @@ class ReefItems
                 $item->setCustomName(TextFormat::GREEN . 'Reef' . TextFormat::GOLD . 'Axe');
                 $item->addEnchantment(new EnchantmentInstance(VanillaEnchantments::EFFICIENCY(), 10));
                 $item->addEnchantment(new EnchantmentInstance(VanillaEnchantments::SILK_TOUCH(), 10));
-                $item->setLore(["使用時:木を一括破壊します"]);
+                $item->setLore(["スキル発動時:木を一括破壊します"]);
                 break;
             case self::HOE:
                 $item = VanillaItems::DIAMOND_HOE();

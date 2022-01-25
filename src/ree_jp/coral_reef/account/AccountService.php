@@ -109,7 +109,7 @@ class AccountService
 
                     $handItem = $p->getInventory()->getItemInHand();
                     $handItemTag = $handItem->getNamedTag();
-                    if ($handItemTag->getByte(TreeBreakService::TREE_CUT, 0) === 1) {
+                    if (TreeBreakService::isTree($bl) && $handItemTag->getByte(TreeBreakService::TREE_CUT, 0) === 1) {
                         $store->setValue($xuid, "tree_cut");
                         TreeBreakService::runBreak($p, $handItem, $bl->getPosition());
                         $store->setValue($xuid, "tree_cut", 0);

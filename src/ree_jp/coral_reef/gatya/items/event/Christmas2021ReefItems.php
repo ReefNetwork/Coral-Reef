@@ -58,7 +58,7 @@ class Christmas2021ReefItems extends ReefItems
                     TextFormat::GREEN . 'Reef' . TextFormat::GOLD . 'Shovel');
                 $item->addEnchantment(new EnchantmentInstance(VanillaEnchantments::EFFICIENCY(), 10));
                 $item->addEnchantment(new EnchantmentInstance(VanillaEnchantments::SILK_TOUCH(), 10));
-                $item->setLore(["使用時:木を一括破壊します"]);
+                $item->setLore(["スキル発動時:木を一括破壊します"]);
                 break;
             case self::AXE:
                 $item = VanillaItems::DIAMOND_AXE();

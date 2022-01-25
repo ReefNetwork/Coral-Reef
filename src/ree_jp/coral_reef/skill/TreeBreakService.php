@@ -54,7 +54,7 @@ class TreeBreakService
         }
     }
 
-    private static function isTree(Block $bl): bool
+    static function isTree(Block $bl): bool
     {
         return in_array($bl->getId(), [BlockLegacyIds::LEAVES, BlockLegacyIds::LEAVES2, BlockLegacyIds::LOG, BlockLegacyIds::LOG2]);
     }
