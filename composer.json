@@ -17,7 +17,8 @@
     "sof3/libasynql": "4.0.*",
     "ree_jp_minecraft/invmenu": "4.3.*",
     "reef_network/stargate_atlantis": "1.0.1",
-    "ext-mbstring": "*"
+    "ext-mbstring": "*",
+    "ext-sockets": "*"
   },
   "repositories": [
     {
