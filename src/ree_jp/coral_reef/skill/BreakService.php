@@ -24,7 +24,6 @@ use pocketmine\item\LegacyStringToItemParser;
 use pocketmine\math\Vector3;
 use pocketmine\player\Player;
 use pocketmine\world\format\Chunk;
-use pocketmine\world\particle\BlockBreakParticle;
 use pocketmine\world\World;
 use ree_jp\coral_reef\account\SettingManager;
 use ree_jp\coral_reef\sql\SettingConst;
@@ -143,7 +142,7 @@ class BreakService
         }
 
         foreach ($affectedBlocks as $t) {
-            $world->addParticle($t->getPosition()->add(0.5, 0.5, 0.5), new BlockBreakParticle($t));
+//            $world->addParticle($t->getPosition()->add(0.5, 0.5, 0.5), new BlockBreakParticle($t));
             $tile = $world->getTile($t->getPosition());
             $tile?->onBlockDestroyed();
 
