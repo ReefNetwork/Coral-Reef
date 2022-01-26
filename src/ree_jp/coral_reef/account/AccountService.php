@@ -116,7 +116,7 @@ class AccountService
                     }
 
                     $store->setValue($xuid, 'skill_active');
-                    SkillManager::skillActive($repo, $store, $p, $bl);
+                    SkillManager::skillActive($store, $p, $bl);
                     $store->setValue($xuid, 'skill_active', 0);
                 }
             }
