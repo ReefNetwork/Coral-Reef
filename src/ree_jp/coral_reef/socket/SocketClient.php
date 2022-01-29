@@ -11,14 +11,15 @@
 
 namespace ree_jp\coral_reef\socket;
 
-use pocketmine\scheduler\ClosureTask;
-use pocketmine\scheduler\TaskHandler;
 use pocketmine\scheduler\TaskScheduler;
+use pocketmine\Server;
+use ree_jp\coral_reef\async\socket\ConnectionTask;
 
 class SocketClient
 {
-    private SocketConnection $client;
-    private TaskHandler $tickTask;
+    public SocketConnection $client;
+
+//    private TaskHandler $tickTask;
 
     public function __construct(private SocketHandler $handler, private TaskScheduler $scheduler, private string $address, private int $port, private int $tick)
     {
@@ -27,20 +28,7 @@ class SocketClient
 
     private function create(): void
     {
-        $this->client = new SocketConnection($this->address, $this->port);
-        $this->tickTask = $this->scheduler->scheduleRepeatingTask(new ClosureTask(
-            function (): void {
-                $content = $this->client->receive();
-                if ($content === false) {
-                    $this->reconnect();
-                    return;
-                }
-
-                if ($content !== "") {
-                    $this->handler->handle($content);
-                }
-            }
-        ), $this->tick);
+        Server::getInstance()->getAsyncPool()->submitTask(new ConnectionTask($this->address, $this->port, $this));
     }
 
     public function send(SocketData $data): bool
@@ -57,7 +45,7 @@ class SocketClient
 
     public function close(): void
     {
-        $this->tickTask->cancel();
+//        $this->tickTask->cancel();
         $this->client->close();
     }
 }

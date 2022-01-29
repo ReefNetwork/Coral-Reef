@@ -11,8 +11,6 @@
 
 namespace ree_jp\coral_reef\socket;
 
-use Exception;
-use ree_jp\coral_reef\CoralReefPlugin;
 use RuntimeException;
 use Socket;
 
@@ -23,15 +21,10 @@ class SocketConnection
     public function __construct(string $address, int $port)
     {
         $this->socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
-        try {
-            if (($this->socket === false) || !socket_connect($this->socket, $address, $port)) {
-                throw new RuntimeException(socket_strerror(socket_last_error()));
-            }
-            socket_set_nonblock($this->socket);
-        } catch (Exception $e) {
-            CoralReefPlugin::$plugin->getLogger()->critical("プロキシサーバーへ接続できませんでした");
-            CoralReefPlugin::$plugin->getLogger()->logException($e);
+        if (($this->socket === false) || !socket_connect($this->socket, $address, $port)) {
+            throw new RuntimeException(socket_strerror(socket_last_error()));
         }
+        socket_set_nonblock($this->socket);
     }
 
     public function send(string $data): bool
