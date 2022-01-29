@@ -126,7 +126,7 @@ class CoralReefPlugin extends PluginBase
         }), 15);
         $this->getScheduler()->scheduleRepeatingTask(new ClosureTask(function (): void {
             MoneyCache::purgeAll($this->sqlRepo);
-        }), 20);
+        }), 20 * 10);
     }
 
     private function loadWorlds(): void
