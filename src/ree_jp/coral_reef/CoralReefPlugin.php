@@ -94,7 +94,7 @@ class CoralReefPlugin extends PluginBase
         foreach ($this->getServer()->getOnlinePlayers() as $p) {
             $p->kick("サーバーを停止します", false);
         }
-        $this->socketClient->
+        $this->socketClient->close();
         $this->sqlRepo->close();
     }
 
