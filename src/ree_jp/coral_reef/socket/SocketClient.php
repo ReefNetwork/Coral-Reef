@@ -11,52 +11,48 @@
 
 namespace ree_jp\coral_reef\socket;
 
-use Exception;
 use pocketmine\scheduler\ClosureTask;
 use pocketmine\scheduler\TaskHandler;
-use raklib\generic\Socket;
-use ree_jp\coral_reef\CoralReefPlugin;
-use RuntimeException;
+use pocketmine\scheduler\TaskScheduler;
 
 class SocketClient
 {
-    private Socket|false $socket;
-
+    private SocketConnection $client;
     private TaskHandler $tickTask;
 
-    public function __construct(string $address, int $port, int $tick)
+    public function __construct(private SocketHandler $handler, private TaskScheduler $scheduler, private string $address, private int $port, private int $tick)
     {
-        $this->socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
-        try {
-            if (($this->socket === false) || !socket_connect($this->socket, $address, $port)) {
-                throw new RuntimeException(socket_strerror(socket_last_error()));
-            }
-            $this->send("yes");
-            socket_set_nonblock($this->socket);
-        } catch (Exception $e) {
-            CoralReefPlugin::$plugin->getLogger()->critical("プロキシサーバーへ接続できませんでした");
-            CoralReefPlugin::$plugin->getLogger()->logException($e);
-        }
-        $this->tickTask = CoralReefPlugin::$plugin->getScheduler()->scheduleRepeatingTask(new ClosureTask(
+        $this->client = new SocketConnection($address, $port);
+        $this->create();
+    }
+
+    private function create(): void
+    {
+        $this->client = new SocketConnection($this->address, $this->port);
+        $this->tickTask = $this->scheduler->scheduleRepeatingTask(new ClosureTask(
             function (): void {
-                $this->receive();
+                $content = $this->client->receive();
+                if ($content === false) {
+                    $this->reconnect();
+                    return;
+                }
+
+                if ($content !== "") {
+                    $this->handler->handle($content);
+                }
             }
-        ), $tick);
+        ), $this->tick);
     }
 
-    public function send(string $data): bool
+    public function reconnect(): void
     {
-        return socket_write($this->socket, $data, strlen($data)) !== false;
-    }
-
-    public function receive(): string
-    {
-        return socket_read($this->socket, 128);
+        $this->close();
+        $this->create();
     }
 
     public function close(): void
     {
         $this->tickTask->cancel();
-        socket_close($this->socket);
+        $this->client->close();
     }
 }
