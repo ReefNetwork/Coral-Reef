@@ -32,6 +32,8 @@ use ree_jp\coral_reef\money\MoneyCache;
 use ree_jp\coral_reef\quest\QuestListener;
 use ree_jp\coral_reef\session\SessionStore;
 use ree_jp\coral_reef\shop\ShopStore;
+use ree_jp\coral_reef\socket\SocketClient;
+use ree_jp\coral_reef\socket\SocketHandler;
 use ree_jp\coral_reef\sql\SQLRepository;
 use ree_jp\coral_reef\task\DataSaveTask;
 use ree_jp\coral_reef\task\EffectTask;
@@ -50,6 +52,8 @@ class CoralReefPlugin extends PluginBase
     private LandStore $landStore;
     private ShopStore $shopStore;
     private SessionStore $sessionStore;
+
+    private SocketClient $socketClient;
 
     public function onLoad(): void
     {
@@ -76,6 +80,10 @@ class CoralReefPlugin extends PluginBase
         $this->registerSchedules();
         $this->loadWorlds();
 
+        $handler = new SocketHandler();
+        $this->socketClient = new SocketClient($handler, $this->getScheduler(), $this->getConfig()->get(ConfigConst::SOCKET_SERVER_ADDRESS),
+            $this->getConfig()->get(ConfigConst::SOCKET_SERVER_PORT), $this->getConfig()->get(ConfigConst::SOCKET_RECEIVE_INTERVAL));
+
         $this->accountStore->updateUserNameList($this->sqlRepo);
         ReefItems::registerAll();
         $this->pluginInformation();
@@ -86,6 +94,7 @@ class CoralReefPlugin extends PluginBase
         foreach ($this->getServer()->getOnlinePlayers() as $p) {
             $p->kick("サーバーを停止します", false);
         }
+        $this->socketClient->
         $this->sqlRepo->close();
     }
 

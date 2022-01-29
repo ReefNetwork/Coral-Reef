@@ -22,7 +22,6 @@ class SocketClient
 
     public function __construct(private SocketHandler $handler, private TaskScheduler $scheduler, private string $address, private int $port, private int $tick)
     {
-        $this->client = new SocketConnection($address, $port);
         $this->create();
     }
 
@@ -42,6 +41,12 @@ class SocketClient
                 }
             }
         ), $this->tick);
+    }
+
+    public function send(SocketData $data): bool
+    {
+        $json = json_encode($data);
+        return ($json !== false) && $this->client->send($json);
     }
 
     public function reconnect(): void

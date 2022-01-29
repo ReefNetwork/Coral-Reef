@@ -27,7 +27,6 @@ class SocketConnection
             if (($this->socket === false) || !socket_connect($this->socket, $address, $port)) {
                 throw new RuntimeException(socket_strerror(socket_last_error()));
             }
-            $this->send("yes");
             socket_set_nonblock($this->socket);
         } catch (Exception $e) {
             CoralReefPlugin::$plugin->getLogger()->critical("プロキシサーバーへ接続できませんでした");

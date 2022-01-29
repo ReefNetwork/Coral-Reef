@@ -12,7 +12,10 @@
 namespace ree_jp\coral_reef;
 
 
-class ConfigConst
+interface ConfigConst
 {
     const SERVER_NAME = "server_0";
+    const SOCKET_SERVER_ADDRESS = "socket_server_address";
+    const SOCKET_SERVER_PORT = "socket_server_port";
+    const SOCKET_RECEIVE_INTERVAL = "socket_receive_interval";
 }
