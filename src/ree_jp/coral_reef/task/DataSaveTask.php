@@ -42,7 +42,10 @@ class DataSaveTask extends Task
     public function onRun(): void
     {
         --$this->timer;
-        switch ($this->timer % self::SAVE_INTERVAL) {
+        if (($this->timer % self::SAVE_INTERVAL) === 0) {
+            $this->dataSave();
+        }
+        switch ($this->timer % self::WORLD_SAVE_INTERNAL) {
             case 60:
                 Server::getInstance()->broadcastMessage(TextFormat::GRAY . "1分後にデータのセーブと地面に落ちているアイテムなどの削除を行います");
                 break;
@@ -55,10 +58,7 @@ class DataSaveTask extends Task
             case 0:
                 Server::getInstance()->broadcastMessage(TextFormat::GRAY . "データのセーブを行います\n数秒かかります...");
                 $start = microtime(true);
-                $this->dataSave();
-                if (($this->timer % self::WORLD_SAVE_INTERNAL) === 0) {
-                    $this->worldSave();
-                }
+                $this->worldSave();
                 $message = "データをセーブしました(" . round(microtime(true) - $start, 2) . "秒)";
                 Server::getInstance()->broadcastMessage(TextFormat::GRAY . $message);
                 self::startClearItem();
