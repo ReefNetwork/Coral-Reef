@@ -18,8 +18,9 @@ use ree_jp\coral_reef\socket\SocketConnection;
 
 class ConnectionTask extends AsyncTask
 {
-    public function __construct(private string $address, private int $port, private SocketClient $client)
+    public function __construct(private string $address, private int $port, SocketClient $client)
     {
+        $this->storeLocal("client", $client);
     }
 
     public function onRun(): void
@@ -30,10 +31,11 @@ class ConnectionTask extends AsyncTask
 
     public function onCompletion(): void
     {
-        if ($this->isCrashed()) {
+        $client = $this->fetchLocal("client");
+        if ($this->isCrashed() || (!$client instanceof SocketClient)) {
             CoralReefPlugin::$plugin->getLogger()->critical("プロキシサーバーへ接続できませんでした");
         } else {
-            $this->client->client = $this->getResult();
+            $client->connection = $this->getResult();
             CoralReefPlugin::$plugin->getLogger()->notice("プロキシサーバーへの接続を確立しました");
         }
     }

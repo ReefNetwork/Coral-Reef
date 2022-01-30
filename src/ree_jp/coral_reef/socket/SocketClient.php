@@ -17,7 +17,7 @@ use ree_jp\coral_reef\async\socket\ConnectionTask;
 
 class SocketClient
 {
-    public SocketConnection $client;
+    public SocketConnection $connection;
 
 //    private TaskHandler $tickTask;
 
@@ -34,7 +34,7 @@ class SocketClient
     public function send(SocketData $data): bool
     {
         $json = json_encode($data);
-        return ($json !== false) && $this->client->send($json);
+        return ($json !== false) && $this->connection->send($json);
     }
 
     public function reconnect(): void
@@ -46,6 +46,8 @@ class SocketClient
     public function close(): void
     {
 //        $this->tickTask->cancel();
-        $this->client->close();
+        if (isset($this->connection)) {
+            $this->connection->close();
+        }
     }
 }
