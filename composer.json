@@ -12,12 +12,14 @@
     "ext-pdo": "*",
     "ext-yaml": "*",
     "ext-json": "*",
+    "ext-mbstring": "*",
+    "ext-sockets": "*",
+    "ext-pthreads": "*",
     "pocketmine/pocketmine-mp": "4.0.*",
     "bbo51dog/bboform": "2.0.*",
     "sof3/libasynql": "4.0.*",
     "ree_jp_minecraft/invmenu": "4.3.*",
-    "ext-mbstring": "*",
-    "ext-sockets": "*"
+    "monolog/monolog": "^2.3"
   },
   "repositories": [
     {

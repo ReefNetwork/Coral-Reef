@@ -11,30 +11,40 @@
 
 namespace ree_jp\coral_reef\socket;
 
+use pocketmine\scheduler\ClosureTask;
+use pocketmine\scheduler\TaskHandler;
 use pocketmine\scheduler\TaskScheduler;
-use pocketmine\Server;
-use ree_jp\coral_reef\async\socket\ConnectionTask;
+use ree_jp\coral_reef\async\socket\ConnectionThread;
 
 class SocketClient
 {
-    public SocketConnection $connection;
+    public ConnectionThread $connection;
 
-//    private TaskHandler $tickTask;
+    private TaskHandler $tickTask;
 
-    public function __construct(private SocketHandler $handler, private TaskScheduler $scheduler, private string $address, private int $port, private int $tick)
+    public function __construct(SocketHandler $handler, private TaskScheduler $scheduler, private string $address, private int $port, private int $tick)
     {
         $this->create();
+        $this->tickTask = $this->scheduler->scheduleRepeatingTask(new ClosureTask(function () use ($handler): void {
+            while (!is_null($data = $this->connection->takeReceiveQueue())) {
+                $handler->handle($data);
+            }
+        }), $tick);
     }
 
     private function create(): void
     {
-        Server::getInstance()->getAsyncPool()->submitTask(new ConnectionTask($this->address, $this->port, $this));
+        $this->connection = new ConnectionThread($this->address, $this->port, $this->tick * 50000);
     }
 
     public function send(SocketData $data): bool
     {
         $json = json_encode($data);
-        return ($json !== false) && $this->connection->send($json);
+        if ($json !== false) {
+            $this->connection->addSendQueue($json);
+            return true;
+        }
+        return false;
     }
 
     public function reconnect(): void
@@ -45,9 +55,11 @@ class SocketClient
 
     public function close(): void
     {
-//        $this->tickTask->cancel();
+        $this->tickTask->cancel();
         if (isset($this->connection)) {
-            $this->connection->close();
+            // ソケットを閉じる処理は動機的に
+            $this->connection->isStop = true;
+            $this->connection->join();
         }
     }
 }
