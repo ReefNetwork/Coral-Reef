@@ -11,8 +11,6 @@
 
 namespace ree_jp\coral_reef\async\socket;
 
-use Monolog\Handler\StreamHandler;
-use Monolog\Logger;
 use RuntimeException;
 use Socket;
 use Thread;
@@ -32,11 +30,8 @@ class ConnectionThread extends Thread
         $this->start();
     }
 
-    public function onRun(): void
+    public function run(): void
     {
-        echo "aaaaaa";
-        $logger = new Logger("CoralReefSocket");
-        $logger->pushHandler(new StreamHandler("php://stdout", Logger::INFO));
         echo "ソケットサーバーへ接続中です...";
 
         $socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
@@ -53,13 +48,13 @@ class ConnectionThread extends Thread
             while ($this->sendQueue->count() > 0) {
                 $data = unserialize($this->sendQueue->shift());
                 if (!$this->send($socket, $data)) {
-                    $logger->warning("ソケットサーバーへのデータ転送に失敗しました" . $data);
+                    echo "ソケットサーバーへのデータ転送に失敗しました" . $data;
                 }
             }
 
             while (($data = $this->receive($socket)) !== "") {
                 if ($data === false) {
-                    $logger->warning("ソケットサーバーへのデータ受け取りに失敗しました");
+                    echo "ソケットサーバーへのデータ受け取りに失敗しました";
                     continue;
                 }
 
@@ -71,7 +66,7 @@ class ConnectionThread extends Thread
             }
         }
         $this->close($socket);
-        $logger->notice("ソケットサーバーへの接続を閉鎖しました");
+        echo "ソケットサーバーへの接続を閉鎖しました";
     }
 
     private function send(Socket $socket, string $data): bool
