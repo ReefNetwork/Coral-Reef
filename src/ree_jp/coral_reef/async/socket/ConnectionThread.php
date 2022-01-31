@@ -32,15 +32,14 @@ class ConnectionThread extends Thread
 
     public function run(): void
     {
-        echo "ソケットサーバーへ接続中です...";
+        echo "ソケットを準備中です...";
 
         $socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
         if (($socket === false) || !socket_connect($socket, $this->address, $this->port)) {
             throw new RuntimeException(socket_strerror(socket_last_error()));
         }
 
-        socket_set_nonblock($socket);
-        echo "ソケットサーバーへの接続が確立されました";
+        echo "ソケットの準備が完了しました";
 
         while (true) {
             usleep($this->mInterval);
@@ -52,12 +51,7 @@ class ConnectionThread extends Thread
                 }
             }
 
-            while (($data = $this->receive($socket)) !== "") {
-                if ($data === false) {
-                    echo "ソケットサーバーへのデータ受け取りに失敗しました";
-                    continue;
-                }
-
+            while (($data = $this->receive($socket)) !== false && $data !== "") {
                 $this->receiveQueue[] = serialize($data);
             }
 
