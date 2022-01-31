@@ -55,6 +55,9 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: composer
+        run: composer install --no-dev
+
       - name: build
         run: php -d phar.readonly=0 ./build/make-phar.php ${{ github.run_number }}-${GITHUB_REF##*/}
 
