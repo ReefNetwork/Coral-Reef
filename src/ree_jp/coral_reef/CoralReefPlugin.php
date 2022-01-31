@@ -89,13 +89,14 @@ class CoralReefPlugin extends PluginBase
         $this->pluginInformation();
     }
 
+    /** @noinspection PhpConditionAlreadyCheckedInspection */
     public function onDisable(): void
     {
         foreach ($this->getServer()->getOnlinePlayers() as $p) {
             $p->kick("サーバーを停止します", false);
         }
-        $this->socketClient->close();
-        $this->sqlRepo->close();
+        $this->sqlRepo?->close();
+        $this->socketClient?->close();
     }
 
     public function criticalError(string $detail): void
