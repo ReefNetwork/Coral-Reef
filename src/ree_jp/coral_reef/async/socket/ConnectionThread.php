@@ -32,7 +32,7 @@ class ConnectionThread extends Thread
 
     public function run(): void
     {
-        echo "ソケットを準備中です...";
+        $this->logging("ソケットを準備中です...");
 
         $socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
         if (($socket === false) || !socket_connect($socket, $this->address, $this->port)) {
@@ -40,7 +40,7 @@ class ConnectionThread extends Thread
         }
         socket_set_nonblock($socket);
 
-        echo "ソケットの準備が完了しました";
+        $this->logging("ソケットの準備が完了しました");
 
         while (true) {
             usleep($this->mInterval);
@@ -48,7 +48,7 @@ class ConnectionThread extends Thread
             while ($this->sendQueue->count() > 0) {
                 $data = unserialize($this->sendQueue->shift());
                 if (!$this->send($socket, $data)) {
-                    echo "ソケットサーバーへのデータ転送に失敗しました" . $data;
+                    $this->logging("ソケットサーバーへのデータ転送に失敗しました" . $data);
                 }
             }
 
@@ -61,7 +61,12 @@ class ConnectionThread extends Thread
             }
         }
         $this->close($socket);
-        echo "ソケットサーバーへの接続を閉鎖しました";
+        $this->logging("ソケットサーバーへの接続を閉鎖しました");
+    }
+
+    private function logging(string $message): void
+    {
+        echo "[CoralReefSocket] $message\n";
     }
 
     private function send(Socket $socket, string $data): bool
