@@ -56,7 +56,7 @@ class SocketClient
     public function close(): void
     {
         $this->tickTask->cancel();
-        if (isset($this->connection)) {
+        if (isset($this->connection) && $this->connection->isRunning()) {
             // ソケットを閉じる処理は動機的に
             $this->connection->isStop = true;
             $this->connection->join();
