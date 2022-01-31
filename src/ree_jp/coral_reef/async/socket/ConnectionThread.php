@@ -38,6 +38,7 @@ class ConnectionThread extends Thread
         if (($socket === false) || !socket_connect($socket, $this->address, $this->port)) {
             throw new RuntimeException(socket_strerror(socket_last_error()));
         }
+        socket_set_nonblock($socket);
 
         echo "ソケットの準備が完了しました";
 
