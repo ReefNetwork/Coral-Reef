@@ -34,9 +34,10 @@ class ConnectionThread extends Thread
 
     public function onRun(): void
     {
+        echo "aaaaaa";
         $logger = new Logger("CoralReefSocket");
         $logger->pushHandler(new StreamHandler("php://stdout", Logger::INFO));
-        $logger->notice("ソケットサーバーへ接続中です...");
+        echo "ソケットサーバーへ接続中です...";
 
         $socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
         if (($socket === false) || !socket_connect($socket, $this->address, $this->port)) {
@@ -44,7 +45,7 @@ class ConnectionThread extends Thread
         }
 
         socket_set_nonblock($socket);
-        $logger->notice("ソケットサーバーへの接続が確立されました");
+        echo "ソケットサーバーへの接続が確立されました";
 
         while (true) {
             usleep($this->mInterval);
