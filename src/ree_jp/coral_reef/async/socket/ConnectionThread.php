@@ -11,6 +11,7 @@
 
 namespace ree_jp\coral_reef\async\socket;
 
+use JetBrains\PhpStorm\Pure;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
 use RuntimeException;
@@ -24,10 +25,10 @@ class ConnectionThread extends Thread
     private Threaded $sendQueue;
     private Threaded $receiveQueue;
 
-    public function __construct(private string $address, private int $port, private int $mInterval)
+    #[Pure] public function __construct(private string $address, private int $port, private int $mInterval)
     {
-        $this->sendQueue[] = new Threaded();
-        $this->receiveQueue[] = new Threaded();
+        $this->sendQueue = new Threaded();
+        $this->receiveQueue = new Threaded();
     }
 
     public function onRun(): void
