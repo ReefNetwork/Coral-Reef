@@ -18,14 +18,15 @@ class MoneyService
 {
     static function getMoney(SQLRepository $repo, string $xuid, Closure $func): void
     {
-        MoneyCache::purge($repo, $xuid);
-        $repo->getMoney($xuid, function (array $rows) use ($func): void {
-            $row = array_shift($rows);
-            if (isset($row["money"])) {
-                $func($row["money"]);
-            } else {
-                $func(0);
-            }
+        MoneyCache::purge($repo, $xuid, function () use ($func, $xuid, $repo): void {
+            $repo->getMoney($xuid, function (array $rows) use ($func): void {
+                $row = array_shift($rows);
+                if (isset($row["money"])) {
+                    $func($row["money"]);
+                } else {
+                    $func(0);
+                }
+            });
         });
     }
 
