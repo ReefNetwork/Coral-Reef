@@ -6,10 +6,10 @@
  * CC    C oo  oo rr     aa  aaa lll RR  RR  eeeee  eeeee  ff
  *  CCCCC   oooo  rr      aaa aa lll RR   RR  eeeee  eeeee ff
  *
- * Copyright (c) 2021. Ree-jp(https://ree-jp.net)
+ * Copyright (c) 2021-2022. Ree-jp(https://ree-jp.net)
  */
 
-namespace ree_jp\coral_reef\form\menu;
+namespace ree_jp\coral_reef\form\skill;
 
 use bbo51dog\bboform\element\Button;
 use bbo51dog\bboform\element\ClosureButton;
@@ -22,7 +22,7 @@ use ree_jp\coral_reef\quest\QuestListener;
 use ree_jp\coral_reef\skill\BreakSkill;
 use ree_jp\coral_reef\skill\SkillManager;
 
-class SkillSelectForm
+class SkillSettingForm
 {
     static function sendForm(AccountStore $store, Player $p): void
     {
