@@ -1,0 +1,30 @@
+name: "Build and Upload"
+description: "build and upload"
+inputs:
+  build_info:
+    description: "build information"
+    required: true
+  upload_name:
+    description: "upload artifact name"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - run: php -d phar.readonly=0 ./build/make-phar.php ${{ inputs.build_info }}
+      shell: bash
+    - run: php -d phar.readonly=0 libasynql.phar ./build/CoralReef.phar "ree_jp\\coral_reef\\libs\\"
+      shell: bash
+
+    - run: wget https://poggit.pmmp.io/r/154019/InvMenu.phar -O InvMenu.phar
+      shell: bash
+    - run: php -d phar.readonly=0 InvMenu.phar ./build/CoralReef.phar "ree_jp\\coral_reef\\libs\\"
+      shell: bash
+
+    - name: upload
+      uses: actions/upload-artifact@v2
+      with:
+        name: ${{ inputs.upload_name }}
+        path: |
+          ./build/*
+          !./build/make-phar.php
