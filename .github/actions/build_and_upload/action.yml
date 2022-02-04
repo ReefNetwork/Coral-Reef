@@ -13,6 +13,9 @@ runs:
   steps:
     - run: php -d phar.readonly=0 ./build/make-phar.php ${{ inputs.build_info }}
       shell: bash
+
+    - run: wget https://poggit.pmmp.io/r/152920/libasynql.phar -O libasynql.phar
+      shell: bash
     - run: php -d phar.readonly=0 libasynql.phar ./build/CoralReef.phar "ree_jp\\coral_reef\\libs\\"
       shell: bash
 
