@@ -30,11 +30,19 @@ class SkillSettingForm
         $nowSkill = is_null($user->skill) ? 'なし' : $user->skill->name;
         $form = (new SimpleForm())
             ->setTitle("Menu -> Skill")
-            ->setText("現在のスキルは $nowSkill です")
-            ->addElement(new ClosureButton(
-                TextFormat::GREEN . "スキルなし", null, function (Player $p) use ($store) {
+            ->setText("現在のスキルは $nowSkill です");
+
+        $form->addElement(new ClosureButton("スキル設定", null,
+            function () use ($p): void {
+                self::sendSkillSettingForm($p);
+            }
+        ));
+        $form->addElement(new ClosureButton(
+            TextFormat::GREEN . "スキルなし", null,
+            function (Player $p) use ($store) {
                 self::sendSkillConfirmForm($store, $p, null);
-            }));
+            }
+        ));
 
         foreach (SkillManager::SKILLS as $skillId) {
             $skill = SkillManager::getSkill($skillId);
@@ -89,6 +97,21 @@ class SkillSettingForm
         );
         $form->setTitle("Skill -> Confirm")
             ->setText("スキルを$skillName に変更しますか?\nクールタイム: $coolTime 秒\n高さ: $height\n幅: $width\n奥行: $depth");
+        $p->sendForm($form);
+    }
+
+    static function sendSkillSettingForm(Player $p): void
+    {
+        $form = (new SimpleForm())
+            ->setTitle("Skill -> Setting")
+            ->setText("変更したい設定を選択してください");
+
+        $form->addElements(
+            new ClosureButton("クールタイム終了音", null, function () use ($p): void {
+                CoolTimeFinishSoundForm::sendForm($p);
+            })
+        );
+
         $p->sendForm($form);
     }
 }
