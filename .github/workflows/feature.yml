@@ -1,0 +1,27 @@
+name: Feature Merge
+
+on:
+  push:
+    branches:
+      - "feature/*"
+  workflow_dispatch:
+
+jobs:
+  merge_feature:
+    runs-on: ubuntu-latest
+    if: "contains(github.event.head_commit.message, '[feature]')"
+    outputs:
+      stable: ${{ steps.filter.outputs.plugin-yml }}
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Create pull request
+        id: pr
+        uses: repo-sync/pull-request@v2
+        with:
+          destination_branch: "master"
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          pr_title: "New Future ${GITHUB_REF##*/} into master"
+
+      - name: Merge pull request
+        run: gh pr merge ${{ steps.pr.outputs.pr_url }} --auto --rebase --delete-branch
