@@ -4,11 +4,6 @@ on:
   push:
   pull_request:
   workflow_dispatch:
-  workflow_run:
-    workflows:
-      - feature
-    types:
-      - completed
 
 jobs:
   build_debug:

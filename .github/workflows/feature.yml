@@ -21,7 +21,7 @@ jobs:
         with:
           destination_branch: "master"
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          pr_title: "New Future ${GITHUB_REF##*/} into master"
+          pr_title: "New Future ${GITHUB_REF##*/} [deploy]"
 
       - name: Merge pull request
         run: gh pr merge ${{ steps.pr.outputs.pr_url }} --auto --squash --delete-branch
