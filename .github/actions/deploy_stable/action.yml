@@ -1,0 +1,42 @@
+name: "Deploy Stable"
+description: "deploy"
+inputs:
+  artifact_name:
+    description: "deploy artifact name"
+    required: true
+    default: "CoralReef"
+
+runs:
+  using: "composite"
+  steps:
+    - run: mkdir ~/install_plugins
+      shell: bash
+    - name: download
+      uses: actions/download-artifact@v2
+      with:
+        name: ${{ inputs.artifact_name }}
+        path: install_plugins
+
+    - name: deploy seichi_1
+      uses: sand4rt/ftp-deployer@v1.3
+      with:
+        sftp: true
+        host: ${{ secrets.SEICHI_1_HOST }}
+        port: ${{ secrets.SEICHI_1_PORT}}
+        username: ${{ secrets.SEICHI_1_USERNAME }}
+        password: ${{ secrets.SEICHI_1_PASSWORD }}
+        remote_folder: /install_plugins/
+        local_folder: ./install_plugins/
+        cleanup: false
+
+    - name: deploy seichi_2
+      uses: sand4rt/ftp-deployer@v1.3
+      with:
+        sftp: true
+        host: ${{ secrets.SEICHI_2_HOST }}
+        port: ${{ secrets.SEICHI_2_PORT}}
+        username: ${{ secrets.SEICHI_2_USERNAME }}
+        password: ${{ secrets.SEICHI_2_PASSWORD }}
+        remote_folder: /install_plugins/
+        local_folder: ./install_plugins/
+        cleanup: false

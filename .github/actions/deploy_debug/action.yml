@@ -1,0 +1,30 @@
+name: "Deploy Debug"
+description: "deploy"
+inputs:
+  artifact_name:
+    description: "deploy artifact name"
+    required: true
+    default: "CoralReefDebug"
+
+runs:
+  using: "composite"
+  steps:
+    - run: mkdir ~/install_plugins
+      shell: bash
+    - name: download
+      uses: actions/download-artifact@v2
+      with:
+        name: ${{ inputs.artifact_name }}
+        path: install_plugins
+
+    - name: deploy debug
+      uses: sand4rt/ftp-deployer@v1.3
+      with:
+        sftp: true
+        host: ${{ secrets.DEBUG_HOST }}
+        port: ${{ secrets.DEBUG_PORT}}
+        username: ${{ secrets.DEBUG_USERNAME }}
+        password: ${{ secrets.DEBUG_PASSWORD }}
+        remote_folder: /install_plugins/
+        local_folder: ./install_plugins/
+        cleanup: false
