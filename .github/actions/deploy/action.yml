@@ -1,10 +1,21 @@
-name: "Deploy Debug"
+name: "Deploy"
 description: "deploy"
 inputs:
+  host:
+    description: ""
+    required: true
+  port:
+    description: ""
+    required: true
+  user:
+    description: ""
+    required: true
+  pass:
+    description: ""
+    required: true
   artifact_name:
     description: "deploy artifact name"
     required: true
-    default: "CoralReefDebug"
 
 runs:
   using: "composite"
@@ -17,14 +28,14 @@ runs:
         name: ${{ inputs.artifact_name }}
         path: install_plugins
 
-    - name: deploy debug
+    - name: deploy
       uses: sand4rt/ftp-deployer@v1.3
       with:
         sftp: true
-        host: ${{ secrets.DEBUG_HOST }}
-        port: ${{ secrets.DEBUG_PORT}}
-        username: ${{ secrets.DEBUG_USERNAME }}
-        password: ${{ secrets.DEBUG_PASSWORD }}
+        host: ${{ inputs.host }}
+        port: ${{ inputs.port }}
+        username: ${{ inputs.user }}
+        password: ${{ inputs.pass }}
         remote_folder: /install_plugins/
         local_folder: ./install_plugins/
         cleanup: false

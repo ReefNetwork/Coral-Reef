@@ -24,4 +24,10 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - uses: ./.github/actions/deploy_debug
+      - uses: ./.github/actions/deploy
+        with:
+          host: ${{ secrets.DEBUG_HOST }}
+          port: ${{ secrets.DEBUG_PORT}}
+          user: ${{ secrets.DEBUG_USERNAME }}
+          pass: ${{ secrets.DEBUG_PASSWORD }}
+          artifact_name: "CoralReefDebug"

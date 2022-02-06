@@ -63,4 +63,18 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - uses: ./.github/actions/deploy_stable
+      - uses: ./.github/actions/deploy
+        with:
+          host: ${{ secrets.SEICHI_1_HOST }}
+          port: ${{ secrets.SEICHI_1_PORT}}
+          user: ${{ secrets.SEICHI_1_USERNAME }}
+          pass: ${{ secrets.SEICHI_1_PASSWORD }}
+          artifact_name: "CoralReef"
+
+      - uses: ./.github/actions/deploy
+        with:
+          host: ${{ secrets.SEICHI_2_HOST }}
+          port: ${{ secrets.SEICHI_2_PORT}}
+          user: ${{ secrets.SEICHI_2_USERNAME }}
+          pass: ${{ secrets.SEICHI_2_PASSWORD }}
+          artifact_name: "CoralReef"
