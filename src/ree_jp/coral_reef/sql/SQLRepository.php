@@ -83,6 +83,7 @@ class SQLRepository
                 $this->accountStore->users[$account->xuid] = $account;
             } elseif (empty($arrayAccount)) { // データが存在しないとき新しくデータを作る
                 $this->accountStore->users[$xuid] = new UserAccount($xuid, $name, 0, null);
+                Server::getInstance()->broadcastMessage(TextFormat::AQUA . $name . "さんが初めてサーバーにログインしました");
             } else { // データ壊れてるよ
                 Server::getInstance()->getLogger()->warning($xuid . 'のデータの読み込みに失敗しました');
                 return;
