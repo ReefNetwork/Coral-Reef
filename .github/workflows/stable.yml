@@ -1,0 +1,80 @@
+name: Stable
+
+on:
+  push:
+    branches:
+      - "master"
+  workflow_dispatch:
+
+jobs:
+  stable_checker:
+    runs-on: ubuntu-latest
+    if: "!contains(github.event.head_commit.message, '[merge skip]')"
+    outputs:
+      stable: ${{ steps.filter.outputs.plugin-yml }}
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: dorny/paths-filter@v2
+        id: filter
+        with:
+          filters: |
+            plugin-yml:
+             - 'plugin.yml'
+
+  merge_stable:
+    runs-on: ubuntu-latest
+    needs: stable_checker
+    if: ${{ needs.stable_checker.outputs.stable == 'true' }}
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          ref: stable
+
+      - name: Merge master to stable
+        run: |
+          git config --global user.email "${{ github.actor }}@users.noreply.github.com"
+          git config --global user.name "${{ github.actor }}"
+          git fetch
+          git merge --allow-unrelated-histories origin/master
+
+      - name: Push
+        run: git push origin stable
+
+  build_stable:
+    runs-on: ubuntu-latest
+    needs: merge_stable
+    if: "!contains(github.event.head_commit.message, '[build skip]')"
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: ./.github/actions/build_and_upload
+        with:
+          build_info: ${{ github.run_number }}-stable
+          upload_name: CoralReef
+
+  deploy_stable:
+    runs-on: ubuntu-latest
+    needs: build_stable
+    if: "!contains(github.event.head_commit.message, '[deploy skip]')"
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: ./.github/actions/deploy
+        with:
+          host: ${{ secrets.SEICHI_1_HOST }}
+          port: ${{ secrets.SEICHI_1_PORT}}
+          user: ${{ secrets.SEICHI_1_USERNAME }}
+          pass: ${{ secrets.SEICHI_1_PASSWORD }}
+          artifact_name: "CoralReef"
+
+      - uses: ./.github/actions/deploy
+        with:
+          host: ${{ secrets.SEICHI_2_HOST }}
+          port: ${{ secrets.SEICHI_2_PORT}}
+          user: ${{ secrets.SEICHI_2_USERNAME }}
+          pass: ${{ secrets.SEICHI_2_PASSWORD }}
+          artifact_name: "CoralReef"

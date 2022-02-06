@@ -1,0 +1,41 @@
+name: "Deploy"
+description: "deploy"
+inputs:
+  host:
+    description: ""
+    required: true
+  port:
+    description: ""
+    required: true
+  user:
+    description: ""
+    required: true
+  pass:
+    description: ""
+    required: true
+  artifact_name:
+    description: "deploy artifact name"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - run: mkdir ~/install_plugins
+      shell: bash
+    - name: download
+      uses: actions/download-artifact@v2
+      with:
+        name: ${{ inputs.artifact_name }}
+        path: install_plugins
+
+    - name: deploy
+      uses: sand4rt/ftp-deployer@v1.3
+      with:
+        sftp: true
+        host: ${{ inputs.host }}
+        port: ${{ inputs.port }}
+        username: ${{ inputs.user }}
+        password: ${{ inputs.pass }}
+        remote_folder: /install_plugins/
+        local_folder: ./install_plugins/
+        cleanup: false

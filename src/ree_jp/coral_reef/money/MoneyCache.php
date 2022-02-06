@@ -33,6 +33,8 @@ class MoneyCache
         if (isset(self::$cache[$xuid])) {
             $repo->addMoney($xuid, self::$cache[$xuid], $func);
             unset(self::$cache[$xuid]);
+        } else {
+            $func();
         }
     }
 }
