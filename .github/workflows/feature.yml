@@ -24,4 +24,4 @@ jobs:
           pr_title: "New Future ${GITHUB_REF##*/} into master"
 
       - name: Merge pull request
-        run: gh pr merge ${{ steps.pr.outputs.pr_url }} --auto --rebase --delete-branch
+        run: gh pr merge ${{ steps.pr.outputs.pr_url }} --auto --squash --delete-branch
