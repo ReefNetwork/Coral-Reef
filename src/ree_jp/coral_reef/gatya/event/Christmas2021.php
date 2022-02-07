@@ -32,7 +32,7 @@ class Christmas2021
         $repo->getLog($xuid, SQLConst::LOG_GATYA_CHRISTMAS_2021, function (array $rows) use ($repo, $number, $p, $xuid) {
             $isFirst = true;
 
-            while ($resultLog = array_pop($rows)) {
+            while ($resultLog = array_shift($rows)) {
                 if ($resultLog["subtype"] === "reef_rare") {
                     $isFirst = false;
                     break;

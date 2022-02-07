@@ -42,7 +42,7 @@ class GatyaHistoryForm
 
     static function sendHistoryForm(Player $p, SQLRepository $repo, string $id): void
     {
-        $repo->getLogNewest($p->getXuid(), $id, function (array $rows) use ($id, $p): void {
+        $repo->getLog($p->getXuid(), $id, function (array $rows) use ($id, $p): void {
             $history = [];
             $historyCount = count($rows);
             $lastReef = 0;
