@@ -22,6 +22,7 @@ use pocketmine\nbt\tag\IntTag;
 class ConvertItems extends ReefItems
 {
     const MONEY_1000 = "money_1000";
+    const MONEY_10000 = "money_10000";
     const MONEY_100000 = "money_100000";
     const NORMAL_TICKETS_FRAGMENT = "normal_tickets_fragment";
     const HERBICIDE = "herbicide";
@@ -45,6 +46,16 @@ class ConvertItems extends ReefItems
                 $item->addEnchantment(new EnchantmentInstance(VanillaEnchantments::FLAME(), 1));
 
                 $item->setCustomName("1000円");
+                break;
+            case self::MONEY_10000:
+                $item = VanillaItems::GOLD_INGOT();
+
+                $nbt = $item->getNamedTag();
+                $nbt->setString(self::REEF_SP_ITEM, self::MONEY_10000);
+                $item->setNamedTag($nbt);
+                $item->addEnchantment(new EnchantmentInstance(VanillaEnchantments::FLAME(), 1));
+
+                $item->setCustomName("1万円");
                 break;
             case self::MONEY_100000:
                 $item = VanillaItems::GOLD_INGOT();
