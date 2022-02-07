@@ -19,6 +19,7 @@ use pocketmine\math\Vector3;
 use pocketmine\player\Player;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat;
+use RankingForm;
 use ree_jp\coral_reef\account\AccountService;
 use ree_jp\coral_reef\account\AccountStore;
 use ree_jp\coral_reef\CoralReefPlugin;
@@ -84,8 +85,8 @@ class MenuForm
                         Server::getInstance()->dispatchCommand($p, "reef-form land");
                     }),
                     new ClosureButton(
-                        "ランキング", null, function (Player $p) use ($repo) {
-                        RankingForm::sendForm($repo, $p);
+                        "ランキング", null, function (Player $p) use ($store, $repo) {
+                        RankingForm::sendForm($repo, $store, $p);
                     }),
                     new ClosureButton(
                         "ガチャ", null, function (Player $p) use ($repo) {
