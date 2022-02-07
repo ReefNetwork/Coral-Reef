@@ -85,8 +85,8 @@ class MenuForm
                         Server::getInstance()->dispatchCommand($p, "reef-form land");
                     }),
                     new ClosureButton(
-                        "ランキング", null, function (Player $p) use ($repo) {
-                        RankingForm::sendForm($repo, $p);
+                        "ランキング", null, function (Player $p) use ($store, $repo) {
+                        RankingForm::sendForm($repo, $store, $p);
                     }),
                     new ClosureButton(
                         "ガチャ", null, function (Player $p) use ($repo) {

@@ -12,12 +12,13 @@
 use bbo51dog\bboform\element\ClosureButton;
 use bbo51dog\bboform\form\SimpleForm;
 use pocketmine\player\Player;
+use ree_jp\coral_reef\account\AccountStore;
 use ree_jp\coral_reef\form\PageViewForm;
 use ree_jp\coral_reef\sql\SQLRepository;
 
 class RankingForm
 {
-    static function sendForm(SQLRepository $repo, Player $p): void
+    static function sendForm(SQLRepository $repo, AccountStore $store, Player $p): void
     {
         $form = (new SimpleForm())
             ->setTitle("Ranking")
@@ -28,9 +29,14 @@ class RankingForm
                     self::sendAllExperienceForm($repo, $p);
                 }
             ),
-            new ClosureButton("デイリー採掘量ランキング", null,
-                function () use ($p, $repo): void {
-                    self::sendDailyDigForm($repo, $p);
+            new ClosureButton("毎日採掘量ランキング", null,
+                function () use ($store, $p, $repo): void {
+                    DigRankingForm::sendDailyDigForm($repo, $store, $p);
+                }
+            ),
+            new ClosureButton("週間採掘量ランキング", null,
+                function () use ($store, $p, $repo): void {
+                    DigRankingForm::sendWeeklyDigForm($repo, $store, $p);
                 }
             )
         );
@@ -65,10 +71,5 @@ class RankingForm
             }
             PageViewForm::sendForm($p, "ランキング", "あなたは" . $my . "位です\n\n", $content, 100);
         });
-    }
-
-    static function sendDailyDigForm(SQLRepository $repo, Player $p): void
-    {
-
     }
 }
