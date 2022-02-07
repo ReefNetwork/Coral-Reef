@@ -20,6 +20,7 @@ use pocketmine\math\Vector3;
 use pocketmine\player\Player;
 use pocketmine\Server;
 use pocketmine\world\Position;
+use ree_jp\coral_reef\money\MoneyCache;
 use ree_jp\coral_reef\money\MoneyService;
 use ree_jp\coral_reef\quest\QuestManager;
 use ree_jp\coral_reef\session\SessionData;
@@ -63,6 +64,7 @@ class AccountService
             $account = $store->getUser($xuid);
             $account->save($repo);
         }
+        MoneyCache::purge($repo, $xuid);
 
         // フライを無効にする
         self::updateFly($p, $p->getWorld()->getFolderName(), false);
