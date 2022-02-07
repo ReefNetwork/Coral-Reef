@@ -11,7 +11,6 @@
 
 namespace ree_jp\coral_reef\sql;
 
-
 use Closure;
 use pocketmine\player\Player;
 use pocketmine\Server;
@@ -34,7 +33,7 @@ class SQLRepository
     public array $setting = [];
     public string $server;
 
-    public function __construct(private AccountStore $accountStore, CoralReefPlugin $plugin, string $path, string $server)
+    public function __construct(private AccountStore $accountStore, CoralReefPlugin $plugin, string $path)
     {
         $config = new Config($path . 'sql.yml');
         Server::getInstance()->getLogger()->info('[SQL] サーバーに接続中...');
@@ -54,7 +53,6 @@ class SQLRepository
 
         $this->db->waitAll();
         Server::getInstance()->getLogger()->info('[SQL] complete');
-        $this->server = $server;
     }
 
     public function close(): void
@@ -195,38 +193,38 @@ class SQLRepository
 
     public function getWarps(string $xuid, ?Closure $func): void
     {
-        $this->db->executeSelect('coral_reef.warp.get', ['xuid' => intval($xuid), 'server' => $this->server],
+        $this->db->executeSelect('coral_reef.warp.get', ['xuid' => intval($xuid), 'server' => CoralReefPlugin::$serverID],
             $func, $this->noticeByXUid($xuid, 'エラーが発生しました'));
     }
 
     public function addWarp(string $xuid, string $name, string $level, int $x, int $y, int $z): void
     {
         $this->db->executeInsert('coral_reef.warp.create',
-            ['xuid' => intval($xuid), 'name' => $name, 'server' => $this->server, 'level' => $level, 'x' => $x, 'y' => $y, 'z' => $z],
+            ['xuid' => intval($xuid), 'name' => $name, 'server' => CoralReefPlugin::$serverID, 'level' => $level, 'x' => $x, 'y' => $y, 'z' => $z],
             $this->noticeByXUid($xuid, 'ワード地点を作成しました'), $this->noticeByXUid($xuid, 'エラーが発生しました'));
     }
 
     public function deleteWarp(string $xuid, string $name): void
     {
-        $this->db->executeGeneric('coral_reef.warp.delete', ['xuid' => intval($xuid), 'name' => $name, 'server' => $this->server],
+        $this->db->executeGeneric('coral_reef.warp.delete', ['xuid' => intval($xuid), 'name' => $name, 'server' => CoralReefPlugin::$serverID],
             $this->noticeByXUid($xuid, 'ワード地点を削除しました'), $this->noticeByXUid($xuid, 'エラーが発生しました'));
     }
 
     public function loadProtectLand(Closure $func, Closure $failure): void
     {
-        $this->db->executeSelect('coral_reef.land.get', ['server' => $this->server], $func, $failure);
+        $this->db->executeSelect('coral_reef.land.get', ['server' => CoralReefPlugin::$serverID], $func, $failure);
     }
 
     public function addProtectLand(LandData $land, Closure $func, Closure $failure): void
     {
-        $this->db->executeInsert('coral_reef.land.create', ['xuid' => intval($land->xuid), 'name' => $land->name, 'server' => $this->server,
+        $this->db->executeInsert('coral_reef.land.create', ['xuid' => intval($land->xuid), 'name' => $land->name, 'server' => CoralReefPlugin::$serverID,
             'level' => $land->level, 'mx' => $land->aabb->maxX, 'sx' => $land->aabb->minX, 'mz' => $land->aabb->maxZ, 'sz' => $land->aabb->minZ],
             $func, $failure);
     }
 
     public function deleteProtectLand(LandData $land, Closure $func, Closure $failure): void
     {
-        $this->db->executeGeneric('coral_reef.land.delete', ['xuid' => intval($land->xuid), 'name' => $land->name, 'server' => $this->server],
+        $this->db->executeGeneric('coral_reef.land.delete', ['xuid' => intval($land->xuid), 'name' => $land->name, 'server' => CoralReefPlugin::$serverID],
             $func, $failure);
     }
 
@@ -244,7 +242,7 @@ class SQLRepository
 
     public function recordSession(string $xuid, SessionData $session): void
     {
-        $this->db->executeGeneric("coral_reef.session.add", ["xuid" => $xuid, "server" => $this->server,
+        $this->db->executeGeneric("coral_reef.session.add", ["xuid" => $xuid, "server" => CoralReefPlugin::$serverID,
             "join_time" => date(SQLConst::DATE_FORMAT, $session->joinTime), "quit_time" => date(SQLConst::DATE_FORMAT, $session->quitTime),
             "break_count" => $session->breakCount, "place_count" => $session->placeCount, "skill_count" => $session->skillCount]);
     }

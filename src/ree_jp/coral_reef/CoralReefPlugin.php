@@ -41,6 +41,7 @@ use ree_jp\coral_reef\task\ServerUpdateTask;
 class CoralReefPlugin extends PluginBase
 {
     static CoralReefPlugin $plugin;
+    static string $serverID;
 
     public bool $isDev = false;
     public bool $isMain = false;
@@ -54,19 +55,21 @@ class CoralReefPlugin extends PluginBase
     public function onLoad(): void
     {
         self::$plugin = $this;
-        $this->isDev = !str_contains($this->getDescription()->getVersion(), 'stable');
-        /** @noinspection SpellCheckingInspection */
-        $this->isMain = $this->getConfig()->get(ConfigConst::SERVER_NAME) === "seichi_1";
     }
 
     public function onEnable(): void
     {
+        self::$serverID = $this->getConfig()->get(ConfigConst::SERVER_NAME);
+        $this->isDev = !str_contains($this->getDescription()->getVersion(), 'stable');
+        /** @noinspection SpellCheckingInspection */
+        $this->isMain = self::$serverID === "seichi_1";
+
         if (!InvMenuHandler::isRegistered()) {
             InvMenuHandler::register($this);
         }
         date_default_timezone_set('Asia/Tokyo');
         $this->accountStore = new AccountStore();
-        $this->sqlRepo = new SQLRepository($this->accountStore, $this, $this->getDataFolder(), $this->getConfig()->get(ConfigConst::SERVER_NAME));
+        $this->sqlRepo = new SQLRepository($this->accountStore, $this, $this->getDataFolder());
         $this->landStore = new LandStore($this->sqlRepo);
         $this->shopStore = new ShopStore($this->getDataFolder());
         $this->sessionStore = new SessionStore();
