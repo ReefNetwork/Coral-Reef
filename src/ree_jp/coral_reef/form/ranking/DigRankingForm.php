@@ -9,6 +9,8 @@
  * Copyright (c) 2022. Ree-jp(https://ree-jp.net)
  */
 
+namespace ree_jp\coral_reef\form\ranking;
+
 use pocketmine\player\Player;
 use ree_jp\coral_reef\account\AccountStore;
 use ree_jp\coral_reef\form\PageViewForm;

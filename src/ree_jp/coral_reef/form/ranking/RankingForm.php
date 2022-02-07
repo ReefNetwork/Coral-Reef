@@ -9,6 +9,8 @@
  * Copyright (c) 2022. Ree-jp(https://ree-jp.net)
  */
 
+namespace ree_jp\coral_reef\form\ranking;
+
 use bbo51dog\bboform\element\ClosureButton;
 use bbo51dog\bboform\form\SimpleForm;
 use pocketmine\player\Player;

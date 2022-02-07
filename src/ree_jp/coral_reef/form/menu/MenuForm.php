@@ -24,6 +24,7 @@ use ree_jp\coral_reef\account\AccountService;
 use ree_jp\coral_reef\account\AccountStore;
 use ree_jp\coral_reef\CoralReefPlugin;
 use ree_jp\coral_reef\form\gatya\GatyaForm;
+use ree_jp\coral_reef\form\ranking\RankingForm;
 use ree_jp\coral_reef\form\skill\SkillSettingForm;
 use ree_jp\coral_reef\money\MoneyService;
 use ree_jp\coral_reef\quest\QuestListener;
