@@ -1,32 +1,46 @@
 # Coral Reef
-[![CI](https://github.com/ReefNetwork/Coral-Reef/actions/workflows/CI.yml/badge.svg)](https://github.com/ReefNetwork/Coral-Reef/actions/workflows/CI.yml)
-[![Discord](https://img.shields.io/discord/638760361369010177?logo=discord)](https://discord.gg/M4A6cak)
-# How to use
 
-### Config
+[![Build and Deploy](https://github.com/ReefNetwork/Coral-Reef/actions/workflows/build.yml/badge.svg)](https://github.com/ReefNetwork/Coral-Reef/actions/workflows/build.yml)
+[![Feature Merge](https://github.com/ReefNetwork/Coral-Reef/actions/workflows/feature.yml/badge.svg)](https://github.com/ReefNetwork/Coral-Reef/actions/workflows/feature.yml)
+[![Stable](https://github.com/ReefNetwork/Coral-Reef/actions/workflows/stable.yml/badge.svg)](https://github.com/ReefNetwork/Coral-Reef/actions/workflows/stable.yml)
+[![Discord](https://img.shields.io/discord/638760361369010177?logo=discord)](https://discord.gg/M4A6cak)
+
+Reef Server Plugin
+
+## Documents
+
+[GitHub Actions](docs/GitHubActions.md)
+
+## Config
 
 ```yaml
-mysqlHost: localhost #Mysqlのアドレス
-mysqlPassword: password #Mysqlのパスワード
-discordToken: token #DiscordBotのトーケン(結構長い)
-chatChannelId: 000000000000000000 #チャットの相互通信をするチャンネルのid
-logChannelId: 111111111111111111 #ログを送信するチャンネルのid
+server_0: seichi_1 #サーバーの区別ID
 ```
 
-### Mysql
+## MySQL
 
-データベース`CoralReef`と`CoralReefLog`の事前作成  
-データベース`CoralReef`と`CoralReefLog`に権限を持っているユーザー`pmmp`の作成
+データベースとユーザーの作成
 
 ```mysql
 CREATE DATABASE CoralReef;
-CREATE DATABASE CoralReefLog;
 CREATE USER pmmp IDENTIFIED BY 'password';
 GRANT ALL on CoralReef.* to pmmp;
-GRANT ALL on CoralReefLog.* to pmmp;
 ```
 
-# Composer
+### sql.yml
+
+```
+database:
+  type: mysql
+  mysql:
+    host: 127.0.0.1
+    username: pmmp
+    password: "password"
+    schema: CoralReef
+  worker-limit: 5
+```
+
+## Composer
 
 ```
 composer install
