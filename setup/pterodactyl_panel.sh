@@ -7,6 +7,7 @@
 #
 # Copyright (c) 2021-2021. Ree-jp(https://ree-jp.net)
 #
+# https://gist.github.com/ree-jp/1faab49201e183021a14c7e60e89f395
 
 for INSTALL_PLUGIN_PATH in ./install_plugins/*; do
   echo "find $INSTALL_PLUGIN_PATH"
@@ -16,4 +17,9 @@ for INSTALL_PLUGIN_PATH in ./install_plugins/*; do
     mv ./install_plugins/$INSTALL_PLUGIN ./plugins/$INSTALL_PLUGIN
   fi
 done
-exec ./bin/php7/bin/php ./PocketMine-MP.phar --no-wizard --disable-ansi
+if [ -f ./PocketMine-MP.phar ]; then
+  echo "Update PocketMine-MP"
+  mv server.phar old_server.phar
+  mv PocketMine-MP.phar server.phar
+fi
+exec ./bin/php7/bin/php ./server.phar --no-wizard --disable-ansi
