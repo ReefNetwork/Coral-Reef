@@ -20,7 +20,7 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - run: mkdir ~/install_plugins
+    - run: mkdir -p ~/install_plugins
       shell: bash
     - name: download
       uses: actions/download-artifact@v2
