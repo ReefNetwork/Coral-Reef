@@ -29,7 +29,7 @@ class ConvertItems extends ReefItems
 
     static function registerItems(): void
     {
-        foreach ([self::MONEY_1000, self::MONEY_100000, self::NORMAL_TICKETS_FRAGMENT, self::HERBICIDE] as $key) {
+        foreach ([self::MONEY_1000, self::MONEY_10000, self::MONEY_100000, self::NORMAL_TICKETS_FRAGMENT, self::HERBICIDE] as $key) {
             CreativeInventory::getInstance()->add(self::getItem(0, $key));
         }
     }
