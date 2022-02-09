@@ -313,28 +313,21 @@ class EventListener implements Listener
                 $this->accountStore->setValue($xuid, 'form_cool_time', 10);
                 ShopService::showShop($this->sqlRepo, $p, $this->shopStore, $ev->getBlock()->getPosition());
                 break;
+        }
+        if (in_array($ev->getBlock()->getId(),
+            [BlockLegacyIds::GRASS, BlockLegacyIds::DIRT, BlockLegacyIds::FRAME_BLOCK, BlockLegacyIds::CHEST, BlockLegacyIds::LECTERN])) {
+            if (LandService::protect($this->landStore, $this->accountStore, $p, $ev->getBlock()->getPosition(),
+                "このワールドでこのブロックに変更を加えることはできません")) {
+                $ev->cancel();
+                return;
+            }
+        }
 
-            case BlockLegacyIds::GRASS:
-            case BlockLegacyIds::DIRT:
-                if (LandService::protect($this->landStore, $this->accountStore, $p, $ev->getBlock()->getPosition(), "このワールドでブロックに変更を加えることはできません")) {
-                    $ev->cancel();
-                    return;
-                }
-        }
-        if (($ev->getBlock()->getId() === BlockLegacyIds::FRAME_BLOCK) &&
-            LandService::protect($this->landStore, $this->accountStore, $p, $ev->getBlock()->getPosition(), "このワールドで額縁を変更することはできません")) {
-            $ev->cancel();
-            return;
-        }
-        if (($ev->getBlock()->getId() === BlockLegacyIds::CHEST) &&
-            LandService::protect($this->landStore, $this->accountStore, $p, $ev->getBlock()->getPosition(), "このワールドでチェストを開くことはできません")) {
-            $ev->cancel();
-            return;
-        }
         if (LandService::protect($this->landStore, $this->accountStore, $p, $ev->getBlock()->getPosition(), null, true)) {
             $ev->cancel();
         }
     }
+
 
     public function onDrop(PlayerDropItemEvent $ev): void
     {
