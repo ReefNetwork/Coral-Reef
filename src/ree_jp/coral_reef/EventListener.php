@@ -16,9 +16,11 @@ namespace ree_jp\coral_reef;
 use Exception;
 use pocketmine\block\BlockLegacyIds;
 use pocketmine\block\Flowable;
+use pocketmine\block\Liquid;
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\block\BlockBurnEvent;
 use pocketmine\event\block\BlockPlaceEvent;
+use pocketmine\event\block\BlockSpreadEvent;
 use pocketmine\event\block\BlockUpdateEvent;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\event\entity\EntityDamageEvent;
@@ -26,6 +28,9 @@ use pocketmine\event\entity\EntityTeleportEvent;
 use pocketmine\event\inventory\InventoryCloseEvent;
 use pocketmine\event\inventory\InventoryTransactionEvent;
 use pocketmine\event\Listener;
+use pocketmine\event\player\PlayerBucketEmptyEvent;
+use pocketmine\event\player\PlayerBucketEvent;
+use pocketmine\event\player\PlayerBucketFillEvent;
 use pocketmine\event\player\PlayerDropItemEvent;
 use pocketmine\event\player\PlayerGameModeChangeEvent;
 use pocketmine\event\player\PlayerInteractEvent;
@@ -215,6 +220,37 @@ class EventListener implements Listener
     public function onPlaceMonitor(BlockPlaceEvent $ev): void
     {
         $this->sessionStore->getSessionData($ev->getPlayer()->getXuid())->placeBlock();
+    }
+
+    public function onSpread(BlockSpreadEvent $ev)
+    {
+        if ($ev->getSource() instanceof Liquid || in_array($ev->getSource()->getPosition()->getWorld()->getFolderName(), LandService::LOBBY_WORLD)) {
+            $ev->cancel();
+        }
+    }
+
+    public function onBucketFill(PlayerBucketFillEvent $ev)
+    {
+        $this->onBucket($ev);
+    }
+
+    public function onBucketEmpty(PlayerBucketEmptyEvent $ev)
+    {
+        $this->onBucket($ev);
+    }
+
+    private function onBucket(PlayerBucketEvent $ev)
+    {
+        $p = $ev->getPlayer();
+        if ($this->accountStore->hasValue($p, "wait_action")) {
+            $ev->cancel();
+            return;
+        }
+
+        if (LandService::protect($this->landStore, $this->accountStore, $p, $ev->getBlockClicked()->getPosition(),
+            "このワールドでバケツを使用することはできません", false, true)) {
+            $ev->cancel();
+        }
     }
 
     public function onUpdate(BlockUpdateEvent $ev)
