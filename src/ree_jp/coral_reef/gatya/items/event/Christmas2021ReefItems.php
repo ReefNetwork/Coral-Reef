@@ -52,23 +52,23 @@ class Christmas2021ReefItems extends ReefItems
                 $item = VanillaItems::DIAMOND_SHOVEL();
                 $nbt = $item->getNamedTag();
                 $nbt->setString(self::REEF_SP_ITEM, self::SHOVEL);
-                $nbt->setByte(TreeBreakService::TREE_CUT, 1);
                 $item->setNamedTag($nbt);
                 $item->setCustomName(TextFormat::DARK_GREEN . "Christmas" . TextFormat::RED . "2021" .
                     TextFormat::GREEN . 'Reef' . TextFormat::GOLD . 'Shovel');
                 $item->addEnchantment(new EnchantmentInstance(VanillaEnchantments::EFFICIENCY(), 10));
                 $item->addEnchantment(new EnchantmentInstance(VanillaEnchantments::SILK_TOUCH(), 10));
-                $item->setLore(["スキル発動時:木を一括破壊します"]);
                 break;
             case self::AXE:
                 $item = VanillaItems::DIAMOND_AXE();
                 $nbt = $item->getNamedTag();
                 $nbt->setString(self::REEF_SP_ITEM, self::AXE);
+                $nbt->setByte(TreeBreakService::TREE_CUT, 1);
                 $item->setNamedTag($nbt);
                 $item->setCustomName(TextFormat::DARK_GREEN . "Christmas" . TextFormat::RED . "2021" .
                     TextFormat::GREEN . 'Reef' . TextFormat::GOLD . 'Axe');
                 $item->addEnchantment(new EnchantmentInstance(VanillaEnchantments::EFFICIENCY(), 10));
                 $item->addEnchantment(new EnchantmentInstance(VanillaEnchantments::SILK_TOUCH(), 10));
+                $item->setLore(["スキル発動時:木を一括破壊します"]);
                 break;
             case self::HOE:
                 $item = VanillaItems::DIAMOND_HOE();
