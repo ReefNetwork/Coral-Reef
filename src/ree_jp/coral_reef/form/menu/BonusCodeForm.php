@@ -40,20 +40,24 @@ class BonusCodeForm
     static function bonusCode(SQLRepository $repo, Player $p, string $code): void
     {
         switch ($code) {
-            case "2022":
+            case "welcome":
                 self::useCode($repo, $p, $code, function () use ($repo, $p): void {
-                    $p->sendMessage(TextFormat::GREEN . "これからもReefServerをよろしくお願いいたします");
-                    $p->sendMessage(TextFormat::AQUA . "ガチャチケットを" . TextFormat::RED . "10枚" . TextFormat::AQUA . "受け取りました");
-                    GatyaManager::addTicket($repo, $p->getXuid(), SQLConst::TICKETS_NORMAL, 10);
+                    $p->sendMessage(TextFormat::GREEN . "ReefServerへようこそ");
+                    $p->sendMessage(TextFormat::AQUA . "ガチャチケットを" . TextFormat::RED . "3枚" . TextFormat::AQUA . "受け取りました");
+                    GatyaManager::addTicket($repo, $p->getXuid(), SQLConst::TICKETS_NORMAL, 3);
                 });
                 break;
-            case "cyclone200m":
+            case "lobby":
                 self::useCode($repo, $p, $code, function () use ($repo, $p): void {
-                    $p->sendMessage(TextFormat::GREEN . "Cyclone0849さんの経験値量が2億を超えました!!!!おめでとう!!!");
-                    $p->sendMessage(TextFormat::AQUA . "ガチャチケットを" . TextFormat::RED . "2枚" . TextFormat::AQUA . "受け取りました");
-                    GatyaManager::addTicket($repo, $p->getXuid(), SQLConst::TICKETS_NORMAL, 2);
-                    $p->sendMessage(TextFormat::RED . "クリスマスガチャチケットを" . TextFormat::RED . "2枚" . TextFormat::AQUA . "受け取りました");
-                    GatyaManager::addTicket($repo, $p->getXuid(), SQLConst::TICKETS_CHRISTMAS_2021, 2);
+                    $p->sendMessage(TextFormat::AQUA . "ガチャチケットを" . TextFormat::RED . "1枚" . TextFormat::AQUA . "受け取りました");
+                    GatyaManager::addTicket($repo, $p->getXuid(), SQLConst::TICKETS_NORMAL, 1);
+                });
+                break;
+            case "discord-partner":
+                self::useCode($repo, $p, $code, function () use ($repo, $p): void {
+                    $p->sendMessage(TextFormat::DARK_PURPLE . "Discordサーバーに入って頂きありがとうございます");
+                    $p->sendMessage(TextFormat::AQUA . "ガチャチケットを" . TextFormat::RED . "3枚" . TextFormat::AQUA . "受け取りました");
+                    GatyaManager::addTicket($repo, $p->getXuid(), SQLConst::TICKETS_NORMAL, 3);
                 });
                 break;
             default:
