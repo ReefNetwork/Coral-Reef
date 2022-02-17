@@ -139,7 +139,7 @@ class CoralReefPlugin extends PluginBase
 
     private function registerRecipe(): void
     {
-        foreach ([ItemIds::COAL_ORE => VanillaItems::COAL(), ItemIds::IRON_ORE => VanillaItems::IRON_INGOT(), ItemIds::GOLD_ORE, VanillaItems::GOLD_INGOT(),
+        foreach ([ItemIds::COAL_ORE => VanillaItems::COAL(), ItemIds::IRON_ORE => VanillaItems::IRON_INGOT(), ItemIds::GOLD_ORE => VanillaItems::GOLD_INGOT(),
                      ItemIds::DIAMOND_ORE => VanillaItems::DIAMOND(), ItemIds::EMERALD_ORE, VanillaItems::EMERALD()] as $oreID => $result) {
             $ore = ItemFactory::getInstance()->get($oreID);
             $result->setCount(8);
