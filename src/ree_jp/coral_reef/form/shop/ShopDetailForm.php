@@ -58,18 +58,18 @@ class ShopDetailForm
         $isStorage = new Toggle("直接ストレージ内にアイテムをいれますか?");
 
         $form = (new ClosureCustomForm(function (Player $p) use ($amountInput, $isSlide, $isStorage, $store, $repo, $shop, $amountSlide): void {
-            $p->sendForm((new ModalForm(new ClosureButton(self::replaceOrderType($shop->orderType) . "する", null,
-                function (Player $p) use ($amountInput, $isSlide, $isStorage, $store, $repo, $amountSlide, $shop): void {
-                    if ($isSlide) {
-                        $amount = $amountSlide->getValue();
-                    } else {
-                        $amount = intval($amountInput->getValue());
-                        if ($amount <= 0) {
-                            $p->sendMessage("0以下は指定できません");
-                            return;
-                        }
-                    }
+            if ($isSlide) {
+                $amount = $amountSlide->getValue();
+            } else {
+                $amount = intval($amountInput->getValue());
+                if ($amount <= 0) {
+                    $p->sendMessage("0以下は指定できません");
+                    return;
+                }
+            }
 
+            $p->sendForm((new ModalForm(new ClosureButton(self::replaceOrderType($shop->orderType) . "する", null,
+                function (Player $p) use ($amount, $isStorage, $store, $repo, $shop): void {
                     switch ($shop->orderType) {
                         case "buy":
                             ShopService::buy($repo, $store, $shop, $p, $amount, $isStorage->getValue());
@@ -83,7 +83,7 @@ class ShopDetailForm
                 }), new ClosureButton("戻る", null, function (Player $p) use ($store, $repo, $shop): void {
                 self::sendForm($repo, $store, $p, $shop);
             })))->setTitle("Shop -> Confirm")->setText("本当にこのアイテムを" . self::replaceOrderType($shop->orderType) . "しますか?\n" .
-                self::replacePaymentType("金額\n" . $shop->payment["type"] . $shop->payment["amount"] * $amountSlide->getValue())));
+                self::replacePaymentType("金額\n" . $shop->payment["type"] . $shop->payment["amount"] * $amount)));
 
         }))->setTitle("Shop")->addElement(new Label(self::replacePaymentType($text) . $itemString));
 
