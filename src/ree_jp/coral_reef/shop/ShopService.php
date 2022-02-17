@@ -22,6 +22,7 @@ use ree_jp\coral_reef\gatya\GatyaManager;
 use ree_jp\coral_reef\money\MoneyService;
 use ree_jp\coral_reef\sql\SQLConst;
 use ree_jp\coral_reef\sql\SQLRepository;
+use Throwable;
 
 class ShopService
 {
@@ -51,13 +52,18 @@ class ShopService
                     if ($p->getInventory()->canAddItem($item) && !$isStorage) {
                         $p->getInventory()->addItem($item);
                     } else {
-                        /**
-                         * @noinspection PhpUndefinedNamespaceInspection
-                         * @noinspection PhpUndefinedClassInspection
-                         * @noinspection PhpFullyQualifiedNameUsageInspection
-                         */
-                        \ree_jp\stackStorage\api\StackStorageAPI::$instance->add($p->getXuid(), $item);
-                        $isNoInv = false | $isStorage;
+                        try {
+                            /**
+                             * @noinspection PhpUndefinedNamespaceInspection
+                             * @noinspection PhpUndefinedClassInspection
+                             * @noinspection PhpFullyQualifiedNameUsageInspection
+                             */
+                            \ree_jp\stackStorage\api\StackStorageAPI::$instance->add($p->getXuid(), $item);
+                            $isNoInv = false | $isStorage;
+                        } catch (Throwable) {
+                            $p->sendMessage("ストレージにアクセスできなかったためアイテムをドロップしました");
+                            $p->dropItem($item);
+                        }
                     }
                 }
                 $count--;
