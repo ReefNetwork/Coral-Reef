@@ -139,6 +139,14 @@ class MenuForm
                     "整地ワールド2", null, function (Player $p) {
                     AccountService::teleport($p, "main_2");
                 }),
+                new ClosureButton(
+                    "よくある質問", null, function (Player $p) {
+                    if (CoralReefPlugin::$plugin->isMain) {
+                        AccountService::teleport($p, "lobby", new Vector3(-7, 5, 328));
+                    } else {
+                        $p->sendMessage("よくある質問は整地サーバー1のみです");
+                    }
+                }),
             );
         $p->sendForm($form);
     }
