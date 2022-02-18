@@ -141,14 +141,16 @@ class CoralReefPlugin extends PluginBase
     {
         $this->getServer()->getCraftingManager()->registerShapedRecipe(new ShapedRecipe(["AAA", "ABA", "AAA"],
             ["A" => ItemFactory::getInstance()->get(ItemIds::IRON_ORE), "B" => VanillaItems::COAL()], [VanillaItems::IRON_INGOT()]));
-        foreach ([ItemIds::COAL_ORE => VanillaItems::COAL(), ItemIds::GOLD_ORE => VanillaItems::GOLD_INGOT(),
-                     ItemIds::DIAMOND_ORE => VanillaItems::DIAMOND(), ItemIds::EMERALD_ORE => VanillaItems::EMERALD()] as $oreID => $result) {
-            $ore = ItemFactory::getInstance()->get($oreID);
-            $result->setCount(8);
-            var_dump($ore->getName() . ":" . $result->getName());
-            $this->getServer()->getCraftingManager()->registerShapedRecipe(new ShapedRecipe(["AAA", "ABA", "AAA"], ["A" => $ore, "B" => VanillaItems::COAL()], [$result]));
-            $this->getServer()->getCraftingManager()->registerShapedRecipe(new ShapedRecipe(["AAA", "ABA", "AAA"], ["A" => $ore, "B" => VanillaItems::CHARCOAL()], [$result]));
-        }
+        $this->getServer()->getCraftingManager()->registerShapedRecipe(new ShapedRecipe(["AAA", "ABA", "AAA"],
+            ["A" => ItemFactory::getInstance()->get(ItemIds::GOLD_ORE), "B" => VanillaItems::CHARCOAL()], [VanillaItems::GOLD_INGOT()]));
+//        foreach ([ItemIds::COAL_ORE => VanillaItems::COAL(), ItemIds::IRON_ORE => VanillaItems::IRON_INGOT(), ItemIds::GOLD_ORE => VanillaItems::GOLD_INGOT(),
+//                     ItemIds::DIAMOND_ORE => VanillaItems::DIAMOND(), ItemIds::EMERALD_ORE => VanillaItems::EMERALD()] as $oreID => $result) {
+//            $ore = ItemFactory::getInstance()->get($oreID);
+//            $result->setCount(8);
+//            var_dump($ore->getName() . ":" . $result->getName());
+//            $this->getServer()->getCraftingManager()->registerShapedRecipe(new ShapedRecipe(["AAA", "ABA", "AAA"], ["A" => $ore, "B" => VanillaItems::COAL()], [$result]));
+//            $this->getServer()->getCraftingManager()->registerShapedRecipe(new ShapedRecipe(["AAA", "ABA", "AAA"], ["A" => $ore, "B" => VanillaItems::CHARCOAL()], [$result]));
+//        }
     }
 
     private function loadWorlds(): void
