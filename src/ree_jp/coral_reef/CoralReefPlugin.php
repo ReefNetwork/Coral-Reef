@@ -12,9 +12,8 @@
 namespace ree_jp\coral_reef;
 
 use muqsit\invmenu\InvMenuHandler;
+use pocketmine\block\VanillaBlocks;
 use pocketmine\crafting\ShapedRecipe;
-use pocketmine\item\ItemFactory;
-use pocketmine\item\ItemIds;
 use pocketmine\item\VanillaItems;
 use pocketmine\plugin\PluginBase;
 use pocketmine\scheduler\ClosureTask;
@@ -140,9 +139,9 @@ class CoralReefPlugin extends PluginBase
     private function registerRecipe(): void
     {
         $this->getServer()->getCraftingManager()->registerShapedRecipe(new ShapedRecipe(["AAA", "ABA", "AAA"],
-            ["A" => ItemFactory::getInstance()->get(ItemIds::IRON_ORE), "B" => VanillaItems::COAL()], [VanillaItems::IRON_INGOT()]));
-        $this->getServer()->getCraftingManager()->registerShapedRecipe(new ShapedRecipe(["AAA", "ABA", "AAA"],
-            ["A" => ItemFactory::getInstance()->get(ItemIds::GOLD_ORE), "B" => VanillaItems::CHARCOAL()], [VanillaItems::GOLD_INGOT()]));
+            ["A" => VanillaBlocks::IRON_ORE()->asItem(), "B" => VanillaItems::COAL()], [VanillaItems::IRON_INGOT()]));
+//        $this->getServer()->getCraftingManager()->registerShapedRecipe(new ShapedRecipe(["AAA", "ABA", "AAA"],
+//            ["A" => ItemFactory::getInstance()->get(ItemIds::GOLD_ORE), "B" => VanillaItems::CHARCOAL()], [VanillaItems::GOLD_INGOT()]));
 //        foreach ([ItemIds::COAL_ORE => VanillaItems::COAL(), ItemIds::IRON_ORE => VanillaItems::IRON_INGOT(), ItemIds::GOLD_ORE => VanillaItems::GOLD_INGOT(),
 //                     ItemIds::DIAMOND_ORE => VanillaItems::DIAMOND(), ItemIds::EMERALD_ORE => VanillaItems::EMERALD()] as $oreID => $result) {
 //            $ore = ItemFactory::getInstance()->get($oreID);
