@@ -46,6 +46,10 @@ class ShopService
         $xuid = $p->getXuid();
         self::pay($repo, $store, $shop, $xuid, $count, true, function () use ($isStorage, $shop, $repo, $xuid, $p, $count): void {
             $items = $shop->getItems();
+            if (is_null($items)) {
+                $p->sendMessage("エラーが発生しました");
+                return;
+            }
             $isNoInv = true;
             while ($count > 0) {
                 foreach ($items as $item) {
