@@ -3,12 +3,14 @@ main: ree_jp\coral_reef\CoralReefPlugin
 api: 4.0.0
 author: Ree-jp
 website: https://reef.ree-jp.net/
-version: 1.1.9
+version: 1.1.10
 depend:
   - BboForm
   - StackStorage
 permissions:
   coral_reef.command.menu:
+    default: true
+  coral_reef.command.block_log:
     default: true
   coral_reef.command.trash:
     default: true
