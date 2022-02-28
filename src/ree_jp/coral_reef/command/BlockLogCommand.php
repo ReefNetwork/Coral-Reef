@@ -57,8 +57,8 @@ class BlockLogCommand extends Command implements PluginOwned
                 PageViewForm::sendForm($sender, "BlockLog",
                     "ブロックの破壊、設置ログです\n\nワールド名: {$sender->getWorld()->getFolderName()}\n座標: $args[0]:$args[1]:$args[2]", $list, 50);
             }, null);
-        } catch (Throwable) {
-            $sender->sendMessage("ログを取得出来ませんでした");
+        } catch (Throwable $e) {
+            $sender->sendMessage("ログを取得出来ませんでした" . $e->getTraceAsString());
         }
     }
 
