@@ -44,7 +44,7 @@ class BlockLogCommand extends Command implements PluginOwned
             return;
         }
         $sender->sendMessage(TextFormat::DARK_GRAY . "データを確認しています...");
-        $pos = new Position($args[0], $args[1], $args[2], $sender->getWorld());
+        $pos = new Position(intval($args[0]), intval($args[1]), intval($args[2]), $sender->getWorld());
 
         try {
             MysqlLoggerPlugin::getLog($pos, function ($logs) use ($args, $sender): void {
@@ -54,8 +54,8 @@ class BlockLogCommand extends Command implements PluginOwned
                     $name = $this->store->getUserName($log->xuid);
                     $list[] = "$name さんが$log->item で $log->block を$log->action しました ($log->time)";
                 }
-                PageViewForm::sendForm($sender, "BlockLog", "ブロックの破壊、設置ログです\n\nワールド名: {$sender->getWorld()->getFolderName()}\n座標: $args[0]:$args[1]:$args[2]",
-                    $list, 50);
+                PageViewForm::sendForm($sender, "BlockLog",
+                    "ブロックの破壊、設置ログです\n\nワールド名: {$sender->getWorld()->getFolderName()}\n座標: $args[0]:$args[1]:$args[2]", $list, 50);
             }, null);
         } catch (Throwable) {
             $sender->sendMessage("ログを取得出来ませんでした");
