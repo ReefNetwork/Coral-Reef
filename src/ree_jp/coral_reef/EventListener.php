@@ -316,6 +316,11 @@ class EventListener implements Listener
                 $p->kick(TextFormat::DARK_RED . "このアイテムは使用出来ません");
                 break;
 
+            case ItemIds::COMPASS:
+                $pos = $ev->getBlock()->getPosition();
+                Server::getInstance()->dispatchCommand($p, "block-log {$pos->getFloorX()} {$pos->getFloorY()} {$pos->getFloorZ()}");
+                break;
+
             case ItemIds::CLOCK:
                 if ($p->isSneaking()) {
                     if ($this->accountStore->hasValue($xuid, 'particle_cool_time')) return;

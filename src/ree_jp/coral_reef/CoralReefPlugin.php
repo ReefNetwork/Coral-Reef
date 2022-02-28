@@ -24,6 +24,7 @@ use pocketmine\world\generator\normal\Normal;
 use pocketmine\world\WorldCreationOptions;
 use ree_jp\coral_reef\account\AccountStore;
 use ree_jp\coral_reef\account\ScoreBoardService;
+use ree_jp\coral_reef\command\BlockLogCommand;
 use ree_jp\coral_reef\command\MenuCommand;
 use ree_jp\coral_reef\command\ReefAdminCommand;
 use ree_jp\coral_reef\command\ReefCommand;
@@ -114,6 +115,7 @@ class CoralReefPlugin extends PluginBase
     {
         $this->getServer()->getCommandMap()->registerAll("reef", [
             new MenuCommand($this, $this->sqlRepo, $this->accountStore),
+            new BlockLogCommand($this, $this->accountStore),
             new TrashCommand($this),
             new ReefCommand($this),
             new ReefAdminCommand($this, $this->sqlRepo, $this->accountStore, $this->landStore),
