@@ -317,6 +317,8 @@ class EventListener implements Listener
                 break;
 
             case ItemIds::COMPASS:
+                if ($this->accountStore->hasValue($xuid, "form_cool_time")) return;
+                $this->accountStore->setValue($xuid, "form_cool_time", 10);
                 $pos = $ev->getBlock()->getPosition();
                 Server::getInstance()->dispatchCommand($p, "block-log {$pos->getFloorX()} {$pos->getFloorY()} {$pos->getFloorZ()}");
                 break;

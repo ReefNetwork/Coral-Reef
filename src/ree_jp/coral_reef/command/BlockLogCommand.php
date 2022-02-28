@@ -52,7 +52,7 @@ class BlockLogCommand extends Command implements PluginOwned
                 foreach ($logs as $log) {
                     if (!$log instanceof BlockLog) continue;
                     $name = $this->store->getUserName($log->xuid);
-                    $list[] = "$name さんが$log->item で $log->block を$log->action しました ($log->time)";
+                    $list[] = "$name さんが$log->item §rで $log->block §rを$log->action しました ($log->time)";
                 }
                 PageViewForm::sendForm($sender, "BlockLog",
                     "ブロックの破壊、設置ログです\n\nワールド名: {$sender->getWorld()->getFolderName()}\n座標: $args[0]:$args[1]:$args[2]", $list, 50);
