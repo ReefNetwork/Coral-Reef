@@ -5,6 +5,11 @@ on:
     branches:
       - "master"
   workflow_dispatch:
+    force_do:
+      description: "強制的に実行する"
+      default: false
+      required: false
+      type: boolean
 
 jobs:
   stable_checker:
@@ -25,7 +30,7 @@ jobs:
   merge_stable:
     runs-on: ubuntu-latest
     needs: stable_checker
-    if: ${{ needs.stable_checker.outputs.stable == 'true' }}
+    if: "${{ needs.stable_checker.outputs.stable == 'true' }} || ${{ inputs.force_do == 'true' }}"
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
