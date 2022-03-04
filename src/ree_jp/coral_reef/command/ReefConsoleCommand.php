@@ -13,6 +13,7 @@ namespace ree_jp\coral_reef\command;
 
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
+use pocketmine\item\Item;
 use pocketmine\player\Player;
 use pocketmine\plugin\Plugin;
 use pocketmine\plugin\PluginOwned;
@@ -54,8 +55,13 @@ class ReefConsoleCommand extends Command implements PluginOwned
                     $sender->sendMessage("反映には最大1分かかります");
                     break;
                 case "tool":
-                    if ($sender instanceof Player) {
-                        $sender->getInventory()->addItem(SpecialItemService::getRenewItem($args[1], $args[2], $args[3], $this->store));
+                    if (count($args) < 4) {
+                        $sender->sendMessage("引数が間違ってる");
+                        return;
+                    }
+                    $item = SpecialItemService::getRenewItem($args[1], $args[2], $args[3], $this->store);
+                    if ($sender instanceof Player && $item instanceof Item) {
+                        $sender->getInventory()->addItem($item);
                     }
                     break;
                 default:
