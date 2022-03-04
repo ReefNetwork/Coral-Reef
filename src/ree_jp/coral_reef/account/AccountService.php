@@ -62,7 +62,9 @@ class AccountService
             $store->setValue($xuid, 'transfer_server', 0);
         } else {
             $account = $store->getUser($xuid);
-            $account->save($repo);
+            if (!is_null($account)) {
+                $account->save($repo);
+            }
         }
         MoneyCache::purge($repo, $xuid);
 

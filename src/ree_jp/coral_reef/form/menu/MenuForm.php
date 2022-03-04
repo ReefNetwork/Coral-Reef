@@ -38,6 +38,8 @@ class MenuForm
         $store->setValue($xuid, 'form_cool_time', 10);
 
         MoneyService::getMoney($repo, $xuid, function (int $money) use ($store, $repo, $xuid, $p) {
+            if (!$p->isOnline()) return;
+
             $user = $store->getUser($xuid);
             $level = is_null($user) ? 'error' : $user->level;
             $necessaryExperience = is_null($user) ? 'error' : $user->necessaryExperience;

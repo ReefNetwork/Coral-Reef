@@ -45,6 +45,8 @@ class ShopService
     {
         $xuid = $p->getXuid();
         self::pay($repo, $store, $shop, $xuid, $count, true, function () use ($isStorage, $shop, $repo, $xuid, $p, $count): void {
+            if (!$p->isOnline()) return;
+
             $items = $shop->getItems();
             if (is_null($items)) {
                 $p->sendMessage("エラーが発生しました");
@@ -77,6 +79,8 @@ class ShopService
             }
             $p->sendMessage("購入しました");
         }, function () use ($p): void {
+            if (!$p->isOnline()) return;
+
             $p->sendMessage("購入できませんでした");
         });
     }
@@ -91,12 +95,16 @@ class ShopService
             }
         }
         self::pay($repo, $store, $shop, $p->getXuid(), $count, false, function () use ($shop, $p, $count): void {
+            if (!$p->isOnline()) return;
+
             foreach ($shop->getItems() as $item) {
                 $item = $item->setCount($item->getCount() * $count);
                 $p->getInventory()->removeItem($item);
             }
             $p->sendMessage("売却しました");
         }, function () use ($p): void {
+            if (!$p->isOnline()) return;
+
             $p->sendMessage("売却できませんでした");
         });
     }
