@@ -61,6 +61,7 @@ class GatyaHistoryForm
             PageViewForm::sendForm($p, "GatyaHistory -> $id", "最後に引いたReefToolは" . count($rows) - $lastReef . "回前です",
                 $history, 100);
         }, function (SqlError $error) use ($p) {
+            if (!$p->isOnline()) return;
             $p->sendMessage("エラーが発生しました");
             Server::getInstance()->getLogger()->error("[GatyaHistory] " . $p->getName() . "さんの処理中に" . $error->getErrorMessage());
         });
