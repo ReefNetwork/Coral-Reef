@@ -9,7 +9,7 @@
  * Copyright (c) 2022-2022. Ree-jp(https://ree-jp.net)
  */
 
-namespace ree_jp\coral_reef\form\command\land;
+namespace ree_jp\coral_reef\form\land;
 
 use bbo51dog\bboform\element\ClosureButton;
 use bbo51dog\bboform\element\Input;

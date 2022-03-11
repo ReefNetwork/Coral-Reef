@@ -247,6 +247,11 @@ class SQLRepository
             "break_count" => $session->breakCount, "place_count" => $session->placeCount, "skill_count" => $session->skillCount]);
     }
 
+    public function getRecentSession(string $xuid, Closure $func, ?Closure $failure): void
+    {
+        $this->db->executeSelect("coral_reef.session.get_recent", ["xuid" => $xuid, "server" => CoralReefPlugin::$serverID], $func, $failure);
+    }
+
     public function getAllCountWithQuit(int $firstTime, int $lastTime, Closure $func, ?Closure $failure): void
     {
         $this->db->executeSelect("coral_reef.session.all_get_count_quit_between_sort_desc", ["first_time" => date(SQLConst::DATE_FORMAT, $firstTime),

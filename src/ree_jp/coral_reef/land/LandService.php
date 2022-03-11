@@ -126,6 +126,7 @@ class LandService
                     if ($cacheLand->xuid === $land->xuid && $cacheLand->name === $land->name) {
                         array_splice($store->lands[$level], $key, 1);
                         $p->sendMessage("土地を削除しました");
+                        return;
                     }
                 }
             }
