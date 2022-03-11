@@ -356,12 +356,11 @@ VALUES (:xuid, :server, :join_time, :quit_time, :break_count, :place_count, :ski
 -- #        { get_recent
 -- #        :xuid int
 -- #        :server string
--- #        :join_time string
 SELECT *
 FROM SESSION_RECORD
 WHERE xuid = :xuid
   AND server = :server
-ORDER BY quit_time DESC
+ORDER BY join_time DESC
 LIMIT 1;
 -- #        }
 -- #        { all_get_count_quit_between_sort_desc
