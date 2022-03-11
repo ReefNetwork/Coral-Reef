@@ -24,4 +24,4 @@ jobs:
           pr_title: "New feature ${GITHUB_REF##*/}"
 
       - name: Merge pull request
-        run: gh pr merge ${{ steps.pr.outputs.pr_url }} --auto --squash --delete-branch
+        run: gh pr merge ${{ steps.pr.outputs.pr_url }} --auto --squash

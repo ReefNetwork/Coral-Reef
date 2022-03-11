@@ -27,6 +27,7 @@ class GatyaForm
     static function sendForm(SQLRepository $repo, Player $p): void
     {
         $repo->getAllSubtypeValue($p->getXuid(), SQLConst::TYPE_TICKETS, function (array $rows) use ($repo, $p) {
+            if (!$p->isOnline()) return;
             $normal = 0;
             $christmas = 0;
             foreach ($rows as $row) {
