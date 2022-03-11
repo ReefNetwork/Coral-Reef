@@ -9,7 +9,7 @@
  * Copyright (c) 2022. Ree-jp(https://ree-jp.net)
  */
 
-namespace ree_jp\coral_reef\form\command\land;
+namespace ree_jp\coral_reef\form\land;
 
 use bbo51dog\bboform\element\ClosureButton;
 use bbo51dog\bboform\form\ModalForm;
@@ -38,7 +38,7 @@ class LandDetailForm
             $aabb = $land->aabb;
             $space = (($aabb->maxX - $aabb->minX) + 1) * (($aabb->maxZ - $aabb->minZ) + 1);
             $form = (new SimpleForm())
-                ->setTitle("Land -> Edit")
+                ->setTitle("Land -> Details")
                 ->setText("土地保護の名前: $land->name\n所有者: $ownerName(直近ログイン$logoutIntervalDay)\nワールド: $land->level\n" .
                     "X座標: $aabb->minX - $aabb->maxX\nZ座標: $aabb->minZ - $aabb->maxZ\n大きさ: $space ブロック");
 
@@ -85,7 +85,7 @@ class LandDetailForm
                 },
             ),
         );
-        $form->setText($confirmMessage);
+        $form->setTitle("LandDelete -> Confirm")->setText($confirmMessage);
         $p->sendForm($form);
     }
 
