@@ -57,7 +57,7 @@ class LandDetailForm
                         }
                     )
                 );
-            } else {
+            } elseif ($land->xuid != 0) {
                 $form->addElement(new ClosureButton("土地を削除する\n所有者が30日間ログインしていない場合、土地を奪うことができます", null,
                     function () use ($p, $accountStore, $landStore, $repo, $land) {
                         self::sendLandTakeForm($repo, $accountStore, $landStore, $p, $land);
