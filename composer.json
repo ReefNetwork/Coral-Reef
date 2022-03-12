@@ -16,7 +16,6 @@
     "bbo51dog/bboform": "2.0.*",
     "sof3/libasynql": "4.0.*",
     "ree_jp_minecraft/invmenu": "4.3.*",
-    "ree_jp/mysql_logger": "dev-master",
     "ext-mbstring": "*"
   },
   "repositories": [
