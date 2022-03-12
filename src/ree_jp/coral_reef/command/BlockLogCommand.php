@@ -16,13 +16,14 @@ use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
 use pocketmine\plugin\Plugin;
 use pocketmine\plugin\PluginOwned;
-use pocketmine\utils\TextFormat;
-use pocketmine\world\Position;
 use ree_jp\coral_reef\account\AccountStore;
-use ree_jp\coral_reef\form\PageViewForm;
-use ree_jp\mysql_logger\BlockLog;
-use ree_jp\mysql_logger\MysqlLoggerPlugin;
-use Throwable;
+
+//use pocketmine\utils\TextFormat;
+//use pocketmine\world\Position;
+//use ree_jp\coral_reef\form\PageViewForm;
+//use ree_jp\mysql_logger\BlockLog;
+//use ree_jp\mysql_logger\MysqlLoggerPlugin;
+//use Throwable;
 
 class BlockLogCommand extends Command implements PluginOwned
 {
@@ -39,27 +40,28 @@ class BlockLogCommand extends Command implements PluginOwned
             $sender->sendMessage("このコマンドはプレイヤー専用です");
             return;
         }
-        if (count($args) < 3) {
-            $sender->sendMessage("コマンドが間違っています");
-            return;
-        }
-        $sender->sendMessage(TextFormat::DARK_GRAY . "データを確認しています...");
-        $pos = new Position(intval($args[0]), intval($args[1]), intval($args[2]), $sender->getWorld());
-
-        try {
-            MysqlLoggerPlugin::getLog($pos, function ($logs) use ($args, $sender): void {
-                $list = [];
-                foreach ($logs as $log) {
-                    if (!$log instanceof BlockLog) continue;
-                    $name = $this->store->getUserName($log->xuid);
-                    $list[] = "$name さんが$log->item §rで $log->block §rを$log->action しました ($log->time)";
-                }
-                PageViewForm::sendForm($sender, "BlockLog",
-                    "ブロックの破壊、設置ログです\n\nワールド名: {$sender->getWorld()->getFolderName()}\n座標: $args[0]:$args[1]:$args[2]", $list, 50);
-            }, null);
-        } catch (Throwable) {
-            $sender->sendMessage("ログを取得出来ませんでした");
-        }
+        $sender->sendMessage("ログ機能は現在使用できません");
+//        if (count($args) < 3) {
+//            $sender->sendMessage("コマンドが間違っています");
+//            return;
+//        }
+//        $sender->sendMessage(TextFormat::DARK_GRAY . "データを確認しています...");
+//        $pos = new Position(intval($args[0]), intval($args[1]), intval($args[2]), $sender->getWorld());
+//
+//        try {
+//            MysqlLoggerPlugin::getLog($pos, function ($logs) use ($args, $sender): void {
+//                $list = [];
+//                foreach ($logs as $log) {
+//                    if (!$log instanceof BlockLog) continue;
+//                    $name = $this->store->getUserName($log->xuid);
+//                    $list[] = "$name さんが$log->item §rで $log->block §rを$log->action しました ($log->time)";
+//                }
+//                PageViewForm::sendForm($sender, "BlockLog",
+//                    "ブロックの破壊、設置ログです\n\nワールド名: {$sender->getWorld()->getFolderName()}\n座標: $args[0]:$args[1]:$args[2]", $list, 50);
+//            }, null);
+//        } catch (Throwable) {
+//            $sender->sendMessage("ログを取得出来ませんでした");
+//        }
     }
 
     public function getOwningPlugin(): Plugin
