@@ -12,8 +12,10 @@
 namespace ree_jp\coral_reef\form\shop;
 
 use bbo51dog\bboform\element\ClosureButton;
+use bbo51dog\bboform\element\Input;
 use bbo51dog\bboform\element\Label;
 use bbo51dog\bboform\element\Slider;
+use bbo51dog\bboform\element\Toggle;
 use bbo51dog\bboform\form\ClosureCustomForm;
 use bbo51dog\bboform\form\ModalForm;
 use pocketmine\player\Player;
@@ -28,6 +30,7 @@ class ShopDetailForm
     static function sendForm(SQLRepository $repo, ShopStore $store, Player $p, Shop $shop): void
     {
         $itemString = "\n\nアイテム\n";
+        $isSlide = !$p->isSneaking();
         $items = $shop->getItems();
         if (is_null($items)) {
             $p->sendMessage("ショップのアイテムが見つかりませんでした");
@@ -50,17 +53,29 @@ class ShopDetailForm
             }
         }
 
-        $amount = new Slider(self::replaceOrderType($shop->orderType) . "するセット数を選択してください", 1, $maxAmount, 1);
+        $amountSlide = new Slider(self::replaceOrderType($shop->orderType) . "するセット数を選択してください", 1, $maxAmount, 1);
+        $amountInput = new Input(self::replaceOrderType($shop->orderType) . "するセット数を入力してください", 10);
+        $isStorage = new Toggle("直接ストレージ内にアイテムをいれますか?");
 
-        $form = (new ClosureCustomForm(function (Player $p) use ($store, $repo, $shop, $amount): void {
+        $form = (new ClosureCustomForm(function (Player $p) use ($amountInput, $isSlide, $isStorage, $store, $repo, $shop, $amountSlide): void {
+            if ($isSlide) {
+                $amount = $amountSlide->getValue();
+            } else {
+                $amount = intval($amountInput->getValue());
+                if ($amount <= 0) {
+                    $p->sendMessage("0以下は指定できません");
+                    return;
+                }
+            }
+
             $p->sendForm((new ModalForm(new ClosureButton(self::replaceOrderType($shop->orderType) . "する", null,
-                function (Player $p) use ($store, $repo, $amount, $shop): void {
+                function (Player $p) use ($amount, $isStorage, $store, $repo, $shop): void {
                     switch ($shop->orderType) {
                         case "buy":
-                            ShopService::buy($repo, $store, $shop, $p, $amount->getValue());
+                            ShopService::buy($repo, $store, $shop, $p, $amount, $isStorage->getValue());
                             break;
                         case "sell":
-                            ShopService::sell($repo, $store, $shop, $p, $amount->getValue());
+                            ShopService::sell($repo, $store, $shop, $p, $amount);
                             break;
                         default:
                             $p->sendMessage("エラーが発生しました");
@@ -68,21 +83,33 @@ class ShopDetailForm
                 }), new ClosureButton("戻る", null, function (Player $p) use ($store, $repo, $shop): void {
                 self::sendForm($repo, $store, $p, $shop);
             })))->setTitle("Shop -> Confirm")->setText("本当にこのアイテムを" . self::replaceOrderType($shop->orderType) . "しますか?\n" .
-                self::replacePaymentType("金額\n" . $shop->payment["type"] . $shop->payment["amount"] * $amount->getValue() . TextFormat::RESET)));
+                self::replacePaymentType("金額\n" . $shop->payment["type"] . $shop->payment["amount"] * $amount)));
 
-        }))->setTitle("Shop")->addElements(new Label(self::replacePaymentType($text) . $itemString), $amount);
+        }))->setTitle("Shop")->addElement(new Label(self::replacePaymentType($text) . $itemString));
+
+        // スニークしてる時は数を入力できるように
+        if ($isSlide) {
+            $form->addElement($amountSlide);
+        } else {
+            $form->addElement($amountInput);
+        }
+        // orderTypeがbuyの時のみformに登録する
+        if ($shop->orderType === "buy") {
+            $form->addElement($isStorage);
+        }
+
         $p->sendForm($form);
     }
 
     static function replaceOrderType(string $text): string
     {
-        $text = str_replace("buy", "購入", $text);
-        return str_replace("sell", "売却", $text);
+        $text = str_replace("buy", TextFormat::GREEN . "購入" . TextFormat::RESET, $text);
+        return str_replace("sell", TextFormat::RED . "売却" . TextFormat::RESET, $text);
     }
 
     static function replacePaymentType(string $text): string
     {
-        $text = str_replace("money", "お金: " . TextFormat::GOLD, $text);
-        return str_replace("normal_tickets", "ガチャチケット: " . TextFormat::BLUE, $text);
+        $text = str_replace("money", TextFormat::GOLD . "お金: " . TextFormat::RESET, $text);
+        return str_replace("normal_tickets", TextFormat::BLUE . "ガチャチケット: " . TextFormat::RESET, $text);
     }
 }

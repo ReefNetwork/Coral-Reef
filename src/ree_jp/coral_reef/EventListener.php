@@ -16,9 +16,11 @@ namespace ree_jp\coral_reef;
 use Exception;
 use pocketmine\block\BlockLegacyIds;
 use pocketmine\block\Flowable;
+use pocketmine\block\Liquid;
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\block\BlockBurnEvent;
 use pocketmine\event\block\BlockPlaceEvent;
+use pocketmine\event\block\BlockSpreadEvent;
 use pocketmine\event\block\BlockUpdateEvent;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\event\entity\EntityDamageEvent;
@@ -26,6 +28,9 @@ use pocketmine\event\entity\EntityTeleportEvent;
 use pocketmine\event\inventory\InventoryCloseEvent;
 use pocketmine\event\inventory\InventoryTransactionEvent;
 use pocketmine\event\Listener;
+use pocketmine\event\player\PlayerBucketEmptyEvent;
+use pocketmine\event\player\PlayerBucketEvent;
+use pocketmine\event\player\PlayerBucketFillEvent;
 use pocketmine\event\player\PlayerDropItemEvent;
 use pocketmine\event\player\PlayerGameModeChangeEvent;
 use pocketmine\event\player\PlayerInteractEvent;
@@ -217,6 +222,37 @@ class EventListener implements Listener
         $this->sessionStore->getSessionData($ev->getPlayer()->getXuid())->placeBlock();
     }
 
+    public function onSpread(BlockSpreadEvent $ev)
+    {
+        if ($ev->getSource() instanceof Liquid || in_array($ev->getSource()->getPosition()->getWorld()->getFolderName(), LandService::LOBBY_WORLD)) {
+            $ev->cancel();
+        }
+    }
+
+    public function onBucketFill(PlayerBucketFillEvent $ev)
+    {
+        $this->onBucket($ev);
+    }
+
+    public function onBucketEmpty(PlayerBucketEmptyEvent $ev)
+    {
+        $this->onBucket($ev);
+    }
+
+    private function onBucket(PlayerBucketEvent $ev)
+    {
+        $p = $ev->getPlayer();
+        if ($this->accountStore->hasValue($p, "wait_action")) {
+            $ev->cancel();
+            return;
+        }
+
+        if (LandService::protect($this->landStore, $this->accountStore, $p, $ev->getBlockClicked()->getPosition(),
+            "このワールドでバケツを使用することはできません", false, true)) {
+            $ev->cancel();
+        }
+    }
+
     public function onUpdate(BlockUpdateEvent $ev)
     {
         $blId = $ev->getBlock()->getId();
@@ -280,6 +316,13 @@ class EventListener implements Listener
                 $p->kick(TextFormat::DARK_RED . "このアイテムは使用出来ません");
                 break;
 
+            case ItemIds::COMPASS:
+                if ($this->accountStore->hasValue($xuid, "form_cool_time")) return;
+                $this->accountStore->setValue($xuid, "form_cool_time", 10);
+                $pos = $ev->getBlock()->getPosition();
+                Server::getInstance()->dispatchCommand($p, "block-log {$pos->getFloorX()} {$pos->getFloorY()} {$pos->getFloorZ()}");
+                break;
+
             case ItemIds::CLOCK:
                 if ($p->isSneaking()) {
                     if ($this->accountStore->hasValue($xuid, 'particle_cool_time')) return;
@@ -313,28 +356,21 @@ class EventListener implements Listener
                 $this->accountStore->setValue($xuid, 'form_cool_time', 10);
                 ShopService::showShop($this->sqlRepo, $p, $this->shopStore, $ev->getBlock()->getPosition());
                 break;
+        }
+        if (in_array($ev->getBlock()->getId(),
+            [BlockLegacyIds::GRASS, BlockLegacyIds::DIRT, BlockLegacyIds::FRAME_BLOCK, BlockLegacyIds::CHEST, BlockLegacyIds::LECTERN])) {
+            if (LandService::protect($this->landStore, $this->accountStore, $p, $ev->getBlock()->getPosition(),
+                "このワールドでこのブロックに変更を加えることはできません")) {
+                $ev->cancel();
+                return;
+            }
+        }
 
-            case BlockLegacyIds::GRASS:
-            case BlockLegacyIds::DIRT:
-                if (LandService::protect($this->landStore, $this->accountStore, $p, $ev->getBlock()->getPosition(), "このワールドでブロックに変更を加えることはできません")) {
-                    $ev->cancel();
-                    return;
-                }
-        }
-        if (($ev->getBlock()->getId() === BlockLegacyIds::FRAME_BLOCK) &&
-            LandService::protect($this->landStore, $this->accountStore, $p, $ev->getBlock()->getPosition(), "このワールドで額縁を変更することはできません")) {
-            $ev->cancel();
-            return;
-        }
-        if (($ev->getBlock()->getId() === BlockLegacyIds::CHEST) &&
-            LandService::protect($this->landStore, $this->accountStore, $p, $ev->getBlock()->getPosition(), "このワールドでチェストを開くことはできません")) {
-            $ev->cancel();
-            return;
-        }
         if (LandService::protect($this->landStore, $this->accountStore, $p, $ev->getBlock()->getPosition(), null, true)) {
             $ev->cancel();
         }
     }
+
 
     public function onDrop(PlayerDropItemEvent $ev): void
     {

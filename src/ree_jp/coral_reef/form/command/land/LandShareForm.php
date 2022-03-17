@@ -18,6 +18,7 @@ use bbo51dog\bboform\form\ClosureCustomForm;
 use bbo51dog\bboform\form\ModalForm;
 use bbo51dog\bboform\form\SimpleForm;
 use pocketmine\player\Player;
+use pocketmine\Server;
 use ree_jp\coral_reef\account\AccountStore;
 use ree_jp\coral_reef\land\LandData;
 use ree_jp\coral_reef\land\LandService;
@@ -101,8 +102,10 @@ class LandShareForm
         $form = new ModalForm(
             new ClosureButton(
                 "はい", null,
-                function (Player $p) use ($repo, $land, $xuid) {
+                function (Player $p) use ($name, $repo, $land, $xuid) {
                     LandService::addShareMember($repo, $land, $p, $xuid);
+                    $partyMember = Server::getInstance()->getPlayerByPrefix($name);
+                    if ($partyMember instanceof Player) $partyMember->sendMessage($p->getName() . "さんの土地保護($land->name)に参加しました");
                 }
             ),
             new ClosureButton(

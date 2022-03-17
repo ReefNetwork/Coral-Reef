@@ -19,6 +19,7 @@ use pocketmine\item\VanillaItems;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\utils\TextFormat;
 use ree_jp\coral_reef\gatya\items\event\Christmas2021ReefItems;
+use ree_jp\coral_reef\skill\TreeBreakService;
 
 class ReefItems
 {
@@ -59,10 +60,12 @@ class ReefItems
                 $item = VanillaItems::DIAMOND_AXE();
                 $nbt = $item->getNamedTag();
                 $nbt->setString(self::REEF_SP_ITEM, self::AXE);
+                $nbt->setByte(TreeBreakService::TREE_CUT, 1);
                 $item->setNamedTag($nbt);
                 $item->setCustomName(TextFormat::GREEN . 'Reef' . TextFormat::GOLD . 'Axe');
                 $item->addEnchantment(new EnchantmentInstance(VanillaEnchantments::EFFICIENCY(), 10));
                 $item->addEnchantment(new EnchantmentInstance(VanillaEnchantments::SILK_TOUCH(), 10));
+                $item->setLore(["スキル発動時:木を一括破壊します"]);
                 break;
             case self::HOE:
                 $item = VanillaItems::DIAMOND_HOE();

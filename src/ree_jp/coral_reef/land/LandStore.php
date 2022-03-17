@@ -50,7 +50,7 @@ class LandStore
                     $this->lands[$level][] = $land;
 
                     foreach ($landKeys as $key) {
-                        if (($key["xuid"] == $land->xuid) && ($key["subtype"] === $repo->server . ":" . $land->name) && !is_null($key["value"])) {
+                        if (($key["xuid"] == $land->xuid) && ($key["subtype"] === CoralReefPlugin::$serverID . ":" . $land->name) && !is_null($key["value"])) {
                             foreach (explode(":", $key["value"]) as $member) {
                                 $land->addMember($member);
                             }

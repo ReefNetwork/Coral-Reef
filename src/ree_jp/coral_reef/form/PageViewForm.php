@@ -35,6 +35,7 @@ class PageViewForm
 
     static function sendPageForm(Player $p, string $title, string $label, array $contents, int $page): void
     {
+        if (!$p->isOnline()) return;
         if (!isset($contents[$page])) {
             $p->sendMessage("エラーが発生しました");
             return;

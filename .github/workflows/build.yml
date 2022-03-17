@@ -1,0 +1,33 @@
+name: Build and Deploy
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build_debug:
+    runs-on: ubuntu-latest
+    if: "!contains(github.event.head_commit.message, '[build skip]')"
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: ./.github/actions/build_and_upload
+        with:
+          build_info: ${{ github.run_number }}-${GITHUB_REF##*/}
+          upload_name: CoralReefDebug
+
+  deploy_debug:
+    runs-on: ubuntu-latest
+    needs: build_debug
+    if: "(github.ref == 'refs/heads/master' || contains(github.event.head_commit.message, '[deploy]') || contains(github.event.head_commit.message, '[feature]')) && !contains(github.event.head_commit.message, '[deploy skip]')"
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: ./.github/actions/deploy
+        with:
+          host: ${{ secrets.DEBUG_HOST }}
+          port: ${{ secrets.DEBUG_PORT}}
+          user: ${{ secrets.DEBUG_USERNAME }}
+          pass: ${{ secrets.DEBUG_PASSWORD }}
+          artifact_name: "CoralReefDebug"

@@ -11,11 +11,9 @@
 
 namespace ree_jp\coral_reef\money;
 
+use Closure;
 use ree_jp\coral_reef\sql\SQLRepository;
 
-/**
- * 1回のスキル発動で数十回呼び出されることを考慮した簡易的なキャッシュ
- */
 class MoneyCache
 {
     static array $cache = [];
@@ -27,11 +25,13 @@ class MoneyCache
         }
     }
 
-    static function purge(SQLRepository $repo, string $xuid): void
+    static function purge(SQLRepository $repo, string $xuid, ?Closure $func = null): void
     {
         if (isset(self::$cache[$xuid])) {
-            $repo->addMoney($xuid, self::$cache[$xuid], null);
+            $repo->addMoney($xuid, self::$cache[$xuid], $func);
             unset(self::$cache[$xuid]);
+        } elseif (!is_null($func)) {
+            $func();
         }
     }
 }

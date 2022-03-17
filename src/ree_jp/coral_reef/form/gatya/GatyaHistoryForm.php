@@ -42,7 +42,7 @@ class GatyaHistoryForm
 
     static function sendHistoryForm(Player $p, SQLRepository $repo, string $id): void
     {
-        $repo->getLogNewest($p->getXuid(), $id, function (array $rows) use ($id, $p): void {
+        $repo->getLog($p->getXuid(), $id, function (array $rows) use ($id, $p): void {
             $history = [];
             $historyCount = count($rows);
             $lastReef = 0;
@@ -61,6 +61,7 @@ class GatyaHistoryForm
             PageViewForm::sendForm($p, "GatyaHistory -> $id", "最後に引いたReefToolは" . count($rows) - $lastReef . "回前です",
                 $history, 100);
         }, function (SqlError $error) use ($p) {
+            if (!$p->isOnline()) return;
             $p->sendMessage("エラーが発生しました");
             Server::getInstance()->getLogger()->error("[GatyaHistory] " . $p->getName() . "さんの処理中に" . $error->getErrorMessage());
         });

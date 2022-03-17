@@ -72,7 +72,8 @@ class HerbicideForm
                 for (; $relativeHeight >= -$height; --$relativeHeight) {
                     $check = $pos->add($x, $relativeHeight, $z);
                     $bl = $pos->getWorld()->getBlock($check);
-                    if (in_array($bl->getId(), [BlockLegacyIds::LEAVES, BlockLegacyIds::LEAVES2, BlockLegacyIds::LOG, BlockLegacyIds::LOG2])) {
+                    if (in_array($bl->getId(), [BlockLegacyIds::LEAVES, BlockLegacyIds::LEAVES2, BlockLegacyIds::LOG, BlockLegacyIds::LOG2,
+                        BlockLegacyIds::TALL_GRASS, BlockLegacyIds::POPPY])) {
                         $event = new BlockBreakEvent($p, $bl, $p->getInventory()->getItemInHand(), true);
                         $event->call();
                         if (!$event->isCancelled()) {

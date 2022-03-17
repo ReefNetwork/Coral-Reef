@@ -23,6 +23,8 @@ use ree_jp\coral_reef\account\AccountService;
 use ree_jp\coral_reef\account\AccountStore;
 use ree_jp\coral_reef\CoralReefPlugin;
 use ree_jp\coral_reef\form\gatya\GatyaForm;
+use ree_jp\coral_reef\form\ranking\RankingForm;
+use ree_jp\coral_reef\form\skill\SkillSettingForm;
 use ree_jp\coral_reef\money\MoneyService;
 use ree_jp\coral_reef\quest\QuestListener;
 use ree_jp\coral_reef\sql\SQLRepository;
@@ -36,6 +38,8 @@ class MenuForm
         $store->setValue($xuid, 'form_cool_time', 10);
 
         MoneyService::getMoney($repo, $xuid, function (int $money) use ($store, $repo, $xuid, $p) {
+            if (!$p->isOnline()) return;
+
             $user = $store->getUser($xuid);
             $level = is_null($user) ? 'error' : $user->level;
             $necessaryExperience = is_null($user) ? 'error' : $user->necessaryExperience;
@@ -62,7 +66,7 @@ class MenuForm
                     }),
                     new ClosureButton(
                         "スキル設定", null, function (Player $p) use ($store) {
-                        SkillSelectForm::sendForm($store, $p);
+                        SkillSettingForm::sendForm($store, $p);
                     }),
                     new ClosureButton(
                         "クエスト", null, function (Player $p) {
@@ -83,8 +87,8 @@ class MenuForm
                         Server::getInstance()->dispatchCommand($p, "reef-form land");
                     }),
                     new ClosureButton(
-                        "ランキング", null, function (Player $p) use ($repo) {
-                        RankingForm::sendForm($repo, $p);
+                        "ランキング", null, function (Player $p) use ($store, $repo) {
+                        RankingForm::sendForm($repo, $store, $p);
                     }),
                     new ClosureButton(
                         "ガチャ", null, function (Player $p) use ($repo) {
@@ -136,6 +140,14 @@ class MenuForm
                 new ClosureButton(
                     "整地ワールド2", null, function (Player $p) {
                     AccountService::teleport($p, "main_2");
+                }),
+                new ClosureButton(
+                    "よくある質問", null, function (Player $p) {
+                    if (CoralReefPlugin::$plugin->isMain) {
+                        AccountService::teleport($p, "lobby", new Vector3(-7, 5, 328));
+                    } else {
+                        $p->sendMessage("よくある質問は整地サーバー1のみです");
+                    }
                 }),
             );
         $p->sendForm($form);

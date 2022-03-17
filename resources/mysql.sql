@@ -353,5 +353,14 @@ ORDER BY time DESC;
 INSERT INTO SESSION_RECORD
 VALUES (:xuid, :server, :join_time, :quit_time, :break_count, :place_count, :skill_count);
 -- #        }
+-- #        { all_get_count_quit_between_sort_desc
+-- #        :first_time string
+-- #        :last_time string
+SELECT xuid, SUM(break_count) AS "break_count", SUM(place_count) AS "place_count", SUM(skill_count) AS "skill_count"
+FROM SESSION_RECORD
+WHERE quit_time BETWEEN :first_time AND :last_time
+GROUP BY xuid
+ORDER BY break_count DESC;
+-- #        }
 -- #    }
 -- #}

@@ -12,6 +12,10 @@
 namespace ree_jp\coral_reef;
 
 use muqsit\invmenu\InvMenuHandler;
+use pocketmine\crafting\ShapedRecipe;
+use pocketmine\item\ItemFactory;
+use pocketmine\item\ItemIds;
+use pocketmine\item\VanillaItems;
 use pocketmine\plugin\PluginBase;
 use pocketmine\scheduler\ClosureTask;
 use pocketmine\Server;
@@ -20,6 +24,7 @@ use pocketmine\world\generator\normal\Normal;
 use pocketmine\world\WorldCreationOptions;
 use ree_jp\coral_reef\account\AccountStore;
 use ree_jp\coral_reef\account\ScoreBoardService;
+use ree_jp\coral_reef\command\BlockLogCommand;
 use ree_jp\coral_reef\command\MenuCommand;
 use ree_jp\coral_reef\command\ReefAdminCommand;
 use ree_jp\coral_reef\command\ReefCommand;
@@ -43,6 +48,7 @@ use ree_jp\coral_reef\task\ServerUpdateTask;
 class CoralReefPlugin extends PluginBase
 {
     static CoralReefPlugin $plugin;
+    static string $serverID;
 
     public bool $isDev = false;
     public bool $isMain = false;
@@ -58,19 +64,21 @@ class CoralReefPlugin extends PluginBase
     public function onLoad(): void
     {
         self::$plugin = $this;
-        $this->isDev = !str_contains($this->getDescription()->getVersion(), 'stable');
-        /** @noinspection SpellCheckingInspection */
-        $this->isMain = $this->getConfig()->get(ConfigConst::SERVER_NAME) === "seichi_1";
     }
 
     public function onEnable(): void
     {
+        self::$serverID = $this->getConfig()->get(ConfigConst::SERVER_NAME);
+        $this->isDev = !str_contains($this->getDescription()->getVersion(), 'stable');
+        /** @noinspection SpellCheckingInspection */
+        $this->isMain = self::$serverID === "seichi_1";
+
         if (!InvMenuHandler::isRegistered()) {
             InvMenuHandler::register($this);
         }
         date_default_timezone_set('Asia/Tokyo');
         $this->accountStore = new AccountStore();
-        $this->sqlRepo = new SQLRepository($this->accountStore, $this, $this->getDataFolder(), $this->getConfig()->get(ConfigConst::SERVER_NAME));
+        $this->sqlRepo = new SQLRepository($this->accountStore, $this, $this->getDataFolder());
         $this->landStore = new LandStore($this->sqlRepo);
         $this->shopStore = new ShopStore($this->getDataFolder());
         $this->sessionStore = new SessionStore();
@@ -78,6 +86,7 @@ class CoralReefPlugin extends PluginBase
         $this->registerCommands();
         $this->registerListeners();
         $this->registerSchedules();
+        $this->registerRecipe();
         $this->loadWorlds();
 
         $handler = new SocketHandler();
@@ -119,6 +128,7 @@ class CoralReefPlugin extends PluginBase
     {
         $this->getServer()->getCommandMap()->registerAll("reef", [
             new MenuCommand($this, $this->sqlRepo, $this->accountStore),
+            new BlockLogCommand($this, $this->accountStore),
             new TrashCommand($this),
             new ReefCommand($this),
             new ReefAdminCommand($this, $this->sqlRepo, $this->accountStore, $this->landStore),
@@ -139,7 +149,18 @@ class CoralReefPlugin extends PluginBase
         }), 15);
         $this->getScheduler()->scheduleRepeatingTask(new ClosureTask(function (): void {
             MoneyCache::purgeAll($this->sqlRepo);
-        }), 20);
+        }), 20 * 10);
+    }
+
+    private function registerRecipe(): void
+    {
+        foreach ([ItemIds::COAL_ORE => VanillaItems::COAL(), ItemIds::IRON_ORE => VanillaItems::IRON_INGOT(), ItemIds::GOLD_ORE => VanillaItems::GOLD_INGOT(),
+                     ItemIds::DIAMOND_ORE => VanillaItems::DIAMOND(), ItemIds::EMERALD_ORE => VanillaItems::EMERALD()] as $oreID => $result) {
+            $ore = ItemFactory::getInstance()->get($oreID);
+            $result->setCount(8);
+            $this->getServer()->getCraftingManager()->registerShapedRecipe(new ShapedRecipe(["AAA", "ABA", "AAA"], ["A" => $ore, "B" => VanillaItems::COAL()], [$result]));
+            $this->getServer()->getCraftingManager()->registerShapedRecipe(new ShapedRecipe(["AAA", "ABA", "AAA"], ["A" => $ore, "B" => VanillaItems::CHARCOAL()], [$result]));
+        }
     }
 
     private function loadWorlds(): void

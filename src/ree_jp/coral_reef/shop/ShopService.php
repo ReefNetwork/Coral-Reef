@@ -12,16 +12,17 @@
 namespace ree_jp\coral_reef\shop;
 
 use Closure;
+use pocketmine\inventory\Inventory;
+use pocketmine\item\Item;
 use pocketmine\player\Player;
 use pocketmine\world\Position;
-use ree_jp\coral_reef\account\GiftData;
-use ree_jp\coral_reef\account\GiftService;
 use ree_jp\coral_reef\form\shop\ShopDetailForm;
 use ree_jp\coral_reef\form\shop\ShopManageForm;
 use ree_jp\coral_reef\gatya\GatyaManager;
 use ree_jp\coral_reef\money\MoneyService;
 use ree_jp\coral_reef\sql\SQLConst;
 use ree_jp\coral_reef\sql\SQLRepository;
+use Throwable;
 
 class ShopService
 {
@@ -40,27 +41,46 @@ class ShopService
         }
     }
 
-    static function buy(SQLRepository $repo, ShopStore $store, Shop $shop, Player $p, int $count): void
+    static function buy(SQLRepository $repo, ShopStore $store, Shop $shop, Player $p, int $count, bool $isStorage): void
     {
         $xuid = $p->getXuid();
-        self::pay($repo, $store, $shop, $xuid, $count, true, function () use ($shop, $repo, $xuid, $p, $count): void {
+        self::pay($repo, $store, $shop, $xuid, $count, true, function () use ($isStorage, $shop, $repo, $xuid, $p, $count): void {
+            if (!$p->isOnline()) return;
+
             $items = $shop->getItems();
-            $gifts = [];
+            if (is_null($items)) {
+                $p->sendMessage("エラーが発生しました");
+                return;
+            }
+            $isNoInv = true;
             while ($count > 0) {
                 foreach ($items as $item) {
-                    if ($p->getInventory()->canAddItem($item)) {
+                    if ($p->getInventory()->canAddItem($item) && !$isStorage) {
                         $p->getInventory()->addItem($item);
-                    } else $gifts[] = $item;
+                    } else {
+                        try {
+                            /**
+                             * @noinspection PhpUndefinedNamespaceInspection
+                             * @noinspection PhpUndefinedClassInspection
+                             * @noinspection PhpFullyQualifiedNameUsageInspection
+                             */
+                            \ree_jp\stackStorage\api\StackStorageAPI::$instance->add($p->getXuid(), $item);
+                            $isNoInv = false | $isStorage;
+                        } catch (Throwable) {
+                            $p->sendMessage("ストレージにアクセスできなかったためアイテムをドロップしました");
+                            $p->dropItem($item);
+                        }
+                    }
                 }
                 $count--;
             }
-            if (!empty($gifts)) {
-                GiftService::addGift($repo, $xuid, new GiftData(0, "ショップで購入したアイテムです", time() + (7 * 24 * 60 * 60), $gifts),
-                    null, null);
-                $p->sendMessage("アイテムの一部がインベントリに入らなかったためギフトに送信しました\n1週間以内に受け取ってください");
+            if (!$isNoInv) {
+                $p->sendMessage("アイテムの一部がインベントリに入らなかったためストレージに収納されました");
             }
             $p->sendMessage("購入しました");
         }, function () use ($p): void {
+            if (!$p->isOnline()) return;
+
             $p->sendMessage("購入できませんでした");
         });
     }
@@ -75,12 +95,16 @@ class ShopService
             }
         }
         self::pay($repo, $store, $shop, $p->getXuid(), $count, false, function () use ($shop, $p, $count): void {
+            if (!$p->isOnline()) return;
+
             foreach ($shop->getItems() as $item) {
                 $item = $item->setCount($item->getCount() * $count);
                 $p->getInventory()->removeItem($item);
             }
             $p->sendMessage("売却しました");
         }, function () use ($p): void {
+            if (!$p->isOnline()) return;
+
             $p->sendMessage("売却できませんでした");
         });
     }
@@ -145,5 +169,16 @@ class ShopService
     static function createKey(Position $pos): string
     {
         return $pos->getWorld()->getFolderName() . ":" . $pos->getX() . ":" . $pos->getY() . ":" . $pos->getZ();
+    }
+
+    private static function getCount(Inventory $inv, Item $item): int
+    {
+        $count = 0;
+        foreach ($inv->getContents() as $i) {
+            if ($item->equals($i, !$item->hasAnyDamageValue(), $item->hasNamedTag())) {
+                $count += $i->getCount();
+            }
+        }
+        return $count;
     }
 }

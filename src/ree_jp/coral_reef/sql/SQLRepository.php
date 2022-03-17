@@ -11,7 +11,6 @@
 
 namespace ree_jp\coral_reef\sql;
 
-
 use Closure;
 use pocketmine\player\Player;
 use pocketmine\Server;
@@ -34,7 +33,7 @@ class SQLRepository
     public array $setting = [];
     public string $server;
 
-    public function __construct(private AccountStore $accountStore, CoralReefPlugin $plugin, string $path, string $server)
+    public function __construct(private AccountStore $accountStore, CoralReefPlugin $plugin, string $path)
     {
         $config = new Config($path . 'sql.yml');
         Server::getInstance()->getLogger()->info('[SQL] サーバーに接続中...');
@@ -54,7 +53,6 @@ class SQLRepository
 
         $this->db->waitAll();
         Server::getInstance()->getLogger()->info('[SQL] complete');
-        $this->server = $server;
     }
 
     public function close(): void
@@ -83,6 +81,7 @@ class SQLRepository
                 $this->accountStore->users[$account->xuid] = $account;
             } elseif (empty($arrayAccount)) { // データが存在しないとき新しくデータを作る
                 $this->accountStore->users[$xuid] = new UserAccount($xuid, $name, 0, null);
+                Server::getInstance()->broadcastMessage(TextFormat::AQUA . $name . "さんが初めてサーバーにログインしました");
             } else { // データ壊れてるよ
                 Server::getInstance()->getLogger()->warning($xuid . 'のデータの読み込みに失敗しました');
                 return;
@@ -194,38 +193,38 @@ class SQLRepository
 
     public function getWarps(string $xuid, ?Closure $func): void
     {
-        $this->db->executeSelect('coral_reef.warp.get', ['xuid' => intval($xuid), 'server' => $this->server],
+        $this->db->executeSelect('coral_reef.warp.get', ['xuid' => intval($xuid), 'server' => CoralReefPlugin::$serverID],
             $func, $this->noticeByXUid($xuid, 'エラーが発生しました'));
     }
 
     public function addWarp(string $xuid, string $name, string $level, int $x, int $y, int $z): void
     {
         $this->db->executeInsert('coral_reef.warp.create',
-            ['xuid' => intval($xuid), 'name' => $name, 'server' => $this->server, 'level' => $level, 'x' => $x, 'y' => $y, 'z' => $z],
+            ['xuid' => intval($xuid), 'name' => $name, 'server' => CoralReefPlugin::$serverID, 'level' => $level, 'x' => $x, 'y' => $y, 'z' => $z],
             $this->noticeByXUid($xuid, 'ワード地点を作成しました'), $this->noticeByXUid($xuid, 'エラーが発生しました'));
     }
 
     public function deleteWarp(string $xuid, string $name): void
     {
-        $this->db->executeGeneric('coral_reef.warp.delete', ['xuid' => intval($xuid), 'name' => $name, 'server' => $this->server],
+        $this->db->executeGeneric('coral_reef.warp.delete', ['xuid' => intval($xuid), 'name' => $name, 'server' => CoralReefPlugin::$serverID],
             $this->noticeByXUid($xuid, 'ワード地点を削除しました'), $this->noticeByXUid($xuid, 'エラーが発生しました'));
     }
 
     public function loadProtectLand(Closure $func, Closure $failure): void
     {
-        $this->db->executeSelect('coral_reef.land.get', ['server' => $this->server], $func, $failure);
+        $this->db->executeSelect('coral_reef.land.get', ['server' => CoralReefPlugin::$serverID], $func, $failure);
     }
 
     public function addProtectLand(LandData $land, Closure $func, Closure $failure): void
     {
-        $this->db->executeInsert('coral_reef.land.create', ['xuid' => intval($land->xuid), 'name' => $land->name, 'server' => $this->server,
+        $this->db->executeInsert('coral_reef.land.create', ['xuid' => intval($land->xuid), 'name' => $land->name, 'server' => CoralReefPlugin::$serverID,
             'level' => $land->level, 'mx' => $land->aabb->maxX, 'sx' => $land->aabb->minX, 'mz' => $land->aabb->maxZ, 'sz' => $land->aabb->minZ],
             $func, $failure);
     }
 
     public function deleteProtectLand(LandData $land, Closure $func, Closure $failure): void
     {
-        $this->db->executeGeneric('coral_reef.land.delete', ['xuid' => intval($land->xuid), 'name' => $land->name, 'server' => $this->server],
+        $this->db->executeGeneric('coral_reef.land.delete', ['xuid' => intval($land->xuid), 'name' => $land->name, 'server' => CoralReefPlugin::$serverID],
             $func, $failure);
     }
 
@@ -238,19 +237,20 @@ class SQLRepository
 
     public function getLog(string $xuid, string $type, Closure $func, Closure $failure): void
     {
-        $this->db->executeSelect('coral_reef.log.get.type', ['xuid' => intval($xuid), 'type' => $type], $func, $failure);
-    }
-
-    public function getLogNewest(string $xuid, string $type, Closure $func, Closure $failure): void
-    {
         $this->db->executeSelect("coral_reef.log.get.type_sort_newest", ["xuid" => intval($xuid), "type" => $type], $func, $failure);
     }
 
     public function recordSession(string $xuid, SessionData $session): void
     {
-        $this->db->executeGeneric("coral_reef.session.add", ["xuid" => $xuid, "server" => $this->server,
+        $this->db->executeGeneric("coral_reef.session.add", ["xuid" => $xuid, "server" => CoralReefPlugin::$serverID,
             "join_time" => date(SQLConst::DATE_FORMAT, $session->joinTime), "quit_time" => date(SQLConst::DATE_FORMAT, $session->quitTime),
             "break_count" => $session->breakCount, "place_count" => $session->placeCount, "skill_count" => $session->skillCount]);
+    }
+
+    public function getAllCountWithQuit(int $firstTime, int $lastTime, Closure $func, ?Closure $failure): void
+    {
+        $this->db->executeSelect("coral_reef.session.all_get_count_quit_between_sort_desc", ["first_time" => date(SQLConst::DATE_FORMAT, $firstTime),
+            "last_time" => date(SQLConst::DATE_FORMAT, $lastTime)], $func, $failure);
     }
 
     private function noticeByXUid(string $xuid, string $notice): Closure

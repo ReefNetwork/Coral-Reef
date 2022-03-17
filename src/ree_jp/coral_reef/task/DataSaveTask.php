@@ -27,6 +27,7 @@ class DataSaveTask extends Task
 {
     const SHUTDOWN = 10800;
     const SAVE_INTERVAL = 300;
+    const WORLD_SAVE_INTERNAL = 1800;
     private int $timer = self::SHUTDOWN;
 
     /**
@@ -41,7 +42,10 @@ class DataSaveTask extends Task
     public function onRun(): void
     {
         --$this->timer;
-        switch ($this->timer % self::SAVE_INTERVAL) {
+        if (($this->timer % self::SAVE_INTERVAL) === 0) {
+            $this->dataSave();
+        }
+        switch ($this->timer % self::WORLD_SAVE_INTERNAL) {
             case 60:
                 Server::getInstance()->broadcastMessage(TextFormat::GRAY . "1分後にデータのセーブと地面に落ちているアイテムなどの削除を行います");
                 break;
@@ -54,7 +58,7 @@ class DataSaveTask extends Task
             case 0:
                 Server::getInstance()->broadcastMessage(TextFormat::GRAY . "データのセーブを行います\n数秒かかります...");
                 $start = microtime(true);
-                $this->save();
+                $this->worldSave();
                 $message = "データをセーブしました(" . round(microtime(true) - $start, 2) . "秒)";
                 Server::getInstance()->broadcastMessage(TextFormat::GRAY . $message);
                 self::startClearItem();
@@ -88,14 +92,18 @@ class DataSaveTask extends Task
         }
     }
 
-    private function save(): void
+    private function dataSave(): void
     {
-        foreach (Server::getInstance()->getWorldManager()->getWorlds() as $level) {
-            $level->save(true);
-        }
         foreach (Server::getInstance()->getOnlinePlayers() as $p) {
             $user = $this->store->getUser($p->getXuid());
             if ($user instanceof UserAccount) $user->save($this->repo);
+        }
+    }
+
+    private function worldSave(): void
+    {
+        foreach (Server::getInstance()->getWorldManager()->getWorlds() as $level) {
+            $level->save(true);
         }
     }
 
