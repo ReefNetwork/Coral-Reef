@@ -30,7 +30,7 @@ class ShopService
     {
         if ($pos->getWorld()->getFolderName() !== "lobby") return;
 
-        if ($p->isCreative()) {
+        if ($p->isCreative() && $p->isSneaking()) {
             ShopManageForm::sendForm($p, $store, $pos);
             return;
         }

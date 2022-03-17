@@ -176,6 +176,11 @@ class EventListener implements Listener
         if ($ev->isCancelled()) return;
         if ($this->accountStore->hasValue($p->getXuid(), "herbicide_break")) return;
 
+        if ($p->isCreative() && !is_null($this->shopStore->findShop($ev->getBlock()->getPosition()))) {
+            $this->shopStore->removeShop($ev->getBlock()->getPosition());
+            $p->sendMessage("ショップを破壊しました");
+        }
+
         try {
             AccountService::blockBroken($this->sqlRepo, $this->accountStore, $p, $ev->getBlock(), $this->sessionStore->getSessionData($p->getXuid()));
         } catch (Exception $e) {
