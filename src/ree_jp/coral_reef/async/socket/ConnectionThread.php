@@ -52,7 +52,11 @@ class ConnectionThread extends Thread
                 }
             }
 
-            while (($data = $this->receive($socket)) !== false && $data !== "") {
+            while (($data = $this->receive($socket)) !== "") {
+                if ($data === false) {
+                    $this->logging("ソケットサーバーから切断されました");
+                    break 2;
+                }
                 $this->receiveQueue[] = serialize($data);
             }
 
