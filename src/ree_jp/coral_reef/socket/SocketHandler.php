@@ -27,6 +27,7 @@ class SocketHandler
 
     public function handle(string $json): void
     {
+        var_dump($json);
         $content = json_decode($json, true);
         if (is_array($content) && isset($content["identity"]) && isset($content["data"]) && isset($this->handlers[$content["identity"]])) {
             $this->handlers[$content["identity"]]($content["data"]);
