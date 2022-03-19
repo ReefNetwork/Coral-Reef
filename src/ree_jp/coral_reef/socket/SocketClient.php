@@ -11,38 +11,28 @@
 
 namespace ree_jp\coral_reef\socket;
 
-use pocketmine\scheduler\ClosureTask;
-use pocketmine\scheduler\TaskHandler;
+use Logger;
 use pocketmine\scheduler\TaskScheduler;
-use ree_jp\coral_reef\async\socket\ConnectionThread;
 
 class SocketClient
 {
-    public ConnectionThread $connection;
+    public SocketConnection $connection;
 
-    private TaskHandler $tickTask;
-
-    public function __construct(SocketHandler $handler, private TaskScheduler $scheduler, private string $address, private int $port, private int $tick)
+    public function __construct(private SocketHandler $handler, private Logger $logger, private TaskScheduler $scheduler, private string $address, private int $port, private int $tick)
     {
         $this->create();
-        $this->tickTask = $this->scheduler->scheduleRepeatingTask(new ClosureTask(function () use ($handler): void {
-            while (!is_null($data = $this->connection->takeReceiveQueue())) {
-                $handler->handle($data);
-            }
-        }), $tick);
     }
 
     private function create(): void
     {
-        $this->connection = new ConnectionThread($this->address, $this->port, $this->tick * 50000);
+        $this->connection = new SocketConnection($this->logger, $this->address, $this->port, $this->handler, $this->scheduler, $this->tick);
     }
 
     public function send(SocketData $data): bool
     {
         $json = json_encode($data);
         if ($json !== false) {
-            $this->connection->addSendQueue($json);
-            return true;
+            return $this->connection->send($json);
         }
         return false;
     }
@@ -55,11 +45,9 @@ class SocketClient
 
     public function close(): void
     {
-        $this->tickTask->cancel();
-        if (isset($this->connection) && $this->connection->isRunning()) {
-            // ソケットを閉じる処理は動機的に
-            $this->connection->isStop = true;
-            $this->connection->join();
+        if (isset($this->connection)) {
+            $this->connection->close();
+            unset($this->connection);
         }
     }
 }

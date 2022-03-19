@@ -13,4 +13,7 @@ namespace ree_jp\coral_reef\socket;
 
 class SocketService
 {
+    static function register(SocketHandler $handler): void
+    {
+    }
 }

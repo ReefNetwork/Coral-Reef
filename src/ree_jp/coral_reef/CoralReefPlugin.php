@@ -59,7 +59,7 @@ class CoralReefPlugin extends PluginBase
     private ShopStore $shopStore;
     private SessionStore $sessionStore;
 
-    private SocketClient $socketClient;
+    public SocketClient $socketClient;
 
     public function onLoad(): void
     {
@@ -88,10 +88,7 @@ class CoralReefPlugin extends PluginBase
         $this->registerSchedules();
         $this->registerRecipe();
         $this->loadWorlds();
-
-        $handler = new SocketHandler();
-        $this->socketClient = new SocketClient($handler, $this->getScheduler(), $this->getConfig()->get(ConfigConst::SOCKET_SERVER_ADDRESS),
-            $this->getConfig()->get(ConfigConst::SOCKET_SERVER_PORT), $this->getConfig()->get(ConfigConst::SOCKET_RECEIVE_INTERVAL));
+        $this->readySocket();
 
         $this->accountStore->updateUserNameList($this->sqlRepo);
         ReefItems::registerAll();
@@ -107,7 +104,7 @@ class CoralReefPlugin extends PluginBase
             $this->sqlRepo->close();
         }
         if (isset($this->socketClient)) {
-            $this->socketClient?->close();
+            $this->socketClient->close();
         }
     }
 
@@ -180,6 +177,17 @@ class CoralReefPlugin extends PluginBase
         $wm->loadWorld("main_2");
     }
 
+    private function readySocket(): void
+    {
+        $handler = new SocketHandler();
+        $handler->registerHandler("close", function (): void {
+            $this->getLogger()->notice("ソケットサーバーから切断シグナルを受信しました");
+            $this->socketClient->close();
+        });
+        $this->socketClient = new SocketClient($handler, $this->getLogger(), $this->getScheduler(), $this->getConfig()->get(ConfigConst::SOCKET_SERVER_ADDRESS),
+            $this->getConfig()->get(ConfigConst::SOCKET_SERVER_PORT), $this->getConfig()->get(ConfigConst::SOCKET_RECEIVE_INTERVAL));
+    }
+
     private function pluginInformation(): void
     {
         $this->getLogger()->info('------------------------------------------------------------------------------------');
@@ -188,7 +196,7 @@ class CoralReefPlugin extends PluginBase
         $this->getLogger()->info('CC      oo  oo rrr  r  aa aaa lll   RRRRRR  ee   e ee   e ffff');
         $this->getLogger()->info('CC    C oo  oo rr     aa  aaa lll   RR  RR  eeeee  eeeee  ff');
         $this->getLogger()->info(' CCCCC   oooo  rr      aaa aa lll   RR   RR  eeeee  eeeee ff    ver ' . $this->getDescription()->getVersion());
-        $this->getLogger()->info('by ree-jp(https://ree-jp.net) & ReefNetwork(https://reef.ree-jp.net) & oss');
+        $this->getLogger()->info('by ree-jp(https://ree-jp.net) & ReefNetwork(https://reef.ree-jp.net)');
         $this->getLogger()->info('------------------------------------------------------------------------------------');
     }
 }
