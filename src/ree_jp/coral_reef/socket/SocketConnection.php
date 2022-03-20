@@ -44,6 +44,7 @@ class SocketConnection
                 $this->logger->warning("task is cancel");
                 return;
             }
+            var_dump("test" . $this->readTask->isCancelled());
             try {
                 while (($data = socket_read($this->socket, 1024)) !== false && $data !== "") {
                     $this->handler->handle($data);
@@ -64,9 +65,6 @@ class SocketConnection
     {
         $this->readTask->run();
         $this->readTask->cancel();
-        var_dump($this->readTask->isCancelled());
-        $this->readTask->remove();
-        var_dump($this->readTask->isCancelled());
         socket_set_block($this->socket);
         socket_close($this->socket);
         $this->logger->notice("ソケットサーバーへの接続を終了しました");
