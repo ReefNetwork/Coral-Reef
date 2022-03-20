@@ -40,12 +40,6 @@ class SocketConnection
 
         $this->logger->notice("ソケットサーバーに接続しました");
         $this->readTask = $this->scheduler->scheduleRepeatingTask(new ClosureTask(function (): void {
-            if ($this->readTask->isCancelled()) {
-                $this->logger->warning("task is cancel");
-                return;
-            }
-            var_dump("a");
-            var_dump($this->readTask->isCancelled());
             try {
                 while (($data = socket_read($this->socket, 1024)) !== false && $data !== "") {
                     $this->handler->handle($data);
@@ -64,7 +58,7 @@ class SocketConnection
 
     public function close(): void
     {
-//        $this->readTask->run();
+        $this->readTask->run();
         $this->readTask->cancel();
         socket_set_block($this->socket);
         socket_close($this->socket);

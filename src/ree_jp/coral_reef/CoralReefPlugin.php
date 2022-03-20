@@ -182,8 +182,10 @@ class CoralReefPlugin extends PluginBase
         $handler = new SocketHandler();
         $handler->registerHandler("close", function (): void {
             $this->getLogger()->notice("ソケットサーバーから切断シグナルを受信しました");
-            $this->socketClient->close();
-            $this->socketClient->reConnect(10);
+            $this->getScheduler()->scheduleDelayedTask(new ClosureTask(function (): void {
+                $this->socketClient->close();
+                $this->socketClient->reConnect(10);
+            }), 1);
         });
         $this->socketClient = new SocketClient($handler, $this->getLogger(), $this->getScheduler(), $this->getConfig()->get(ConfigConst::SOCKET_SERVER_ADDRESS),
             $this->getConfig()->get(ConfigConst::SOCKET_SERVER_PORT), $this->getConfig()->get(ConfigConst::SOCKET_RECEIVE_INTERVAL));
