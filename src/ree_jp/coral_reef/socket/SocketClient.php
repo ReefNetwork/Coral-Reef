@@ -11,7 +11,9 @@
 
 namespace ree_jp\coral_reef\socket;
 
+use Exception;
 use Logger;
+use pocketmine\scheduler\ClosureTask;
 use pocketmine\scheduler\TaskScheduler;
 
 class SocketClient
@@ -23,9 +25,18 @@ class SocketClient
         $this->create();
     }
 
-    private function create(): void
+    private function create(int $nextReconnectInterval = 5): void
     {
-        $this->connection = new SocketConnection($this->logger, $this->address, $this->port, $this->handler, $this->scheduler, $this->tick);
+        try {
+            $this->connection = new SocketConnection($this->logger, $this->address, $this->port, $this->handler, $this->scheduler, $this->tick);
+        } catch (Exception $ex) {
+            $this->logger->error("ソケットサーバーに接続中にエラーが発生しました");
+            $this->logger->logException($ex);
+            if ($nextReconnectInterval > 0) {
+                $this->reConnect($nextReconnectInterval);
+            }
+            return;
+        }
     }
 
     public function send(SocketData $data): bool
@@ -37,10 +48,12 @@ class SocketClient
         return false;
     }
 
-    public function reconnect(): void
+    public function reConnect(int $interval = 5): void
     {
-        $this->close();
-        $this->create();
+        $this->logger->notice("$interval 秒後に再接続します...");
+        $this->scheduler->scheduleDelayedTask(new ClosureTask(function () use ($interval): void {
+            $this->create($interval * 2);
+        }), $interval * 20);
     }
 
     public function close(): void

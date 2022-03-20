@@ -11,6 +11,7 @@
 
 namespace ree_jp\coral_reef\socket;
 
+use Exception;
 use Logger;
 use pocketmine\scheduler\ClosureTask;
 use pocketmine\scheduler\TaskHandler;
@@ -23,21 +24,35 @@ class SocketConnection
     private Socket|bool $socket;
     private TaskHandler $readTask;
 
-    public function __construct(private Logger $logger, string $address, int $port, SocketHandler $handler, TaskScheduler $scheduler, int $interval)
+    public function __construct(private Logger $logger, private string $address, private int $port, private SocketHandler $handler, private TaskScheduler $scheduler, private int $interval)
     {
-        $this->logger->notice("ソケットを準備中です...");
+        $this->connect();
+    }
+
+    private function connect(int $nextReconnectInterval = 5): void
+    {
+        $this->logger->notice("ソケットサーバーに接続中です...");
         $this->socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
-        if (($this->socket === false) || !socket_connect($this->socket, $address, $port)) {
+        if (($this->socket === false) || !socket_connect($this->socket, $this->address, $this->port)) {
             throw new RuntimeException(socket_strerror(socket_last_error()));
         }
         socket_set_nonblock($this->socket);
 
-        $this->logger->notice("ソケットの準備が完了しました");
-        $this->readTask = $scheduler->scheduleRepeatingTask(new ClosureTask(function () use ($handler): void {
-            while (($data = socket_read($this->socket, 1024)) !== false && $data !== "") {
-                $handler->handle($data);
+        $this->logger->notice("ソケットサーバーに接続しました");
+        $this->readTask = $this->scheduler->scheduleRepeatingTask(new ClosureTask(function (): void {
+            if ($this->readTask->isCancelled()) {
+                $this->logger->warning("task is cancel");
+                return;
             }
-        }), $interval);
+            try {
+                while (($data = socket_read($this->socket, 1024)) !== false && $data !== "") {
+                    $this->handler->handle($data);
+                }
+            } catch (Exception $ex) {
+                $this->logger->error("ソケットサーバーから読み取り中にエラーが発生しました");
+                $this->logger->logException($ex);
+            }
+        }), $this->interval);
     }
 
     public function send(string $data): bool
