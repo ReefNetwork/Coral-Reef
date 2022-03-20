@@ -44,7 +44,7 @@ class SocketConnection
                 $this->logger->warning("task is cancel");
                 return;
             }
-            var_dump("test" . $this->readTask->isCancelled());
+            var_dump("test {$this->readTask->isCancelled()}");
             try {
                 while (($data = socket_read($this->socket, 1024)) !== false && $data !== "") {
                     $this->handler->handle($data);
