@@ -11,7 +11,7 @@
 
 namespace ree_jp\coral_reef\socket;
 
-use Exception;
+use Error;
 use Logger;
 use pocketmine\scheduler\ClosureTask;
 use pocketmine\scheduler\TaskHandler;
@@ -48,7 +48,7 @@ class SocketConnection
                 while (($data = socket_read($this->socket, 1024)) !== false && $data !== "") {
                     $this->handler->handle($data);
                 }
-            } catch (Exception $ex) {
+            } catch (Error $ex) {
                 $this->logger->error("ソケットサーバーから読み取り中にエラーが発生しました");
                 $this->logger->logException($ex);
             }
@@ -64,6 +64,7 @@ class SocketConnection
     {
         $this->readTask->run();
         $this->readTask->cancel();
+        var_dump($this->readTask);
         socket_set_block($this->socket);
         socket_close($this->socket);
         $this->logger->notice("ソケットサーバーへの接続を終了しました");
