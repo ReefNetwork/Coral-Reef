@@ -17,7 +17,9 @@ use pocketmine\player\Player;
 use pocketmine\plugin\Plugin;
 use pocketmine\plugin\PluginOwned;
 use ree_jp\coral_reef\account\AccountStore;
+use ree_jp\coral_reef\CoralReefPlugin;
 use ree_jp\coral_reef\form\menu\MenuForm;
+use ree_jp\coral_reef\socket\SocketData;
 use ree_jp\coral_reef\sql\SQLRepository;
 
 class MenuCommand extends Command implements PluginOwned
@@ -32,6 +34,7 @@ class MenuCommand extends Command implements PluginOwned
     {
         if (!$this->testPermission($sender)) return;
         if (!$sender instanceof Player) {
+            CoralReefPlugin::$plugin->socketClient->send(new SocketData("test", ["data" => "aaa"]));
             $sender->sendMessage("このコマンドはプレイヤー専用です");
             return;
         }
