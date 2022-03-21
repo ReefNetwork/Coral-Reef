@@ -24,31 +24,27 @@ class SocketConnection
     private Socket|bool $socket;
     private TaskHandler $readTask;
 
-    public function __construct(private Logger $logger, private string $address, private int $port, private SocketHandler $handler, private TaskScheduler $scheduler, private int $interval)
-    {
-        $this->connect();
-    }
-
-    private function connect(int $nextReconnectInterval = 5): void
+    public function __construct(private Logger $logger, string $address, int $port, string $password, SocketHandler $handler, TaskScheduler $scheduler, int $interval)
     {
         $this->logger->notice("ソケットサーバーに接続中です...");
         $this->socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
-        if (($this->socket === false) || !socket_connect($this->socket, $this->address, $this->port)) {
+        if (($this->socket === false) || !socket_connect($this->socket, $address, $port)) {
             throw new RuntimeException(socket_strerror(socket_last_error()));
         }
+        $this->send($password);
         socket_set_nonblock($this->socket);
 
         $this->logger->notice("ソケットサーバーに接続しました");
-        $this->readTask = $this->scheduler->scheduleRepeatingTask(new ClosureTask(function (): void {
+        $this->readTask = $scheduler->scheduleRepeatingTask(new ClosureTask(function () use ($handler): void {
             try {
                 while (($data = socket_read($this->socket, 1024)) !== false && $data !== "") {
-                    $this->handler->handle($data);
+                    $handler->handle($data);
                 }
             } catch (Error $ex) {
                 $this->logger->error("ソケットサーバーから読み取り中にエラーが発生しました");
                 $this->logger->logException($ex);
             }
-        }), $this->interval);
+        }), $interval);
     }
 
     public function send(string $data): bool

@@ -20,7 +20,7 @@ class SocketClient
 {
     public SocketConnection $connection;
 
-    public function __construct(private SocketHandler $handler, private Logger $logger, private TaskScheduler $scheduler, private string $address, private int $port, private int $tick)
+    public function __construct(private SocketHandler $handler, private Logger $logger, private TaskScheduler $scheduler, private string $address, private int $port, private string $password, private int $tick)
     {
         $this->create();
     }
@@ -28,7 +28,7 @@ class SocketClient
     private function create(int $nextReconnectInterval = 5): void
     {
         try {
-            $this->connection = new SocketConnection($this->logger, $this->address, $this->port, $this->handler, $this->scheduler, $this->tick);
+            $this->connection = new SocketConnection($this->logger, $this->address, $this->port, $this->password, $this->handler, $this->scheduler, $this->tick);
         } catch (Exception $ex) {
             $this->logger->error("ソケットサーバーに接続中にエラーが発生しました");
             $this->logger->logException($ex);
