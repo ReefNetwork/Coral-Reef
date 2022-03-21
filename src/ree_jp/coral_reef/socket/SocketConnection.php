@@ -31,7 +31,7 @@ class SocketConnection
         if (($this->socket === false) || !socket_connect($this->socket, $address, $port)) {
             throw new RuntimeException(socket_strerror(socket_last_error()));
         }
-        $this->send($password);
+        var_dump($this->send($password));
         socket_set_nonblock($this->socket);
 
         $this->logger->notice("ソケットサーバーに接続しました");
@@ -49,9 +49,13 @@ class SocketConnection
 
     public function send(string $data): bool
     {
-        $result = socket_write($this->socket, $data, strlen($data));
-        var_dump($result . ":" . strlen($data));
-        return $result !== false;
+        $bite = strlen($data);
+        $sent = socket_write($this->socket, $data, $bite);
+        if ($sent === false) return false;
+        if (($bite - $sent) > 0) {
+            return $this->send(substr($data, $sent));
+        }
+        return true;
     }
 
     public function close(): void
