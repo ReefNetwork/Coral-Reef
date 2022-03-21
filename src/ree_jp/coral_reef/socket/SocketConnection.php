@@ -50,7 +50,7 @@ class SocketConnection
     public function send(string $data): bool
     {
         $bite = strlen($data);
-        $sent = socket_write($this->socket, $data, $bite);
+        $sent = socket_send($this->socket, $data, $bite, MSG_OOB);
         if ($sent === false) return false;
         if (($bite - $sent) > 0) {
             return $this->send(substr($data, $sent));
