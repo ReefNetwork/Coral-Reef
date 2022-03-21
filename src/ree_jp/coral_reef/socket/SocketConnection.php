@@ -49,7 +49,9 @@ class SocketConnection
 
     public function send(string $data): bool
     {
-        return socket_write($this->socket, $data, strlen($data)) !== false;
+        $result = socket_write($this->socket, $data, strlen($data));
+        var_dump($result . ":" . strlen($data));
+        return $result !== false;
     }
 
     public function close(): void
