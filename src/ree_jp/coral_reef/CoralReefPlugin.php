@@ -179,14 +179,7 @@ class CoralReefPlugin extends PluginBase
 
     private function readySocket(): void
     {
-        $handler = new SocketHandler();
-        $handler->registerHandler("close", function (): void {
-            $this->getLogger()->notice("ソケットサーバーから切断シグナルを受信しました");
-            $this->getScheduler()->scheduleDelayedTask(new ClosureTask(function (): void {
-                $this->socketClient->close();
-                $this->socketClient->reConnect(7);
-            }), 1);
-        });
+        $handler = new SocketHandler($this);
         $this->socketClient = new SocketClient($handler, $this->getLogger(), $this->getScheduler(), $this->getConfig()->get(ConfigConst::SOCKET_SERVER_ADDRESS),
             $this->getConfig()->get(ConfigConst::SOCKET_SERVER_PORT), $this->getConfig()->get(ConfigConst::SOCKET_PASSWORD), $this->getConfig()->get(ConfigConst::SOCKET_RECEIVE_INTERVAL));
     }

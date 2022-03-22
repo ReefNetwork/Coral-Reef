@@ -12,6 +12,8 @@
 namespace ree_jp\coral_reef\socket;
 
 use Closure;
+use pocketmine\scheduler\ClosureTask;
+use ree_jp\coral_reef\CoralReefPlugin;
 
 class SocketHandler
 {
@@ -19,6 +21,17 @@ class SocketHandler
      * @var Closure[]
      */
     private array $handlers = [];
+
+    public function __construct(CoralReefPlugin $plugin)
+    {
+        $this->registerHandler("close", function () use ($plugin): void {
+            $plugin->getLogger()->notice("ソケットサーバーから切断シグナルを受信しました");
+            $plugin->getScheduler()->scheduleDelayedTask(new ClosureTask(function () use ($plugin): void {
+                $plugin->socketClient->close();
+                $plugin->socketClient->reConnect(7);
+            }), 1);
+        });
+    }
 
     public function registerHandler(string $identity, Closure $func): void
     {
