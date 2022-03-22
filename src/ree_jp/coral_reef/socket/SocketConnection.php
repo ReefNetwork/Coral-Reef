@@ -63,7 +63,6 @@ class SocketConnection
         $this->readTask->run();
         $this->readTask->cancel();
         socket_set_block($this->socket);
-        $this->send(json_encode(new SocketData("close", [])));
         socket_close($this->socket);
         $this->logger->notice("ソケットサーバーへの接続を終了しました");
     }

@@ -34,7 +34,7 @@ class MenuCommand extends Command implements PluginOwned
     {
         if (!$this->testPermission($sender)) return;
         if (!$sender instanceof Player) {
-            CoralReefPlugin::$plugin->socketClient->send(new SocketData("test", ["data" => "aaa"]));
+            var_dump(CoralReefPlugin::$plugin->socketClient->send(new SocketData("test", ["data" => "aaa"])));
             $sender->sendMessage("このコマンドはプレイヤー専用です");
             return;
         }

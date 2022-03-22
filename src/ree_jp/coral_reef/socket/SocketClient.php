@@ -59,6 +59,7 @@ class SocketClient
     public function close(): void
     {
         if (isset($this->connection)) {
+            $this->send(new SocketData("close", []));
             $this->connection->close();
             unset($this->connection);
         }
