@@ -18,8 +18,10 @@ use pocketmine\player\Player;
 use pocketmine\scheduler\ClosureTask;
 use pocketmine\world\sound\XpLevelUpSound;
 use ree_jp\coral_reef\account\AccountStore;
+use ree_jp\coral_reef\account\SettingManager;
 use ree_jp\coral_reef\CoralReefPlugin;
 use ree_jp\coral_reef\quest\QuestListener;
+use ree_jp\coral_reef\sql\SettingConst;
 
 class SkillManager
 {
@@ -85,7 +87,7 @@ class SkillManager
             $store->setValue($xuid, "skill_cool_time");
             CoralReefPlugin::$plugin->getScheduler()->scheduleDelayedTask(new ClosureTask(function () use ($store, $xuid, $p): void {
                 $store->setValue($xuid, "skill_cool_time", 0);
-                if ($p->isOnline()) {
+                if ($p->isOnline() && SettingManager::isEnableOption($p->getXuid(), SettingConst::OFF_COOL_TIME_SOUND)) {
                     $p->sendPopup("スキルのクールタイムが終了しました");
                     $p->getWorld()->addSound($p->getPosition(), new XpLevelUpSound(mt_rand(1, 10)), [$p]);
                 }

@@ -46,7 +46,18 @@ class SettingForm
                     }
                 ),
                 new ClosureButton(
-                    "スニーク中にスキル発動", null,
+                    "クールタイム音", null,
+                    function (Player $p) use ($repo) {
+                        self::sendBoolForm($repo, $p, "クールタイム終了時に音を鳴らしますか?", "鳴らす / 無音",
+                            SettingConst::OFF_COOL_TIME_SOUND, function () use ($repo, $p) {
+                                $p->sendMessage("設定を保存しました");
+                                SettingManager::updateOption($repo, $p, SettingConst::OFF_COOL_TIME_SOUND);
+                            }
+                        );
+                    }
+                ),
+                new ClosureButton(
+                    "スニーク中のスキル発動", null,
                     function (Player $p) use ($repo) {
                         self::sendBoolForm($repo, $p, 'スニーク中はスキルを無効にしますか?', '無効にする / しない',
                             SettingConst::SNEAK_SKILL, function () use ($repo, $p) {
