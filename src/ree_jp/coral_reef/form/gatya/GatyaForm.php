@@ -63,7 +63,8 @@ class GatyaForm
                         }
                     ),
                 );
-            $p->sendForm($form);
+//            $p->sendForm($form);
+            $p->sendMessage("ガチャ機能はメンテナンス中です");
         });
     }
 
