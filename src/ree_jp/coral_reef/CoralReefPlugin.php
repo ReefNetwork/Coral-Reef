@@ -34,6 +34,7 @@ use ree_jp\coral_reef\command\TrashCommand;
 use ree_jp\coral_reef\gatya\items\ReefItems;
 use ree_jp\coral_reef\land\LandStore;
 use ree_jp\coral_reef\money\MoneyCache;
+use ree_jp\coral_reef\proxy\SocketHandler;
 use ree_jp\coral_reef\quest\QuestListener;
 use ree_jp\coral_reef\session\SessionStore;
 use ree_jp\coral_reef\shop\ShopStore;
@@ -42,6 +43,7 @@ use ree_jp\coral_reef\task\DataSaveTask;
 use ree_jp\coral_reef\task\EffectTask;
 use ree_jp\coral_reef\task\SendServerTipTask;
 use ree_jp\coral_reef\task\ServerUpdateTask;
+use ree_jp\reef_edge\ReefEdgePlugin;
 
 class CoralReefPlugin extends PluginBase
 {
@@ -84,6 +86,7 @@ class CoralReefPlugin extends PluginBase
         $this->registerSchedules();
         $this->registerRecipe();
         $this->loadWorlds();
+        SocketHandler::register(ReefEdgePlugin::$socketHandler, $this->sqlRepo, $this->accountStore);
 
         $this->accountStore->updateUserNameList($this->sqlRepo);
         ReefItems::registerAll();

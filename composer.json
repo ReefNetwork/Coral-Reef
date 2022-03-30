@@ -8,11 +8,12 @@
       "email": "mail@ree-jp.net"
     }
   ],
-  "require": {
+  "require-dev": {
     "ext-pdo": "*",
     "ext-yaml": "*",
     "ext-json": "*",
     "pocketmine/pocketmine-mp": "4.2.*",
+    "reefnetwork/reef-edge": "dev-master",
     "bbo51dog/bboform": "2.0.*",
     "sof3/libasynql": "4.0.*",
     "ree_jp_minecraft/invmenu": "4.3.*",
@@ -22,6 +23,10 @@
     {
       "type": "git",
       "url": "https://github.com/pmmp/PocketMine-MP.git"
+    },
+    {
+      "type": "git",
+      "url": "https://github.com/ReefNetwork/Reef-Edge.git"
     },
     {
       "type": "git",

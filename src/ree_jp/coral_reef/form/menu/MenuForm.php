@@ -104,7 +104,7 @@ class MenuForm
                     }),
                     new ClosureButton(
                         "サーバー移動", null, function (Player $p) use ($store, $repo) {
-                        ServerSelectForm::sendForm($repo, $store, $p);
+                        Server::getInstance()->dispatchCommand($p, "exe-p server-select");
                     }),
                     new ClosureButton(
                         "設定", null, function (Player $p) use ($repo) {
