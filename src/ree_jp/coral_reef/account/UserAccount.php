@@ -22,6 +22,8 @@ use ree_jp\coral_reef\quest\QuestManager;
 use ree_jp\coral_reef\skill\BreakSkill;
 use ree_jp\coral_reef\skill\SkillManager;
 use ree_jp\coral_reef\sql\SQLRepository;
+use ree_jp\reef_edge\ReefEdgePlugin;
+use ree_jp\reef_edge\socket\SocketService;
 
 class UserAccount
 {
@@ -71,7 +73,7 @@ class UserAccount
                 TextFormat::RED . 'U' . TextFormat::LIGHT_PURPLE . 'P', TextFormat::YELLOW . $beforeLevel . TextFormat::RESET . ' -> ' .
                 TextFormat::GOLD . $this->level);
             $message = $this->name . "さんのレベルが$this->level になりました";
-            Server::getInstance()->broadcastMessage($message);
+            SocketService::sendBroadcastMessage(ReefEdgePlugin::$socketClient, $message);
         }
     }
 

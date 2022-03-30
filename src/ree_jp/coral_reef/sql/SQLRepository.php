@@ -25,6 +25,8 @@ use ree_jp\coral_reef\CoralReefPlugin;
 use ree_jp\coral_reef\land\LandData;
 use ree_jp\coral_reef\money\MoneyCache;
 use ree_jp\coral_reef\session\SessionData;
+use ree_jp\reef_edge\ReefEdgePlugin;
+use ree_jp\reef_edge\socket\SocketService;
 
 class SQLRepository
 {
@@ -81,7 +83,7 @@ class SQLRepository
                 $this->accountStore->users[$account->xuid] = $account;
             } elseif (empty($arrayAccount)) { // データが存在しないとき新しくデータを作る
                 $this->accountStore->users[$xuid] = new UserAccount($xuid, $name, 0, null);
-                Server::getInstance()->broadcastMessage(TextFormat::AQUA . $name . "さんが初めてサーバーにログインしました");
+                SocketService::sendBroadcastMessage(ReefEdgePlugin::$socketClient, TextFormat::AQUA . $name . "さんが初めてサーバーにログインしました");
             } else { // データ壊れてるよ
                 Server::getInstance()->getLogger()->warning($xuid . 'のデータの読み込みに失敗しました');
                 return;

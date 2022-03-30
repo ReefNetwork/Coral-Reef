@@ -23,6 +23,8 @@ use ree_jp\coral_reef\gatya\items\ReefItems;
 use ree_jp\coral_reef\quest\QuestListener;
 use ree_jp\coral_reef\sql\SQLConst;
 use ree_jp\coral_reef\sql\SQLRepository;
+use ree_jp\reef_edge\ReefEdgePlugin;
+use ree_jp\reef_edge\socket\SocketService;
 
 class GatyaManager
 {
@@ -69,7 +71,7 @@ class GatyaManager
                                             if ($isBroadcast) {
                                                 // 一定のレア度以上は$isBroadcastをtrueにしてガチャを引いたことを全体に表示させる
                                                 $broadMessage = $p->getDisplayName() . 'さんが' . TextFormat::GREEN . 'REEFレア' . TextFormat::RESET . 'を引きました';
-                                                Server::getInstance()->broadcastMessage($broadMessage);
+                                                SocketService::sendBroadcastMessage(ReefEdgePlugin::$socketClient, $broadMessage);
                                             }
                                         }
 
