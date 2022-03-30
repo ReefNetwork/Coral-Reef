@@ -37,11 +37,11 @@ class ReefCommand extends Command implements PluginOwned
         if (isset($args[0])) {
             switch ($args[0]) {
                 case "init_tool":
-                    $pickaxe = VanillaItems::STONE_PICKAXE();
+                    $pickaxe = VanillaItems::IRON_PICKAXE();
                     $pickaxe->setCustomName("初期装備(ツルハシ)");
                     if ($pickaxe instanceof Durable) $pickaxe->setUnbreakable();
                     $sender->getInventory()->addItem($pickaxe);
-                    $shovel = VanillaItems::WOODEN_SHOVEL();
+                    $shovel = VanillaItems::IRON_SHOVEL();
                     $shovel->setCustomName("初期装備(シャベル)");
                     if ($shovel instanceof Durable) $shovel->setUnbreakable();
                     $sender->getInventory()->addItem($shovel);
@@ -49,12 +49,12 @@ class ReefCommand extends Command implements PluginOwned
                     QuestListener::callSubscribedQuest($sender->getXuid(), QuestListener::GET_INIT_TOOL, null);
                     return;
                 case "food":
-                    $food = VanillaItems::MELON()->setCustomName("無限すいか")->setLore(["食べても食べても減らない不思議なすいか"]);
+                    $food = VanillaItems::BAKED_POTATO()->setCustomName("無限ぽていとぉ")->setLore(["A MAGICAL POTATO"]);
                     $nbt = $food->getNamedTag();
                     $nbt->setByte("reef_infinite_food", 1);
                     $food->setNamedTag($nbt);
                     $sender->getInventory()->addItem($food);
-                    $sender->sendMessage("無限スイカを配布しました");
+                    $sender->sendMessage("無限ポテトを配布しました");
                     return;
                 case "test":
                     $sender->sendMessage('super test message yeah');
