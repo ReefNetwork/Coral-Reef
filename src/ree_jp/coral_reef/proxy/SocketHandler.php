@@ -21,7 +21,7 @@ class SocketHandler
 {
     static function register(\ree_jp\reef_edge\socket\SocketHandler $handler, SQLRepository $repo, AccountStore $accountStore): void
     {
-        $handler->registerHandler("transfer-request", function () use ($accountStore, $repo): void {
+        $handler->registerHandler("transfer-request", function (array $data) use ($accountStore, $repo): void {
             if (isset($data["player"]) && isset($data["server"])) {
                 $p = Server::getInstance()->getPlayerByUUID(Uuid::fromString($data["player"]));
                 if ($p instanceof Player) {
