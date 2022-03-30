@@ -140,8 +140,8 @@ class EventListener implements Listener
             $p->setHealth($p->getMaxHealth());
             $p->getHungerManager()->setFood($p->getHungerManager()->getMaxFood());
             $p->teleport(Server::getInstance()->getWorldManager()->getDefaultWorld()->getSpawnLocation());
-            Server::getInstance()->broadcastMessage(TextFormat::DARK_GRAY . '[死亡] ' . $p->getDisplayName());
-            $p->sendTitle("死亡しました");
+            Server::getInstance()->broadcastMessage(TextFormat::DARK_GRAY . '[Death] ' . $p->getDisplayName());
+            $p->sendActionBarMessage(TextFormat::GRAY.'死亡したため、スポーン地点に転送されました');
         }
     }
 
@@ -162,7 +162,7 @@ class EventListener implements Listener
         }
         if ($this->accountStore->hasValue($p->getXuid(), 'skill_cool_time') &&
             !SettingManager::isEnableOption($p->getXuid(), SettingConst::ALLOW_COOL_TIME_DIG)) {
-            $p->sendPopup("クールタイム中はブロックを掘ることはできません");
+            $p->sendPopup(TextFormat::GRAY."クールタイム中にブロックを掘ることはできません!!");
             $ev->cancel();
         }
     }
@@ -178,13 +178,13 @@ class EventListener implements Listener
 
         if ($p->isCreative() && !is_null($this->shopStore->findShop($ev->getBlock()->getPosition()))) {
             $this->shopStore->removeShop($ev->getBlock()->getPosition());
-            $p->sendMessage("ショップを破壊しました");
+            $p->sendMessage(TextFormat::GREEN."ショップを破壊しました");
         }
 
         try {
             AccountService::blockBroken($this->sqlRepo, $this->accountStore, $p, $ev->getBlock(), $this->sessionStore->getSessionData($p->getXuid()));
         } catch (Exception $e) {
-            $p->sendMessage('エラーが発生しました');
+            $p->sendMessage(TextFormat::RED.'エラーが発生しました');
             Server::getInstance()->getLogger()->error('[blockBroke]' . $p->getName() . 'の処理中に' . $e->getMessage());
         }
         try {
@@ -198,7 +198,7 @@ class EventListener implements Listener
             }
             $ev->setDrops([]);
         } catch (Throwable) { // StackStorageAPIが見つからなかった場合
-            $p->sendMessage('ストレージにアクセスできませんでした');
+            $p->sendMessage(TextFormat::RED.'ストレージにアクセスできませんでした');
         }
     }
 
