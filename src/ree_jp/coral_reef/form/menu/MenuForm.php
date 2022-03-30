@@ -46,64 +46,64 @@ class MenuForm
             $exp = is_null($user) ? 'error' : $user->experience;
 
             $form = (new SimpleForm())
-                ->setTitle("ReefServer Menu")
-                ->setText("レベル : $level\nレベルアップまで : $necessaryExperience\n経験値 : $exp\nお金 : $money")
+                ->setTitle(TextFormat::GREEN."Reef".TextFormat::WHITE." Menu")
+                ->setText(TextFormat::GREEN."現在のレベル : $level \nレベルアップまで : $necessaryExperience 経験値\n経験値 : $exp\n所持金 : $money")
                 ->addElements(
                     new ClosureButton(
-                        "ストレージ", null,
+                        "ストレージ \n§7StackStorageを開きます", null,
                         function (Player $p) {
                             Server::getInstance()->dispatchCommand($p, 'stackstorage');
                             $p->sendMessage(TextFormat::DARK_GRAY . "ストレージを開いています(数秒かかることがあります)");
                         }
                     ),
                     new ClosureButton(
-                        "ワープ地点", null, function (Player $p) use ($repo) {
+                        "ワープ地点 \n§7自分だけのワープ地点を作成します", null, function (Player $p) use ($repo) {
                         MyWarpForm::sendForm($repo, $p);
                     }),
                     new ClosureButton(
-                        "ワールド移動", null, function (Player $p) {
+                        "ワールド移動 \n§7ロビーやショップに移動ができます", null, function (Player $p) {
                         self::sendWorldTeleportForm($p);
                     }),
                     new ClosureButton(
-                        "スキル設定", null, function (Player $p) use ($store) {
+                        "スキル設定 \n§7掘った時に発動するスキルを設定できます", null, function (Player $p) use ($store) {
                         SkillSettingForm::sendForm($store, $p);
                     }),
                     new ClosureButton(
-                        "クエスト", null, function (Player $p) {
+                        "クエスト \n§7チュートリアルなどがあります", null, function (Player $p) {
                         QuestForm::sendForm($p);
                     }),
                     new ClosureButton(
-                        "ランダムワープ", null, function (Player $p) use ($repo, $store) {
+                        "ランダムワープ \n§7ランダムな場所にワープします", null, function (Player $p) use ($repo, $store) {
                         self::sendRandomWarpForm($repo, $store, $p);
                     }),
                     new ClosureButton(
-                        "ゴミ箱", null,
+                        "ゴミ箱 \n§7アイテムを捨てる事ができます", null,
                         function (Player $p) {
                             Server::getInstance()->dispatchCommand($p, "trash");
                         }
                     ),
                     new ClosureButton(
-                        "土地保護", null, function (Player $p) {
+                        "土地保護 \n§7土地を編集したり作成ができます", null, function (Player $p) {
                         Server::getInstance()->dispatchCommand($p, "reef-form land");
                     }),
                     new ClosureButton(
-                        "ランキング", null, function (Player $p) use ($store, $repo) {
+                        "ランキング \n§7所持金ランキングなどが見れます", null, function (Player $p) use ($store, $repo) {
                         RankingForm::sendForm($repo, $store, $p);
                     }),
                     new ClosureButton(
-                        "ガチャ", null, function (Player $p) use ($repo) {
+                        "ガチャ \nガチャチケットでひくことができます", null, function (Player $p) use ($repo) {
                         GatyaForm::sendForm($repo, $p);
                     }),
                     new ClosureButton(
-                        "ギフト", null, function (Player $p) use ($repo, $store) {
+                        "ギフト \n§7ギフトがある場合はここから受け取れます", null, function (Player $p) use ($repo, $store) {
                         GiftForm::sendForm($repo, $store, $p);
                     }),
                     new ClosureButton(
-                        "ボーナスコード", null, function (Player $p) use ($repo) {
+                        "ボーナスコード \n§7運営が配布するコードで特別なアイテムが受け取れます", null, function (Player $p) use ($repo) {
                         BonusCodeForm::sendForm($repo, $p);
                     }),
                     new ClosureButton(
-                        "サーバー移動", null, function (Player $p) use ($store, $repo) {
+                        "サーバー移動 \n§7整地2などへの移動ができます", null, function (Player $p) use ($store, $repo) {
                         Server::getInstance()->dispatchCommand($p, "exe-p server-select");
                     }),
                     new ClosureButton(
