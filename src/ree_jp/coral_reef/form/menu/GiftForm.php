@@ -51,13 +51,15 @@ class GiftForm
                     self::sendGiftDetailForm($repo, $store, $p, $gift);
                 }
             );
-            $giftsPage[] = $gift;
         }
         $allReceiveButton = new ClosureButton(
             "受け取れるすべてのアイテムを受け取る", null,
-            function (Player $p) use ($repo, $giftsPage) {
-                foreach ($giftsPage as $gift) {
-                    self::receiveItems($repo, $p, $gift);
+            function (Player $p) use ($page, $repo, $giftsPage) {
+                foreach ($giftsPage as $gifts) {
+                    foreach ($gifts as $giftData) {
+                        $gift = GiftData::jsonDeserialize(json_decode($giftData["value"], true), $giftData["subtype"]);
+                        self::receiveItems($repo, $p, $gift);
+                    }
                 }
                 $p->sendMessage("全てのアイテムを受け取りました");
             }
