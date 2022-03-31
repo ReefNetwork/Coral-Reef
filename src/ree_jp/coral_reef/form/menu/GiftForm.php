@@ -26,41 +26,58 @@ class GiftForm
     static function sendForm(SQLRepository $repo, AccountStore $store, Player $p): void
     {
         $repo->getAllSubtypeValue($p->getXuid(), SQLConst::TYPE_GIFT, function (array $rows) use ($store, $repo, $p): void {
-            /** @var GiftData[] $gifts */
-            $gifts = [];
-            /** @var ClosureButton[] $buttons */
-            $buttons = [];
-
-            foreach ($rows as $row) {
-                $gift = GiftData::jsonDeserialize(json_decode($row["value"], true), $row["subtype"]);
-                $buttons[] = new ClosureButton(
-                    "送り主: " . $store->getUserName($gift->from) . "(有効期限: " . date("y年m月d日 H時i分", $gift->expiry) .
-                    ")\n" . $gift->message,
-                    null,
-                    function (Player $p) use ($repo, $store, $gift) {
-                        self::sendGiftDetailForm($repo, $store, $p, $gift);
-                    }
-                );
-                $gifts[] = $gift;
-            }
-            $allReceiveButton = new ClosureButton(
-                "受け取れるすべてのアイテムを受け取る", null,
-                function (Player $p) use ($repo, $gifts) {
-                    foreach ($gifts as $gift) {
-                        self::receiveItems($repo, $p, $gift);
-                    }
-                    $p->sendMessage("全てのアイテムを受け取りました");
-                }
-            );
-            $form = (new SimpleForm())
-                ->setTitle("Menu -> Gift")
-                ->setText("受け取れるプレゼント一覧です")
-                ->addElements(...$buttons)
-                ->addElement($allReceiveButton);
-            $p->sendForm($form);
+            self::sendGiftList($repo, $store, $p, array_chunk($rows, 15));
         }, function () use ($p): void {
             $p->sendMessage("エラーが発生しました");
         });
+    }
+
+    static function sendGiftList(SQLRepository $repo, AccountStore $store, Player $p, array $giftsPage, int $page = 1): void
+    {
+        if (!isset($giftsPage[$page - 1])) {
+            $p->sendMessage("エラーが発生しました");
+            return;
+        }
+        /** @var ClosureButton[] $buttons */
+        $buttons = [];
+
+        foreach ($giftsPage[$page - 1] as $row) {
+            $gift = GiftData::jsonDeserialize(json_decode($row["value"], true), $row["subtype"]);
+            $buttons[] = new ClosureButton(
+                "送り主: " . $store->getUserName($gift->from) . "(有効期限: " . date("y年m月d日 H時i分", $gift->expiry) .
+                ")\n" . $gift->message,
+                null,
+                function (Player $p) use ($repo, $store, $gift) {
+                    self::sendGiftDetailForm($repo, $store, $p, $gift);
+                }
+            );
+            $giftsPage[] = $gift;
+        }
+        $allReceiveButton = new ClosureButton(
+            "受け取れるすべてのアイテムを受け取る", null,
+            function (Player $p) use ($repo, $giftsPage) {
+                foreach ($giftsPage as $gift) {
+                    self::receiveItems($repo, $p, $gift);
+                }
+                $p->sendMessage("全てのアイテムを受け取りました");
+            }
+        );
+        if (isset($giftsPage[$page])) {
+            $buttons[] = new ClosureButton("次のページ", null, function () use ($p, $giftsPage, $page, $store, $repo): void {
+                self::sendGiftList($repo, $store, $p, $giftsPage, $page + 1);
+            });
+        }
+        if (isset($giftsPage[$page - 2])) {
+            $buttons[] = new ClosureButton("前のページ", null, function () use ($p, $giftsPage, $page, $store, $repo): void {
+                self::sendGiftList($repo, $store, $p, $giftsPage, $page - 1);
+            });
+        }
+        $form = (new SimpleForm())
+            ->setTitle("Menu -> Gift")
+            ->setText("受け取れるプレゼント一覧です")
+            ->addElements(...$buttons)
+            ->addElement($allReceiveButton);
+        $p->sendForm($form);
     }
 
     static function sendGiftDetailForm(SQLRepository $repo, AccountStore $store, Player $p, GiftData $gift): void
