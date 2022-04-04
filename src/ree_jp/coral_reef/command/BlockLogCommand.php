@@ -40,7 +40,7 @@ class BlockLogCommand extends Command implements PluginOwned
             $sender->sendMessage("このコマンドはプレイヤー専用です");
             return;
         }
-        $sender->sendMessage("ログ機能は現在使用できません");
+        $sender->sendMessage("§c >> ログ機能は現在使用できません");
 //        if (count($args) < 3) {
 //            $sender->sendMessage("コマンドが間違っています");
 //            return;
