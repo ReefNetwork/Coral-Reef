@@ -30,7 +30,7 @@ class SkillSettingForm
         $nowSkill = is_null($user->skill) ? 'なし' : $user->skill->name;
         $form = (new SimpleForm())
             ->setTitle("Menu -> Skill")
-            ->setText("現在のスキルは $nowSkill です")
+            ->setText("掘る時に発動できるスキルを設定できます\n現在のスキルは $nowSkill です\n")
             ->addElement(new ClosureButton(
                 TextFormat::GREEN . "スキルなし", null, function (Player $p) use ($store) {
                 self::sendSkillConfirmForm($store, $p, null);
@@ -56,7 +56,7 @@ class SkillSettingForm
                                 }), new Button("閉じる", null)
                             );
                             $form->setTitle("Skill -> Confirm")
-                                ->setText("レベルが足りません\n必要なレベル: " . $skill->needLevel . "\n現在のレベル: " . $user->level);
+                                ->setText(TextFormat::RED."レベルが足りません\n必要なレベル: " . $skill->needLevel . "\n現在のレベル: " . $user->level);
                             $p->sendForm($form);
                         }
                     }
@@ -79,7 +79,7 @@ class SkillSettingForm
                 "はい", null, function (Player $p) use ($store, $skillName, $skill) {
                 $user = $store->getUser($p->getXuid());
                 $user->skill = $skill;
-                $p->sendMessage('スキルを変更しました');
+                $p->sendMessage(TextFormat::GREEN." >> スキルを $skillName に変更しました！");
                 QuestListener::callSubscribedQuest($p->getXuid(), QuestListener::CHANGE_SKILL, $skillName);
             }),
             new ClosureButton(

@@ -38,14 +38,14 @@ class TrashCommand extends Command implements PluginOwned
         }
 
         $menu = InvMenu::create(InvMenuTypeIds::TYPE_DOUBLE_CHEST);
-        $menu->setName("ゴミ箱" . TextFormat::DARK_GREEN . "※ゴミ箱から戻すことは出来ません");
+        $menu->setName("ゴミ箱" . TextFormat::RED . "※ゴミ箱から戻すことは出来ません");
         $menu->setInventoryCloseListener(function (Player $player, Inventory $inventory): void {
             $items = 0;
             foreach ($inventory->getContents() as $item) {
                 $items += $item->getCount();
             }
             $inventory->clearAll();
-            $player->sendMessage($items . "個のアイテムを捨てました");
+            $player->sendMessage(TextFormat::GREEN." >> ".$items . "個のアイテムを捨てました");
         });
         $menu->send($sender);
     }
