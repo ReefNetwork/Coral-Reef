@@ -91,7 +91,7 @@ class MenuForm
                         RankingForm::sendForm($repo, $store, $p);
                     }),
                     new ClosureButton(
-                        "ガチャ \nガチャチケットでひくことができます", null, function (Player $p) use ($repo) {
+                        "ガチャ \n§7ガチャチケットでひくことができます", null, function (Player $p) use ($repo) {
                         GatyaForm::sendForm($repo, $p);
                     }),
                     new ClosureButton(
