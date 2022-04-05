@@ -22,7 +22,6 @@ use ree_jp\coral_reef\quest\QuestListener;
 use ree_jp\coral_reef\quest\QuestManager;
 use ree_jp\coral_reef\skill\BreakSkill;
 use ree_jp\coral_reef\skill\SkillManager;
-use ree_jp\coral_reef\sound\RaidHornSound;
 use ree_jp\coral_reef\sql\SQLRepository;
 use ree_jp\reef_edge\ReefEdgePlugin;
 use ree_jp\reef_edge\socket\SocketService;
@@ -70,7 +69,6 @@ class UserAccount
             $this->setLevelAndNecessaryExperience();
             QuestListener::callSubscribedQuest($p->getXuid(), QuestListener::LEVEL_UP, $this->level);
 
-            $p->broadcastSound(new RaidHornSound());
             $p->broadcastSound(new XpLevelUpSound(30));
             $p->sendTitle(
                 TextFormat::BLUE . 'L' . TextFormat::GREEN . 'e' . TextFormat::AQUA . 'v' . TextFormat::GREEN . 'e' . TextFormat::BLUE . 'L ' .
