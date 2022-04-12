@@ -53,11 +53,11 @@ class BonusCodeForm
                     GatyaManager::addTicket($repo, $p->getXuid(), SQLConst::TICKETS_NORMAL, 1);
                 });
                 break;
-            case "discord-partner":
+            case "discord-1000":
                 self::useCode($repo, $p, $code, function () use ($repo, $p): void {
                     $p->sendMessage(TextFormat::DARK_PURPLE . "Discordサーバーに入って頂きありがとうございます");
-                    $p->sendMessage(TextFormat::AQUA . "ガチャチケットを" . TextFormat::RED . "3枚" . TextFormat::AQUA . "受け取りました");
-                    GatyaManager::addTicket($repo, $p->getXuid(), SQLConst::TICKETS_NORMAL, 3);
+                    $p->sendMessage(TextFormat::AQUA . "ガチャチケットを" . TextFormat::RED . "10枚" . TextFormat::AQUA . "受け取りました");
+                    GatyaManager::addTicket($repo, $p->getXuid(), SQLConst::TICKETS_NORMAL, 10);
                 });
                 break;
             default:
