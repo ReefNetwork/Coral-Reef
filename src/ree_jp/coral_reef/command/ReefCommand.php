@@ -14,10 +14,12 @@ namespace ree_jp\coral_reef\command;
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
 use pocketmine\item\Durable;
+use pocketmine\item\ItemIds;
 use pocketmine\item\VanillaItems;
 use pocketmine\player\Player;
 use pocketmine\plugin\Plugin;
 use pocketmine\plugin\PluginOwned;
+use ree_jp\coral_reef\item\CustomItemService;
 use ree_jp\coral_reef\quest\QuestListener;
 
 class ReefCommand extends Command implements PluginOwned
@@ -40,11 +42,11 @@ class ReefCommand extends Command implements PluginOwned
                     $pickaxe = VanillaItems::IRON_PICKAXE();
                     $pickaxe->setCustomName("初期装備(ツルハシ)");
                     if ($pickaxe instanceof Durable) $pickaxe->setUnbreakable();
-                    $sender->getInventory()->addItem($pickaxe);
                     $shovel = VanillaItems::IRON_SHOVEL();
                     $shovel->setCustomName("初期装備(シャベル)");
                     if ($shovel instanceof Durable) $shovel->setUnbreakable();
-                    $sender->getInventory()->addItem($shovel);
+                    $sender->getInventory()->addItem($pickaxe, $shovel,
+                        CustomItemService::get(ItemIds::BOOK, 1), CustomItemService::get(ItemIds::BOOK, 2));
                     $sender->sendMessage("初期装備を配布しました");
                     QuestListener::callSubscribedQuest($sender->getXuid(), QuestListener::GET_INIT_TOOL, null);
                     return;
