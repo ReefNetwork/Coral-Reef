@@ -17,6 +17,7 @@
     "bbo51dog/bboform": "2.0.*",
     "sof3/libasynql": "4.0.*",
     "ree_jp_minecraft/invmenu": "4.3.*",
+    "ree_jp/stackstorage": "dev-master",
     "ext-mbstring": "*"
   },
   "repositories": [
@@ -43,6 +44,10 @@
     {
       "type": "git",
       "url": "https://github.com/Ree-jp-minecraft/MysqlLogger.git"
+    },
+    {
+      "type": "git",
+      "url": "https://github.com/Ree-jp-minecraft/StackStrage.git"
     },
     {
       "type": "git",
