@@ -55,9 +55,10 @@ class ShopDetailForm
 
         $amountSlide = new Slider(self::replaceOrderType($shop->orderType) . "するセット数を選択してください", 1, $maxAmount, 1);
         $amountInput = new Input(self::replaceOrderType($shop->orderType) . "するセット数を入力してください", 10);
-        $isStorage = new Toggle("直接ストレージ内にアイテムをいれますか?");
+        $isDirectStorage = new Toggle("直接ストレージ内にアイテムをいれますか?");
+        $isDirectSell = new Toggle("ストレージ内のアイテムも売りますか?");
 
-        $form = (new ClosureCustomForm(function (Player $p) use ($amountInput, $isSlide, $isStorage, $store, $repo, $shop, $amountSlide): void {
+        $form = (new ClosureCustomForm(function (Player $p) use ($isDirectSell, $amountInput, $isSlide, $isDirectStorage, $store, $repo, $shop, $amountSlide): void {
             if ($isSlide) {
                 $amount = $amountSlide->getValue();
             } else {
@@ -69,13 +70,13 @@ class ShopDetailForm
             }
 
             $p->sendForm((new ModalForm(new ClosureButton(self::replaceOrderType($shop->orderType) . "する", null,
-                function (Player $p) use ($amount, $isStorage, $store, $repo, $shop): void {
+                function (Player $p) use ($isDirectSell, $amount, $isDirectStorage, $store, $repo, $shop): void {
                     switch ($shop->orderType) {
                         case "buy":
-                            ShopService::buy($repo, $store, $shop, $p, $amount, $isStorage->getValue());
+                            ShopService::buy($repo, $store, $shop, $p, $amount, $isDirectStorage->getValue());
                             break;
                         case "sell":
-                            ShopService::sell($repo, $store, $shop, $p, $amount);
+                            ShopService::sell($repo, $store, $shop, $p, $amount, $isDirectSell->getValue());
                             break;
                         default:
                             $p->sendMessage("エラーが発生しました");
@@ -95,7 +96,10 @@ class ShopDetailForm
         }
         // orderTypeがbuyの時のみformに登録する
         if ($shop->orderType === "buy") {
-            $form->addElement($isStorage);
+            $form->addElement($isDirectStorage);
+        }
+        if ($shop->orderType === "buy") {
+            $form->addElement($isDirectSell);
         }
 
         $p->sendForm($form);

@@ -19,6 +19,7 @@ use ree_jp\coral_reef\account\AccountStore;
 use ree_jp\coral_reef\account\GiftData;
 use ree_jp\coral_reef\sql\SQLConst;
 use ree_jp\coral_reef\sql\SQLRepository;
+use ree_jp\stackStorage\api\StackStorageAPI;
 use Throwable;
 
 class GiftForm
@@ -138,12 +139,7 @@ class GiftForm
                     $p->getInventory()->addItem($item);
                 } else {
                     try {
-                        /**
-                         * @noinspection PhpUndefinedNamespaceInspection
-                         * @noinspection PhpUndefinedClassInspection
-                         * @noinspection PhpFullyQualifiedNameUsageInspection
-                         */
-                        \ree_jp\stackStorage\api\StackStorageAPI::$instance->add($p->getXuid(), $item);
+                        StackStorageAPI::$instance->add($p->getXuid(), $item);
                     } catch (Throwable) { // StackStorageAPIが見つからなかった場合
                         $gift->save($repo, $p->getXuid(), null, null);
                         return false;
