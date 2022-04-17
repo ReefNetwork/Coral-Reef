@@ -203,13 +203,13 @@ class SQLRepository
     {
         $this->db->executeInsert('coral_reef.warp.create',
             ['xuid' => intval($xuid), 'name' => $name, 'server' => CoralReefPlugin::$serverID, 'level' => $level, 'x' => $x, 'y' => $y, 'z' => $z],
-            $this->noticeByXUid($xuid, 'ワード地点を作成しました'), $this->noticeByXUid($xuid, 'エラーが発生しました'));
+            $this->noticeByXUid($xuid, 'ワープ地点を作成しました'), $this->noticeByXUid($xuid, 'エラーが発生しました'));
     }
 
     public function deleteWarp(string $xuid, string $name): void
     {
         $this->db->executeGeneric('coral_reef.warp.delete', ['xuid' => intval($xuid), 'name' => $name, 'server' => CoralReefPlugin::$serverID],
-            $this->noticeByXUid($xuid, 'ワード地点を削除しました'), $this->noticeByXUid($xuid, 'エラーが発生しました'));
+            $this->noticeByXUid($xuid, 'ワープ地点を削除しました'), $this->noticeByXUid($xuid, 'エラーが発生しました'));
     }
 
     public function loadProtectLand(Closure $func, Closure $failure): void
