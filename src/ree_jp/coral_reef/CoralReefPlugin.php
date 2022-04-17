@@ -32,6 +32,7 @@ use ree_jp\coral_reef\command\ReefConsoleCommand;
 use ree_jp\coral_reef\command\ReefFormCommand;
 use ree_jp\coral_reef\command\TrashCommand;
 use ree_jp\coral_reef\gatya\items\ReefItems;
+use ree_jp\coral_reef\item\CustomItemService;
 use ree_jp\coral_reef\land\LandStore;
 use ree_jp\coral_reef\money\MoneyCache;
 use ree_jp\coral_reef\proxy\SocketHandler;
@@ -90,6 +91,7 @@ class CoralReefPlugin extends PluginBase
 
         $this->accountStore->updateUserNameList($this->sqlRepo);
         ReefItems::registerAll();
+        CustomItemService::registerAll();
         $this->pluginInformation();
     }
 

@@ -62,6 +62,7 @@ use ree_jp\coral_reef\shop\ShopStore;
 use ree_jp\coral_reef\sql\SettingConst;
 use ree_jp\coral_reef\sql\SQLRepository;
 use ree_jp\coral_reef\task\EffectTask;
+use ree_jp\stackStorage\api\StackStorageAPI;
 use Throwable;
 
 class EventListener implements Listener
@@ -189,12 +190,7 @@ class EventListener implements Listener
         }
         try {
             foreach ($ev->getDrops() as $dropItem) {
-                /**
-                 * @noinspection PhpUndefinedNamespaceInspection
-                 * @noinspection PhpUndefinedClassInspection
-                 * @noinspection PhpFullyQualifiedNameUsageInspection
-                 */
-                \ree_jp\stackStorage\api\StackStorageAPI::$instance->add($p->getXuid(), $dropItem);
+                StackStorageAPI::$instance->add($p->getXuid(), $dropItem);
             }
             $ev->setDrops([]);
         } catch (Throwable) { // StackStorageAPIが見つからなかった場合

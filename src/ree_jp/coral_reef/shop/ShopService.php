@@ -12,7 +12,6 @@
 namespace ree_jp\coral_reef\shop;
 
 use Closure;
-use pocketmine\inventory\Inventory;
 use pocketmine\item\Item;
 use pocketmine\player\Player;
 use pocketmine\world\Position;
@@ -22,6 +21,7 @@ use ree_jp\coral_reef\gatya\GatyaManager;
 use ree_jp\coral_reef\money\MoneyService;
 use ree_jp\coral_reef\sql\SQLConst;
 use ree_jp\coral_reef\sql\SQLRepository;
+use ree_jp\stackstorage\api\StackStorageAPI;
 use Throwable;
 
 class ShopService
@@ -59,11 +59,6 @@ class ShopService
                         $p->getInventory()->addItem($item);
                     } else {
                         try {
-                            /**
-                             * @noinspection PhpUndefinedNamespaceInspection
-                             * @noinspection PhpUndefinedClassInspection
-                             * @noinspection PhpFullyQualifiedNameUsageInspection
-                             */
                             \ree_jp\stackStorage\api\StackStorageAPI::$instance->add($p->getXuid(), $item);
                             $isNoInv = false | $isStorage;
                         } catch (Throwable) {
@@ -85,14 +80,19 @@ class ShopService
         });
     }
 
-    static function sell(SQLRepository $repo, ShopStore $store, Shop $shop, Player $p, int $count): void
+    static function sell(SQLRepository $repo, ShopStore $store, Shop $shop, Player $p, int $count, bool $isDirectSell, array $storage = []): void
     {
+        if ($isDirectSell) {
+            StackStorageAPI::$instance->getAllItems($p->getXuid(), function (array $storageItems) use ($count, $p, $shop, $repo, $store): void {
+                self::sell($repo, $store, $shop, $p, $count, false, $storageItems);
+            }, null);
+            return;
+        }
+        $haveItems = array_merge($p->getInventory()->getContents(), $storage);
         foreach ($shop->getItems() as $item) {
             $item = $item->setCount($item->getCount() * $count);
-            if (!$p->getInventory()->contains($item)) {
-                $p->sendMessage("所持してるアイテムが足りなかったため売却できませんでした");
-                return;
-            }
+            $itemRemainingCount = self::getCount($haveItems, $item);
+            if ($itemRemainingCount <= 0) return;
         }
         self::pay($repo, $store, $shop, $p->getXuid(), $count, false, function () use ($shop, $p, $count): void {
             if (!$p->isOnline()) return;
@@ -171,11 +171,14 @@ class ShopService
         return $pos->getWorld()->getFolderName() . ":" . $pos->getX() . ":" . $pos->getY() . ":" . $pos->getZ();
     }
 
-    private static function getCount(Inventory $inv, Item $item): int
+    /**
+     * @param Item[] $items
+     */
+    private static function getCount(array $items, Item $item): int
     {
         $count = 0;
-        foreach ($inv->getContents() as $i) {
-            if ($item->equals($i, !$item->hasAnyDamageValue(), $item->hasNamedTag())) {
+        foreach ($items as $i) {
+            if ($item->equals($i)) {
                 $count += $i->getCount();
             }
         }

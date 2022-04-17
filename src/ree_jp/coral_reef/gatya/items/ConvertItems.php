@@ -24,12 +24,14 @@ class ConvertItems extends ReefItems
     const MONEY_1000 = "money_1000";
     const MONEY_10000 = "money_10000";
     const MONEY_100000 = "money_100000";
+    const MONEY_1000000 = "money_1000000";
+    const MONEY_10000000 = "money_10000000";
     const NORMAL_TICKETS_FRAGMENT = "normal_tickets_fragment";
     const HERBICIDE = "herbicide";
 
     static function registerItems(): void
     {
-        foreach ([self::MONEY_1000, self::MONEY_10000, self::MONEY_100000, self::NORMAL_TICKETS_FRAGMENT, self::HERBICIDE] as $key) {
+        foreach ([self::MONEY_1000, self::MONEY_10000, self::MONEY_100000, self::MONEY_1000000, self::MONEY_10000000, self::NORMAL_TICKETS_FRAGMENT, self::HERBICIDE] as $key) {
             CreativeInventory::getInstance()->add(self::getItem(0, $key));
         }
     }
@@ -66,6 +68,26 @@ class ConvertItems extends ReefItems
                 $item->addEnchantment(new EnchantmentInstance(VanillaEnchantments::FLAME(), 1));
 
                 $item->setCustomName("10万円");
+                break;
+            case self::MONEY_1000000:
+                $item = VanillaItems::GOLD_INGOT();
+
+                $nbt = $item->getNamedTag();
+                $nbt->setString(self::REEF_SP_ITEM, self::MONEY_1000000);
+                $item->setNamedTag($nbt);
+                $item->addEnchantment(new EnchantmentInstance(VanillaEnchantments::FLAME(), 1));
+
+                $item->setCustomName("100万円");
+                break;
+            case self::MONEY_10000000:
+                $item = VanillaItems::GOLD_INGOT();
+
+                $nbt = $item->getNamedTag();
+                $nbt->setString(self::REEF_SP_ITEM, self::MONEY_10000000);
+                $item->setNamedTag($nbt);
+                $item->addEnchantment(new EnchantmentInstance(VanillaEnchantments::FLAME(), 1));
+
+                $item->setCustomName("1000万円");
                 break;
             case self::NORMAL_TICKETS_FRAGMENT:
                 $item = VanillaItems::PAPER();
