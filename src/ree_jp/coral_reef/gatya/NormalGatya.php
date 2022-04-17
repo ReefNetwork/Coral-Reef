@@ -68,7 +68,7 @@ class NormalGatya
                                 $item = ReefItems::getItem($xuid, ReefItems::HOE);
                                 break;
                             default:
-                                $p->sendMessage('エラーが発生しました');
+                                $p->sendMessage('§c >> エラーが発生しました');
                                 return;
                         }
                     } else { // 60%の確率で防具
@@ -86,7 +86,7 @@ class NormalGatya
                                 $item = ReefItems::getItem($xuid, ReefItems::BOOTS);
                                 break;
                             default:
-                                $p->sendMessage('エラーが発生しました');
+                                $p->sendMessage('§c >> エラーが発生しました');
                                 return;
                         }
                     }
@@ -106,7 +106,7 @@ class NormalGatya
                             $item = UltimateItems::getItem($xuid, UltimateItems::SHOVEL);
                             break;
                         default:
-                            $p->sendMessage('エラーが発生しました');
+                            $p->sendMessage('§c >> エラーが発生しました');
                             return;
                     }
                     GatyaManager::gatyaProcess($repo, SQLConst::LOG_GATYA, $p, SQLConst::TICKETS_NORMAL, 1, $item, 'ultimate_rare',
@@ -122,7 +122,7 @@ class NormalGatya
                             $item = SuperItems::getItem($xuid, SuperItems::SHOVEL);
                             break;
                         default:
-                            $p->sendMessage('エラーが発生しました');
+                            $p->sendMessage('§c >> エラーが発生しました');
                             return;
                     }
                     GatyaManager::gatyaProcess($repo, SQLConst::LOG_GATYA, $p, SQLConst::TICKETS_NORMAL, 1, $item, 'super_rare',
@@ -138,7 +138,7 @@ class NormalGatya
                             $item = RareItems::getItem($xuid, RareItems::SHOVEL);
                             break;
                         default:
-                            $p->sendMessage('エラーが発生しました');
+                            $p->sendMessage('§c >> エラーが発生しました');
                             return;
                     }
                     GatyaManager::gatyaProcess($repo, SQLConst::LOG_GATYA, $p, SQLConst::TICKETS_NORMAL, 1, $item, 'rare',
@@ -152,7 +152,7 @@ class NormalGatya
                     break;
             }
         }, function (SqlError $error) use ($p) {
-            $p->sendMessage('エラーが発生しました');
+            $p->sendMessage('§c >> エラーが発生しました');
             Server::getInstance()->getLogger()->error('[GatyaCheckLimit] ' . $p->getName() . 'さんの処理中に' . $error->getErrorMessage());
         });
     }

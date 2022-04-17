@@ -50,7 +50,7 @@ class GatyaManager
                                  ?Closure      $func): void
     {
         if (array_key_exists($p->getXuid(), self::$isProcessing)) {
-            $p->sendMessage("ガチャを同時に実行することはできません");
+            $p->sendMessage("§c >> ガチャを同時に実行することはできません");
             return;
         }
         self::$isProcessing[$p->getXuid()] = true;
@@ -67,7 +67,7 @@ class GatyaManager
                                 $repo->setValue($p->getXuid(), SQLConst::TYPE_TICKETS, $subtype, $row['value'] - $need,
                                     function () use ($repo, $stringRare, $func, $isBroadcast, $item, $p) {
                                         if ($p->isOnline()) {
-                                            $p->sendMessage('ガチャを引きました(レア度: ' . TextFormat::GREEN . $stringRare . TextFormat::RESET . ')');
+                                            $p->sendMessage(TextFormat::GREEN . ' >> ガチャを引きました(レア度: ' . TextFormat::GREEN . $stringRare . TextFormat::RESET . ')');
                                             if ($isBroadcast) {
                                                 // 一定のレア度以上は$isBroadcastをtrueにしてガチャを引いたことを全体に表示させる
                                                 $broadMessage = $p->getDisplayName() . 'さんが' . TextFormat::GREEN . 'REEFレア' . TextFormat::RESET . 'を引きました';
@@ -83,10 +83,10 @@ class GatyaManager
                                             GiftService::addGift($repo, $p->getXuid(), new GiftData('0', 'ノーマルガチャ',
                                                 time() + (7 * 24 * 60 * 60), [$item]),
                                                 function () use ($p) {
-                                                    $p->sendMessage('ガチャの景品がインベントリに入れるスペースがなかったためプレゼントに送信しました');
+                                                    $p->sendMessage('§7インベントリがいっぱいなため、プレゼントに送信しました');
                                                 }, function () use ($item, $p) { // ギフト出来なければ落とす
                                                     $p->dropItem($item);
-                                                    $p->sendMessage('ガチャの景品を地面にドロップしました');
+                                                    $p->sendMessage('§7ガチャの景品を地面にドロップしました');
                                                 });
                                         }
 
@@ -94,22 +94,22 @@ class GatyaManager
                                         QuestListener::callSubscribedQuest($p->getXuid(), QuestListener::GATYA, $item);
                                         if (!is_null($func)) $func();
                                     }, function (SqlError $error) use ($p) {
-                                        $p->sendMessage('エラーが発生しました');
+                                        $p->sendMessage('§c >> エラーが発生しました');
                                         unset(self::$isProcessing[$p->getXuid()]);
                                         Server::getInstance()->getLogger()->error('[GatyaReduceTicket] ' . $p->getName() . 'さんの処理中に' . $error->getErrorMessage());
                                     });
                             }, function (SqlError $error) use ($p) {
-                                $p->sendMessage('エラーが発生しました');
+                                $p->sendMessage('§c >> エラーが発生しました');
                                 unset(self::$isProcessing[$p->getXuid()]);
                                 Server::getInstance()->getLogger()->error('[GatyaLogAdd] ' . $p->getName() . 'さんの処理中に' . $error->getErrorMessage());
                             });
                     } else {
-                        $p->sendMessage('ガチャチケットが足りません');
+                        $p->sendMessage('§c >> ガチャチケットが足りません!');
                         unset(self::$isProcessing[$p->getXuid()]);
                     }
                 }
             }, function (SqlError $error) use ($p) {
-                $p->sendMessage('エラーが発生しました');
+                $p->sendMessage('§c >> エラーが発生しました');
                 unset(self::$isProcessing[$p->getXuid()]);
                 Server::getInstance()->getLogger()->error('[GatyaCheckTicket] ' . $p->getName() . 'さんの処理中に' . $error->getErrorMessage());
             });
