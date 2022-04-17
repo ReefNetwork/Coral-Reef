@@ -21,6 +21,7 @@ use bbo51dog\bboform\form\SimpleForm;
 use Closure;
 use pocketmine\math\Vector3;
 use pocketmine\player\Player;
+use pocketmine\utils\Terminal;
 use pocketmine\utils\TextFormat;
 use ree_jp\coral_reef\account\AccountService;
 use ree_jp\coral_reef\quest\QuestListener;
@@ -80,7 +81,7 @@ class MyWarpForm
                                 )
                             ))
                                 ->setTitle("MyWarpEdit -> Delete")
-                                ->setText(TextFormat::DARK_RED . $warpPoint["name"] . "を本当に削除しますか?")
+                                ->setText(TextFormat::RED ."「". $warpPoint["name"] . "」を本当に削除しますか?\n" . TextFormat::DARK_RED . "消してしまったら戻すことはできません！")
                         );
                     }
                 )
