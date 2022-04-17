@@ -45,11 +45,11 @@ class ScoreBoardService
         $pk->type = SetScorePacket::TYPE_CHANGE;
 
         $skillName = is_null($user->skill) ? "なし" : $user->skill->name;
-        self::setScore($pk, 1, "現在のスキル : " . $skillName);
+        self::setScore($pk, 1, "§5スキル §f:§d " . $skillName);
 
         $nextExp = $user->necessaryExperience;
         if ($user->level === array_key_last(Experiment::LEVEL_EXPERIMENT)) $nextExp = "レベル上限";
-        self::setScore($pk, 2, "次のレベルまで : " . $nextExp);
+        self::setScore($pk, 2, "§6次のレベルまで §f:§e " . $nextExp . "経験値");
 
         if (ServerUpdateTask::$exp_buff > 1) {
             self::setScore($pk, 3, "経験値ボーナス : " . ServerUpdateTask::$exp_buff . "倍");
@@ -60,7 +60,7 @@ class ScoreBoardService
         }
 
         self::setScore($pk, 8, TextFormat::DARK_GRAY . $p->getDisplayName());
-        self::setScore($pk, 9, TextFormat::DARK_GRAY . date("Y/m/d H:i:s"));
+        self::setScore($pk, 9, TextFormat::DARK_GRAY . date("Y/m/d H:i"));
 
         if ($store->hasValue($p->getXuid(), "wait_action")) {
             self::setScore($pk, 11, "現在処理中です....");
