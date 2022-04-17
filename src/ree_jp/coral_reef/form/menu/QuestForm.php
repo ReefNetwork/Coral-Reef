@@ -32,17 +32,17 @@ class QuestForm
             if (!$quest instanceof QuestData) continue;
             if ($quest->isComplete() || $quest->isExpired()) {
                 $finishedForm->addElement(new ClosureButton(
-                    $quest::NAME . "\n" . $quest::SHORT_DETAILS, null,
+                    $quest::NAME . "\n§7" . $quest::SHORT_DETAILS, null,
                     function (Player $p) use ($quest) {
                         self::sendQuestDetailForm($p, $quest);
                     }
                 ));
             } else {
                 $form->addElement(new ClosureButton(
-                    $quest::NAME . "\n" . $quest::SHORT_DETAILS, null,
+                    $quest::NAME . "\n§7" . $quest::SHORT_DETAILS, null,
                     function (Player $p) use ($quest) {
                         if (!$quest instanceof QuestData) {
-                            $p->sendMessage("エラーが発生しました");
+                            $p->sendMessage("§c >> エラーが発生しました");
                         }
                         self::sendQuestDetailForm($p, $quest);
                     }
