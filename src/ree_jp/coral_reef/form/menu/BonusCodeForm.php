@@ -29,7 +29,6 @@ class BonusCodeForm
         $p->sendForm((new ClosureCustomForm(function (Player $p) use ($repo, $codeElement): void {
 
             $code = strtolower($codeElement->getValue());
-            $code = str_replace(["-", "_", " "], "", $code);
 
             if (empty($code)) return;
             self::bonusCode($repo, $p, $code);
