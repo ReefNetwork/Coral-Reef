@@ -55,8 +55,8 @@ class ShopDetailForm
 
         $amountSlide = new Slider(self::replaceOrderType($shop->orderType) . "するセット数を選択してください", 1, $maxAmount, 1);
         $amountInput = new Input(self::replaceOrderType($shop->orderType) . "するセット数を入力してください", 10);
-        $isDirectStorage = new Toggle("直接ストレージ内にアイテムをいれますか?");
-        $isDirectSell = new Toggle("ストレージ内のアイテムも売りますか?");
+        $isDirectStorage = new Toggle("直接ストレージ内にアイテムをいれる");
+        $isDirectSell = new Toggle("ストレージ内のアイテムも売る");
 
         $form = (new ClosureCustomForm(function (Player $p) use ($isDirectSell, $amountInput, $isSlide, $isDirectStorage, $store, $repo, $shop, $amountSlide): void {
             if ($isSlide) {
