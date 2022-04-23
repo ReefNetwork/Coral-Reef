@@ -100,7 +100,7 @@ class ShopService
             var_dump($item->getCount());
             var_dump($invCount);
 
-            if ($itemRemainingCount > 0) {
+            if ($itemRemainingCount <= 0) {
                 $removeInv[] = clone $item;
                 continue;
             } else {
