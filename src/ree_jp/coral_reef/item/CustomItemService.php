@@ -19,7 +19,6 @@ class CustomItemService
     static function registerAll(): void
     {
         ItemFactory::getInstance()->register(new DocsBook(), true);
-        ItemFactory::getInstance()->register(new GuidLineBook(), true);
     }
 
     static function get(int $id, int $meta): Item

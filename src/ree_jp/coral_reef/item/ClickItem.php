@@ -30,13 +30,13 @@ abstract class ClickItem extends Item
 
     public function onInteractBlock(Player $player, Block $blockReplace, Block $blockClicked, int $face, Vector3 $clickVector): ItemUseResult
     {
-        return self::onActive($player, $this);
+        return static::onActive($player, $this);
     }
 
     abstract static function onActive(Player $p, ClickItem $item): ItemUseResult;
 
     public function onClickAir(Player $player, Vector3 $directionVector): ItemUseResult
     {
-        return self::onActive($player, $this);
+        return static::onActive($player, $this);
     }
 }

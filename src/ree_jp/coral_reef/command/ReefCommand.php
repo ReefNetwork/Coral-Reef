@@ -46,7 +46,7 @@ class ReefCommand extends Command implements PluginOwned
                     $shovel->setCustomName("初期装備(シャベル)");
                     if ($shovel instanceof Durable) $shovel->setUnbreakable();
                     $sender->getInventory()->addItem($pickaxe, $shovel,
-                        CustomItemService::get(ItemIds::BOOK, 1), CustomItemService::get(ItemIds::BOOK, 2));
+                        CustomItemService::get(ItemIds::BOOK, 1));
                     $sender->sendMessage("初期装備を配布しました");
                     QuestListener::callSubscribedQuest($sender->getXuid(), QuestListener::GET_INIT_TOOL, null);
                     return;
