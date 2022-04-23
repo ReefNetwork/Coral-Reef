@@ -80,26 +80,48 @@ class ShopService
         });
     }
 
-    static function sell(SQLRepository $repo, ShopStore $store, Shop $shop, Player $p, int $count, bool $isDirectSell, array $storage = []): void
+    static function sell(SQLRepository $repo, ShopStore $store, Shop $shop, Player $p, int $count, bool $isDirectSell, ?array $storage = null): void
     {
-        if ($isDirectSell) {
+        if ($isDirectSell && $storage == null) {
             StackStorageAPI::$instance->getAllItems($p->getXuid(), function (array $storageItems) use ($count, $p, $shop, $repo, $store): void {
-                self::sell($repo, $store, $shop, $p, $count, false, $storageItems);
+                self::sell($repo, $store, $shop, $p, $count, true, $storageItems);
             }, null);
             return;
         }
-        $haveItems = array_merge($p->getInventory()->getContents(), $storage);
+        /** @var Item[] */
+        $removeInv = [];
+        /** @var Item[] */
+        $removeStorage = [];
         foreach ($shop->getItems() as $item) {
             $item = $item->setCount($item->getCount() * $count);
-            $itemRemainingCount = self::getCount($haveItems, $item);
-            if ($itemRemainingCount <= 0) return;
+            $invCount = self::getCount($p->getInventory()->all($item));
+            $itemRemainingCount = $item->getCount() - $invCount;
+
+            if ($itemRemainingCount <= 0) {
+                $removeInv[] = clone $item;
+                continue;
+            } else {
+                $removeInv[] = (clone $item)->setCount($invCount);
+            }
+
+            if ($storage != null) {
+                $storageCount = self::getCount($storage, $item);
+                if ($itemRemainingCount <= $storageCount) {
+                    $removeStorage[] = (clone $item)->setCount($itemRemainingCount);
+                    continue;
+                }
+            }
+            $p->sendMessage("アイテムが足りません");
+            return;
         }
-        self::pay($repo, $store, $shop, $p->getXuid(), $count, false, function () use ($shop, $p, $count): void {
+        self::pay($repo, $store, $shop, $p->getXuid(), $count, false, function () use ($removeStorage, $removeInv, $p, $count): void {
             if (!$p->isOnline()) return;
 
-            foreach ($shop->getItems() as $item) {
-                $item = $item->setCount($item->getCount() * $count);
+            foreach ($removeInv as $item) {
                 $p->getInventory()->removeItem($item);
+            }
+            foreach ($removeStorage as $item) {
+                StackStorageAPI::$instance->remove($p->getXuid(), $item);
             }
             $p->sendMessage("売却しました");
         }, function () use ($p): void {
@@ -174,13 +196,12 @@ class ShopService
     /**
      * @param Item[] $items
      */
-    private static function getCount(array $items, Item $item): int
+    private static function getCount(array $items, ?Item $item = null): int
     {
         $count = 0;
         foreach ($items as $i) {
-            if ($item->equals($i)) {
-                $count += $i->getCount();
-            }
+            if ($item != null && !$item->equals($i)) continue;
+            $count += $i->getCount();
         }
         return $count;
     }
