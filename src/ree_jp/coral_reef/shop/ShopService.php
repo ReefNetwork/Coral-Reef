@@ -96,6 +96,9 @@ class ShopService
             $item = $item->setCount($item->getCount() * $count);
             $invCount = self::getCount($p->getInventory()->all($item));
             $itemRemainingCount = $item->getCount() - $invCount;
+            var_dump($itemRemainingCount);
+            var_dump($item->getCount());
+            var_dump($invCount);
 
             if ($itemRemainingCount > 0) {
                 $removeInv[] = clone $item;
