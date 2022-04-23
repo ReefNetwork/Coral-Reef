@@ -96,9 +96,6 @@ class ShopService
             $item = $item->setCount($item->getCount() * $count);
             $invCount = self::getCount($p->getInventory()->all($item));
             $itemRemainingCount = $item->getCount() - $invCount;
-            var_dump($itemRemainingCount);
-            var_dump($item->getCount());
-            var_dump($invCount);
 
             if ($itemRemainingCount <= 0) {
                 $removeInv[] = clone $item;
@@ -108,7 +105,7 @@ class ShopService
             }
 
             if ($storage != null) {
-                $storageCount = self::getCount($p->getInventory()->all($item));
+                $storageCount = self::getCount($storage, $item);
                 if ($itemRemainingCount <= $storageCount) {
                     $removeStorage[] = (clone $item)->setCount($itemRemainingCount);
                     continue;
@@ -199,10 +196,11 @@ class ShopService
     /**
      * @param Item[] $items
      */
-    private static function getCount(array $items): int
+    private static function getCount(array $items, ?Item $item = null): int
     {
         $count = 0;
         foreach ($items as $i) {
+            if ($item != null && $item->equals($i)) continue;
             $count += $i->getCount();
         }
         return $count;
