@@ -101,7 +101,7 @@ class ShopService
                 $removeInv[] = clone $item;
                 continue;
             } else {
-                $removeStorage[] = (clone $item)->setCount($invCount);
+                $removeInv[] = (clone $item)->setCount($invCount);
             }
 
             if ($storage != null) {
@@ -200,7 +200,7 @@ class ShopService
     {
         $count = 0;
         foreach ($items as $i) {
-            if ($item != null && $item->equals($i)) continue;
+            if ($item != null && !$item->equals($i)) continue;
             $count += $i->getCount();
         }
         return $count;
