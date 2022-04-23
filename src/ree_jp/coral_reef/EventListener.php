@@ -54,6 +54,7 @@ use ree_jp\coral_reef\form\item\HerbicideForm;
 use ree_jp\coral_reef\form\land\LandForm;
 use ree_jp\coral_reef\gatya\items\ReefItems;
 use ree_jp\coral_reef\gatya\items\SpecialItemService;
+use ree_jp\coral_reef\item\ClickItem;
 use ree_jp\coral_reef\land\LandService;
 use ree_jp\coral_reef\land\LandStore;
 use ree_jp\coral_reef\session\SessionStore;
@@ -142,7 +143,7 @@ class EventListener implements Listener
             $p->getHungerManager()->setFood($p->getHungerManager()->getMaxFood());
             $p->teleport(Server::getInstance()->getWorldManager()->getDefaultWorld()->getSpawnLocation());
             Server::getInstance()->broadcastMessage(TextFormat::DARK_GRAY . '[Death] ' . $p->getDisplayName());
-            $p->sendActionBarMessage(TextFormat::GRAY.'死亡したため、スポーン地点に転送されました');
+            $p->sendActionBarMessage(TextFormat::GRAY . '死亡したため、スポーン地点に転送されました');
         }
     }
 
@@ -163,7 +164,7 @@ class EventListener implements Listener
         }
         if ($this->accountStore->hasValue($p->getXuid(), 'skill_cool_time') &&
             !SettingManager::isEnableOption($p->getXuid(), SettingConst::ALLOW_COOL_TIME_DIG)) {
-            $p->sendPopup(TextFormat::GRAY."クールタイム中にブロックを掘ることはできません!!");
+            $p->sendPopup(TextFormat::GRAY . "クールタイム中にブロックを掘ることはできません!!");
             $ev->cancel();
         }
     }
@@ -179,13 +180,13 @@ class EventListener implements Listener
 
         if ($p->isCreative() && !is_null($this->shopStore->findShop($ev->getBlock()->getPosition()))) {
             $this->shopStore->removeShop($ev->getBlock()->getPosition());
-            $p->sendMessage(TextFormat::GREEN."ショップを破壊しました");
+            $p->sendMessage(TextFormat::GREEN . "ショップを破壊しました");
         }
 
         try {
             AccountService::blockBroken($this->sqlRepo, $this->accountStore, $p, $ev->getBlock(), $this->sessionStore->getSessionData($p->getXuid()));
         } catch (Exception $e) {
-            $p->sendMessage(TextFormat::RED.'エラーが発生しました');
+            $p->sendMessage(TextFormat::RED . 'エラーが発生しました');
             Server::getInstance()->getLogger()->error('[blockBroke]' . $p->getName() . 'の処理中に' . $e->getMessage());
         }
         try {
@@ -194,7 +195,7 @@ class EventListener implements Listener
             }
             $ev->setDrops([]);
         } catch (Throwable) { // StackStorageAPIが見つからなかった場合
-            $p->sendMessage(TextFormat::RED.'ストレージにアクセスできませんでした');
+            $p->sendMessage(TextFormat::RED . 'ストレージにアクセスできませんでした');
         }
     }
 
@@ -300,16 +301,21 @@ class EventListener implements Listener
     public function onTouch(PlayerInteractEvent $ev): void
     {
         $p = $ev->getPlayer();
+        $item = $ev->getItem();
         $xuid = $p->getXuid();
         if ($this->accountStore->hasValue($xuid, 'wait_action')) {
             $ev->cancel();
             return;
         }
 
-        switch ($ev->getItem()->getId()) {
+        if ($item instanceof ClickItem) {
+            $item->active($p);
+        }
+
+        switch ($item->getId()) {
             /** @noinspection PhpMissingBreakStatementInspection */
             case ItemIds::BUCKET:
-                if ($ev->getItem()->getMeta() !== 10) {
+                if ($item->getMeta() !== 10) {
                     break;
                 }
             case ItemIds::FLINT_STEEL:
@@ -341,7 +347,7 @@ class EventListener implements Listener
                 break;
 
             case ItemIds::DYE:
-                $nbt = $ev->getItem()->getNamedTag();
+                $nbt = $item->getNamedTag();
                 if ($nbt->getCompoundTag("herbicide_scale") instanceof CompoundTag) {
                     if ($this->accountStore->hasValue($xuid, 'form_cool_time')) break;
                     $this->accountStore->setValue($xuid, 'form_cool_time', 10);

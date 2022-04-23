@@ -39,4 +39,9 @@ abstract class ClickItem extends Item
     {
         return static::onActive($player, $this);
     }
+
+    public function active(Player $player): ItemUseResult
+    {
+        return static::onActive($player, $this);
+    }
 }
