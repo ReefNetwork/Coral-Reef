@@ -98,7 +98,7 @@ class ShopDetailForm
         if ($shop->orderType === "buy") {
             $form->addElement($isDirectStorage);
         }
-        if ($shop->orderType === "buy") {
+        if ($shop->orderType === "sell") {
             $form->addElement($isDirectSell);
         }
 
