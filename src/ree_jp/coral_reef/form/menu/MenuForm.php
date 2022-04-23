@@ -47,7 +47,7 @@ class MenuForm
 
             $form = (new SimpleForm())
                 ->setTitle(TextFormat::GREEN."Reef".TextFormat::WHITE." Menu")
-                ->setText(TextFormat::GREEN."現在のレベル : $level \nレベルアップまで : $necessaryExperience 経験値\n経験値 : $exp\n所持金 : $money")
+                ->setText("§7現在のレベル §8: §f$level \n§7レベルアップまで §8: §f$necessaryExperience §7経験値\n§7経験値 §8: §f$exp\n§7所持金 §8: §f$money")
                 ->addElements(
                     new ClosureButton(
                         "ストレージ \n§7StackStorageを開きます", null,
@@ -91,7 +91,7 @@ class MenuForm
                         RankingForm::sendForm($repo, $store, $p);
                     }),
                     new ClosureButton(
-                        "ガチャ \nガチャチケットでひくことができます", null, function (Player $p) use ($repo) {
+                        "ガチャ \n§7ガチャチケットでひくことができます", null, function (Player $p) use ($repo) {
                         GatyaForm::sendForm($repo, $p);
                     }),
                     new ClosureButton(
