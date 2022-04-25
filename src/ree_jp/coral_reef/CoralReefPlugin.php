@@ -63,6 +63,7 @@ class CoralReefPlugin extends PluginBase
     public function onLoad(): void
     {
         self::$plugin = $this;
+        ReefEdgePlugin::$isSocketStartUp = false;
     }
 
     public function onEnable(): void
@@ -88,6 +89,10 @@ class CoralReefPlugin extends PluginBase
         $this->registerRecipe();
         $this->loadWorlds();
         SocketHandler::register(ReefEdgePlugin::$socketHandler, $this->sqlRepo, $this->accountStore);
+        ReefEdgePlugin::$isSocketStartUp = true;
+        if (isset(ReefEdgePlugin::$socketClient) && !ReefEdgePlugin::$socketClient->isConnected()) {
+            ReefEdgePlugin::$socketClient->connect();
+        }
 
         $this->accountStore->updateUserNameList($this->sqlRepo);
         ReefItems::registerAll();
