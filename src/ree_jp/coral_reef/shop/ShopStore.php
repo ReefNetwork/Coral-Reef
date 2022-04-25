@@ -15,6 +15,8 @@ use JsonException;
 use pocketmine\utils\Config;
 use pocketmine\world\Position;
 use ree_jp\coral_reef\CoralReefPlugin;
+use ree_jp\coral_reef\shop\item\ItemShop;
+use ree_jp\coral_reef\shop\item\ItemShopService;
 
 class ShopStore
 {
@@ -35,7 +37,7 @@ class ShopStore
         $this->shops = [];
         $this->config->reload();
         foreach ($this->config->getAll() as $key => $shopData) {
-            $this->shops[$key] = Shop::jsonDeserialize($shopData);
+            $this->shops[$key] = ItemShop::jsonDeserialize($shopData);
         }
     }
 
@@ -51,7 +53,7 @@ class ShopStore
 
     public function updateShop(Shop $shop): void
     {
-        $this->config->set(ShopService::createKey($shop->pos), $shop->jsonSerialize());
+        $this->config->set(ItemShopService::createKey($shop->pos), $shop->jsonSerialize());
         try {
             $this->config->save();
         } catch (JsonException $e) {
@@ -61,7 +63,7 @@ class ShopStore
 
     public function createShop(Shop $shop): void
     {
-        $this->config->set(ShopService::createKey($shop->pos), $shop->jsonSerialize());
+        $this->config->set(ItemShopService::createKey($shop->pos), $shop->jsonSerialize());
         try {
             $this->config->save();
         } catch (JsonException $e) {
@@ -72,7 +74,7 @@ class ShopStore
 
     public function removeShop(Position $pos): void
     {
-        $this->config->remove(ShopService::createKey($pos));
+        $this->config->remove(ItemShopService::createKey($pos));
         try {
             $this->config->save();
         } catch (JsonException $e) {

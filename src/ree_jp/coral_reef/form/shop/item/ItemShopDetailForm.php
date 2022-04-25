@@ -5,11 +5,11 @@
  * CC      oo  oo rrr  r  aa aaa lll RRRRRR  ee   e ee   e ffff
  * CC    C oo  oo rr     aa  aaa lll RR  RR  eeeee  eeeee  ff
  *  CCCCC   oooo  rr      aaa aa lll RR   RR  eeeee  eeeee ff
- *
+ *  
  * Copyright (c) 2021-2022. Ree-jp(https://ree-jp.net)
  */
 
-namespace ree_jp\coral_reef\form\shop;
+namespace ree_jp\coral_reef\form\shop\item;
 
 use bbo51dog\bboform\element\ClosureButton;
 use bbo51dog\bboform\element\Input;
@@ -20,14 +20,14 @@ use bbo51dog\bboform\form\ClosureCustomForm;
 use bbo51dog\bboform\form\ModalForm;
 use pocketmine\player\Player;
 use pocketmine\utils\TextFormat;
-use ree_jp\coral_reef\shop\Shop;
-use ree_jp\coral_reef\shop\ShopService;
+use ree_jp\coral_reef\shop\item\ItemShop;
+use ree_jp\coral_reef\shop\item\ItemShopService;
 use ree_jp\coral_reef\shop\ShopStore;
 use ree_jp\coral_reef\sql\SQLRepository;
 
-class ShopDetailForm
+class ItemShopDetailForm
 {
-    static function sendForm(SQLRepository $repo, ShopStore $store, Player $p, Shop $shop): void
+    static function sendForm(SQLRepository $repo, ShopStore $store, Player $p, ItemShop $shop): void
     {
         $itemString = "\n\nアイテム\n";
         $isSlide = !$p->isSneaking();
@@ -73,20 +73,20 @@ class ShopDetailForm
                 function (Player $p) use ($isDirectSell, $amount, $isDirectStorage, $store, $repo, $shop): void {
                     switch ($shop->orderType) {
                         case "buy":
-                            ShopService::buy($repo, $store, $shop, $p, $amount, $isDirectStorage->getValue());
+                            ItemShopService::buy($repo, $store, $shop, $p, $amount, $isDirectStorage->getValue());
                             break;
                         case "sell":
-                            ShopService::sell($repo, $store, $shop, $p, $amount, $isDirectSell->getValue());
+                            ItemShopService::sell($repo, $store, $shop, $p, $amount, $isDirectSell->getValue());
                             break;
                         default:
                             $p->sendMessage("エラーが発生しました");
                     }
                 }), new ClosureButton("戻る", null, function (Player $p) use ($store, $repo, $shop): void {
                 self::sendForm($repo, $store, $p, $shop);
-            })))->setTitle("Shop -> Confirm")->setText("本当にこのアイテムを" . self::replaceOrderType($shop->orderType) . "しますか?\n" .
+            })))->setTitle("ItemShop -> Confirm")->setText("本当にこのアイテムを" . self::replaceOrderType($shop->orderType) . "しますか?\n" .
                 self::replacePaymentType("金額\n" . $shop->payment["type"] . $shop->payment["amount"] * $amount)));
 
-        }))->setTitle("Shop")->addElement(new Label(self::replacePaymentType($text) . $itemString));
+        }))->setTitle("ItemShop")->addElement(new Label(self::replacePaymentType($text) . $itemString));
 
         // スニークしてる時は数を入力できるように
         if ($isSlide) {
