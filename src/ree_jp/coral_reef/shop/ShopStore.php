@@ -15,8 +15,8 @@ use JsonException;
 use pocketmine\utils\Config;
 use pocketmine\world\Position;
 use ree_jp\coral_reef\CoralReefPlugin;
+use ree_jp\coral_reef\shop\data\DataShop;
 use ree_jp\coral_reef\shop\item\ItemShop;
-use ree_jp\coral_reef\shop\item\ItemShopService;
 
 class ShopStore
 {
@@ -37,23 +37,22 @@ class ShopStore
         $this->shops = [];
         $this->config->reload();
         foreach ($this->config->getAll() as $key => $shopData) {
-            $this->shops[$key] = ItemShop::jsonDeserialize($shopData);
+            $this->shops[$key] = match ($shopData["type"] ?: "item") {
+                "item" => ItemShop::jsonDeserialize($shopData),
+                "data" => DataShop::jsonDeserialize($shopData)
+            };
         }
     }
 
     public function findShop(Position $pos): ?Shop
     {
-        foreach ($this->shops as $shop) {
-            if ($shop->pos->equals($pos)) {
-                return $shop;
-            }
-        }
-        return null;
+        $key = ShopService::createKey($pos);
+        return $this->shops[$key] ?: null;
     }
 
     public function updateShop(Shop $shop): void
     {
-        $this->config->set(ItemShopService::createKey($shop->pos), $shop->jsonSerialize());
+        $this->config->set(ShopService::createKey($shop->pos), $shop->jsonSerialize());
         try {
             $this->config->save();
         } catch (JsonException $e) {
@@ -63,7 +62,7 @@ class ShopStore
 
     public function createShop(Shop $shop): void
     {
-        $this->config->set(ItemShopService::createKey($shop->pos), $shop->jsonSerialize());
+        $this->config->set(ShopService::createKey($shop->pos), $shop->jsonSerialize());
         try {
             $this->config->save();
         } catch (JsonException $e) {
@@ -74,7 +73,7 @@ class ShopStore
 
     public function removeShop(Position $pos): void
     {
-        $this->config->remove(ItemShopService::createKey($pos));
+        $this->config->remove(ShopService::createKey($pos));
         try {
             $this->config->save();
         } catch (JsonException $e) {

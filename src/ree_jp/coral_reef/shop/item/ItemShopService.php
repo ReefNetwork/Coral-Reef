@@ -11,14 +11,10 @@
 
 namespace ree_jp\coral_reef\shop\item;
 
-use Closure;
 use pocketmine\item\Item;
 use pocketmine\player\Player;
-use pocketmine\world\Position;
-use ree_jp\coral_reef\gatya\GatyaManager;
-use ree_jp\coral_reef\money\MoneyService;
+use ree_jp\coral_reef\shop\ShopService;
 use ree_jp\coral_reef\shop\ShopStore;
-use ree_jp\coral_reef\sql\SQLConst;
 use ree_jp\coral_reef\sql\SQLRepository;
 use ree_jp\stackstorage\api\StackStorageAPI;
 use Throwable;
@@ -28,7 +24,7 @@ class ItemShopService
     static function buy(SQLRepository $repo, ShopStore $store, ItemShop $shop, Player $p, int $count, bool $isStorage): void
     {
         $xuid = $p->getXuid();
-        self::pay($repo, $store, $shop, $xuid, $count, true, function () use ($isStorage, $shop, $repo, $xuid, $p, $count): void {
+        ShopService::pay($repo, $store, $shop, $xuid, $count, true, function () use ($isStorage, $shop, $repo, $xuid, $p, $count): void {
             if (!$p->isOnline()) return;
 
             $items = $shop->getItems();
@@ -62,63 +58,6 @@ class ItemShopService
 
             $p->sendMessage("購入できませんでした");
         });
-    }
-
-    static function pay(SQLRepository $repo, ShopStore $store, ItemShop $shop, string $xuid, int $count, bool $isBuy, Closure $func, Closure $failure): void
-    {
-        if ($count <= 0) {
-            $failure();
-            return;
-        }
-
-        $value = $shop->payment["amount"] * $count;
-        switch ($shop->payment["type"]) {
-            case "money":
-                if ($isBuy) {
-                    MoneyService::getMoney($repo, $xuid, function (int $money) use ($count, $store, $shop, $repo, $xuid, $func, $failure, $value): void {
-                        if ($value <= $money && $shop->addDayLimitCounter($store, $xuid, $count)) {
-                            MoneyService::reduceMoney($repo, $xuid, $value);
-                            $func();
-                        } else {
-                            $failure();
-                        }
-                    });
-                } else {
-                    if ($shop->addDayLimitCounter($store, $xuid, $count)) {
-                        MoneyService::addMoney($repo, $xuid, $value);
-                        $func();
-                    } else {
-                        $failure();
-                    }
-                }
-                break;
-
-            case "normal_tickets":
-                if ($isBuy) {
-                    $repo->getValue($xuid, SQLConst::TYPE_TICKETS, SQLConst::TICKETS_NORMAL,
-                        function (array $rows) use ($count, $store, $shop, $repo, $xuid, $func, $failure, $value): void {
-                            $row = array_shift($rows);
-
-                            if (isset($row['value']) && ($value <= intval($row['value'])) && $shop->addDayLimitCounter($store, $xuid, $count)) {
-                                GatyaManager::addTicket($repo, $xuid, SQLConst::TICKETS_NORMAL, -$value, $func);
-                            } else {
-                                $failure();
-                            }
-                        }
-                    );
-                } else {
-                    if ($shop->addDayLimitCounter($store, $xuid, $count)) {
-                        GatyaManager::addTicket($repo, $xuid, SQLConst::TICKETS_NORMAL, $value, $func);
-                    } else {
-                        $failure();
-                    }
-                }
-                break;
-
-            default:
-                $failure();
-                break;
-        }
     }
 
     static function sell(SQLRepository $repo, ShopStore $store, ItemShop $shop, Player $p, int $count, bool $isDirectSell, ?array $storage = null): void
@@ -155,7 +94,7 @@ class ItemShopService
             $p->sendMessage("アイテムが足りません");
             return;
         }
-        self::pay($repo, $store, $shop, $p->getXuid(), $count, false, function () use ($removeStorage, $removeInv, $p, $count): void {
+        ShopService::pay($repo, $store, $shop, $p->getXuid(), $count, false, function () use ($removeStorage, $removeInv, $p, $count): void {
             if (!$p->isOnline()) return;
 
             foreach ($removeInv as $item) {
@@ -183,10 +122,5 @@ class ItemShopService
             $count += $i->getCount();
         }
         return $count;
-    }
-
-    static function createKey(Position $pos): string
-    {
-        return $pos->getWorld()->getFolderName() . ":" . $pos->getX() . ":" . $pos->getY() . ":" . $pos->getZ();
     }
 }
