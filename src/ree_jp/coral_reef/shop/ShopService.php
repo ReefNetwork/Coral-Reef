@@ -17,7 +17,7 @@ use pocketmine\utils\TextFormat;
 use pocketmine\world\Position;
 use ree_jp\coral_reef\form\shop\data\DataShopDetailForm;
 use ree_jp\coral_reef\form\shop\item\ItemShopDetailForm;
-use ree_jp\coral_reef\form\shop\item\ShopManageForm;
+use ree_jp\coral_reef\form\shop\ShopManageForm;
 use ree_jp\coral_reef\gatya\GatyaManager;
 use ree_jp\coral_reef\money\MoneyService;
 use ree_jp\coral_reef\shop\data\DataShop;

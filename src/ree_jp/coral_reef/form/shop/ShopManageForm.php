@@ -9,13 +9,14 @@
  * Copyright (c) 2022. Ree-jp(https://ree-jp.net)
  */
 
-namespace ree_jp\coral_reef\form\shop\item;
+namespace ree_jp\coral_reef\form\shop;
 
 use bbo51dog\bboform\element\ClosureButton;
 use bbo51dog\bboform\form\SimpleForm;
 use pocketmine\player\Player;
 use pocketmine\world\Position;
 use ree_jp\coral_reef\form\shop\data\DataShopManageForm;
+use ree_jp\coral_reef\form\shop\item\ItemShopManageForm;
 use ree_jp\coral_reef\shop\data\DataShop;
 use ree_jp\coral_reef\shop\item\ItemShop;
 use ree_jp\coral_reef\shop\ShopStore;
