@@ -53,7 +53,10 @@ class DataShopDetailForm
 
         if ($shop->haveLimit > 0) {
             $text = $text . "\n\n所持制限制限\n$count /" . $shop->haveLimit;
-            $maxAmount = $shop->haveLimit;
+            $remain = $shop->haveLimit - $count;
+            if ($remain >= 1 && $maxAmount > $remain) {
+                $maxAmount = $remain;
+            }
         }
         if ($shop->dayLimit > 0) {
             $dayCount = $shop->getDayLimitCounter($p->getXuid());

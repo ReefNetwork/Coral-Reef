@@ -39,7 +39,6 @@ class DataShopService
             ShopService::pay($repo, $store, $shop, $xuid, $count, true, function () use ($dataArray, $buyCount, $p): void {
                 $dataArray["count"] = $buyCount;
                 $dataArray["isNotDuplicate"] = false;
-                var_dump($dataArray);
                 ReefEdgePlugin::$socketClient->send(new SocketData("item-add", $dataArray), function (array $result) use ($p): void {
                     if (!$p->isOnline()) return;
                     if (!$result["isSuccess"]) {
