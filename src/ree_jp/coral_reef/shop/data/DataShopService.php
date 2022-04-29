@@ -24,7 +24,7 @@ class DataShopService
     {
         $xuid = $p->getXuid();
         $dataArray = ["xuid" => $xuid, "type" => $shop->data->type, "subType" => $shop->data->subtype, "item" => $shop->data->value];
-        ReefEdgePlugin::$socketClient->send(new SocketData("item-count", $dataArray), function (array $result) use ($store, $xuid, $repo, $count, $shop, $p): void {
+        ReefEdgePlugin::$socketClient->send(new SocketData("item-count", $dataArray), function (array $result) use ($dataArray, $store, $xuid, $repo, $count, $shop, $p): void {
             if (!$p->isOnline()) return;
             if (!$result["isSuccess"] || !isset($result["count"])) {
                 $p->sendMessage("エラーが発生しました");
@@ -36,7 +36,7 @@ class DataShopService
                 $p->sendMessage("所持制限を超えて購入することは出来ません");
                 return;
             }
-            ShopService::pay($repo, $store, $shop, $xuid, $count, true, function () use ($buyCount, $p): void {
+            ShopService::pay($repo, $store, $shop, $xuid, $count, true, function () use ($dataArray, $buyCount, $p): void {
                 $dataArray["count"] = $buyCount;
                 $dataArray["isNotDuplicate"] = false;
                 ReefEdgePlugin::$socketClient->send(new SocketData("item-add", $dataArray), function (array $result) use ($p): void {
