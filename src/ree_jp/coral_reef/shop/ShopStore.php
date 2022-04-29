@@ -37,7 +37,7 @@ class ShopStore
         $this->shops = [];
         $this->config->reload();
         foreach ($this->config->getAll() as $key => $shopData) {
-            $this->shops[$key] = match ($shopData["type"] ?? "data") {
+            $this->shops[$key] = match ($shopData["type"] ?? "item") {
                 "item" => ItemShop::jsonDeserialize($shopData),
                 "data" => DataShop::jsonDeserialize($shopData)
             };
