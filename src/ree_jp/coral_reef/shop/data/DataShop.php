@@ -26,7 +26,7 @@ class DataShop extends Shop
     static function jsonDeserialize(array $array): static
     {
         $level = Server::getInstance()->getWorldManager()->getWorldByName($array["level"]);
-        return new DataShop(new Position($array["x"], $array["y"], $array["z"], $level), new DataShopData($array["data_type"], $array["data_sub_type"], $array["data_value"], $array["count"]),
+        return new DataShop(new Position($array["x"], $array["y"], $array["z"], $level), new DataShopData($array["data_type"], $array["data_sub_type"], $array["data_value"], $array["data_count"]),
             $array["show_name"], $array["have_limit"], $array["order_type"], $array["payment"], $array["day_limit"], $array["day_limit_counter"], $array["category"], $array["sub_category"]);
     }
 
