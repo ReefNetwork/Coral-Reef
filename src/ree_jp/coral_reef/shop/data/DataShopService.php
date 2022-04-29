@@ -20,7 +20,7 @@ use ree_jp\reef_edge\socket\SocketData;
 
 class DataShopService
 {
-    static function buy(SQLRepository $repo, ShopStore $store, DataShop $shop, Player $p, int $count, bool $isStorage): void
+    static function buy(SQLRepository $repo, ShopStore $store, DataShop $shop, Player $p, int $count): void
     {
         $xuid = $p->getXuid();
         $dataArray = ["xuid" => $xuid, "type" => $shop->data->type, "subType" => $shop->data->subtype, "item" => $shop->data->value];
@@ -32,7 +32,7 @@ class DataShopService
             }
             $buyCount = $count * $shop->data->count;
             $afterCount = $result["count"] + $buyCount;
-            if ($shop->havaLimit > 0 && $afterCount > $shop->havaLimit) {
+            if ($shop->haveLimit > 0 && $afterCount > $shop->haveLimit) {
                 $p->sendMessage("所持制限を超えて購入することは出来ません");
                 return;
             }
@@ -55,7 +55,7 @@ class DataShopService
         });
     }
 
-    static function sell(SQLRepository $repo, ShopStore $store, DataShop $shop, Player $p, int $count, bool $isDirectSell, ?array $storage = null): void
+    static function sell(SQLRepository $repo, ShopStore $store, DataShop $shop, Player $p, int $count): void
     {
         $xuid = $p->getXuid();
         $dataArray = ["xuid" => $xuid, "type" => $shop->data->type, "subType" => $shop->data->subtype, "item" => $shop->data->value];
@@ -67,7 +67,7 @@ class DataShopService
             }
             $sellCount = $count * $shop->data->count;
             $afterCount = $result["count"] - $sellCount;
-            if ($shop->havaLimit > 0 && $afterCount < 0) {
+            if ($shop->haveLimit > 0 && $afterCount < 0) {
                 $p->sendMessage("所持数が足りません");
                 return;
             }

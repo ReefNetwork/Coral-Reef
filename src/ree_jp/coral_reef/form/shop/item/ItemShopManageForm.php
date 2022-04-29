@@ -26,22 +26,24 @@ class ItemShopManageForm
     const PAYMENT = ["money", "normal_tickets"];
 
     static function shopCreateForm(ShopStore $store, Position $pos, string $orderType = "なし", string $payType = "なし", int $amount = 0,
-                                   int       $dayLimit = 0, string $category = ""): CustomForm
+                                   int       $dayLimit = 0, string $category = "", string $subCategory = ""): CustomForm
     {
         $orderElement = new Dropdown("買わせる(buy)か買い取る(sell)か (もともとは$orderType)", self::TYPE);
         $typeElement = new Dropdown("このショップの支払い方法を設定してください(もともとは$payType)", self::PAYMENT);
         $amountElement = new Input("このショップの支払う量を設定してください", "100", $amount);
         $dayLimitElement = new Input("一日に買える量(もともとは$dayLimit)0に設定すると無限", "0", $dayLimit);
         $categoryElement = new Input("カテゴリ(もともとは$category) 入力しなくてもいいよ", "ブロック", $category);
-        return (new ClosureCustomForm(function (Player $p) use ($categoryElement, $dayLimitElement, $orderElement, $pos, $store, $amountElement, $typeElement): void {
+        $subCategoryElement = new Input("カテゴリ(もともとは$category) 入力しなくてもいいよ", "階段", $subCategory);
+        return (new ClosureCustomForm(function (Player $p) use ($subCategoryElement, $categoryElement, $dayLimitElement, $orderElement, $pos, $store, $amountElement, $typeElement): void {
             $order = self::TYPE[$orderElement->getValue()];
             $payment = self::PAYMENT[$typeElement->getValue()];
             $amount = intval($amountElement->getValue());
             $dayLimit = intval($dayLimitElement->getValue());
             $category = $categoryElement->getValue();
+            $subCategory = $subCategoryElement->getValue();
 
-            $store->createShop(new ItemShop($pos, $order, ["type" => $payment, "amount" => $amount], $dayLimit, [], $category));
+            $store->createShop(new ItemShop($pos, $order, ["type" => $payment, "amount" => $amount], $dayLimit, [], $category, $subCategory));
             $p->sendMessage("ショップを作成しました");
-        }))->setTitle("ItemShop Edit")->addElements($orderElement, $typeElement, $amountElement, $dayLimitElement, $categoryElement);
+        }))->setTitle("ItemShop Edit")->addElements($orderElement, $typeElement, $amountElement, $dayLimitElement, $categoryElement, $subCategoryElement);
     }
 }

@@ -18,8 +18,8 @@ use ree_jp\coral_reef\shop\Shop;
 class DataShop extends Shop
 {
 
-    public function __construct(public Position $pos, public DataShopData $data, public int $havaLimit, public string $orderType, public array $payment, public int $dayLimit,
-                                public array    $dayLimitCounter, public string $category)
+    public function __construct(public Position $pos, public DataShopData $data, public string $showName, public int $haveLimit, public string $orderType, public array $payment, public int $dayLimit,
+                                public array    $dayLimitCounter, public string $category, public string $subCategory)
     {
     }
 
@@ -27,14 +27,15 @@ class DataShop extends Shop
     {
         $level = Server::getInstance()->getWorldManager()->getWorldByName($array["level"]);
         return new DataShop(new Position($array["x"], $array["y"], $array["z"], $level), new DataShopData($array["data_type"], $array["data_sub_type"], $array["data_value"], $array["count"]),
-            $array["have_limit"], $array["order_type"], $array["payment"], $array["day_limit"], $array["day_limit_counter"], $array["category"]);
+            $array["show_name"], $array["have_limit"], $array["order_type"], $array["payment"], $array["day_limit"], $array["day_limit_counter"], $array["category"], $array["sub_category"]);
     }
 
     public function jsonSerialize(): array
     {
         return ["level" => $this->pos->getWorld()->getFolderName(), "x" => $this->pos->getFloorX(), "y" => $this->pos->getFloorY(), "z" => $this->pos->getFloorZ(),
-            "data_type" => $this->data->type, "data_sub_type" => $this->data->subtype, "data_value" => $this->data->value, "data_count" => $this->data->count, "hava_limit" => $this->havaLimit,
-            "order_type" => $this->orderType, "payment" => $this->payment, "day_limit" => $this->dayLimit, "day_limit_counter" => $this->dayLimitCounter, "category" => $this->category, "type" => "data"];
+            "data_type" => $this->data->type, "data_sub_type" => $this->data->subtype, "data_value" => $this->data->value, "data_count" => $this->data->count, "show_name" => $this->showName,
+            "have_limit" => $this->haveLimit, "order_type" => $this->orderType, "payment" => $this->payment, "day_limit" => $this->dayLimit, "day_limit_counter" => $this->dayLimitCounter,
+            "category" => $this->category, "sub_category" => "string", "type" => "data"];
     }
 }
 

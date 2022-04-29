@@ -17,6 +17,8 @@ abstract class Shop
 {
     public Position $pos;
     public int $dayLimit;
+    public string $category;
+    public string $subCategory;
 
     /**
      * @var int[]

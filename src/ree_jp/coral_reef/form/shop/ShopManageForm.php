@@ -15,6 +15,7 @@ use bbo51dog\bboform\element\ClosureButton;
 use bbo51dog\bboform\form\SimpleForm;
 use pocketmine\player\Player;
 use pocketmine\world\Position;
+use ree_jp\coral_reef\form\shop\data\DataShopManageForm;
 use ree_jp\coral_reef\shop\data\DataShop;
 use ree_jp\coral_reef\shop\item\ItemShop;
 use ree_jp\coral_reef\shop\ShopStore;
@@ -31,10 +32,12 @@ class ShopManageForm
                 ->addElements(new ClosureButton("ショップを変更する", null,
                     function (Player $p) use ($pos, $store, $shop): void {
                         if ($shop instanceof ItemShop) {
-                            $p->sendForm(ItemShopManageForm::shopCreateForm($store, $pos, $shop->orderType, $shop->payment["type"], $shop->payment["amount"], $shop->dayLimit, $shop->category));
+                            $p->sendForm(ItemShopManageForm::shopCreateForm($store, $pos, $shop->orderType, $shop->payment["type"], $shop->payment["amount"], $shop->dayLimit,
+                                $shop->category, $shop->subCategory));
                         }
                         if ($shop instanceof DataShop) {
-
+                            $p->sendForm(DataShopManageForm::shopCreateForm($store, $pos, $shop->orderType, $shop->payment["type"], $shop->payment["amount"], $shop->dayLimit,
+                                $shop->category, $shop->subCategory, $shop->data->type, $shop->data->subtype, $shop->data->value, $shop->haveLimit));
                         }
                     }
                 ), new ClosureButton("毎日の購入制限記録をリセットする", null, function (Player $p) use ($store, $shop) {
@@ -53,6 +56,9 @@ class ShopManageForm
         $form->addElements(
             new ClosureButton("アイテムショップ", null, function () use ($pos, $store, $p): void {
                 $p->sendForm(ItemShopManageForm::shopCreateForm($store, $pos));
+            }),
+            new ClosureButton("データショップ", null, function () use ($pos, $store, $p): void {
+                $p->sendForm(DataShopManageForm::shopCreateForm($store, $pos));
             })
         );
     }

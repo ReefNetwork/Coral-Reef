@@ -25,7 +25,7 @@ class ItemShop extends Shop
     public array $payment;
     public string $category;
 
-    public function __construct(Position $pos, string $orderType, array $payment, int $dayLimit, array $dayLimitCounter, string $category)
+    public function __construct(Position $pos, string $orderType, array $payment, int $dayLimit, array $dayLimitCounter, string $category, string $subCategory)
     {
         $this->pos = $pos;
         $this->orderType = $orderType;
@@ -33,21 +33,23 @@ class ItemShop extends Shop
         $this->dayLimit = $dayLimit;
         $this->dayLimitCounter = $dayLimitCounter;
         $this->category = $category;
+        $this->subCategory = $subCategory;
     }
 
     static function jsonDeserialize(array $array): static
     {
         $level = Server::getInstance()->getWorldManager()->getWorldByName($array["level"]);
         return new ItemShop(new Position($array["x"], $array["y"], $array["z"], $level), $array["order_type"] ?? "buy",
-            $array["payment"] ?? "money", $array["day_limit"] ?? 0, $array["day_limit_counter"] ?? [], $array["category"] ?? "");
+            $array["payment"] ?? "money", $array["day_limit"] ?? 0, $array["day_limit_counter"] ?? [], $array["category"] ?? "", $array["sub_category"] ?? "");
     }
 
     #[ArrayShape(["level" => "string", "x" => "int", "y" => "int", "z" => "int", "order_type" => "string", "payment" => "array",
-        "day_limit" => "int", "day_limit_counter" => "array|int[]", "category" => "string", "type" => "string"])]
+        "day_limit" => "int", "day_limit_counter" => "array|int[]", "category" => "string", "sub_category" => "string", "type" => "string"])]
     public function jsonSerialize(): array
     {
         return ["level" => $this->pos->getWorld()->getFolderName(), "x" => $this->pos->getFloorX(), "y" => $this->pos->getFloorY(), "z" => $this->pos->getFloorZ(),
-            "order_type" => $this->orderType, "payment" => $this->payment, "day_limit" => $this->dayLimit, "day_limit_counter" => $this->dayLimitCounter, "category" => $this->category, "type" => "data"];
+            "order_type" => $this->orderType, "payment" => $this->payment, "day_limit" => $this->dayLimit, "day_limit_counter" => $this->dayLimitCounter, "category" => $this->category,
+            "sub_category" => $this->subCategory, "type" => "data"];
     }
 
     /**

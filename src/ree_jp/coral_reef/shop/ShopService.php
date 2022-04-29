@@ -13,11 +13,14 @@ namespace ree_jp\coral_reef\shop;
 
 use Closure;
 use pocketmine\player\Player;
+use pocketmine\utils\TextFormat;
 use pocketmine\world\Position;
+use ree_jp\coral_reef\form\shop\data\DataShopDetailForm;
 use ree_jp\coral_reef\form\shop\item\ItemShopDetailForm;
 use ree_jp\coral_reef\form\shop\item\ShopManageForm;
 use ree_jp\coral_reef\gatya\GatyaManager;
 use ree_jp\coral_reef\money\MoneyService;
+use ree_jp\coral_reef\shop\data\DataShop;
 use ree_jp\coral_reef\shop\item\ItemShop;
 use ree_jp\coral_reef\sql\SQLConst;
 use ree_jp\coral_reef\sql\SQLRepository;
@@ -26,8 +29,6 @@ class ShopService
 {
     static function showShop(SQLRepository $repo, Player $p, ShopStore $store, Position $pos): void
     {
-        if ($pos->getWorld()->getFolderName() !== "lobby") return;
-
         if ($p->isCreative() && $p->isSneaking()) {
             ShopManageForm::sendForm($p, $store, $pos);
             return;
@@ -35,6 +36,7 @@ class ShopService
 
         $shop = $store->findShop($pos);
         if ($shop instanceof ItemShop) ItemShopDetailForm::sendForm($repo, $store, $p, $shop);
+        if ($shop instanceof DataShop) DataShopDetailForm::sendForm($repo, $store, $p, $shop);
     }
 
 
@@ -98,5 +100,18 @@ class ShopService
                 $failure();
                 break;
         }
+    }
+
+
+    static function replaceOrderType(string $text): string
+    {
+        $text = str_replace("buy", TextFormat::GREEN . "購入" . TextFormat::RESET, $text);
+        return str_replace("sell", TextFormat::RED . "売却" . TextFormat::RESET, $text);
+    }
+
+    static function replacePaymentType(string $text): string
+    {
+        $text = str_replace("money", TextFormat::GOLD . "お金: " . TextFormat::RESET, $text);
+        return str_replace("normal_tickets", TextFormat::BLUE . "ガチャチケット: " . TextFormat::RESET, $text);
     }
 }
