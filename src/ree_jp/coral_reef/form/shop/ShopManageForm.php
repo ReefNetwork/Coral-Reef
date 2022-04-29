@@ -62,5 +62,6 @@ class ShopManageForm
                 $p->sendForm(DataShopManageForm::shopCreateForm($store, $pos));
             })
         );
+        $p->sendForm($form);
     }
 }
