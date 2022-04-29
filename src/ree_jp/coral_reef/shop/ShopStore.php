@@ -15,6 +15,8 @@ use JsonException;
 use pocketmine\utils\Config;
 use pocketmine\world\Position;
 use ree_jp\coral_reef\CoralReefPlugin;
+use ree_jp\coral_reef\shop\data\DataShop;
+use ree_jp\coral_reef\shop\item\ItemShop;
 
 class ShopStore
 {
@@ -35,18 +37,17 @@ class ShopStore
         $this->shops = [];
         $this->config->reload();
         foreach ($this->config->getAll() as $key => $shopData) {
-            $this->shops[$key] = Shop::jsonDeserialize($shopData);
+            $this->shops[$key] = match ($shopData["type"] ?? "item") {
+                "item" => ItemShop::jsonDeserialize($shopData),
+                "data" => DataShop::jsonDeserialize($shopData)
+            };
         }
     }
 
     public function findShop(Position $pos): ?Shop
     {
-        foreach ($this->shops as $shop) {
-            if ($shop->pos->equals($pos)) {
-                return $shop;
-            }
-        }
-        return null;
+        $key = ShopService::createKey($pos);
+        return $this->shops[$key] ?? null;
     }
 
     public function updateShop(Shop $shop): void
