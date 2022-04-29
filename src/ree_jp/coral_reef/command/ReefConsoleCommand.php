@@ -20,11 +20,11 @@ use pocketmine\plugin\PluginOwned;
 use ree_jp\coral_reef\account\AccountStore;
 use ree_jp\coral_reef\gatya\items\SpecialItemService;
 use ree_jp\coral_reef\sql\SQLConst;
-use ree_jp\coral_reef\task\ServerUpdateTask;
+use ree_jp\coral_reef\sql\SQLRepository;
 
 class ReefConsoleCommand extends Command implements PluginOwned
 {
-    public function __construct(private Plugin $owner, private AccountStore $store)
+    public function __construct(private Plugin $owner, private SQLRepository $repo, private AccountStore $store)
     {
         parent::__construct("reef-console");
         $this->setUsage("Reef Manage Command");
@@ -38,20 +38,13 @@ class ReefConsoleCommand extends Command implements PluginOwned
         if (isset($args[0])) {
 
             switch ($args[0]) {
+                case SQLConst::ENV_HASTE_EFFECT:
                 case SQLConst::ENV_EXP_BUF:
                     if (!isset($args[1]) || !is_numeric($args[1])) {
                         $sender->sendMessage("引数が間違ってる");
                         return;
                     }
-                    ServerUpdateTask::$exp_buff = $args[1];
-                    $sender->sendMessage("反映には最大1分かかります");
-                    break;
-                case SQLConst::ENV_HASTE_EFFECT:
-                    if (!isset($args[1]) || !is_numeric($args[1])) {
-                        $sender->sendMessage("引数が間違ってる");
-                        return;
-                    }
-                    ServerUpdateTask::$haste_effect = $args[1];
+                    $this->repo->setValue(0, SQLConst::TYPE_ENV, $args[0], $args[1], null);
                     $sender->sendMessage("反映には最大1分かかります");
                     break;
                 case "tool":
