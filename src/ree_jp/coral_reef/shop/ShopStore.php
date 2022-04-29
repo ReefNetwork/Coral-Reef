@@ -47,7 +47,7 @@ class ShopStore
     public function findShop(Position $pos): ?Shop
     {
         $key = ShopService::createKey($pos);
-        return $this->shops[$key] ?: null;
+        return $this->shops[$key] ?? null;
     }
 
     public function updateShop(Shop $shop): void
