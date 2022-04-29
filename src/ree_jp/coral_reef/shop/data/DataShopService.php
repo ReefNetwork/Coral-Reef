@@ -39,6 +39,7 @@ class DataShopService
             ShopService::pay($repo, $store, $shop, $xuid, $count, true, function () use ($dataArray, $buyCount, $p): void {
                 $dataArray["count"] = $buyCount;
                 $dataArray["isNotDuplicate"] = false;
+                var_dump($dataArray);
                 ReefEdgePlugin::$socketClient->send(new SocketData("item-add", $dataArray), function (array $result) use ($p): void {
                     if (!$p->isOnline()) return;
                     if (!$result["isSuccess"]) {
@@ -59,7 +60,7 @@ class DataShopService
     {
         $xuid = $p->getXuid();
         $dataArray = ["xuid" => $xuid, "type" => $shop->data->type, "subType" => $shop->data->subtype, "item" => $shop->data->value];
-        ReefEdgePlugin::$socketClient->send(new SocketData("item-count", $dataArray), function (array $result) use ($store, $xuid, $repo, $count, $shop, $p): void {
+        ReefEdgePlugin::$socketClient->send(new SocketData("item-count", $dataArray), function (array $result) use ($dataArray, $store, $xuid, $repo, $count, $shop, $p): void {
             if (!$p->isOnline()) return;
             if (!$result["isSuccess"] || !isset($result["count"])) {
                 $p->sendMessage("エラーが発生しました");
@@ -71,7 +72,7 @@ class DataShopService
                 $p->sendMessage("所持数が足りません");
                 return;
             }
-            ShopService::pay($repo, $store, $shop, $p->getXuid(), $count, false, function () use ($sellCount, $p): void {
+            ShopService::pay($repo, $store, $shop, $p->getXuid(), $count, false, function () use ($dataArray, $sellCount, $p): void {
                 $dataArray["count"] = -$sellCount;
                 $dataArray["isNotDuplicate"] = false;
                 ReefEdgePlugin::$socketClient->send(new SocketData("item-add", $dataArray), function (array $result) use ($p): void {
