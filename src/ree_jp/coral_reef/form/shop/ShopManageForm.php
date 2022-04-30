@@ -15,6 +15,7 @@ use bbo51dog\bboform\element\ClosureButton;
 use bbo51dog\bboform\form\SimpleForm;
 use pocketmine\player\Player;
 use pocketmine\world\Position;
+use ree_jp\coral_reef\form\shop\data\CustomTagShopManageForm;
 use ree_jp\coral_reef\form\shop\data\DataShopManageForm;
 use ree_jp\coral_reef\form\shop\item\ItemShopManageForm;
 use ree_jp\coral_reef\shop\data\DataShop;
@@ -57,6 +58,9 @@ class ShopManageForm
         $form->addElements(
             new ClosureButton("アイテムショップ", null, function () use ($pos, $store, $p): void {
                 $p->sendForm(ItemShopManageForm::shopCreateForm($store, $pos));
+            }),
+            new ClosureButton("称号ショップ", null, function () use ($p, $store, $pos): void {
+                $p->sendForm(CustomTagShopManageForm::shopCreateForm($store, $pos));
             }),
             new ClosureButton("データショップ", null, function () use ($pos, $store, $p): void {
                 $p->sendForm(DataShopManageForm::shopCreateForm($store, $pos));

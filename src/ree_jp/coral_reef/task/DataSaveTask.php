@@ -22,6 +22,8 @@ use ree_jp\coral_reef\account\AccountStore;
 use ree_jp\coral_reef\account\UserAccount;
 use ree_jp\coral_reef\CoralReefPlugin;
 use ree_jp\coral_reef\sql\SQLRepository;
+use ree_jp\reef_edge\ReefEdgePlugin;
+use ree_jp\reef_edge\socket\SocketService;
 
 class DataSaveTask extends Task
 {
@@ -81,6 +83,7 @@ class DataSaveTask extends Task
                 break;
             case 5:
                 Server::getInstance()->broadcastMessage(TextFormat::GRAY . "5秒後に再起動を行います");
+                SocketService::sendBroadcastMessage(ReefEdgePlugin::$socketClient, CoralReefPlugin::$serverID . "サーバーを§c定期再起動§rします...");
                 break;
         }
         if ($this->timer < 0) {

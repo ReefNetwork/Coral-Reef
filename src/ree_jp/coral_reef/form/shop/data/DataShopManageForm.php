@@ -38,7 +38,7 @@ class DataShopManageForm
         $subCategoryElement = new Input("サブカテゴリ(もともとは$category) 入力しなくてもいいよ", "ブロック", $subCategory);
         $dataTypeElement = new Input("データタイプ(もともとは$dataType)", "ブロック", $dataType);
         $dataSubTypeElement = new Input("データサブタイプ(もともとは$dataSubType) 入力しなくてもいいよ", "", $dataSubType);
-        $dataValueElement = new Input("データ値(もともとは$dataValue) 入力しなくてもいいよ", "整地マスター", $dataValue);
+        $dataValueElement = new Input("データ値(もともとは$dataValue)", "整地マスター", $dataValue);
         $havaLimitElement = new Input("所持数制限(もともとは$haveLimit) 入力しなくてもいいよ0に設定すると無限", "1", $haveLimit);
         $showNameElement = new Input("このデータのショップに表示される名前(もともとは$showName)", "称号", $showName);
         return (new ClosureCustomForm(function (Player $p) use (
