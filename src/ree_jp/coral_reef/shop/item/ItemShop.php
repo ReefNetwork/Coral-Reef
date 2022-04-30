@@ -49,7 +49,7 @@ class ItemShop extends Shop
     {
         return ["level" => $this->pos->getWorld()->getFolderName(), "x" => $this->pos->getFloorX(), "y" => $this->pos->getFloorY(), "z" => $this->pos->getFloorZ(),
             "order_type" => $this->orderType, "payment" => $this->payment, "day_limit" => $this->dayLimit, "day_limit_counter" => $this->dayLimitCounter, "category" => $this->category,
-            "sub_category" => $this->subCategory, "type" => "data"];
+            "sub_category" => $this->subCategory, "type" => "item"];
     }
 
     /**
