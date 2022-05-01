@@ -31,7 +31,7 @@ use ree_jp\coral_reef\sql\SQLRepository;
 class LandService
 {
     const CAN_CREATE_LAND = array("main_2");
-    const LOBBY_WORLD = array("lobby");
+    const LOBBY_WORLD = array("lobby", "shop");
     const NEED_LAND_PROTECT = array("main_2");
 
     static function getLand(LandStore $store, Position $pos): ?LandData
