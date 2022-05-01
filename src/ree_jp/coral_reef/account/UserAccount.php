@@ -24,6 +24,7 @@ use ree_jp\coral_reef\skill\BreakSkill;
 use ree_jp\coral_reef\skill\SkillManager;
 use ree_jp\coral_reef\sql\SQLRepository;
 use ree_jp\reef_edge\ReefEdgePlugin;
+use ree_jp\reef_edge\socket\SocketData;
 use ree_jp\reef_edge\socket\SocketService;
 
 class UserAccount
@@ -91,10 +92,23 @@ class UserAccount
             if ($constExperience > $this->experience) {
                 $this->level = --$constLevel;
                 $this->necessaryExperience = $constExperience - $this->experience;
+                $this->updateLevelTag();
                 return;
             }
         }
         $this->level = array_key_last(Experiment::LEVEL_EXPERIMENT);
         $this->necessaryExperience = -999;
+        $this->updateLevelTag();
+    }
+
+    private function updateLevelTag(): void
+    {
+        ReefEdgePlugin::$socketClient->send(new SocketData("item-add",
+            ["xuid" => $this->xuid, "type" => "info_tag", "subType" => "seichi_level", "item" => "§g{$this->level}レベル", "count" => 1, "isNotDuplicate" => true]),
+            function (): void {
+                $p = AccountService::getPlayerByXuid($this->xuid);
+                $p?->sendMessage("整地レベル称号を$this->level に更新しました");
+            }
+        );
     }
 }
