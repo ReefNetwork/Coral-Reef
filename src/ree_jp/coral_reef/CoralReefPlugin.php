@@ -39,7 +39,8 @@ use ree_jp\coral_reef\proxy\SocketHandler;
 use ree_jp\coral_reef\quest\QuestListener;
 use ree_jp\coral_reef\session\SessionStore;
 use ree_jp\coral_reef\shop\ShopStore;
-use ree_jp\coral_reef\sql\SQLRepository;
+use ree_jp\coral_reef\sql\mysql\SQLRepository;
+use ree_jp\coral_reef\sql\RepositoryPool;
 use ree_jp\coral_reef\task\DataSaveTask;
 use ree_jp\coral_reef\task\EffectTask;
 use ree_jp\coral_reef\task\SendServerTipTask;
@@ -59,6 +60,7 @@ class CoralReefPlugin extends PluginBase
     private LandStore $landStore;
     private ShopStore $shopStore;
     private SessionStore $sessionStore;
+    public RepositoryPool $pool;
 
     public function onLoad(): void
     {
@@ -77,7 +79,7 @@ class CoralReefPlugin extends PluginBase
         }
         date_default_timezone_set('Asia/Tokyo');
         $this->accountStore = new AccountStore();
-        $this->sqlRepo = new SQLRepository($this->accountStore, $this, $this->getDataFolder());
+        $this->initRepository();
         $this->landStore = new LandStore($this->sqlRepo);
         $this->shopStore = new ShopStore($this->getDataFolder());
         $this->sessionStore = new SessionStore();
@@ -173,6 +175,17 @@ class CoralReefPlugin extends PluginBase
         $wm->loadWorld("lobby");
         $wm->loadWorld("main_1");
         $wm->loadWorld("main_2");
+    }
+
+    private function initRepository(): void
+    {
+        $this->getLogger()->info("[SQL] サーバーに接続中...");
+        $this->pool = new RepositoryPool($this, $this->getDataFolder());
+        $this->getLogger()->info("[SQL] 準備しています");
+        $this->sqlRepo = new SQLRepository($this->pool, $this->accountStore);
+        $this->pool->register($this->sqlRepo);
+        $this->pool->getConnection()->waitAll();
+        $this->getLogger()->info("[SQL] 完了しました");
     }
 
     private function pluginInformation(): void

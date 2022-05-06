@@ -27,9 +27,10 @@ use ree_jp\coral_reef\session\SessionData;
 use ree_jp\coral_reef\skill\BreakSkill;
 use ree_jp\coral_reef\skill\SkillManager;
 use ree_jp\coral_reef\skill\TreeBreakService;
+use ree_jp\coral_reef\sql\mysql\SQLRepository;
 use ree_jp\coral_reef\sql\SettingConst;
-use ree_jp\coral_reef\sql\SQLRepository;
 use ree_jp\coral_reef\task\ServerUpdateTask;
+use SOFe\AwaitGenerator\Await;
 
 class AccountService
 {
@@ -64,7 +65,7 @@ class AccountService
         } else {
             $account = $store->getUser($xuid);
             if (!is_null($account)) {
-                $account->save($repo);
+                Await::g2c($account->save($repo));
             }
         }
         MoneyCache::purge($repo, $xuid);

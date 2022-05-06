@@ -24,7 +24,7 @@ use ree_jp\coral_reef\account\UserAccount;
 use ree_jp\coral_reef\land\LandData;
 use ree_jp\coral_reef\land\LandService;
 use ree_jp\coral_reef\land\LandStore;
-use ree_jp\coral_reef\sql\SQLRepository;
+use ree_jp\coral_reef\sql\mysql\SQLRepository;
 
 class ReefAdminForm
 {

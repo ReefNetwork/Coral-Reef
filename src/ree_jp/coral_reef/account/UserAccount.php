@@ -12,8 +12,8 @@
 namespace ree_jp\coral_reef\account;
 
 
-use Closure;
 use Exception;
+use Generator;
 use pocketmine\player\Player;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat;
@@ -22,10 +22,11 @@ use ree_jp\coral_reef\quest\QuestListener;
 use ree_jp\coral_reef\quest\QuestManager;
 use ree_jp\coral_reef\skill\BreakSkill;
 use ree_jp\coral_reef\skill\SkillManager;
-use ree_jp\coral_reef\sql\SQLRepository;
+use ree_jp\coral_reef\sql\mysql\SQLRepository;
 use ree_jp\reef_edge\ReefEdgePlugin;
 use ree_jp\reef_edge\socket\SocketData;
 use ree_jp\reef_edge\socket\SocketService;
+use SOFe\AwaitGenerator\Await;
 
 class UserAccount
 {
@@ -45,17 +46,19 @@ class UserAccount
         $this->skill = SkillManager::getSkill($skill);
     }
 
-    function save(SQLRepository $repo, ?Closure $xpFunc = null, ?Closure $skillFunc = null, ?Closure $questFunc = null): void
+    function save(SQLRepository $repo): Generator
     {
         if (is_null($this->skill)) {
             $skillId = null;
         } else {
             $skillId = $this->skill->id;
         }
+        $await = [];
         try {
-            $repo->setXp($this->xuid, $this->experience, $xpFunc);
-            $repo->setSkill($this->xuid, $skillId, $skillFunc);
-            QuestManager::save($repo, $this->xuid, $questFunc);
+            $await[] = fn() => yield from Await::promise(fn($func) => $repo->setXp($this->xuid, $this->experience, $func));
+            $await[] = fn() => yield from Await::promise(fn($func) => $repo->setSkill($this->xuid, $skillId, $func));
+            $await[] = fn() => yield from Await::promise(fn($func) => QuestManager::save($repo, $this->xuid, $func));
+            yield Await::all($await);
         } catch (Exception $e) {
             Server::getInstance()->getLogger()->error($this->name . 'のデータ保存に失敗しました' . $e->getMessage());
         }

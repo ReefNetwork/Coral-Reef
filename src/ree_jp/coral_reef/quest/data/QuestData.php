@@ -11,7 +11,7 @@
 
 namespace ree_jp\coral_reef\quest\data;
 
-use ree_jp\coral_reef\sql\SQLRepository;
+use ree_jp\coral_reef\sql\mysql\SQLRepository;
 
 abstract class QuestData
 {

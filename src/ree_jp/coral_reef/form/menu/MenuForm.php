@@ -27,7 +27,7 @@ use ree_jp\coral_reef\form\ranking\RankingForm;
 use ree_jp\coral_reef\form\skill\SkillSettingForm;
 use ree_jp\coral_reef\money\MoneyService;
 use ree_jp\coral_reef\quest\QuestListener;
-use ree_jp\coral_reef\sql\SQLRepository;
+use ree_jp\coral_reef\sql\mysql\SQLRepository;
 
 class MenuForm
 {

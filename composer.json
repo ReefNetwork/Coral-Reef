@@ -16,6 +16,7 @@
     "reefnetwork/reef-edge": "dev-master",
     "bbo51dog/bboform": "2.0.*",
     "sof3/libasynql": "4.0.*",
+    "sof3/await-generator": "3.4.*",
     "ree_jp_minecraft/invmenu": "4.3.*",
     "ree_jp/stackstorage": "dev-master",
     "ext-mbstring": "*"
@@ -36,6 +37,10 @@
     {
       "type": "git",
       "url": "https://github.com/poggit/libasynql.git"
+    },
+    {
+      "type": "git",
+      "url": "https://github.com/SOF3/await-generator.git"
     },
     {
       "type": "git",

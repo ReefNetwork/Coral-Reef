@@ -15,7 +15,7 @@ use pocketmine\item\Item;
 use pocketmine\player\Player;
 use ree_jp\coral_reef\shop\ShopService;
 use ree_jp\coral_reef\shop\ShopStore;
-use ree_jp\coral_reef\sql\SQLRepository;
+use ree_jp\coral_reef\sql\mysql\SQLRepository;
 use ree_jp\stackstorage\api\StackStorageAPI;
 use Throwable;
 

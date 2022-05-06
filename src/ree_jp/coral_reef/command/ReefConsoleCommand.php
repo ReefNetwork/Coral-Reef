@@ -19,8 +19,8 @@ use pocketmine\plugin\Plugin;
 use pocketmine\plugin\PluginOwned;
 use ree_jp\coral_reef\account\AccountStore;
 use ree_jp\coral_reef\gatya\items\SpecialItemService;
+use ree_jp\coral_reef\sql\mysql\SQLRepository;
 use ree_jp\coral_reef\sql\SQLConst;
-use ree_jp\coral_reef\sql\SQLRepository;
 
 class ReefConsoleCommand extends Command implements PluginOwned
 {

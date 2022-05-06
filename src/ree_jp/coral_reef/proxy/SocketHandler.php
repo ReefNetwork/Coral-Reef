@@ -15,7 +15,7 @@ use pocketmine\player\Player;
 use pocketmine\Server;
 use Ramsey\Uuid\Uuid;
 use ree_jp\coral_reef\account\AccountStore;
-use ree_jp\coral_reef\sql\SQLRepository;
+use ree_jp\coral_reef\sql\mysql\SQLRepository;
 
 class SocketHandler
 {

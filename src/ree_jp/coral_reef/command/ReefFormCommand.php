@@ -19,7 +19,7 @@ use pocketmine\plugin\PluginOwned;
 use ree_jp\coral_reef\account\AccountStore;
 use ree_jp\coral_reef\form\land\LandForm;
 use ree_jp\coral_reef\land\LandStore;
-use ree_jp\coral_reef\sql\SQLRepository;
+use ree_jp\coral_reef\sql\mysql\SQLRepository;
 
 class ReefFormCommand extends Command implements PluginOwned
 {

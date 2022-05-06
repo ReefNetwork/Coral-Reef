@@ -12,7 +12,7 @@
 namespace ree_jp\coral_reef\money;
 
 use Closure;
-use ree_jp\coral_reef\sql\SQLRepository;
+use ree_jp\coral_reef\sql\mysql\SQLRepository;
 
 class MoneyCache
 {

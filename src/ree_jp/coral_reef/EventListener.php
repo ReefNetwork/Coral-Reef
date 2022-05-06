@@ -60,8 +60,8 @@ use ree_jp\coral_reef\land\LandStore;
 use ree_jp\coral_reef\session\SessionStore;
 use ree_jp\coral_reef\shop\ShopService;
 use ree_jp\coral_reef\shop\ShopStore;
+use ree_jp\coral_reef\sql\mysql\SQLRepository;
 use ree_jp\coral_reef\sql\SettingConst;
-use ree_jp\coral_reef\sql\SQLRepository;
 use ree_jp\coral_reef\task\EffectTask;
 use ree_jp\stackStorage\api\StackStorageAPI;
 use Throwable;
@@ -449,6 +449,16 @@ class EventListener implements Listener
     public function onBurn(BlockBurnEvent $ev): void
     {
         $ev->cancel();
+    }
+
+    /**
+     * @priority LOWEST
+     */
+    public function onTransactionLowest(InventoryTransactionEvent $ev): void
+    {
+        if ($this->accountStore->hasValue($ev->getTransaction()->getSource()->getXuid(), "wait_action")) {
+            $ev->cancel();
+        }
     }
 
     /**

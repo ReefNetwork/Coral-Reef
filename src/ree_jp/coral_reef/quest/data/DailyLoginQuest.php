@@ -14,8 +14,8 @@ namespace ree_jp\coral_reef\quest\data;
 use pocketmine\Server;
 use ree_jp\coral_reef\gatya\GatyaManager;
 use ree_jp\coral_reef\quest\QuestListener;
+use ree_jp\coral_reef\sql\mysql\SQLRepository;
 use ree_jp\coral_reef\sql\SQLConst;
-use ree_jp\coral_reef\sql\SQLRepository;
 
 class DailyLoginQuest extends DailyQuest
 {

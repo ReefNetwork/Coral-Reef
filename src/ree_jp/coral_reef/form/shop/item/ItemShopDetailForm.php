@@ -24,7 +24,7 @@ use ree_jp\coral_reef\shop\item\ItemShop;
 use ree_jp\coral_reef\shop\item\ItemShopService;
 use ree_jp\coral_reef\shop\ShopService;
 use ree_jp\coral_reef\shop\ShopStore;
-use ree_jp\coral_reef\sql\SQLRepository;
+use ree_jp\coral_reef\sql\mysql\SQLRepository;
 
 class ItemShopDetailForm
 {

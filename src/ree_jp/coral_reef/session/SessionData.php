@@ -11,7 +11,7 @@
 
 namespace ree_jp\coral_reef\session;
 
-use ree_jp\coral_reef\sql\SQLRepository;
+use ree_jp\coral_reef\sql\mysql\SQLRepository;
 
 class SessionData
 {

@@ -14,7 +14,7 @@ namespace ree_jp\coral_reef\form\ranking;
 use pocketmine\player\Player;
 use ree_jp\coral_reef\account\AccountStore;
 use ree_jp\coral_reef\form\PageViewForm;
-use ree_jp\coral_reef\sql\SQLRepository;
+use ree_jp\coral_reef\sql\mysql\SQLRepository;
 
 class DigRankingForm
 {

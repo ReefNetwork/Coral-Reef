@@ -21,11 +21,10 @@ use bbo51dog\bboform\form\SimpleForm;
 use Closure;
 use pocketmine\math\Vector3;
 use pocketmine\player\Player;
-use pocketmine\utils\Terminal;
 use pocketmine\utils\TextFormat;
 use ree_jp\coral_reef\account\AccountService;
 use ree_jp\coral_reef\quest\QuestListener;
-use ree_jp\coral_reef\sql\SQLRepository;
+use ree_jp\coral_reef\sql\mysql\SQLRepository;
 
 class MyWarpForm
 {

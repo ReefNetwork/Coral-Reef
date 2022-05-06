@@ -15,8 +15,8 @@ use JetBrains\PhpStorm\Pure;
 use ree_jp\coral_reef\account\AccountService;
 use ree_jp\coral_reef\gatya\GatyaManager;
 use ree_jp\coral_reef\quest\QuestListener;
+use ree_jp\coral_reef\sql\mysql\SQLRepository;
 use ree_jp\coral_reef\sql\SQLConst;
-use ree_jp\coral_reef\sql\SQLRepository;
 
 class WeeklyAchieveQuest extends WeeklyQuest
 {
