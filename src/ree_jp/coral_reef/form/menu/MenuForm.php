@@ -46,7 +46,7 @@ class MenuForm
             $exp = is_null($user) ? 'error' : $user->experience;
 
             $form = (new SimpleForm())
-                ->setTitle(TextFormat::GREEN."Reef".TextFormat::WHITE." Menu")
+                ->setTitle(TextFormat::GREEN . "Reef" . TextFormat::WHITE . " Menu")
                 ->setText("§7現在のレベル §8: §f$level \n§7レベルアップまで §8: §f$necessaryExperience §7経験値\n§7経験値 §8: §f$exp\n§7所持金 §8: §f$money")
                 ->addElements(
                     new ClosureButton(
@@ -128,7 +128,7 @@ class MenuForm
                 new ClosureButton(
                     "ショップ", null, function (Player $p) {
                     if (CoralReefPlugin::$plugin->isMain) {
-                        AccountService::teleport($p, "lobby", new Vector3(512, 5, 512));
+                        AccountService::teleport($p, "shop");
                     } else {
                         $p->sendMessage("ショップは整地サーバー1のみです");
                     }
