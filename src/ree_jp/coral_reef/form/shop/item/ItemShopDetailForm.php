@@ -41,7 +41,7 @@ class ItemShopDetailForm
             $itemString .= $item->getName() . TextFormat::RESET . " × " . $item->getCount() . "\n";
         }
 
-        $text = "金額\n" . $shop->payment["type"] . $shop->payment["amount"] . TextFormat::RESET;
+        $text = "金額\n" . $shop->payment["type"] . number_format($shop->payment["amount"]) . TextFormat::RESET;
         $maxAmount = 64;
 
         if ($shop->dayLimit > 0) {
@@ -85,7 +85,7 @@ class ItemShopDetailForm
                 }), new ClosureButton("戻る", null, function (Player $p) use ($store, $repo, $shop): void {
                 self::sendForm($repo, $store, $p, $shop);
             })))->setTitle("ItemShop -> Confirm")->setText("本当にこのアイテムを" . ShopService::replaceOrderType($shop->orderType) . "しますか?\n" .
-                ShopService::replacePaymentType("金額\n" . $shop->payment["type"] . $shop->payment["amount"] * $amount)));
+                ShopService::replacePaymentType("金額\n" . $shop->payment["type"] . number_format($shop->payment["amount"] * $amount))));
 
         }))->setTitle("ItemShop")->addElement(new Label(ShopService::replacePaymentType($text) . $itemString));
 

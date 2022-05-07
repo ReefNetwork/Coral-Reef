@@ -33,7 +33,7 @@ use ree_jp\coral_reef\task\ServerUpdateTask;
 
 class AccountService
 {
-    const STOP_FLY_WORLD = array('lobby');
+    const STOP_FLY_WORLD = array("lobby", "shop");
 
     static function userJoin(SQLRepository $repo, AccountStore $store, Player $p): void
     {
