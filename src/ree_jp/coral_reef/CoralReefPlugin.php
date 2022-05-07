@@ -70,7 +70,6 @@ class CoralReefPlugin extends PluginBase
     {
         self::$serverID = $this->getConfig()->get(ConfigConst::SERVER_NAME);
         $this->isDev = !str_contains($this->getDescription()->getVersion(), 'stable');
-        /** @noinspection SpellCheckingInspection */
         $this->isMain = self::$serverID === "seichi_1";
 
         if (!InvMenuHandler::isRegistered()) {
