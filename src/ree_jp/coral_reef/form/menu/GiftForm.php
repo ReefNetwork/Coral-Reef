@@ -36,7 +36,7 @@ class GiftForm
     static function sendGiftList(SQLRepository $repo, AccountStore $store, Player $p, array $giftsPage, int $page = 1): void
     {
         if (!isset($giftsPage[$page - 1])) {
-            $p->sendMessage("エラーが発生しました");
+            $p->sendMessage("ギフトがありません");
             return;
         }
         /** @var ClosureButton[] $buttons */
