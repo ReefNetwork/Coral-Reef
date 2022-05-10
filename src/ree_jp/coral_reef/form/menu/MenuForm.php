@@ -23,6 +23,7 @@ use ree_jp\coral_reef\account\AccountService;
 use ree_jp\coral_reef\account\AccountStore;
 use ree_jp\coral_reef\CoralReefPlugin;
 use ree_jp\coral_reef\form\gatya\GatyaForm;
+use ree_jp\coral_reef\form\item\DocsForm;
 use ree_jp\coral_reef\form\ranking\RankingForm;
 use ree_jp\coral_reef\form\skill\SkillSettingForm;
 use ree_jp\coral_reef\money\MoneyService;
@@ -109,6 +110,13 @@ class MenuForm
                     new ClosureButton(
                         "設定", null, function (Player $p) use ($repo) {
                         SettingForm::sendForm($repo, $p);
+                    }),
+                    new ClosureButton(
+                        "アカウント設定 \n§7称号の変更や自分の情報を確認できます", null, function (Player $p) use ($store, $repo) {
+                        Server::getInstance()->dispatchCommand($p, "exe-p setting");
+                    }),
+                    new ClosureButton("解説 \n§7機能の解説やルールの確認ができます", null, function () use ($p): void {
+                        DocsForm::sendForm($p);
                     }),
                 );
             $p->sendForm($form);

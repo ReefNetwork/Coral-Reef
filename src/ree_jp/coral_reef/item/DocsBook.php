@@ -11,12 +11,11 @@
 
 namespace ree_jp\coral_reef\item;
 
-use bbo51dog\bboform\element\ClosureButton;
-use bbo51dog\bboform\form\SimpleForm;
 use pocketmine\item\ItemIdentifier;
 use pocketmine\item\ItemIds;
 use pocketmine\item\ItemUseResult;
 use pocketmine\player\Player;
+use ree_jp\coral_reef\form\item\DocsForm;
 
 class DocsBook extends ClickItem
 {
@@ -28,17 +27,7 @@ class DocsBook extends ClickItem
     static function onActive(Player $p, ClickItem $item): ItemUseResult
     {
         if (!self::markCoolTime($p, $item)) return ItemUseResult::FAIL();
-        $form = new SimpleForm();
-        $form->setTitle("Reef Server Docs")->setText("確認したいものを選択してください");
-        $form->addElements(
-            new ClosureButton("機能解説", null, function () use ($p): void {
-                $p->getServer()->dispatchCommand($p, "exe-p wp-view category 104");
-            }),
-            new ClosureButton("ルール、ガイドライン", null, function () use ($p): void {
-                $p->getServer()->dispatchCommand($p, "exe-p wp-view category 103");
-            })
-        );
-        $p->sendForm($form);
+        DocsForm::sendForm($p);
         return ItemUseResult::SUCCESS();
     }
 }

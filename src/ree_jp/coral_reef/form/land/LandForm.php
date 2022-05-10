@@ -20,6 +20,7 @@ use bbo51dog\bboform\form\SimpleForm;
 use pocketmine\item\VanillaItems;
 use pocketmine\math\Vector3;
 use pocketmine\player\Player;
+use pocketmine\Server;
 use pocketmine\world\Position;
 use ree_jp\coral_reef\account\AccountService;
 use ree_jp\coral_reef\account\AccountStore;
@@ -49,12 +50,16 @@ class LandForm
             }
             $form->addElement($button);
         }
-        $form->addElement(new ClosureButton(
-            "パーティー", null,
-            function (Player $p) use ($landStore, $accountStore) {
+        $form->addElements(
+            new ClosureButton(
+                "パーティー", null, function (Player $p) use ($landStore, $accountStore) {
                 LandPartyForm::sendForm($accountStore, $landStore, $p);
-            }
-        ));
+            }),
+            new ClosureButton(
+                "土地保護とは", null, function () use ($p): void {
+                Server::getInstance()->dispatchCommand($p, "exe-p wp-view post reefserver-land-protection");
+            })
+        );
         $form->addElement(new ClosureButton(
             "新しく土地保護を作成する", null,
             function (Player $p) {
