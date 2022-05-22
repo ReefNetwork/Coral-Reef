@@ -11,6 +11,7 @@
 
 namespace ree_jp\coral_reef\sql\model;
 
+use pocketmine\color\Color;
 use pocketmine\entity\effect\Effect;
 use pocketmine\entity\effect\EffectInstance;
 use pocketmine\entity\effect\VanillaEffects;
@@ -31,7 +32,7 @@ class PlayerData
      * @param int $xp
      */
     public function __construct(public string $xuid, public array $inv, public array $armorInv, public array $offHandInv,
-                                public array  $enderInv, public array $effects, public int $health, public float $hunger, public int $xp)
+                                public array $enderInv, public array $effects, public int $health, public float $hunger, public int $xp)
     {
     }
 
@@ -56,12 +57,27 @@ class PlayerData
         if ($json == null) return [];
         $content = [];
         foreach (json_decode($json, true) as $effect) {
-            $effectType = self::getEffect($effect["effectType"]["name"]);
+            $effectType = self::getEffect($effect["name"]);
             if ($effectType == null) continue;
 
-            $content[] = new EffectInstance($effectType, $effect["duration"], $effect["amplifier"], $effect["visible"], $effect["ambient"], $effect["overrideColor"]);
+            $content[] = new EffectInstance($effectType, $effect["duration"], $effect["amplifier"], $effect["visible"], $effect["ambient"],
+                Color::fromARGB($effect["overrideColor"]));
         }
         return $content;
+    }
+
+    /**
+     * @param EffectInstance[] $effects
+     * @return string
+     */
+    static function effectToJson(array $effects): string
+    {
+        $array = [];
+        foreach ($effects as $effect) {
+            $array[] = ["name" => $effect->getType()->getName(), "duration" => $effect->getDuration(), "amplifier" => $effect->getAmplifier(),
+                "visible" => $effect->isVisible(), "ambient" => $effect->isAmbient(), "color" => $effect->getColor()->toARGB()];
+        }
+        return json_encode($array);
     }
 
     private static function getEffect(string $name): ?Effect
