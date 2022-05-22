@@ -41,8 +41,9 @@ class PlayerData
             $p->getEnderInventory()->getContents(), $p->getEffects()->all(), $p->getHealth(), $p->getHungerManager()->getFood(), $p->getXpManager()->getCurrentTotalXp());
     }
 
-    static function jsonToItems($json): array
+    static function jsonToItems(string $json): array
     {
+        if ($json == null) return [];
         $content = [];
         foreach (json_decode($json, true) as $slot => $item) {
             $content[$slot] = Item::jsonDeserialize($item);
@@ -50,8 +51,9 @@ class PlayerData
         return $content;
     }
 
-    static function jsonToEffect($json): array
+    static function jsonToEffect(string $json): array
     {
+        if ($json == null) return [];
         $content = [];
         foreach (json_decode($json, true) as $effect) {
             $effectType = self::getEffect($effect["effectType"]["name"]);
