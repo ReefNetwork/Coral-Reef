@@ -28,9 +28,10 @@ class MysqlPlayerDataRepo implements PlayerRepository
 
     public function getPlayerData(string $xuid): Generator
     {
-        [$result] = yield from Await::promise(
+        $test = yield from Await::promise(
             fn($resolve, $reject) => $this->pool->getConnection()->executeSelect("coral_reef.player_data.get", ["xuid" => $xuid], $resolve, $reject));
-        return $this->setPlayerDataModel(current($result));
+        var_dump($test);
+        return $this->setPlayerDataModel(current($test));
     }
 
     private function setPlayerDataModel(array $data): ?PlayerData
