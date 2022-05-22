@@ -207,8 +207,9 @@ class AccountService
         $repo = $pool->get(SQLRepository::class);
         $warps = yield from Await::promise(fn($resolve) => $repo->getWarps($p->getXuid(), $resolve));
         foreach ($warps as $warp) {
-            var_dump($warp);
+            var_dump($warp["name"]);
             if ($warp["name"] != "自動セーブ") continue;
+            var_dump($warp);
             self::teleport($p, $warp['level'], new Vector3($warp['x'], $warp['y'], $warp['z']));
         }
     }
