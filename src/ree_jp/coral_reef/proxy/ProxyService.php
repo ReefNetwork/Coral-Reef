@@ -16,19 +16,19 @@ use pocketmine\player\Player;
 use pocketmine\scheduler\ClosureTask;
 use ree_jp\coral_reef\account\AccountStore;
 use ree_jp\coral_reef\CoralReefPlugin;
-use ree_jp\coral_reef\sql\mysql\SQLRepository;
+use ree_jp\coral_reef\sql\RepositoryPool;
 use SOFe\AwaitGenerator\Await;
 
 class ProxyService
 {
-    static function transferServerWithSave(SQLRepository $repo, AccountStore $store, Player $p, string $server): void
+    static function transferServerWithSave(RepositoryPool $pool, AccountStore $store, Player $p, string $server): void
     {
         $store->setValue($p->getXuid(), "wait_action");
         $p->setImmobile();
         $p->sendMessage("サーバー移動の準備中です...");
 
         $user = $store->getUser($p->getXuid());
-        Await::g2c($user->save($repo), function () use ($server, $p, $store): void {
+        Await::g2c($user->save($pool, $p), function () use ($server, $p, $store): void {
             self::transferServer($store, $p, $server);
         });
     }

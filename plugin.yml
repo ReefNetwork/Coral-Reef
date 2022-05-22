@@ -7,6 +7,8 @@ version: 1.2.13
 depend:
   - BboForm
   - StackStorage
+loadbefore:
+  - ReefEdge
 permissions:
   coral_reef.command.menu:
     default: true

@@ -22,10 +22,14 @@ use ree_jp\coral_reef\quest\QuestListener;
 use ree_jp\coral_reef\quest\QuestManager;
 use ree_jp\coral_reef\skill\BreakSkill;
 use ree_jp\coral_reef\skill\SkillManager;
+use ree_jp\coral_reef\sql\model\PlayerData;
 use ree_jp\coral_reef\sql\mysql\SQLRepository;
+use ree_jp\coral_reef\sql\PlayerRepository;
+use ree_jp\coral_reef\sql\RepositoryPool;
 use ree_jp\reef_edge\ReefEdgePlugin;
 use ree_jp\reef_edge\socket\SocketData;
 use ree_jp\reef_edge\socket\SocketService;
+use ree_jp\stackstorage\sql\Queue;
 use SOFe\AwaitGenerator\Await;
 
 class UserAccount
@@ -46,18 +50,24 @@ class UserAccount
         $this->skill = SkillManager::getSkill($skill);
     }
 
-    function save(SQLRepository $repo): Generator
+    function save(RepositoryPool $pool, Player $p): Generator
     {
         if (is_null($this->skill)) {
             $skillId = null;
         } else {
             $skillId = $this->skill->id;
         }
+        /** @var SQLRepository */
+        $sqlRepo = $pool->get(SQLRepository::class);
+        /** @var PlayerRepository */
+        $playerRepo = $pool->get(PlayerRepository::class);
         $await = [];
         try {
-            $await[] = fn() => yield from Await::promise(fn($func) => $repo->setXp($this->xuid, $this->experience, $func));
-            $await[] = fn() => yield from Await::promise(fn($func) => $repo->setSkill($this->xuid, $skillId, $func));
-            $await[] = fn() => yield from Await::promise(fn($func) => QuestManager::save($repo, $this->xuid, $func));
+            $await[] = Await::promise(fn($func) => $sqlRepo->setXp($this->xuid, $this->experience, $func));
+            $await[] = Await::promise(fn($func) => $sqlRepo->setSkill($this->xuid, $skillId, $func));
+            $await[] = Await::promise(fn($func) => QuestManager::save($sqlRepo, $this->xuid, $func));
+            $await[] = $playerRepo->setPlayerData(PlayerData::create($p));
+            $await[] = Queue::doCache($this->xuid);
             yield Await::all($await);
         } catch (Exception $e) {
             Server::getInstance()->getLogger()->error($this->name . 'のデータ保存に失敗しました' . $e->getMessage());

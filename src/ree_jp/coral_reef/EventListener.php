@@ -61,6 +61,7 @@ use ree_jp\coral_reef\session\SessionStore;
 use ree_jp\coral_reef\shop\ShopService;
 use ree_jp\coral_reef\shop\ShopStore;
 use ree_jp\coral_reef\sql\mysql\SQLRepository;
+use ree_jp\coral_reef\sql\RepositoryPool;
 use ree_jp\coral_reef\sql\SettingConst;
 use ree_jp\coral_reef\task\EffectTask;
 use ree_jp\stackStorage\api\StackStorageAPI;
@@ -68,31 +69,31 @@ use Throwable;
 
 class EventListener implements Listener
 {
-    public function __construct(private ?SQLRepository $sqlRepo, private AccountStore $accountStore, private LandStore $landStore,
+    public function __construct(private RepositoryPool $pool, private AccountStore $accountStore, private LandStore $landStore,
                                 private ShopStore      $shopStore, private SessionStore $sessionStore)
     {
     }
 
     public function onPreLogin(PlayerLoginEvent $ev): void
     {
-        if (is_null($this->sqlRepo)) {
-            $ev->getPlayer()->kick(TextFormat::GREEN . "Reef" . TextFormat::YELLOW . "Server" .
-                TextFormat::DARK_RED . "データの読み込み中に予期せぬエラーが発生しました");
-        }
-        $this->sqlRepo->loadUser($ev->getPlayer());
+        /** @var SQLRepository */
+        $sqlRepo = $this->pool->get(SQLRepository::class);
+        $sqlRepo->loadUser($ev->getPlayer());
     }
 
     public function onJoin(PlayerJoinEvent $ev): void
     {
         $p = $ev->getPlayer();
         $xuid = $p->getXuid();
+        /** @var SQLRepository */
+        $sqlRepo = $this->pool->get(SQLRepository::class);
 
-        if (is_null($this->accountStore->getUser($xuid))) { // データをまだ読み込めてなかったら動きを止める
-            $this->accountStore->setValue($xuid, 'wait_action');
+        if ($this->accountStore->hasValue($xuid(), "wait_action")) { // データをまだ読み込めてなかったら動きを止める
+            $this->accountStore->setValue($xuid, "wait_action");
             $p->setImmobile();
-            $p->sendMessage('データを確認しています...');
+            $p->sendMessage("データを確認しています...");
         }
-        AccountService::userJoin($this->sqlRepo, $this->accountStore, $p);
+        AccountService::userJoin($sqlRepo, $this->accountStore, $p);
         $this->sessionStore->createSession($xuid);
 
         $ev->setJoinMessage(""); // プロキシ側で参加メッセージを流す
@@ -105,9 +106,11 @@ class EventListener implements Listener
     public function onQuit(PlayerQuitEvent $ev): void
     {
         $p = $ev->getPlayer();
+        /** @var SQLRepository */
+        $sqlRepo = $this->pool->get(SQLRepository::class);
 
-        AccountService::userQuit($this->sqlRepo, $this->accountStore, $p);
-        $this->sessionStore->destruction($this->sqlRepo, $p->getXuid());
+        AccountService::userQuit($this->pool, $this->accountStore, $p);
+        $this->sessionStore->destruction($sqlRepo, $p->getXuid());
         $ev->setQuitMessage(""); // プロキシ側で退出メッセージを流す
     }
 
@@ -183,8 +186,11 @@ class EventListener implements Listener
             $p->sendMessage(TextFormat::GREEN . "ショップを破壊しました");
         }
 
+        /** @var SQLRepository */
+        $sqlRepo = $this->pool->get(SQLRepository::class);
+
         try {
-            AccountService::blockBroken($this->sqlRepo, $this->accountStore, $p, $ev->getBlock(), $this->sessionStore->getSessionData($p->getXuid()));
+            AccountService::blockBroken($sqlRepo, $this->accountStore, $p, $ev->getBlock(), $this->sessionStore->getSessionData($p->getXuid()));
         } catch (Exception $e) {
             $p->sendMessage(TextFormat::RED . 'エラーが発生しました');
             Server::getInstance()->getLogger()->error('[blockBroke]' . $p->getName() . 'の処理中に' . $e->getMessage());
@@ -303,6 +309,8 @@ class EventListener implements Listener
         $p = $ev->getPlayer();
         $item = $ev->getItem();
         $xuid = $p->getXuid();
+        /** @var SQLRepository */
+        $sqlRepo = $this->pool->get(SQLRepository::class);
         if ($this->accountStore->hasValue($xuid, 'wait_action')) {
             $ev->cancel();
             return;
@@ -338,7 +346,7 @@ class EventListener implements Listener
                 } else {
                     if ($this->accountStore->hasValue($xuid, 'form_cool_time')) return;
                     $this->accountStore->setValue($xuid, 'form_cool_time', 10);
-                    LandForm::sendLandCreateAssistForm($this->sqlRepo, $this->accountStore, $this->landStore, $p, $ev->getBlock()->getPosition());
+                    LandForm::sendLandCreateAssistForm($sqlRepo, $this->accountStore, $this->landStore, $p, $ev->getBlock()->getPosition());
                 }
                 break;
 
@@ -360,8 +368,8 @@ class EventListener implements Listener
             case BlockLegacyIds::SIGN_POST:
             case BlockLegacyIds::WALL_SIGN:
                 if ($this->accountStore->hasValue($xuid, 'form_cool_time')) return;
-                $this->accountStore->setValue($xuid, 'form_cool_time', 10);
-                ShopService::showShop($this->sqlRepo, $p, $this->shopStore, $ev->getBlock()->getPosition());
+            $this->accountStore->setValue($xuid, 'form_cool_time', 10);
+            ShopService::showShop($sqlRepo, $p, $this->shopStore, $ev->getBlock()->getPosition());
                 break;
         }
         if (in_array($ev->getBlock()->getId(),

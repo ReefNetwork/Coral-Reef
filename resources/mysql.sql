@@ -120,6 +120,20 @@ CREATE TABLE IF NOT EXISTS SESSION_RECORD
     skill_count int             NOT NULL
 );
 -- #            }
+-- #            { player_data
+CREATE TABLE IF NOT EXISTS player_data
+(
+    `xuid`               BIGINT UNSIGNED NOT NULL PRIMARY KEY,
+    `inventory`          JSON,
+    `armor_inventory`    JSON,
+    `off_hand_inventory` JSON,
+    `ender_inventory`    JSON,
+    `effect`             JSON,
+    `health`             INTEGER         NOT NULL DEFAULT 20,
+    `hunger`             FLOAT           NOT NULL DEFAULT 20,
+    `xp`                 INTEGER         NOT NULL DEFAULT 0
+);
+-- #            }
 -- #        }
 -- #    }
 -- #    { user
@@ -371,6 +385,33 @@ FROM SESSION_RECORD
 WHERE quit_time BETWEEN :first_time AND :last_time
 GROUP BY xuid
 ORDER BY break_count DESC;
+-- #        }
+-- #    }
+-- #    { player_data
+-- #        { get
+-- #        :xuid int
+SELECT *
+FROM player_data
+WHERE xuid = :xuid;
+-- #        }
+-- #        { set
+-- #        :xuid int
+-- #        :inv string
+-- #        :armor_inv string
+-- #        :off_hand_inv string
+-- #        :ender_inv string
+-- #        :health int
+-- #        :hunger float
+-- #        :xp int
+INSERT INTO player_data (xuid, inventory, armor_inventory, off_hand_inventory)
+VALUES (:xuid, :inv, :armor_inv, :off_hand_inv)
+ON DUPLICATE KEY UPDATE inventory          = :inv,
+                        armor_inventory    = :armor_inv,
+                        off_hand_inventory = :off_hand_inv,
+                        ender_inventory    = :ender_inv,
+                        health             = :health,
+                        hunger             = :hunger,
+                        xp                 = :xp;
 -- #        }
 -- #    }
 -- #}

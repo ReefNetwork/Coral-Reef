@@ -16,6 +16,7 @@ use pocketmine\player\Player;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat;
 use poggit\libasynql\SqlError;
+use ree_jp\coral_reef\account\AccountService;
 use ree_jp\coral_reef\account\AccountStore;
 use ree_jp\coral_reef\account\UserAccount;
 use ree_jp\coral_reef\CoralReefPlugin;
@@ -27,33 +28,27 @@ use ree_jp\coral_reef\sql\RepositoryPool;
 use ree_jp\coral_reef\sql\SQLConst;
 use ree_jp\reef_edge\ReefEdgePlugin;
 use ree_jp\reef_edge\socket\SocketService;
+use SOFe\AwaitGenerator\Await;
 
 class SQLRepository implements Repository
 {
     public array $setting = [];
     public string $server;
 
-    public function __construct(private RepositoryPool $pool, private AccountStore $accountStore)
+    public function __construct(private RepositoryPool $pool, private AccountStore $accountStore, bool $isInit)
     {
-        Server::getInstance()->getLogger()->info('[SQL] サーバーに接続中...');
-        Server::getInstance()->getLogger()->info("[SQL] 準備しています");
-//        $this->createFunction();
-        $this->createTable();
+        if ($isInit) {
+            $this->createFunction();
+            $this->createTable();
 
-        // サーバーアカウントを作成(初期スポーンの保護などに使う)
-        $this->setUser("0", TextFormat::GREEN . "Reef " . TextFormat::YELLOW . "Server" . TextFormat::RESET, "0.0.0.0");
-
-        $this->pool->getConnection()->waitAll();
-        Server::getInstance()->getLogger()->info('[SQL] complete');
+            // サーバーアカウントを作成(初期スポーンの保護などに使う)
+            $this->setUser("0", TextFormat::GREEN . "Reef " . TextFormat::YELLOW . "Server" . TextFormat::RESET, "0.0.0.0");
+        }
     }
 
     public function close(): void
     {
         MoneyCache::purgeAll($this);
-        Server::getInstance()->getLogger()->info('[SQL] クエリの終了を待っています');
-        $this->pool->getConnection()->waitAll();
-        $this->pool->getConnection()->close();
-        Server::getInstance()->getLogger()->info('[SQL] complete');
     }
 
     public function loadUser(Player $p): void
@@ -61,39 +56,47 @@ class SQLRepository implements Repository
         $xuid = $p->getXuid();
 
         // ユーザーデータを読み込む
-        $this->pool->getConnection()->executeSelect('coral_reef.user.get', ['xuid' => intval($p->getXuid())], function (array $rows) use ($p) {
-            if (!$p->isOnline()) return;
+        $this->accountStore->setValue($xuid, "wait_action");
+        $await = [];
+        $await[] = Await::promise(fn($func) => $this->pool->getConnection()->executeSelect('coral_reef.user.get', ['xuid' => intval($p->getXuid())],
+            function (array $rows) use ($func, $p) {
+                if (!$p->isOnline()) return;
 
-            $xuid = $p->getXuid();
-            $name = $p->getName();
-            $arrayAccount = array_shift($rows);
-            if (isset($arrayAccount['xuid']) && isset($arrayAccount['name']) && isset($arrayAccount['experience'])) {
-                $skill = $arrayAccount['skill'] ?? null;
-                $account = new UserAccount($arrayAccount['xuid'], $arrayAccount['name'], intval($arrayAccount['experience']), $skill);
-                $this->accountStore->users[$account->xuid] = $account;
-            } elseif (empty($arrayAccount)) { // データが存在しないとき新しくデータを作る
-                $this->accountStore->users[$xuid] = new UserAccount($xuid, $name, 0, null);
-                SocketService::sendBroadcastMessage(ReefEdgePlugin::$socketClient, TextFormat::AQUA . $name . "さんが初めてサーバーにログインしました");
-            } else { // データ壊れてるよ
-                Server::getInstance()->getLogger()->warning($xuid . 'のデータの読み込みに失敗しました');
-                return;
-            }
-            $p->sendMessage('データを読み込みました');
-            // クライアント側の準備が整ったのにデータを読み込めてなかったら動けなくしているため解除する
-            if ($this->accountStore->hasValue($xuid, 'wait_action')) {
-                $this->accountStore->setValue($xuid, 'wait_action', 0);
-                $p->setImmobile(false);
-            }
-        });
-        $this->getAllSubtypeValue($xuid, SQLConst::TYPE_SETTINGS, function (array $rows) use ($xuid) {
-            foreach ($rows as $option) {
-                if (array_key_exists('subtype', $option) && array_key_exists('value', $option)) {
-                    $this->setting[$xuid][$option['subtype']] = $option['value'];
-                } else {
-                    Server::getInstance()->getLogger()->warning($xuid . 'の設定の読み込みに失敗しました');
+                $xuid = $p->getXuid();
+                $name = $p->getName();
+                $arrayAccount = array_shift($rows);
+                if (isset($arrayAccount['xuid']) && isset($arrayAccount['name']) && isset($arrayAccount['experience'])) {
+                    $skill = $arrayAccount['skill'] ?? null;
+                    $account = new UserAccount($arrayAccount['xuid'], $arrayAccount['name'], intval($arrayAccount['experience']), $skill);
+                    $this->accountStore->users[$account->xuid] = $account;
+                } elseif (empty($arrayAccount)) { // データが存在しないとき新しくデータを作る
+                    $this->accountStore->users[$xuid] = new UserAccount($xuid, $name, 0, null);
+                    SocketService::sendBroadcastMessage(ReefEdgePlugin::$socketClient, TextFormat::AQUA . $name . "さんが初めてサーバーにログインしました");
+                } else { // データ壊れてるよ
+                    Server::getInstance()->getLogger()->warning($xuid . 'のデータの読み込みに失敗しました');
+                    $p->kick("\n§cデータの読み込みに失敗しました");
+                    return;
                 }
-            }
-        });
+                $func();
+            }));
+        $await[] = Await::promise(fn($func) => $this->getAllSubtypeValue($xuid, SQLConst::TYPE_SETTINGS,
+            function (array $rows) use ($func, $xuid) {
+                foreach ($rows as $option) {
+                    if (array_key_exists("subtype", $option) && array_key_exists("value", $option)) {
+                        $this->setting[$xuid][$option["subtype"]] = $option["value"];
+                    } else {
+                        Server::getInstance()->getLogger()->warning($xuid . "の設定の読み込みに失敗しました");
+                    }
+                }
+                $func();
+            }));
+        $await[] = AccountService::loadPlayerData($this->pool, $p);
+        Await::all($await);
+        if (!$p->isConnected()) return;
+        $p->sendMessage("データを読み込みました");
+        // クライアント側の準備が整ったのにデータを読み込めてなかったら動けなくしているため解除する
+        $this->accountStore->setValue($xuid, "wait_action", 0);
+        $p->setImmobile(false);
     }
 
     public function getAllUser(Closure $func): void

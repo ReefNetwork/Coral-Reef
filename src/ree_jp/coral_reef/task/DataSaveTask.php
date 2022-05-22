@@ -21,7 +21,7 @@ use pocketmine\utils\TextFormat;
 use ree_jp\coral_reef\account\AccountStore;
 use ree_jp\coral_reef\account\UserAccount;
 use ree_jp\coral_reef\CoralReefPlugin;
-use ree_jp\coral_reef\sql\mysql\SQLRepository;
+use ree_jp\coral_reef\sql\RepositoryPool;
 use ree_jp\reef_edge\ReefEdgePlugin;
 use ree_jp\reef_edge\socket\SocketService;
 use SOFe\AwaitGenerator\Await;
@@ -38,7 +38,7 @@ class DataSaveTask extends Task
      */
     private array $entities = [];
 
-    public function __construct(private SQLRepository $repo, private AccountStore $store)
+    public function __construct(private RepositoryPool $pool, private AccountStore $store)
     {
     }
 
@@ -100,7 +100,7 @@ class DataSaveTask extends Task
     {
         foreach (Server::getInstance()->getOnlinePlayers() as $p) {
             $user = $this->store->getUser($p->getXuid());
-            if ($user instanceof UserAccount) Await::g2c($user->save($this->repo));
+            if ($user instanceof UserAccount) Await::g2c($user->save($this->pool, $p));
         }
     }
 

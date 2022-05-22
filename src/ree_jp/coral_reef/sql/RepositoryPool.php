@@ -42,21 +42,18 @@ class RepositoryPool
     }
 
     /**
-     * @template T of Repository
-     * @param Repository $repository
-     * @return T
+     * @param string $identity
+     * @return Repository
      */
-    public function get(Repository $repository): Repository
+    public function get(string $identity): Repository
     {
-        foreach ($this->repositories as $repo) {
-            if ($repo instanceof $repository) return $repo;
-        }
-        throw new RuntimeException("{$repository::class} not found");
+        if (isset($this->repositories[$identity])) return $this->repositories[$identity];
+        throw new RuntimeException("$identity not found");
     }
 
-    public function register(Repository $repository): void
+    public function register(Repository $repository, string $identity): void
     {
-        $this->repositories[$repository::class] = $repository;
+        $this->repositories[$identity] = $repository;
     }
 
     public function close(): void
