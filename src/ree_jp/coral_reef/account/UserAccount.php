@@ -61,8 +61,12 @@ class UserAccount
         $sqlRepo = $pool->get(SQLRepository::class);
         /** @var PlayerRepository */
         $playerRepo = $pool->get(PlayerRepository::class);
+
         $await = [];
         try {
+            $await[] = Await::promise(fn($func) => $sqlRepo->addWarp($p->getXuid(), "自動セーブ",
+                $p->getWorld()->getFolderName(), $p->getPosition()->getFloorX(), $p->getPosition()->getFloorY(),
+                $p->getPosition()->getFloorZ(), $func));
             $await[] = Await::promise(fn($func) => $sqlRepo->setXp($this->xuid, $this->experience, $func));
             $await[] = Await::promise(fn($func) => $sqlRepo->setSkill($this->xuid, $skillId, $func));
             $await[] = Await::promise(fn($func) => QuestManager::save($sqlRepo, $this->xuid, $func));

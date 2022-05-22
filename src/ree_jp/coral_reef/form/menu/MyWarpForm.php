@@ -80,7 +80,7 @@ class MyWarpForm
                                 )
                             ))
                                 ->setTitle("MyWarpEdit -> Delete")
-                                ->setText(TextFormat::RED ."「". $warpPoint["name"] . "」を本当に削除しますか?\n" . TextFormat::DARK_RED . "消してしまったら戻すことはできません！")
+                                ->setText(TextFormat::RED . "「" . $warpPoint["name"] . "」を本当に削除しますか?\n" . TextFormat::DARK_RED . "消してしまったら戻すことはできません！")
                         );
                     }
                 )
@@ -108,8 +108,7 @@ class MyWarpForm
                 } else {
                     $repo->addWarp($p->getXuid(), $nameInput->getValue(),
                         $p->getWorld()->getFolderName(), $p->getPosition()->getFloorX(), $p->getPosition()->getFloorY(),
-                        $p->getPosition()->getFloorZ()
-                    );
+                        $p->getPosition()->getFloorZ(), null);
                     QuestListener::callSubscribedQuest($p->getXuid(), QuestListener::CREATE_WARP_POINT, null);
                 }
             }

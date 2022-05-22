@@ -81,8 +81,10 @@ class SQLRepository implements Repository
                 }
                 $func();
             }));
+
         $await[] = Await::promise(fn($func) => $this->getAllSubtypeValue($xuid, SQLConst::TYPE_SETTINGS,
             function (array $rows) use ($func, $xuid) {
+                /** @noinspection PhpUndefinedVariableInspection */
                 foreach ($rows as $option) {
                     if (array_key_exists("subtype", $option) && array_key_exists("value", $option)) {
                         $this->setting[$xuid][$option["subtype"]] = $option["value"];
@@ -93,6 +95,7 @@ class SQLRepository implements Repository
                 $func();
             }));
         $await[] = AccountService::loadPlayerData($this->pool, $p);
+        $await[] = AccountService::warpAutoSavePoint($this->pool, $p);
         Await::f2c(function () use ($p, $await): Generator {
             yield Await::all($await);
             if (!$p->isConnected()) return;
@@ -196,11 +199,12 @@ class SQLRepository implements Repository
             $func, $this->noticeByXUid($xuid, '§c >> エラーが発生しました'));
     }
 
-    public function addWarp(string $xuid, string $name, string $level, int $x, int $y, int $z): void
+    public function addWarp(string $xuid, string $name, string $level, int $x, int $y, int $z, ?Closure $func): void
     {
+        if ($func == null) $func = $this->noticeByXUid($xuid, '§aワープ地点を作成しました');
         $this->pool->getConnection()->executeInsert('coral_reef.warp.create',
             ['xuid' => intval($xuid), 'name' => $name, 'server' => CoralReefPlugin::$serverID, 'level' => $level, 'x' => $x, 'y' => $y, 'z' => $z],
-            $this->noticeByXUid($xuid, '§a >> ワープ地点を作成しました'), $this->noticeByXUid($xuid, '§c >> エラーが発生しました'));
+            $func, $this->noticeByXUid($xuid, '§cワープ地点の作成中にエラーが発生しました'));
     }
 
     public function deleteWarp(string $xuid, string $name): void
