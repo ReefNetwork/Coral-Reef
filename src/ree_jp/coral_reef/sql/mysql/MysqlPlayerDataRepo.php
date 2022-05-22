@@ -33,6 +33,15 @@ class MysqlPlayerDataRepo implements PlayerRepository
         return $this->setPlayerDataModel(current($result));
     }
 
+    public function setPlayerData(PlayerData $data): Generator
+    {
+        yield from Await::promise(
+            fn($resolve, $reject) => $this->pool->getConnection()->executeInsert("coral_reef.player_data.set", ["xuid" => $data->xuid,
+                "inv" => json_encode($data->inv), "armor_inv" => json_encode($data->armorInv), "off_hand_inv" => json_encode($data->offHandInv),
+                "ender_inv" => json_encode($data->enderInv), "effect" => json_encode($data->effects), "health" => $data->health,
+                "hunger" => $data->hunger, "xp" => $data->xp], $resolve, $reject));
+    }
+
     private function setPlayerDataModel(array $data): ?PlayerData
     {
         if (empty($data)) return null;
@@ -40,14 +49,6 @@ class MysqlPlayerDataRepo implements PlayerRepository
         return new PlayerData($data["xuid"], PlayerData::jsonToItems($data["inventory"]), PlayerData::jsonToItems($data["armor_inventory"]),
             PlayerData::jsonToItems($data["off_hand_inventory"]), PlayerData::jsonToItems($data["ender_inventory"]), PlayerData::jsonToEffect($data["effect"]),
             $data["health"], $data["hunger"], $data["xp"]);
-    }
-
-    public function setPlayerData(PlayerData $data): Generator
-    {
-        yield from Await::promise(
-            fn($resolve, $reject) => $this->pool->getConnection()->executeInsert("coral_reef.player_data.set", ["xuid" => $data->xuid,
-                "inv" => json_encode($data->inv), "armor_inv" => json_encode($data->armorInv), "off_hand_inv" => json_encode($data->offHandInv),
-                "ender_inv" => json_encode($data->enderInv), "health" => $data->health, "hunger" => $data->hunger, "xp" => $data->xp], $resolve, $reject));
     }
 
     public function close(): void

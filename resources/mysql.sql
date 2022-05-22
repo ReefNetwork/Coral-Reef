@@ -400,6 +400,7 @@ WHERE xuid = :xuid;
 -- #        :armor_inv string
 -- #        :off_hand_inv string
 -- #        :ender_inv string
+-- #        :effect string
 -- #        :health int
 -- #        :hunger float
 -- #        :xp int
@@ -409,6 +410,7 @@ ON DUPLICATE KEY UPDATE inventory          = :inv,
                         armor_inventory    = :armor_inv,
                         off_hand_inventory = :off_hand_inv,
                         ender_inventory    = :ender_inv,
+                        effect             = :effect,
                         health             = :health,
                         hunger             = :hunger,
                         xp                 = :xp;
