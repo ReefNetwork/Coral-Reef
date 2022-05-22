@@ -41,7 +41,7 @@ class PlayerData
             $p->getEnderInventory()->getContents(), $p->getEffects()->all(), $p->getHealth(), $p->getHungerManager()->getFood(), $p->getXpManager()->getCurrentTotalXp());
     }
 
-    static function jsonToItems(string $json): array
+    static function jsonToItems(?string $json): array
     {
         if ($json == null) return [];
         $content = [];
@@ -51,7 +51,7 @@ class PlayerData
         return $content;
     }
 
-    static function jsonToEffect(string $json): array
+    static function jsonToEffect(?string $json): array
     {
         if ($json == null) return [];
         $content = [];
