@@ -159,7 +159,7 @@ class AccountService
             } else {
                 $pos = Position::fromObject($pos, $world);
             }
-            var_dump($p->teleport($pos));
+            $p->teleport($pos);
         }
     }
 
