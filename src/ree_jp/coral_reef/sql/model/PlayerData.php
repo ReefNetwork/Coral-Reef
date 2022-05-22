@@ -62,7 +62,7 @@ class PlayerData
             if ($effectType == null) continue;
 
             $content[] = new EffectInstance($effectType, $effect["duration"], $effect["amplifier"], $effect["visible"], $effect["ambient"],
-                Color::fromARGB($effect["overrideColor"]));
+                Color::fromARGB($effect["color"]));
         }
         return $content;
     }
