@@ -74,7 +74,7 @@ class PlayerData
     {
         $array = [];
         foreach ($effects as $effect) {
-            $array[] = ["name" => $effect->getType()->getName(), "duration" => $effect->getDuration(), "amplifier" => $effect->getAmplifier(),
+            $array[] = ["name" => $effect->getType()->getName()->getText(), "duration" => $effect->getDuration(), "amplifier" => $effect->getAmplifier(),
                 "visible" => $effect->isVisible(), "ambient" => $effect->isAmbient(), "color" => $effect->getColor()->toARGB()];
         }
         return json_encode($array);
