@@ -16,6 +16,7 @@ use pocketmine\entity\effect\Effect;
 use pocketmine\entity\effect\EffectInstance;
 use pocketmine\entity\effect\VanillaEffects;
 use pocketmine\item\Item;
+use pocketmine\lang\Translatable;
 use pocketmine\player\Player;
 
 class PlayerData
@@ -32,7 +33,7 @@ class PlayerData
      * @param int $xp
      */
     public function __construct(public string $xuid, public array $inv, public array $armorInv, public array $offHandInv,
-                                public array $enderInv, public array $effects, public int $health, public float $hunger, public int $xp)
+                                public array  $enderInv, public array $effects, public int $health, public float $hunger, public int $xp)
     {
     }
 
@@ -74,7 +75,9 @@ class PlayerData
     {
         $array = [];
         foreach ($effects as $effect) {
-            $array[] = ["name" => $effect->getType()->getName()->getText(), "duration" => $effect->getDuration(), "amplifier" => $effect->getAmplifier(),
+            $name = $effect->getType()->getName();
+            if ($name instanceof Translatable) $name = $name->getText();
+            $array[] = ["name" => $name, "duration" => $effect->getDuration(), "amplifier" => $effect->getAmplifier(),
                 "visible" => $effect->isVisible(), "ambient" => $effect->isAmbient(), "color" => $effect->getColor()->toARGB()];
         }
         return json_encode($array);
@@ -82,9 +85,12 @@ class PlayerData
 
     private static function getEffect(string $name): ?Effect
     {
-        $upper = strtoupper($name);
         $all = VanillaEffects::getAll();
-        if (isset($all[$upper])) return $all[$upper];
+        foreach ($all as $effect) {
+            $effectName = $effect->getName();
+            if ($effectName instanceof Translatable) $effectName = $effectName->getText();
+            if ($effectName == $name) return $effect;
+        }
         return null;
     }
 }
