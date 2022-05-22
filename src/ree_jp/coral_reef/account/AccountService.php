@@ -186,8 +186,8 @@ class AccountService
     {
         /** @var PlayerRepository */
         $repo = $pool->get(PlayerRepository::class);
-        /** @var PlayerData */
         $data = yield from $repo->getPlayerData($p->getXuid());
+        if (!$data instanceof PlayerData) return;
         $p->getInventory()->setContents($data->inv);
         $p->getArmorInventory()->setContents($data->armorInv);
         $p->getOffHandInventory()->setContents($data->offHandInv);
