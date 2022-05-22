@@ -60,7 +60,7 @@ class SQLRepository implements Repository
         $this->accountStore->setValue($xuid, "wait_action");
         $p->setImmobile();
         $await = [];
-        $await[] = fn() => Await::promise(fn($func) => $this->pool->getConnection()->executeSelect('coral_reef.user.get', ['xuid' => intval($p->getXuid())],
+        $await[] = Await::promise(fn($func) => $this->pool->getConnection()->executeSelect('coral_reef.user.get', ['xuid' => intval($p->getXuid())],
             function (array $rows) use ($func, $p) {
                 if (!$p->isOnline()) return;
 
@@ -81,7 +81,7 @@ class SQLRepository implements Repository
                 }
                 $func();
             }));
-        $await[] = fn() => Await::promise(fn($func) => $this->getAllSubtypeValue($xuid, SQLConst::TYPE_SETTINGS,
+        $await[] = Await::promise(fn($func) => $this->getAllSubtypeValue($xuid, SQLConst::TYPE_SETTINGS,
             function (array $rows) use ($func, $xuid) {
                 foreach ($rows as $option) {
                     if (array_key_exists("subtype", $option) && array_key_exists("value", $option)) {
@@ -92,7 +92,7 @@ class SQLRepository implements Repository
                 }
                 $func();
             }));
-        $await[] = fn() => AccountService::loadPlayerData($this->pool, $p);
+        $await[] = AccountService::loadPlayerData($this->pool, $p);
         Await::f2c(function () use ($p, $await): Generator {
             yield Await::all($await);
             if (!$p->isConnected()) return;
