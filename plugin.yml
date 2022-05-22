@@ -5,10 +5,9 @@ author: Ree-jp
 website: https://reef.ree-jp.net/
 version: 1.2.15
 depend:
+  - ReefEdge
   - BboForm
   - StackStorage
-loadbefore:
-  - ReefEdge
 permissions:
   coral_reef.command.menu:
     default: true
