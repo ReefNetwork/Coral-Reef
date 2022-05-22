@@ -12,6 +12,7 @@
 namespace ree_jp\coral_reef\sql\mysql;
 
 use Closure;
+use Generator;
 use pocketmine\player\Player;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat;
@@ -59,7 +60,7 @@ class SQLRepository implements Repository
         $this->accountStore->setValue($xuid, "wait_action");
         $p->setImmobile();
         $await = [];
-        $await[] = fn() => yield from Await::promise(fn($func) => $this->pool->getConnection()->executeSelect('coral_reef.user.get', ['xuid' => intval($p->getXuid())],
+        $await[] = fn() => Await::promise(fn($func) => $this->pool->getConnection()->executeSelect('coral_reef.user.get', ['xuid' => intval($p->getXuid())],
             function (array $rows) use ($func, $p) {
                 if (!$p->isOnline()) return;
 
@@ -80,7 +81,7 @@ class SQLRepository implements Repository
                 }
                 $func();
             }));
-        $await[] = fn() => yield from Await::promise(fn($func) => $this->getAllSubtypeValue($xuid, SQLConst::TYPE_SETTINGS,
+        $await[] = fn() => Await::promise(fn($func) => $this->getAllSubtypeValue($xuid, SQLConst::TYPE_SETTINGS,
             function (array $rows) use ($func, $xuid) {
                 foreach ($rows as $option) {
                     if (array_key_exists("subtype", $option) && array_key_exists("value", $option)) {
@@ -91,13 +92,15 @@ class SQLRepository implements Repository
                 }
                 $func();
             }));
-        $await[] = fn() => yield from AccountService::loadPlayerData($this->pool, $p);
-        Await::all($await);
-        if (!$p->isConnected()) return;
-        $p->sendMessage("データを読み込みました");
-        // クライアント側の準備が整ったのにデータを読み込めてなかったら動けなくしているため解除する
-        $this->accountStore->setValue($xuid, "wait_action", 0);
-        $p->setImmobile(false);
+        $await[] = fn() => AccountService::loadPlayerData($this->pool, $p);
+        Await::f2c(function () use ($p, $await): Generator {
+            yield Await::all($await);
+            if (!$p->isConnected()) return;
+            $p->sendMessage("データを読み込みました");
+            // データ読み込めたら動けるように
+            $this->accountStore->setValue($p->getXuid(), "wait_action", 0);
+            $p->setImmobile(false);
+        });
     }
 
     public function getAllUser(Closure $func): void
