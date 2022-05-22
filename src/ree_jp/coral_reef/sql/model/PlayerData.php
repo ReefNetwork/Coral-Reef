@@ -44,7 +44,7 @@ class PlayerData
     static function jsonToItems($json): array
     {
         $content = [];
-        foreach (json_decode($json) as $slot => $item) {
+        foreach (json_decode($json, true) as $slot => $item) {
             $content[$slot] = Item::jsonDeserialize($item);
         }
         return $content;
@@ -53,7 +53,7 @@ class PlayerData
     static function jsonToEffect($json): array
     {
         $content = [];
-        foreach (json_decode($json) as $effect) {
+        foreach (json_decode($json, true) as $effect) {
             $effectType = self::getEffect($effect["effectType"]["name"]);
             if ($effectType == null) continue;
 
