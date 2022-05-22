@@ -150,7 +150,6 @@ class AccountService
 
     static function teleport(Player $p, string $levelName, Vector3 $pos = null): void
     {
-        var_dump($levelName);
         $world = Server::getInstance()->getWorldManager()->getWorldByName($levelName);
         if (is_null($world)) {
             $p->sendMessage('ワールドが見つかりませんでした');
@@ -160,7 +159,7 @@ class AccountService
             } else {
                 $pos = Position::fromObject($pos, $world);
             }
-            var_dump("aa");
+            var_dump($pos);
             $p->teleport($pos);
         }
     }
