@@ -95,14 +95,15 @@ class SQLRepository implements Repository
                 $func();
             }));
         $await[] = AccountService::loadPlayerData($this->pool, $p);
-        $await[] = AccountService::warpAutoSavePoint($this->pool, $p);
         Await::f2c(function () use ($p, $await): Generator {
             yield Await::all($await);
             if (!$p->isConnected()) return;
-            $p->sendMessage("データを読み込みました");
+
             // データ読み込めたら動けるように
-            $this->accountStore->setValue($p->getXuid(), "wait_action", 0);
             $p->setImmobile(false);
+            yield AccountService::warpAutoSavePoint($this->pool, $p);
+            $this->accountStore->setValue($p->getXuid(), "wait_action", 0);
+            $p->sendMessage("データを読み込みました");
         });
     }
 
