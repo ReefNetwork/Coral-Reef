@@ -24,6 +24,11 @@ runs:
     - run: php -d phar.readonly=0 InvMenu.phar ./build/CoralReef.phar "ree_jp\\coral_reef\\libs\\"
       shell: bash
 
+    - run: wget https://poggit.pmmp.io/r/167785/await-generator.phar -O await-generator.phar
+      shell: bash
+    - run: php -d phar.readonly=0 await-generator.phar ./build/CoralReef.phar "ree_jp\\coral_reef\\libs\\"
+      shell: bash
+
     - name: upload
       uses: actions/upload-artifact@v2
       with:

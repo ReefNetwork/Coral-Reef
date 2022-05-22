@@ -21,11 +21,10 @@ use bbo51dog\bboform\form\SimpleForm;
 use Closure;
 use pocketmine\math\Vector3;
 use pocketmine\player\Player;
-use pocketmine\utils\Terminal;
 use pocketmine\utils\TextFormat;
 use ree_jp\coral_reef\account\AccountService;
 use ree_jp\coral_reef\quest\QuestListener;
-use ree_jp\coral_reef\sql\SQLRepository;
+use ree_jp\coral_reef\sql\mysql\SQLRepository;
 
 class MyWarpForm
 {
@@ -81,7 +80,7 @@ class MyWarpForm
                                 )
                             ))
                                 ->setTitle("MyWarpEdit -> Delete")
-                                ->setText(TextFormat::RED ."「". $warpPoint["name"] . "」を本当に削除しますか?\n" . TextFormat::DARK_RED . "消してしまったら戻すことはできません！")
+                                ->setText(TextFormat::RED . "「" . $warpPoint["name"] . "」を本当に削除しますか?\n" . TextFormat::DARK_RED . "消してしまったら戻すことはできません！")
                         );
                     }
                 )
@@ -109,8 +108,7 @@ class MyWarpForm
                 } else {
                     $repo->addWarp($p->getXuid(), $nameInput->getValue(),
                         $p->getWorld()->getFolderName(), $p->getPosition()->getFloorX(), $p->getPosition()->getFloorY(),
-                        $p->getPosition()->getFloorZ()
-                    );
+                        $p->getPosition()->getFloorZ(), null);
                     QuestListener::callSubscribedQuest($p->getXuid(), QuestListener::CREATE_WARP_POINT, null);
                 }
             }

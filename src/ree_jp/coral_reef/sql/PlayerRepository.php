@@ -6,14 +6,17 @@
  * CC    C oo  oo rr     aa  aaa lll RR  RR  eeeee  eeeee  ff
  *  CCCCC   oooo  rr      aaa aa lll RR   RR  eeeee  eeeee ff
  *
- * Copyright (c) 2021-2021. Ree-jp(https://ree-jp.net)
+ * Copyright (c) 2022. Ree-jp(https://ree-jp.net)
  */
 
-namespace ree_jp\coral_reef;
+namespace ree_jp\coral_reef\sql;
 
+use Generator;
+use ree_jp\coral_reef\sql\model\PlayerData;
 
-class ConfigConst
+interface PlayerRepository extends Repository
 {
-    const SERVER_NAME = "server_0";
-    const IS_SQL_INIT = "is_sql_init";
+    public function getPlayerData(string $xuid): Generator;
+
+    public function setPlayerData(PlayerData $data): Generator;
 }

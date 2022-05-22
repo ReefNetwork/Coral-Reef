@@ -20,8 +20,8 @@ use ree_jp\coral_reef\quest\data\QuestData;
 use ree_jp\coral_reef\quest\data\TutorialQuest;
 use ree_jp\coral_reef\quest\data\WeeklyAchieveQuest;
 use ree_jp\coral_reef\quest\data\WeeklyDigQuest;
+use ree_jp\coral_reef\sql\mysql\SQLRepository;
 use ree_jp\coral_reef\sql\SQLConst;
-use ree_jp\coral_reef\sql\SQLRepository;
 
 class QuestManager
 {

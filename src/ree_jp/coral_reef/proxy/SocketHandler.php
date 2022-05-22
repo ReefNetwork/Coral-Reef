@@ -15,17 +15,17 @@ use pocketmine\player\Player;
 use pocketmine\Server;
 use Ramsey\Uuid\Uuid;
 use ree_jp\coral_reef\account\AccountStore;
-use ree_jp\coral_reef\sql\SQLRepository;
+use ree_jp\coral_reef\sql\RepositoryPool;
 
 class SocketHandler
 {
-    static function register(\ree_jp\reef_edge\socket\SocketHandler $handler, SQLRepository $repo, AccountStore $accountStore): void
+    static function register(\ree_jp\reef_edge\socket\SocketHandler $handler, RepositoryPool $pool, AccountStore $accountStore): void
     {
-        $handler->registerHandler("transfer-request", function (array $data) use ($accountStore, $repo): void {
+        $handler->registerHandler("transfer-request", function (array $data) use ($accountStore, $pool): void {
             if (isset($data["player"]) && isset($data["server"])) {
                 $p = Server::getInstance()->getPlayerByUUID(Uuid::fromString($data["player"]));
                 if ($p instanceof Player) {
-                    ProxyService::transferServerWithSave($repo, $accountStore, $p, $data["server"]);
+                    ProxyService::transferServerWithSave($pool, $accountStore, $p, $data["server"]);
                 }
             }
         });

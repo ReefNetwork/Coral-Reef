@@ -10,7 +10,7 @@ use pocketmine\plugin\PluginOwned;
 use ree_jp\coral_reef\account\AccountStore;
 use ree_jp\coral_reef\form\command\ReefAdminForm;
 use ree_jp\coral_reef\land\LandStore;
-use ree_jp\coral_reef\sql\SQLRepository;
+use ree_jp\coral_reef\sql\mysql\SQLRepository;
 
 class ReefAdminCommand extends Command implements PluginOwned
 {

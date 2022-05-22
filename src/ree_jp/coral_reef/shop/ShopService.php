@@ -22,8 +22,8 @@ use ree_jp\coral_reef\gatya\GatyaManager;
 use ree_jp\coral_reef\money\MoneyService;
 use ree_jp\coral_reef\shop\data\DataShop;
 use ree_jp\coral_reef\shop\item\ItemShop;
+use ree_jp\coral_reef\sql\mysql\SQLRepository;
 use ree_jp\coral_reef\sql\SQLConst;
-use ree_jp\coral_reef\sql\SQLRepository;
 
 class ShopService
 {

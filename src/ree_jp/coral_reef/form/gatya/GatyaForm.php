@@ -19,8 +19,8 @@ use bbo51dog\bboform\form\SimpleForm;
 use pocketmine\player\Player;
 use ree_jp\coral_reef\gatya\event\Christmas2021;
 use ree_jp\coral_reef\gatya\NormalGatya;
+use ree_jp\coral_reef\sql\mysql\SQLRepository;
 use ree_jp\coral_reef\sql\SQLConst;
-use ree_jp\coral_reef\sql\SQLRepository;
 
 class GatyaForm
 {

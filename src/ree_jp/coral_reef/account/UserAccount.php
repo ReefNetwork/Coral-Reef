@@ -12,8 +12,8 @@
 namespace ree_jp\coral_reef\account;
 
 
-use Closure;
 use Exception;
+use Generator;
 use pocketmine\player\Player;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat;
@@ -22,10 +22,15 @@ use ree_jp\coral_reef\quest\QuestListener;
 use ree_jp\coral_reef\quest\QuestManager;
 use ree_jp\coral_reef\skill\BreakSkill;
 use ree_jp\coral_reef\skill\SkillManager;
-use ree_jp\coral_reef\sql\SQLRepository;
+use ree_jp\coral_reef\sql\model\PlayerData;
+use ree_jp\coral_reef\sql\mysql\SQLRepository;
+use ree_jp\coral_reef\sql\PlayerRepository;
+use ree_jp\coral_reef\sql\RepositoryPool;
 use ree_jp\reef_edge\ReefEdgePlugin;
 use ree_jp\reef_edge\socket\SocketData;
 use ree_jp\reef_edge\socket\SocketService;
+use ree_jp\stackstorage\sql\Queue;
+use SOFe\AwaitGenerator\Await;
 
 class UserAccount
 {
@@ -45,17 +50,29 @@ class UserAccount
         $this->skill = SkillManager::getSkill($skill);
     }
 
-    function save(SQLRepository $repo, ?Closure $xpFunc = null, ?Closure $skillFunc = null, ?Closure $questFunc = null): void
+    function save(RepositoryPool $pool, Player $p): Generator
     {
         if (is_null($this->skill)) {
             $skillId = null;
         } else {
             $skillId = $this->skill->id;
         }
+        /** @var SQLRepository */
+        $sqlRepo = $pool->get(SQLRepository::class);
+        /** @var PlayerRepository */
+        $playerRepo = $pool->get(PlayerRepository::class);
+
+        $await = [];
         try {
-            $repo->setXp($this->xuid, $this->experience, $xpFunc);
-            $repo->setSkill($this->xuid, $skillId, $skillFunc);
-            QuestManager::save($repo, $this->xuid, $questFunc);
+            $await[] = Await::promise(fn($func) => $sqlRepo->addWarp($p->getXuid(), "自動セーブ",
+                $p->getWorld()->getFolderName(), $p->getPosition()->getFloorX(), $p->getPosition()->getFloorY(),
+                $p->getPosition()->getFloorZ(), $func));
+            $await[] = Await::promise(fn($func) => $sqlRepo->setXp($this->xuid, $this->experience, $func));
+            $await[] = Await::promise(fn($func) => $sqlRepo->setSkill($this->xuid, $skillId, $func));
+            $await[] = Await::promise(fn($func) => QuestManager::save($sqlRepo, $this->xuid, $func));
+            $await[] = $playerRepo->setPlayerData(PlayerData::create($p));
+            $await[] = Queue::doCache($this->xuid);
+            yield Await::all($await);
         } catch (Exception $e) {
             Server::getInstance()->getLogger()->error($this->name . 'のデータ保存に失敗しました' . $e->getMessage());
         }

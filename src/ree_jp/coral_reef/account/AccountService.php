@@ -13,6 +13,7 @@ namespace ree_jp\coral_reef\account;
 
 
 use Exception;
+use Generator;
 use pocketmine\block\Block;
 use pocketmine\block\BlockLegacyIds;
 use pocketmine\block\VanillaBlocks;
@@ -27,9 +28,13 @@ use ree_jp\coral_reef\session\SessionData;
 use ree_jp\coral_reef\skill\BreakSkill;
 use ree_jp\coral_reef\skill\SkillManager;
 use ree_jp\coral_reef\skill\TreeBreakService;
+use ree_jp\coral_reef\sql\model\PlayerData;
+use ree_jp\coral_reef\sql\mysql\SQLRepository;
+use ree_jp\coral_reef\sql\PlayerRepository;
+use ree_jp\coral_reef\sql\RepositoryPool;
 use ree_jp\coral_reef\sql\SettingConst;
-use ree_jp\coral_reef\sql\SQLRepository;
 use ree_jp\coral_reef\task\ServerUpdateTask;
+use SOFe\AwaitGenerator\Await;
 
 class AccountService
 {
@@ -55,7 +60,7 @@ class AccountService
         self::updateFly($p, $p->getWorld()->getFolderName());
     }
 
-    static function userQuit(SQLRepository $repo, AccountStore $store, Player $p): void
+    static function userQuit(RepositoryPool $pool, AccountStore $store, Player $p): void
     {
         $xuid = $p->getXuid();
 
@@ -64,10 +69,12 @@ class AccountService
         } else {
             $account = $store->getUser($xuid);
             if (!is_null($account)) {
-                $account->save($repo);
+                Await::g2c($account->save($pool, $p));
             }
         }
-        MoneyCache::purge($repo, $xuid);
+        /** @var SQLRepository */
+        $sqlRepo = $pool->get(SQLRepository::class);
+        MoneyCache::purge($sqlRepo, $xuid);
 
         // フライを無効にする
         self::updateFly($p, $p->getWorld()->getFolderName(), false);
@@ -172,6 +179,36 @@ class AccountService
             $p->setFlying(false);
             $p->setAllowFlight(false);
             $p->sendPopup("このワールドでは飛行することはできません");
+        }
+    }
+
+    static function loadPlayerData(RepositoryPool $pool, Player $p): Generator
+    {
+        /** @var PlayerRepository */
+        $repo = $pool->get(PlayerRepository::class);
+        $data = yield from $repo->getPlayerData($p->getXuid());
+        if (!$data instanceof PlayerData) return;
+        $p->getInventory()->setContents($data->inv);
+        $p->getArmorInventory()->setContents($data->armorInv);
+        $p->getOffHandInventory()->setContents($data->offHandInv);
+        $p->getEnderInventory()->setContents($data->enderInv);
+        $p->getEffects()->clear();
+        foreach ($data->effects as $effect) {
+            $p->getEffects()->add($effect);
+        }
+        $p->setHealth($data->health);
+        $p->getHungerManager()->setFood($data->hunger);
+        $p->getXpManager()->addXp($data->xp);
+    }
+
+    static function warpAutoSavePoint(RepositoryPool $pool, Player $p): Generator
+    {
+        /** @var SQLRepository */
+        $repo = $pool->get(SQLRepository::class);
+        $warps = yield from Await::promise(fn($resolve) => $repo->getWarps($p->getXuid(), $resolve));
+        foreach ($warps as $warp) {
+            if ($warp["name"] != "自動セーブ") continue;
+            self::teleport($p, $warp['level'], new Vector3($warp['x'], $warp['y'], $warp['z']));
         }
     }
 }

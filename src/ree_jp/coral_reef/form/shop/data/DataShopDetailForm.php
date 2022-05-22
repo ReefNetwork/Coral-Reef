@@ -23,7 +23,7 @@ use ree_jp\coral_reef\shop\data\DataShop;
 use ree_jp\coral_reef\shop\data\DataShopService;
 use ree_jp\coral_reef\shop\ShopService;
 use ree_jp\coral_reef\shop\ShopStore;
-use ree_jp\coral_reef\sql\SQLRepository;
+use ree_jp\coral_reef\sql\mysql\SQLRepository;
 use ree_jp\reef_edge\ReefEdgePlugin;
 use ree_jp\reef_edge\socket\SocketData;
 

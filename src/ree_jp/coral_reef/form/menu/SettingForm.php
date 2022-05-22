@@ -22,9 +22,9 @@ use pocketmine\player\Player;
 use pocketmine\Server;
 use poggit\libasynql\SqlError;
 use ree_jp\coral_reef\account\SettingManager;
+use ree_jp\coral_reef\sql\mysql\SQLRepository;
 use ree_jp\coral_reef\sql\SettingConst;
 use ree_jp\coral_reef\sql\SQLConst;
-use ree_jp\coral_reef\sql\SQLRepository;
 
 class SettingForm
 {

@@ -16,54 +16,38 @@ use pocketmine\player\Player;
 use pocketmine\scheduler\ClosureTask;
 use ree_jp\coral_reef\account\AccountStore;
 use ree_jp\coral_reef\CoralReefPlugin;
-use ree_jp\coral_reef\sql\SQLRepository;
+use ree_jp\coral_reef\sql\RepositoryPool;
+use SOFe\AwaitGenerator\Await;
 
 class ProxyService
 {
-    static function transferServerWithSave(SQLRepository $repo, AccountStore $store, Player $p, string $server): void
+    static function transferServerWithSave(RepositoryPool $pool, AccountStore $store, Player $p, string $server): void
     {
         $store->setValue($p->getXuid(), "wait_action");
         $p->setImmobile();
         $p->sendMessage("サーバー移動の準備中です...");
 
         $user = $store->getUser($p->getXuid());
-        $user->save($repo, function () use ($store, $server, $p) {
-            $store->setValue($p->getXuid(), "save_xp");
-            self::transferServer($store, $p, $server, true);
-        }, function () use ($store, $server, $p) {
-            $store->setValue($p->getXuid(), "save_skill");
-            self::transferServer($store, $p, $server, true);
-        }, function () use ($store, $server, $p) {
-            $store->setValue($p->getXuid(), "save_quest");
-            self::transferServer($store, $p, $server, true);
+        Await::g2c($user->save($pool, $p), function () use ($server, $p, $store): void {
+            self::transferServer($store, $p, $server);
         });
     }
 
-    static private function transferServer(AccountStore $store, Player $p, string $address, bool $isCheckSafe): void
+    static private function transferServer(AccountStore $store, Player $p, string $address): void
     {
-        $xuid = $p->getXuid();
-        // isCheckSafeの場合すべてセーブされたか確認する
-        if (!$isCheckSafe || $store->hasValue($xuid, "save_xp") &&
-            $store->hasValue($xuid, "save_skill") && $store->hasValue($xuid, "save_quest")) {
-            if ($isCheckSafe) {
-                $store->setValue($p->getXuid(), "save_xp", 0);
-                $store->setValue($p->getXuid(), "save_skill", 0);
-                $store->setValue($p->getXuid(), "save_quest", 0);
+        $pk = new TransferPacket();
+        $pk->address = $address;
+        $p->sendMessage("サーバーを移動しています");
+        $p->getNetworkSession()->sendDataPacket($pk);
+        CoralReefPlugin::$plugin->getScheduler()->scheduleDelayedTask(new ClosureTask(
+            function () use ($store, $p): void {
+                if ($p->isClosed()) return;
+                $xuid = $p->getXuid();
+                $store->setValue($xuid, "transfer_server", 0);
+                $store->setValue($xuid, "wait_action", 0);
+                $p->setImmobile(false);
+                $p->sendMessage("サーバーを移動出来ませんでした");
             }
-            $pk = new TransferPacket();
-            $pk->address = $address;
-            $p->sendMessage("サーバーを移動しています");
-            $p->getNetworkSession()->sendDataPacket($pk);
-            CoralReefPlugin::$plugin->getScheduler()->scheduleDelayedTask(new ClosureTask(
-                function () use ($store, $p): void {
-                    if ($p->isClosed()) return;
-                    $xuid = $p->getXuid();
-                    $store->setValue($xuid, "transfer_server", 0);
-                    $store->setValue($xuid, "wait_action", 0);
-                    $p->setImmobile(false);
-                    $p->sendMessage("サーバーを移動出来ませんでした");
-                }
-            ), 20 * 3);
-        }
+        ), 20 * 3);
     }
 }

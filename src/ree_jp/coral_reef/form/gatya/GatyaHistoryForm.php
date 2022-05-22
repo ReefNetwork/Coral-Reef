@@ -19,8 +19,8 @@ use pocketmine\utils\TextFormat;
 use poggit\libasynql\SqlError;
 use ree_jp\coral_reef\form\PageViewForm;
 use ree_jp\coral_reef\gatya\items\SpecialItemService;
+use ree_jp\coral_reef\sql\mysql\SQLRepository;
 use ree_jp\coral_reef\sql\SQLConst;
-use ree_jp\coral_reef\sql\SQLRepository;
 
 class GatyaHistoryForm
 {

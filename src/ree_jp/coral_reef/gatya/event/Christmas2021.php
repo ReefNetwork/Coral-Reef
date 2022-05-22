@@ -20,8 +20,8 @@ use ree_jp\coral_reef\gatya\GatyaManager;
 use ree_jp\coral_reef\gatya\items\event\Christmas2021ReefItems;
 use ree_jp\coral_reef\gatya\items\RareItems;
 use ree_jp\coral_reef\gatya\items\SuperItems;
+use ree_jp\coral_reef\sql\mysql\SQLRepository;
 use ree_jp\coral_reef\sql\SQLConst;
-use ree_jp\coral_reef\sql\SQLRepository;
 
 class Christmas2021
 {

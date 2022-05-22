@@ -20,8 +20,8 @@ use ree_jp\coral_reef\gatya\items\RareItems;
 use ree_jp\coral_reef\gatya\items\ReefItems;
 use ree_jp\coral_reef\gatya\items\SuperItems;
 use ree_jp\coral_reef\gatya\items\UltimateItems;
+use ree_jp\coral_reef\sql\mysql\SQLRepository;
 use ree_jp\coral_reef\sql\SQLConst;
-use ree_jp\coral_reef\sql\SQLRepository;
 
 class NormalGatya
 {
