@@ -88,7 +88,7 @@ class EventListener implements Listener
         /** @var SQLRepository */
         $sqlRepo = $this->pool->get(SQLRepository::class);
 
-        if ($this->accountStore->hasValue($xuid(), "wait_action")) { // データをまだ読み込めてなかったら動きを止める
+        if ($this->accountStore->hasValue($xuid, "wait_action")) { // データをまだ読み込めてなかったら動きを止める
             $this->accountStore->setValue($xuid, "wait_action");
             $p->setImmobile();
             $p->sendMessage("データを確認しています...");
