@@ -208,7 +208,7 @@ class AccountService
         $warps = yield from Await::promise(fn($resolve) => $repo->getWarps($p->getXuid(), $resolve));
         foreach ($warps as $warp) {
             if ($warp["name"] != "自動セーブ") continue;
-            AccountService::teleport($p, $warp['level'], new Vector3($warp['x'], $warp['y'], $warp['z']));
+            self::teleport($p, $warp['level'], new Vector3($warp['x'], $warp['y'], $warp['z']));
         }
     }
 }
