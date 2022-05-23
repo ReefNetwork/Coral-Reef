@@ -118,7 +118,7 @@ class CoralReefPlugin extends PluginBase
             }
 
             $xuid = $nbt->getString("LastKnownXUID");
-            if ($this->accountStore->getUserName($xuid) === $playerName) {
+            if (strtolower($this->accountStore->getUserName($xuid)) === strtolower($playerName)) {
                 $inventoryTag = $nbt->getListTag("Inventory");
                 $inventoryItems = [];
                 $armorInventoryItems = [];
@@ -151,7 +151,7 @@ class CoralReefPlugin extends PluginBase
                 $await[] = $repo->setPlayerData($data);
             } else var_dump("diff $playerName");
         }
-        var_dump("start save");
+        var_dump("start save" . count($await));
         Await::f2c(function () use ($await): Generator {
             yield Await::all($await);
             var_dump("end");
