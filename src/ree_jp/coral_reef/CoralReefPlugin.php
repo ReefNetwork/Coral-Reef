@@ -11,11 +11,14 @@
 
 namespace ree_jp\coral_reef;
 
+use Generator;
 use muqsit\invmenu\InvMenuHandler;
 use pocketmine\crafting\ShapedRecipe;
+use pocketmine\item\Item;
 use pocketmine\item\ItemFactory;
 use pocketmine\item\ItemIds;
 use pocketmine\item\VanillaItems;
+use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\plugin\PluginBase;
 use pocketmine\scheduler\ClosureTask;
 use pocketmine\Server;
@@ -39,6 +42,7 @@ use ree_jp\coral_reef\proxy\SocketHandler;
 use ree_jp\coral_reef\quest\QuestListener;
 use ree_jp\coral_reef\session\SessionStore;
 use ree_jp\coral_reef\shop\ShopStore;
+use ree_jp\coral_reef\sql\model\PlayerData;
 use ree_jp\coral_reef\sql\mysql\MysqlPlayerDataRepo;
 use ree_jp\coral_reef\sql\mysql\SQLRepository;
 use ree_jp\coral_reef\sql\PlayerRepository;
@@ -48,6 +52,8 @@ use ree_jp\coral_reef\task\EffectTask;
 use ree_jp\coral_reef\task\SendServerTipTask;
 use ree_jp\coral_reef\task\ServerUpdateTask;
 use ree_jp\reef_edge\ReefEdgePlugin;
+use SOFe\AwaitGenerator\Await;
+use Webmozart\PathUtil\Path;
 
 class CoralReefPlugin extends PluginBase
 {
@@ -101,6 +107,50 @@ class CoralReefPlugin extends PluginBase
         ReefItems::registerAll();
         CustomItemService::registerAll();
         $this->pluginInformation();
+
+        $await = [];
+        foreach (scandir(Path::join($this->getServer()->getDataPath(), "players")) as $playerPath) {
+            $playerName = basename($playerPath, ".dat");
+            $nbt = $this->getServer()->getOfflinePlayerData($playerName);
+            $xuid = $nbt->getString("LastKnownXUID");
+            if ($this->accountStore->getUserName($xuid) === $playerName) {
+                $inventoryTag = $nbt->getListTag("Inventory");
+                $inventoryItems = [];
+                $armorInventoryItems = [];
+                if ($inventoryTag !== null) {
+                    /** @var CompoundTag $item */
+                    foreach ($inventoryTag as $i => $item) {
+                        $slot = $item->getByte("Slot");
+                        if ($slot >= 0 && $slot < 9) { //Hotbar
+                            //Old hotbar saving stuff, ignore it
+                        } elseif ($slot >= 100 && $slot < 104) { //Armor
+                            $armorInventoryItems[$slot - 100] = Item::nbtDeserialize($item);
+                        } elseif ($slot >= 9 && $slot < 36 + 9) {
+                            $inventoryItems[$slot - 9] = Item::nbtDeserialize($item);
+                        }
+                    }
+                }
+
+                $enderChestInventoryTag = $nbt->getListTag("EnderChestInventory");
+                $enderChestInventoryItems = [];
+                if ($enderChestInventoryTag !== null) {
+                    /** @var CompoundTag $item */
+                    foreach ($enderChestInventoryTag as $i => $item) {
+                        $enderChestInventoryItems[$item->getByte("Slot")] = Item::nbtDeserialize($item);
+                    }
+                }
+                $data = new PlayerData($xuid, $inventoryItems, $armorInventoryItems, [], $enderChestInventoryItems, [], 20, 20,
+                    (int)$nbt->getFloat("XpP", 0.0));
+                /** @var PlayerRepository */
+                $repo = $this->pool->get(PlayerRepository::class);
+                $await[] = $repo->setPlayerData($data);
+            }
+        }
+        var_dump("start save");
+        Await::f2c(function () use ($await): Generator {
+            yield Await::all($await);
+            var_dump("end");
+        });
     }
 
     public function onDisable(): void
