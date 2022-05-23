@@ -112,6 +112,9 @@ class CoralReefPlugin extends PluginBase
         foreach (scandir(Path::join($this->getServer()->getDataPath(), "players")) as $playerPath) {
             $playerName = basename($playerPath, ".dat");
             $nbt = $this->getServer()->getOfflinePlayerData($playerName);
+            var_dump($playerName);
+            var_dump($nbt);
+
             $xuid = $nbt->getString("LastKnownXUID");
             if ($this->accountStore->getUserName($xuid) === $playerName) {
                 $inventoryTag = $nbt->getListTag("Inventory");
@@ -144,7 +147,7 @@ class CoralReefPlugin extends PluginBase
                 /** @var PlayerRepository */
                 $repo = $this->pool->get(PlayerRepository::class);
                 $await[] = $repo->setPlayerData($data);
-            }
+            } else var_dump("diff $playerName");
         }
         var_dump("start save");
         Await::f2c(function () use ($await): Generator {
