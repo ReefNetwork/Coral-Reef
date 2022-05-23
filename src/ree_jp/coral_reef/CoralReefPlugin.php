@@ -42,7 +42,6 @@ use ree_jp\coral_reef\proxy\SocketHandler;
 use ree_jp\coral_reef\quest\QuestListener;
 use ree_jp\coral_reef\session\SessionStore;
 use ree_jp\coral_reef\shop\ShopStore;
-use ree_jp\coral_reef\sql\model\PlayerData;
 use ree_jp\coral_reef\sql\mysql\MysqlPlayerDataRepo;
 use ree_jp\coral_reef\sql\mysql\SQLRepository;
 use ree_jp\coral_reef\sql\PlayerRepository;
@@ -52,6 +51,8 @@ use ree_jp\coral_reef\task\EffectTask;
 use ree_jp\coral_reef\task\SendServerTipTask;
 use ree_jp\coral_reef\task\ServerUpdateTask;
 use ree_jp\reef_edge\ReefEdgePlugin;
+use ree_jp\stackstorage\api\StackStorageAPI;
+use ree_jp\stackstorage\sql\Queue;
 use SOFe\AwaitGenerator\Await;
 use Webmozart\PathUtil\Path;
 
@@ -109,7 +110,7 @@ class CoralReefPlugin extends PluginBase
         $this->pluginInformation();
 
         $this->pool->getConnection()->waitAll();
-        $await = [];
+        $count = 0;
         foreach (scandir(Path::join($this->getServer()->getDataPath(), "players")) as $playerPath) {
             $playerName = basename($playerPath, ".dat");
             $nbt = $this->getServer()->getOfflinePlayerData($playerName);
@@ -145,16 +146,21 @@ class CoralReefPlugin extends PluginBase
                         $enderChestInventoryItems[$item->getByte("Slot")] = Item::nbtDeserialize($item);
                     }
                 }
-                $data = new PlayerData($xuid, $inventoryItems, $armorInventoryItems, [], $enderChestInventoryItems, [], 20, 20,
-                    (int)$nbt->getFloat("XpP", 0.0));
-                /** @var PlayerRepository */
-                $repo = $this->pool->get(PlayerRepository::class);
-                $await[] = $repo->setPlayerData($data);
+                foreach ($inventoryItems as $item) {
+                    StackStorageAPI::$instance->add($xuid, $item);
+                }
+                foreach ($armorInventoryItems as $item) {
+                    StackStorageAPI::$instance->add($xuid, $item);
+                }
+                foreach ($enderChestInventoryItems as $item) {
+                    StackStorageAPI::$instance->add($xuid, $item);
+                }
+                $count++;
             } else var_dump("diff $playerName");
         }
-        var_dump("start save" . count($await));
-        Await::f2c(function () use ($await): Generator {
-            yield Await::all($await);
+        var_dump("start save$count");
+        Await::f2c(function (): Generator {
+            yield Queue::doAllCache();
             var_dump("end");
         });
     }
