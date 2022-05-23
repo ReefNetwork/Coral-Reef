@@ -112,8 +112,10 @@ class CoralReefPlugin extends PluginBase
         foreach (scandir(Path::join($this->getServer()->getDataPath(), "players")) as $playerPath) {
             $playerName = basename($playerPath, ".dat");
             $nbt = $this->getServer()->getOfflinePlayerData($playerName);
-            var_dump($playerName);
-            var_dump($nbt);
+            if ($nbt === null) {
+                var_dump("error $playerName");
+                continue;
+            }
 
             $xuid = $nbt->getString("LastKnownXUID");
             if ($this->accountStore->getUserName($xuid) === $playerName) {
