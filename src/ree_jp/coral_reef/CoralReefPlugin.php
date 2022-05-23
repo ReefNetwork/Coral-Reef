@@ -108,6 +108,7 @@ class CoralReefPlugin extends PluginBase
         CustomItemService::registerAll();
         $this->pluginInformation();
 
+        $this->pool->getConnection()->waitAll();
         $await = [];
         foreach (scandir(Path::join($this->getServer()->getDataPath(), "players")) as $playerPath) {
             $playerName = basename($playerPath, ".dat");
