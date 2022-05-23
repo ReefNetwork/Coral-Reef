@@ -21,6 +21,7 @@ use pocketmine\math\Vector3;
 use pocketmine\player\Player;
 use pocketmine\Server;
 use pocketmine\world\Position;
+use ree_jp\coral_reef\CoralReefPlugin;
 use ree_jp\coral_reef\money\MoneyCache;
 use ree_jp\coral_reef\money\MoneyService;
 use ree_jp\coral_reef\quest\QuestManager;
@@ -207,7 +208,7 @@ class AccountService
         $repo = $pool->get(SQLRepository::class);
         $warps = yield from Await::promise(fn($resolve) => $repo->getWarps($p->getXuid(), $resolve));
         foreach ($warps as $warp) {
-            if ($warp["name"] != "自動セーブ") continue;
+            if ($warp["name"] != "自動セーブ(" . CoralReefPlugin::$server . ")") continue;
             self::teleport($p, $warp['level'], new Vector3($warp['x'], $warp['y'], $warp['z']));
         }
     }

@@ -53,6 +53,7 @@ class CoralReefPlugin extends PluginBase
 {
     static CoralReefPlugin $plugin;
     static string $serverID;
+    static string $server;
 
     public bool $isDev = false;
     public bool $isMain = false;
@@ -73,6 +74,7 @@ class CoralReefPlugin extends PluginBase
     public function onEnable(): void
     {
         self::$serverID = $this->getConfig()->get(ConfigConst::SERVER_NAME);
+        self::$server = $this->getConfig()->get(ConfigConst::SERVER);
         $this->isDev = !str_contains($this->getDescription()->getVersion(), 'stable');
         $this->isMain = self::$serverID === "seichi_1";
 

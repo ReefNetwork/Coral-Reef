@@ -18,6 +18,7 @@ use pocketmine\player\Player;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat;
 use pocketmine\world\sound\XpLevelUpSound;
+use ree_jp\coral_reef\CoralReefPlugin;
 use ree_jp\coral_reef\quest\QuestListener;
 use ree_jp\coral_reef\quest\QuestManager;
 use ree_jp\coral_reef\skill\BreakSkill;
@@ -64,7 +65,7 @@ class UserAccount
 
         $await = [];
         try {
-            $await[] = Await::promise(fn($func) => $sqlRepo->addWarp($p->getXuid(), "自動セーブ",
+            $await[] = Await::promise(fn($func) => $sqlRepo->addWarp($p->getXuid(), "自動セーブ(" . CoralReefPlugin::$server . ")",
                 $p->getWorld()->getFolderName(), $p->getPosition()->getFloorX(), $p->getPosition()->getFloorY(),
                 $p->getPosition()->getFloorZ(), $func));
             $await[] = Await::promise(fn($func) => $sqlRepo->setXp($this->xuid, $this->experience, $func));
