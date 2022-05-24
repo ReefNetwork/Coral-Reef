@@ -30,6 +30,7 @@ class MysqlPlayerDataRepo implements PlayerRepository
     {
         $result = yield from Await::promise(
             fn($resolve, $reject) => $this->pool->getConnection()->executeSelect("coral_reef.player_data.get", ["xuid" => $xuid], $resolve, $reject));
+        if (!$result) return null;
         return $this->setPlayerDataModel(current($result));
     }
 
