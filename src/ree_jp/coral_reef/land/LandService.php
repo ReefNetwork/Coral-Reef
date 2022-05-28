@@ -231,7 +231,7 @@ class LandService
         } else $p->sendMessage('地点を2つとも設定してください');
     }
 
-    static private function sendCheckSpaceEffect(Player $p, AxisAlignedBB $aabb, int $x, int $z): void
+    static function sendCheckSpaceEffect(Player $p, AxisAlignedBB $aabb, int $x, int $z): void
     {
         for ($y = $aabb->minY; $y <= $aabb->maxY; $y += 0.6) {
             $p->getWorld()->addParticle(new Vector3($x + 0.5, $y, $z + 0.5), new PortalParticle(), [$p]);

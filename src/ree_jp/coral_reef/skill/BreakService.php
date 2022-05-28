@@ -42,6 +42,16 @@ class BreakService
                                       Vector3       $origin): void
     {
         var_dump($aabb);
+        for ($i = 0; $i < 5; $i++) {
+            for ($x = $aabb->minX; $x <= $aabb->maxX; $x += 0.6) {
+                LandService::sendCheckSpaceEffect($p, $aabb, $x, $aabb->minZ);
+                LandService::sendCheckSpaceEffect($p, $aabb, $x, $aabb->maxZ);
+            }
+            for ($z = $aabb->minZ; $z <= $aabb->maxZ; $z += 0.6) {
+                LandService::sendCheckSpaceEffect($p, $aabb, $aabb->minX, $z);
+                LandService::sendCheckSpaceEffect($p, $aabb, $aabb->maxX, $z);
+            }
+        }
         $lands = LandService::getDuplicateLand($landStore, $p->getWorld()->getFolderName(), $aabb);
         $hand = $p->getInventory()->getItemInHand();
         $isNoFreeze = SettingManager::isEnableOption($p->getXuid(), SettingConst::NO_FREEZE_WATER);
