@@ -59,9 +59,6 @@ class BreakSkill
      */
     public function runSkill(SQLRepository $repo, LandStore $landStore, Vector3 $blockVec, Player $p, SessionData $session, UserAccount $user): void
     {
-//        $store = [];
-//        BreakService::frozeWater($p, $blockVec, $p->getInventory()->getItemInHand(), $store);
-
         $direction = $p->getHorizontalFacing();
         $widthSide = intval(floor($this->width / 2));
         $depthSide = intval(floor($this->depth / 2));
@@ -96,7 +93,7 @@ class BreakSkill
             }
         }
         $aabb = LandService::getAabb($rightForward->getX(), $lowY, $rightForward->getZ(), $leftBackward->getX(), $highY, $leftBackward->getZ());
-        BreakService::breakBlockBySkill($repo, $landStore, $session, $p, $user, $aabb);
+        BreakService::breakBlockBySkill($repo, $landStore, $session, $p, $user, $aabb, $blockVec);
     }
 
     private function exactFloorY(Player $p): int

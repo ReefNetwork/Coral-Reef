@@ -38,7 +38,8 @@ use ree_jp\stackstorage\api\StackStorageAPI;
 
 class BreakService
 {
-    static function breakBlockBySkill(SQLRepository $repo, LandStore $landStore, SessionData $session, Player $p, UserAccount $user, AxisAlignedBB $aabb): void
+    static function breakBlockBySkill(SQLRepository $repo, LandStore $landStore, SessionData $session, Player $p, UserAccount $user, AxisAlignedBB $aabb,
+                                      Vector3       $origin): void
     {
         $lands = LandService::getDuplicateLand($landStore, $p->getWorld()->getFolderName(), $aabb);
         $hand = $p->getInventory()->getItemInHand();
@@ -72,7 +73,7 @@ class BreakService
                 }
                 for ($nowY = $aabb->maxY; $nowY >= $aabb->minY; $nowY++) {
                     $bl = $p->getWorld()->getBlockAt($nowX, $nowY, $nowZ);
-                    if ($bl->getBreakInfo()->getHardness() < 0) continue;
+                    if ($bl->getBreakInfo()->getHardness() < 0 || $origin->equals($bl->getPosition())) continue;
                     if (!$isNoFreeze && $bl instanceof Liquid) {
                         $freezeBlock->position($p->getWorld(), $nowX, $nowY, $nowZ);
                         $bl = $freezeBlock;
