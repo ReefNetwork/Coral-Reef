@@ -41,6 +41,7 @@ class BreakService
     static function breakBlockBySkill(SQLRepository $repo, LandStore $landStore, SessionData $session, Player $p, UserAccount $user, AxisAlignedBB $aabb,
                                       Vector3       $origin): void
     {
+        var_dump($aabb);
         $lands = LandService::getDuplicateLand($landStore, $p->getWorld()->getFolderName(), $aabb);
         $hand = $p->getInventory()->getItemInHand();
         $isNoFreeze = SettingManager::isEnableOption($p->getXuid(), SettingConst::NO_FREEZE_WATER);
@@ -71,7 +72,7 @@ class BreakService
                 foreach ($highCheck as $bl) {
                     self::silentBreak($p->getWorld(), $bl, $hand, $p);
                 }
-                for ($nowY = $aabb->maxY; $nowY >= $aabb->minY; $nowY++) {
+                for ($nowY = $aabb->maxY; $nowY >= $aabb->minY; $nowY--) {
                     $bl = $p->getWorld()->getBlockAt($nowX, $nowY, $nowZ);
                     if ($bl->getBreakInfo()->getHardness() < 0 || $origin->equals($bl->getPosition())) continue;
                     if (!$isNoFreeze && $bl instanceof Liquid) {
@@ -81,7 +82,6 @@ class BreakService
                     $session->breakBlock();
                     $user->addXp($p, ServerUpdateTask::$exp_buff);
                     MoneyService::addMoney($repo, $p->getXuid(), 1);
-
 
                     self::silentBreak($p->getWorld(), $bl, $hand, $p);
                 }
