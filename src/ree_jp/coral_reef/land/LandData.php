@@ -12,6 +12,7 @@
 namespace ree_jp\coral_reef\land;
 
 use pocketmine\math\AxisAlignedBB;
+use pocketmine\math\Vector3;
 use pocketmine\world\Position;
 
 class LandData
@@ -34,12 +35,12 @@ class LandData
         $this->aabb = $aabb;
     }
 
-    public function isLand(Position $pos): bool
+    public function isLand(Vector3 $pos): bool
     {
-        if ($pos->getWorld()->getFolderName() === $this->level) {
-            return $this->aabb->isVectorInXZ($pos);
+        if ($pos instanceof Position) {
+            if ($pos->getWorld()->getFolderName() !== $this->level) return false;
         }
-        return false;
+        return $this->aabb->isVectorInXZ($pos);
     }
 
     public function isMember(string $xuid): bool

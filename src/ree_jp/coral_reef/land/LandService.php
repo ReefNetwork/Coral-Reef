@@ -76,6 +76,27 @@ class LandService
         return null;
     }
 
+    /**
+     * @param LandStore $store
+     * @param string $level
+     * @param AxisAlignedBB $aabb
+     * @return LandData[]
+     */
+    static function getDuplicateLand(LandStore $store, string $level, AxisAlignedBB $aabb): array
+    {
+        $duplicateLands = [];
+        foreach ($store->lands as $landLevel => $lands) {
+            if ($landLevel !== $level) continue;
+
+            foreach ($lands as $land) {
+                if ($land->aabb->intersectsWith($aabb, -0.00001) && ($land->level === $level)) {
+                    $duplicateLands[] = $land;
+                }
+            }
+        }
+        return $duplicateLands;
+    }
+
     static function addShareMember(SQLRepository $repo, LandData $land, ?Player $p, string $xuid): void
     {
         if (!$land->isMember($xuid)) {
@@ -154,7 +175,7 @@ class LandService
                     return false;
                 }
             } else {
-                if ($land->xuid === $p->getXuid() || $land->isMember($p->getXuid()) || $landStore->isParty($land->xuid, $p->getXuid())) return false;
+                if (self::checkLand($landStore, $land, $p->getXuid())) return false;
                 $name = $accountStore->getUserName($land->xuid);
                 $p->sendPopup("この土地は$name によって保護されています($land->name)");
                 if (AccountService::isOp($p) && $p->isCreative()) return false;
@@ -181,6 +202,12 @@ class LandService
         return true;
     }
 
+    // その人が掘れる土地だったらtrue
+    static function checkLand(LandStore $store, LandData $land, string $xuid): bool
+    {
+        return $land->xuid === $xuid || $land->isMember($xuid) || $store->isParty($land->xuid, $xuid);
+    }
+
     static function checkSpace(LandStore $store, Player $p): void
     {
         $xuid = $p->getXuid();
@@ -188,7 +215,7 @@ class LandService
             $vec1 = $store->pos[$xuid][1];
             $vec2 = $store->pos[$xuid][2];
             if ($vec1 instanceof Vector3 && $vec2 instanceof Vector3) {
-                $aabb = self::getAabb($vec1->getFloorX(), $vec1->getFloorZ(), $vec2->getFloorX(), $vec2->getFloorZ());
+                $aabb = self::getAabb($vec1->getFloorX(), 0, $vec1->getFloorZ(), $vec2->getFloorX(), 0, $vec2->getFloorZ());
                 $aabb->minY = $p->getPosition()->getFloorY();
                 $aabb->maxY = $p->getPosition()->getFloorY() + 3;
                 $p->sendMessage(TextFormat::DARK_GRAY . "指定されている範囲を表示しています");
@@ -212,7 +239,7 @@ class LandService
         }
     }
 
-    static function getAabb(int $x1, int $z1, int $x2, int $z2): AxisAlignedBB
+    static function getAabb(int $x1, int $y1, int $z1, int $x2, int $y2, int $z2): AxisAlignedBB
     {
         if ($x1 > $x2) {
             $minX = $x2;
@@ -221,6 +248,13 @@ class LandService
             $minX = $x1;
             $maxX = $x2;
         }
+        if ($y1 > $y2) {
+            $minY = $y2;
+            $maxY = $y1;
+        } else {
+            $minY = $y1;
+            $maxY = $y2;
+        }
         if ($z1 > $z2) {
             $minZ = $z2;
             $maxZ = $z1;
@@ -228,6 +262,6 @@ class LandService
             $minZ = $z1;
             $maxZ = $z2;
         }
-        return new AxisAlignedBB($minX, 0, $minZ, $maxX, 0, $maxZ);
+        return new AxisAlignedBB($minX, $minY, $minZ, $maxX, $maxY, $maxZ);
     }
 }

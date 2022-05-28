@@ -188,7 +188,7 @@ class EventListener implements Listener
         $sqlRepo = $this->pool->get(SQLRepository::class);
 
         try {
-            AccountService::blockBroken($sqlRepo, $this->accountStore, $p, $ev->getBlock(), $this->sessionStore->getSessionData($p->getXuid()));
+            AccountService::blockBroken($sqlRepo, $this->landStore, $this->accountStore, $p, $ev->getBlock(), $this->sessionStore->getSessionData($p->getXuid()));
         } catch (Exception $e) {
             $p->sendMessage(TextFormat::RED . 'エラーが発生しました');
             Server::getInstance()->getLogger()->error('[blockBroke]' . $p->getName() . 'の処理中に' . $e->getMessage());
@@ -365,10 +365,10 @@ class EventListener implements Listener
         switch ($ev->getBlock()->getId()) {
             case BlockLegacyIds::SIGN_POST:
             case BlockLegacyIds::WALL_SIGN:
-                if ($this->accountStore->hasValue($xuid, 'form_cool_time')) return;
+            if ($this->accountStore->hasValue($xuid, 'form_cool_time')) return;
             $this->accountStore->setValue($xuid, 'form_cool_time', 10);
             ShopService::showShop($sqlRepo, $p, $this->shopStore, $ev->getBlock()->getPosition());
-                break;
+            break;
         }
         if (in_array($ev->getBlock()->getId(),
             [BlockLegacyIds::GRASS, BlockLegacyIds::DIRT, BlockLegacyIds::FRAME_BLOCK, BlockLegacyIds::CHEST, BlockLegacyIds::LECTERN])) {

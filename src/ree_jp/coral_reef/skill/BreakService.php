@@ -15,68 +15,143 @@ use pocketmine\block\Air;
 use pocketmine\block\Block;
 use pocketmine\block\BlockFactory;
 use pocketmine\block\BlockLegacyIds;
+use pocketmine\block\Flowable;
 use pocketmine\block\Liquid;
 use pocketmine\block\VanillaBlocks;
-use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\item\Item;
 use pocketmine\item\ItemFactory;
-use pocketmine\item\LegacyStringToItemParser;
+use pocketmine\math\AxisAlignedBB;
 use pocketmine\math\Vector3;
 use pocketmine\player\Player;
 use pocketmine\world\format\Chunk;
 use pocketmine\world\World;
 use ree_jp\coral_reef\account\SettingManager;
+use ree_jp\coral_reef\account\UserAccount;
+use ree_jp\coral_reef\land\LandService;
+use ree_jp\coral_reef\land\LandStore;
+use ree_jp\coral_reef\money\MoneyService;
+use ree_jp\coral_reef\session\SessionData;
+use ree_jp\coral_reef\sql\mysql\SQLRepository;
 use ree_jp\coral_reef\sql\SettingConst;
+use ree_jp\coral_reef\task\ServerUpdateTask;
+use ree_jp\stackstorage\api\StackStorageAPI;
 
 class BreakService
 {
-    static function breakBlockBySkill(Player $p, Block $bl, array &$store): void
+    static function breakBlockBySkill(SQLRepository $repo, LandStore $landStore, SessionData $session, Player $p, UserAccount $user, AxisAlignedBB $aabb): void
     {
+        $lands = LandService::getDuplicateLand($landStore, $p->getWorld()->getFolderName(), $aabb);
         $hand = $p->getInventory()->getItemInHand();
-        self::frozeWater($p, $bl->getPosition(), $hand, $store);
+        $isNoFreeze = SettingManager::isEnableOption($p->getXuid(), SettingConst::NO_FREEZE_WATER);
+        $freezeBlock = self::getFreezeBlock($hand);
+        $popupMessage = "";
 
-        if ($bl->getBreakInfo()->getHardness() < 0 || $bl instanceof Liquid) return;
+        for ($nowX = $aabb->minX; $nowX <= $aabb->maxX; $nowX++) {
+            for ($nowZ = $aabb->minZ; $nowZ <= $aabb->maxZ; $nowZ++) {
+                $highVec3 = new Vector3($nowX, $aabb->maxY, $nowZ);
+                $highCheck = self::highCheck($p, $highVec3);
+                if (!$highCheck) {
+                    $popupMessage = "上から掘ってください";
+                    continue;
+                }
+                foreach ($lands as $land) {
+                    if ($land->isLand($highVec3)) {
+                        if (!LandService::checkLand($landStore, $land, $p->getXuid())) {
+                            $popupMessage = "この土地は保護されています($land->name)";
+                            continue 2;
+                        }
+                    } else {
+                        if (in_array($p->getWorld()->getFolderName(), LandService::NEED_LAND_PROTECT)) {
+                            $popupMessage = "このワールドは土地保護が必要です";
+                            continue 2;
+                        }
+                    }
+                }
+                foreach ($highCheck as $bl) {
+                    self::silentBreak($p->getWorld(), $bl, $hand, $p);
+                }
+                for ($nowY = $aabb->maxY; $nowY >= $aabb->minY; $nowY++) {
+                    $bl = $p->getWorld()->getBlockAt($nowX, $nowY, $nowZ);
+                    if ($bl->getBreakInfo()->getHardness() < 0) continue;
+                    if (!$isNoFreeze && $bl instanceof Liquid) {
+                        $freezeBlock->position($p->getWorld(), $nowX, $nowY, $nowZ);
+                        $bl = $freezeBlock;
+                    }
+                    $session->breakBlock();
+                    $user->addXp($p, ServerUpdateTask::$exp_buff);
+                    MoneyService::addMoney($repo, $p->getXuid(), 1);
 
-        self::silentBreak($p->getWorld(), $bl, $hand, $p);
-    }
 
-    static function frozeWater(Player $p, Vector3 $vec, Item $hand, array &$store): void
-    {
-        if (!SettingManager::isEnableOption($p->getXuid(), SettingConst::NO_FREEZE_WATER)) {
-            $nbt = $hand->getNamedTag();
-            $id = $nbt->getInt("frozen_block", 0);
-
-
-            if ($id === 0) {
-                $block = BlockFactory::getInstance()->get(BlockLegacyIds::STAINED_GLASS, 3);
-            } else {
-                $block = BlockFactory::getInstance()->get($id, 0);
+                    self::silentBreak($p->getWorld(), $bl, $hand, $p);
+                }
             }
-
-            self::changeWater($p->getWorld(), $vec, $block, $store);
-            self::changeWater($p->getWorld(), $vec->add(0, 1, 0), $block, $store);
-            self::changeWater($p->getWorld(), $vec->add(0, -1, 0), $block, $store);
-            self::changeWater($p->getWorld(), $vec->add(1, 0, 0), $block, $store);
-            self::changeWater($p->getWorld(), $vec->add(-1, 0, 0), $block, $store);
-            self::changeWater($p->getWorld(), $vec->add(0, 0, 1), $block, $store);
-            self::changeWater($p->getWorld(), $vec->add(0, 0, -1), $block, $store);
+        }
+        if ($popupMessage !== "") $p->sendPopup($popupMessage);
+        if (!SettingManager::isEnableOption($p->getXuid(), SettingConst::NO_FREEZE_WATER)) {
+            self::freezeEdge($p, $aabb, $freezeBlock);
         }
     }
 
-    /**
-     * @param World|null $level
-     * @param Vector3 $vec3
-     * @param Block $replaceBlock
-     * @param Vector3[] $store
-     * @return void
-     */
-    private static function changeWater(?World $level, Vector3 $vec3, Block $replaceBlock, array &$store): void // 水を水色のガラスに変える
+    private static function highCheck(Player $p, Vector3 $highVec): false|array
     {
-        if (is_null($level) || in_array($vec3, $store)) return;
-        $store[] = $vec3;
-        $checkId = $level->getBlock($vec3)->getId();
+        $flowable = [];
+
+        $checkBl1 = $p->getWorld()->getBlock($highVec->add(0, 1, 0));
+        if ($checkBl1 instanceof Air) return $flowable;
+        if ($checkBl1 instanceof Flowable) $flowable[] = $checkBl1;
+        $checkBl2 = $p->getWorld()->getBlock($highVec->add(0, 2, 0));
+        if ($checkBl2 instanceof Air) return $flowable;
+        if (!$checkBl2 instanceof Flowable) $flowable[] = $checkBl2;
+
+        if (empty($flowable)) return false;
+        return $flowable;
+    }
+
+    private static function getFreezeBlock(Item $hand): Block
+    {
+        $nbt = $hand->getNamedTag();
+        $id = $nbt->getInt("frozen_block", 0);
+        if ($id === 0) {
+            return BlockFactory::getInstance()->get(BlockLegacyIds::STAINED_GLASS, 3);
+        } else {
+            return BlockFactory::getInstance()->get($id, 0);
+        }
+    }
+
+    static function freezeEdge(Player $p, AxisAlignedBB $aabb, Block $freezeBl): void
+    {
+        $world = $p->getWorld();
+        for ($nowY = $aabb->minY; $nowY <= $aabb->maxY; $nowY++) {
+            for ($nowZ = $aabb->minZ; $nowZ <= $aabb->maxZ; $nowZ++) {
+                $min = new Vector3($aabb->minX - 1, $nowY, $nowZ);
+                $max = new Vector3($aabb->maxX + 1, $nowY, $nowZ);
+                self::changeWater($world, $min, $freezeBl);
+                self::changeWater($world, $max, $freezeBl);
+            }
+        }
+        for ($nowX = $aabb->minX; $nowX <= $aabb->maxX; $nowX++) {
+            for ($nowZ = $aabb->minZ; $nowZ <= $aabb->maxZ; $nowZ++) {
+                $min = new Vector3($nowX, $aabb->minY - 1, $nowZ);
+                $max = new Vector3($nowX, $aabb->maxY + 1, $nowZ);
+                self::changeWater($world, $min, $freezeBl);
+                self::changeWater($world, $max, $freezeBl);
+            }
+        }
+        for ($nowX = $aabb->minX; $nowX <= $aabb->maxX; $nowX++) {
+            for ($nowY = $aabb->minY; $nowY <= $aabb->maxY; $nowY++) {
+                $min = new Vector3($nowX, $nowY, $aabb->minZ - 1);
+                $max = new Vector3($nowX, $nowY, $aabb->maxZ + 1);
+                self::changeWater($world, $min, $freezeBl);
+                self::changeWater($world, $max, $freezeBl);
+            }
+        }
+    }
+
+    private static function changeWater(World $world, Vector3 $vec3, Block $replaceBlock): void // 水を水色のガラスに変える
+    {
+        $checkId = $world->getBlock($vec3)->getId();
         if (($checkId === BlockLegacyIds::WATER) || ($checkId === BlockLegacyIds::FLOWING_WATER)) { // 水を水色のガラスに変える
-            $level->setBlock($vec3, $replaceBlock, false);
+            $world->setBlock($vec3, $replaceBlock, false);
         }
     }
 
@@ -108,34 +183,9 @@ class BreakService
         }
 
         if ($p !== null) {
-            $ev = new BlockBreakEvent($p, $bl, $item, $p->isCreative(), $drops, $xp);
-
-            if ($bl instanceof Air or ($p->isSurvival() and !$bl->getBreakInfo()->isBreakable()) or $p->isSpectator()) {
-                $ev->cancel();
-            }
-
-            if ($p->isAdventure(true) and !$ev->isCancelled()) {
-                $canBreak = false;
-                $itemParser = LegacyStringToItemParser::getInstance();
-                foreach ($item->getCanDestroy() as $v) {
-                    $entry = $itemParser->parse($v);
-                    if ($entry->getBlock()->isSameType($bl)) {
-                        $canBreak = true;
-                        break;
-                    }
-                }
-
-                if (!$canBreak) {
-                    $ev->cancel();
-                }
-            }
-
-            $ev->call();
-            if ($ev->isCancelled()) {
+            if ($bl instanceof Air || ($p->isSurvival() && !$bl->getBreakInfo()->isBreakable()) || $p->isSpectator()) {
                 return;
             }
-
-            $xp = $ev->getXpDropAmount();
 
         } elseif (!$bl->getBreakInfo()->isBreakable()) {
             return;
@@ -151,6 +201,9 @@ class BreakService
 
         $item->onDestroyBlock($bl);
 
+        foreach ($drops as $dropItem) {
+            StackStorageAPI::$instance->add($p->getXuid(), $dropItem);
+        }
         if ($xp > 0) {
             $p->getXpManager()->addXp($xp);
         }

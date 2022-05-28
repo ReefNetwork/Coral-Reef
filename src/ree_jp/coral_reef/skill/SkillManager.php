@@ -20,7 +20,10 @@ use pocketmine\world\sound\XpLevelUpSound;
 use ree_jp\coral_reef\account\AccountStore;
 use ree_jp\coral_reef\account\SettingManager;
 use ree_jp\coral_reef\CoralReefPlugin;
+use ree_jp\coral_reef\land\LandStore;
 use ree_jp\coral_reef\quest\QuestListener;
+use ree_jp\coral_reef\session\SessionData;
+use ree_jp\coral_reef\sql\mysql\SQLRepository;
 use ree_jp\coral_reef\sql\SettingConst;
 
 class SkillManager
@@ -70,7 +73,7 @@ class SkillManager
     /**
      * @throws Exception
      */
-    static function skillActive(AccountStore $store, Player $p, Block $bl): void
+    static function skillActive(SQLRepository $repo, LandStore $landStore, AccountStore $store, Player $p, SessionData $session, Block $bl): void
     {
         $xuid = $p->getXuid();
         $user = $store->getUser($xuid);
@@ -78,7 +81,7 @@ class SkillManager
         if (is_null($skill)) throw new Exception('スキルが設定されていません');
 
         QuestListener::callSubscribedQuest($p->getXuid(), QuestListener::USE_SKILL, $skill);
-        $skill->runSkill($bl->getPosition(), $p);
+        $skill->runSkill($repo, $landStore, $bl->getPosition(), $p, $session, $user);
         $cool_time = $skill->coolTime;
         if (isset(self::$reduceCoolTime[$xuid])) { // クールタイム減らすのを反映
             $cool_time -= self::$reduceCoolTime[$xuid];
