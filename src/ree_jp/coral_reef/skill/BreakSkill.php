@@ -56,6 +56,7 @@ class BreakSkill
 
     /**
      * @throws Exception
+     * スキルの範囲をAABBにして求める
      */
     public function runSkill(SQLRepository $repo, LandStore $landStore, Vector3 $blockVec, Player $p, SessionData $session, UserAccount $user): void
     {
@@ -64,10 +65,10 @@ class BreakSkill
         $depthSide = intval(floor($this->depth / 2));
         $playerY = $this->exactFloorY($p);
 
-        $right = $this->getSideFromUserView(Vector3::zero(), self::RIGHT, $direction, $widthSide);
+        $right = $this->getSideFromUserView(Vector3::zero(), $direction, self::RIGHT, $widthSide);
         if ($playerY > $blockVec->getFloorY()) {
             // 下のブロックを掘ったとき
-            $forward = $this->getSideFromUserView(Vector3::zero(), self::FORWARD, $direction, $depthSide);
+            $forward = $this->getSideFromUserView(Vector3::zero(), $direction, self::FORWARD, $depthSide);
             $rightForward = $p->getPosition()->addVector($right)->addVector($forward);
             $leftBackward = $p->getPosition()->subtractVector($right)->subtractVector($forward);
 
@@ -80,7 +81,7 @@ class BreakSkill
             // 掘られた場所が範囲より高かったらその場所を一番下にして範囲を計算する
             $isSkillHigh = ($blockVec->getFloorY() - $playerY) <= $this->height;
 
-            $forward = $this->getSideFromUserView(Vector3::zero(), self::FORWARD, $direction, $this->depth);
+            $forward = $this->getSideFromUserView(Vector3::zero(), $direction, self::FORWARD, $this->depth);
             $rightForward = $p->getPosition()->addVector($right)->addVector($forward);
             $leftBackward = $p->getPosition()->subtractVector($right);
 
@@ -105,24 +106,24 @@ class BreakSkill
     /**
      * @throws Exception
      */
-    private function getSideFromUserView(Vector3 $vec3, int $view, int $direction, int $value): Vector3
+    private function getSideFromUserView(Vector3 $vec3, int $viewDirection, int $target, int $value): Vector3
     {
-        return match ($view) {
-            Facing::NORTH => match ($direction) {
+        return match ($viewDirection) {
+            Facing::NORTH => match ($target) {
                 self::FORWARD => $vec3->add(0, 0, -$value),
                 self::BACKWARD => $vec3->add(0, 0, $value),
                 self::RIGHT => $vec3->add(-$value, 0, 0),
                 self::LEFT => $vec3->add($value, 0, 0),
                 default => throw new Exception('不正な方角'),
             },
-            Facing::SOUTH => match ($direction) {
+            Facing::SOUTH => match ($target) {
                 self::FORWARD => $vec3->add(0, 0, $value),
                 self::BACKWARD => $vec3->add(0, 0, -$value),
                 self::RIGHT => $vec3->add(-$value, 0, 0),
                 self::LEFT => $vec3->add($value, 0, 0),
                 default => throw new Exception('不正な方角'),
             },
-            Facing::WEST => match ($direction) {
+            Facing::WEST => match ($target) {
                 self::FORWARD => $vec3->add(-$value, 0, 0),
                 self::BACKWARD => $vec3->add($value, 0, 0),
                 self::RIGHT => $vec3->add(0, 0, -$value),
@@ -130,7 +131,7 @@ class BreakSkill
 
                 default => throw new Exception('不正な方角'),
             },
-            Facing::EAST => match ($direction) {
+            Facing::EAST => match ($target) {
                 self::FORWARD => $vec3->add($value, 0, 0),
                 self::BACKWARD => $vec3->add(-$value, 0, 0),
                 self::RIGHT => $vec3->add(0, 0, -$value),
