@@ -66,6 +66,9 @@ class BreakSkill
         $playerY = $this->exactFloorY($p);
 
         $right = $this->getSideFromUserView(Vector3::zero(), $direction, self::RIGHT, $widthSide);
+        var_dump("origin" . $p->getPosition()->getY());
+        var_dump("exact" . $playerY);
+        var_dump("block" . $blockVec->getY());
         if ($playerY > $blockVec->getFloorY()) {
             // 下のブロックを掘ったとき
             $forward = $this->getSideFromUserView(Vector3::zero(), $direction, self::FORWARD, $depthSide);
