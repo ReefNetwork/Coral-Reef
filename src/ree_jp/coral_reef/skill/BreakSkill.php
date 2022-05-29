@@ -100,10 +100,11 @@ class BreakSkill
         BreakService::breakBlockBySkill($repo, $landStore, $session, $p, $user, $aabb, $blockVec);
     }
 
+    // ブロックの上に立っていても実際の座標が 56.9216 となって可能性があるため
     private function exactFloorY(Player $p): int
     {
         $stupidY = $p->getPosition()->getY();
-        return round($stupidY, 1);
+        return round($stupidY + 0.5, 1);
     }
 
     /**
