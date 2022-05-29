@@ -53,6 +53,7 @@ class BreakService
             }
         }
         $lands = LandService::getDuplicateLand($landStore, $p->getWorld()->getFolderName(), $aabb);
+        var_dump($lands);
         $hand = $p->getInventory()->getItemInHand();
         $isNoFreeze = SettingManager::isEnableOption($p->getXuid(), SettingConst::NO_FREEZE_WATER);
         $freezeBlock = self::getFreezeBlock($hand);
@@ -63,7 +64,6 @@ class BreakService
                 $highVec3 = new Vector3($nowX, $aabb->maxY, $nowZ);
                 $highCheck = self::highCheck($p, $highVec3);
                 if ($highCheck === false) {
-                    var_dump("上せいげん");
                     $popupMessage = "上から掘ってください";
                     continue;
                 }
@@ -80,7 +80,6 @@ class BreakService
                         }
                     }
                 }
-                var_dump("can");
                 foreach ($highCheck as $bl) {
                     self::silentBreak($p->getWorld(), $bl, $hand, $p);
                 }
@@ -114,7 +113,7 @@ class BreakService
         if ($checkBl1 instanceof Flowable) $flowable[] = $checkBl1;
         $checkBl2 = $p->getWorld()->getBlock($highVec->add(0, 2, 0));
         if ($checkBl2 instanceof Air) return $flowable;
-        if (!$checkBl2 instanceof Flowable) $flowable[] = $checkBl2;
+        if ($checkBl2 instanceof Flowable) $flowable[] = $checkBl2;
 
         if (empty($flowable)) return false;
         return $flowable;
@@ -171,7 +170,6 @@ class BreakService
     /** @noinspection DuplicatedCode */
     static function silentBreak(World $world, Block $bl, Item $item = null, Player $p = null): void
     {
-        var_dump("break");
         $vector = $bl->getPosition()->floor();
 
         $chunkX = $vector->getFloorX() >> Chunk::COORD_BIT_SIZE;
