@@ -15,13 +15,12 @@ namespace ree_jp\coral_reef\account;
 use Exception;
 use Generator;
 use pocketmine\block\Block;
-use pocketmine\block\BlockLegacyIds;
-use pocketmine\block\VanillaBlocks;
 use pocketmine\math\Vector3;
 use pocketmine\player\Player;
 use pocketmine\Server;
 use pocketmine\world\Position;
 use ree_jp\coral_reef\CoralReefPlugin;
+use ree_jp\coral_reef\land\LandStore;
 use ree_jp\coral_reef\money\MoneyCache;
 use ree_jp\coral_reef\money\MoneyService;
 use ree_jp\coral_reef\quest\QuestManager;
@@ -83,6 +82,7 @@ class AccountService
 
     /**
      * @param SQLRepository $repo
+     * @param LandStore $landStore
      * @param AccountStore $store
      * @param Player $p
      * @param Block $bl
@@ -90,20 +90,15 @@ class AccountService
      * @return void
      * @throws Exception
      */
-    static function blockBroken(SQLRepository $repo, AccountStore $store, Player $p, Block $bl, SessionData $session): void
+    static function blockBroken(SQLRepository $repo, LandStore $landStore, AccountStore $store, Player $p, Block $bl, SessionData $session): void
     {
         $xuid = $p->getXuid();
         $user = $store->getUser($xuid);
         $skill = $user->skill;
         $user->addXp($p, ServerUpdateTask::$exp_buff);
-        if (!SettingManager::isEnableOption($p->getXuid(), SettingConst::NO_FREEZE_WATER)) { // 水を掘ったら水が消えるように
-            if ($bl->getId() === BlockLegacyIds::WATER) {
-                $p->getWorld()->setBlock($bl->getPosition(), VanillaBlocks::AIR());
-            }
-        }
 
         $session->breakBlock();
-        if ($store->hasValue($xuid, 'skill_active') | $store->hasValue($xuid, "tree_cut")) {
+        if ($store->hasValue($xuid, "tree_cut")) {
             MoneyService::addMoney($repo, $xuid, 1);
         } else {
             $session->runSkill();
@@ -128,9 +123,7 @@ class AccountService
                         $store->setValue($xuid, "tree_cut", 0);
                     }
 
-                    $store->setValue($xuid, 'skill_active');
-                    SkillManager::skillActive($store, $p, $bl);
-                    $store->setValue($xuid, 'skill_active', 0);
+                    SkillManager::skillActive($repo, $landStore, $store, $p, $session, $bl);
                 }
             }
         }

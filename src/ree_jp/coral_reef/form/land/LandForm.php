@@ -139,7 +139,7 @@ class LandForm
                     $z2 = intval($z2Input->getValue());
                     $name = $landNameInput->getValue();
                     if (mb_strlen($name) > 0) {
-                        $aabb = LandService::getAabb($x1, $z1, $x2, $z2);
+                        $aabb = LandService::getAabb($x1, 0, $z1, $x2, 0, $z2);
                         $land = new LandData($p->getXuid(), $name, $p->getWorld()->getFolderName(), $aabb);
                         $result = LandService::canCreateLand($store, $land);
                         $space = (($aabb->maxX - $aabb->minX) + 1) * (($aabb->maxZ - $aabb->minZ) + 1);

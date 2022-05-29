@@ -12,11 +12,14 @@
 namespace ree_jp\coral_reef\skill;
 
 use Exception;
-use pocketmine\block\Air;
-use pocketmine\block\Flowable;
 use pocketmine\math\Facing;
 use pocketmine\math\Vector3;
 use pocketmine\player\Player;
+use ree_jp\coral_reef\account\UserAccount;
+use ree_jp\coral_reef\land\LandService;
+use ree_jp\coral_reef\land\LandStore;
+use ree_jp\coral_reef\session\SessionData;
+use ree_jp\coral_reef\sql\mysql\SQLRepository;
 
 class BreakSkill
 {
@@ -53,39 +56,24 @@ class BreakSkill
 
     /**
      * @throws Exception
+     * スキルの範囲をAABBにして求める
      */
-    public function runSkill(Vector3 $blockVec, Player $p): void
+    public function runSkill(SQLRepository $repo, LandStore $landStore, Vector3 $blockVec, Player $p, SessionData $session, UserAccount $user): void
     {
-        $store = [];
-        BreakService::frozeWater($p, $blockVec, $p->getInventory()->getItemInHand(), $store);
-
-        $world = $p->getWorld();
         $direction = $p->getHorizontalFacing();
         $widthSide = intval(floor($this->width / 2));
         $depthSide = intval(floor($this->depth / 2));
         $playerY = $this->exactFloorY($p);
+
+        $right = $this->getSideFromUserView(Vector3::zero(), $direction, self::RIGHT, $widthSide);
         if ($playerY > $blockVec->getFloorY()) {
             // 下のブロックを掘ったとき
+            $forward = $this->getSideFromUserView(Vector3::zero(), $direction, self::FORWARD, $depthSide);
+            $rightForward = $blockVec->addVector($right)->addVector($forward);
+            $leftBackward = $blockVec->subtractVector($right)->subtractVector($forward);
 
-            $depthCeil = ceil($this->depth / 2);
-
-            for ($width = $widthSide; $width >= -$widthSide; --$width) {
-                for ($depth = $depthCeil; $depth >= -$depthSide; --$depth) {
-
-                    if (!$this->checkRough($p, $blockVec, $direction, $width, $depth)) {
-                        continue;
-                    }
-
-                    for ($height = 0; $height <= $this->height; ++$height) {
-                        if (!($height === 0 && $width === 0 && $depth === 0)) {
-                            $vec = $this->getSideFromUserView($blockVec->add(0, -$height, 0), $direction, self::RIGHT, $width);
-                            $vec = $this->getSideFromUserView($vec, $direction, self::FORWARD, $depth);
-                            $bl = $world->getBlock($vec);
-                            BreakService::breakBlockBySkill($p, $bl, $store);
-                        }
-                    }
-                }
-            }
+            $highY = $blockVec->getFloorY();
+            $lowY = $highY - $this->height;
         } else {
             // ブロックがプレイヤーより上の場合
 
@@ -93,87 +81,50 @@ class BreakSkill
             // 掘られた場所が範囲より高かったらその場所を一番下にして範囲を計算する
             $isSkillHigh = ($blockVec->getFloorY() - $playerY) <= $this->height;
 
-            for ($width = $widthSide; $width >= -$widthSide; --$width) {
-                for ($depth = 0; $depth <= $this->depth; ++$depth) {
+            $forward = $this->getSideFromUserView(Vector3::zero(), $direction, self::FORWARD, $this->depth);
+            $rightForward = $blockVec->addVector($right)->addVector($forward);
+            $leftBackward = $blockVec->subtractVector($right);
 
-                    if ($isSkillHigh) {
-                        $checkVec = new Vector3($blockVec->x, $this->height + $playerY + 1, $blockVec->z);
-                    } else {
-                        $checkVec = $blockVec->add(0, $this->height + 1, 0);
-                    }
-
-                    if (!$this->checkRough($p, $checkVec, $direction, $width, $depth)) {
-                        continue;
-                    }
-
-                    for ($height = 0; $height <= $this->height; ++$height) {
-                        if ($isSkillHigh) {
-                            $baseY = intval($height + $playerY);
-                            if ($baseY === $blockVec->getFloorY() && $width === 0 && $depth === 0) continue;
-                            $base = new Vector3($blockVec->x, $height + $playerY, $blockVec->z);
-                        } else {
-                            if ($height === 0 && $width === 0 && $depth === 0) continue;// スキル起点のブロックへのスキル発動防止
-                            $base = $blockVec->add(0, $height, 0);
-                        }
-                        $vec = $this->getSideFromUserView($base, $direction, self::RIGHT, $width);
-                        $vec = $this->getSideFromUserView($vec, $direction, self::FORWARD, $depth);
-                        $bl = $world->getBlock($vec);
-                        BreakService::breakBlockBySkill($p, $bl, $store);
-                    }
-                }
+            if ($isSkillHigh) {
+                $highY = $playerY + $this->height;
+                $lowY = $playerY;
+            } else {
+                $highY = $blockVec->getFloorY() + $this->height;
+                $lowY = $blockVec->getFloorY();
             }
         }
+        $aabb = LandService::getAabb($rightForward->getX(), $lowY, $rightForward->getZ(), $leftBackward->getX(), $highY, $leftBackward->getZ());
+        BreakService::breakBlockBySkill($repo, $landStore, $session, $p, $user, $aabb, $blockVec);
     }
 
+    // ブロックの上に立っていても実際の座標が 56.9216 となって可能性があるため
     private function exactFloorY(Player $p): int
     {
         $stupidY = $p->getPosition()->getY();
-        return round($stupidY, 5);
+        return round($stupidY + 0.5, 1);
     }
 
     /**
      * @throws Exception
      */
-    private function checkRough(Player $p, Vector3 $blockVec, int $direction, int $width, int $depth): bool
+    private function getSideFromUserView(Vector3 $vec3, int $viewDirection, int $target, int $value): Vector3
     {
-        // 雑彫りをチェックする
-        // 雑彫りならfalse
-
-        $checkVec = $this->getSideFromUserView($blockVec->add(0, 2, 0), $direction, self::RIGHT, $width);
-        $checkVec = $this->getSideFromUserView($checkVec, $direction, self::FORWARD, $depth);
-        $checkBl = $p->getWorld()->getBlock($checkVec);
-        if (!$checkBl instanceof Flowable && !$checkBl instanceof Air) {
-            $checkBl2 = $checkBl->getSide(Facing::UP);
-            if (!$checkBl2 instanceof Flowable && !$checkBl2 instanceof Air) {
-                $p->sendPopup("上から掘ってください");
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    /**
-     * @throws Exception
-     */
-    private function getSideFromUserView(Vector3 $vec3, int $view, int $direction, int $value): Vector3
-    {
-        return match ($view) {
-            Facing::NORTH => match ($direction) {
+        return match ($viewDirection) {
+            Facing::NORTH => match ($target) {
                 self::FORWARD => $vec3->add(0, 0, -$value),
                 self::BACKWARD => $vec3->add(0, 0, $value),
                 self::RIGHT => $vec3->add(-$value, 0, 0),
                 self::LEFT => $vec3->add($value, 0, 0),
                 default => throw new Exception('不正な方角'),
             },
-            Facing::SOUTH => match ($direction) {
+            Facing::SOUTH => match ($target) {
                 self::FORWARD => $vec3->add(0, 0, $value),
                 self::BACKWARD => $vec3->add(0, 0, -$value),
                 self::RIGHT => $vec3->add(-$value, 0, 0),
                 self::LEFT => $vec3->add($value, 0, 0),
                 default => throw new Exception('不正な方角'),
             },
-            Facing::WEST => match ($direction) {
+            Facing::WEST => match ($target) {
                 self::FORWARD => $vec3->add(-$value, 0, 0),
                 self::BACKWARD => $vec3->add($value, 0, 0),
                 self::RIGHT => $vec3->add(0, 0, -$value),
@@ -181,7 +132,7 @@ class BreakSkill
 
                 default => throw new Exception('不正な方角'),
             },
-            Facing::EAST => match ($direction) {
+            Facing::EAST => match ($target) {
                 self::FORWARD => $vec3->add($value, 0, 0),
                 self::BACKWARD => $vec3->add(-$value, 0, 0),
                 self::RIGHT => $vec3->add(0, 0, -$value),

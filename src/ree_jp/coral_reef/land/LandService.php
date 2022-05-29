@@ -68,12 +68,43 @@ class LandService
             if ($level !== $checkLand->level) continue;
 
             foreach ($lands as $land) {
-                if ($land->aabb->intersectsWith($checkLand->aabb, -0.00001) && ($land->level === $level)) {
+                if (self::isDuplicateWithoutY($land->aabb, $checkLand->aabb) && ($land->level === $level)) {
                     return $land;
                 }
             }
         }
         return null;
+    }
+
+    /**
+     * @param LandStore $store
+     * @param string $level
+     * @param AxisAlignedBB $aabb
+     * @return LandData[]
+     */
+    static function getDuplicateLand(LandStore $store, string $level, AxisAlignedBB $aabb): array
+    {
+        $duplicateLands = [];
+        foreach ($store->lands as $landLevel => $lands) {
+            if ($landLevel !== $level) continue;
+
+            foreach ($lands as $land) {
+
+                if (self::isDuplicateWithoutY($aabb, $land->aabb) && ($land->level === $level)) {
+                    $duplicateLands[] = $land;
+                }
+            }
+        }
+        return $duplicateLands;
+    }
+
+    static function isDuplicateWithoutY(AxisAlignedBB $aabb1, AxisAlignedBB $aabb2): bool
+    {
+        if ($aabb1->maxX - $aabb2->minX >= 0 and $aabb2->maxX - $aabb1->minX >= 0) {
+            return $aabb1->maxZ - $aabb2->minZ >= 0 and $aabb2->maxZ - $aabb1->minZ >= 0;
+        }
+
+        return false;
     }
 
     static function addShareMember(SQLRepository $repo, LandData $land, ?Player $p, string $xuid): void
@@ -154,7 +185,7 @@ class LandService
                     return false;
                 }
             } else {
-                if ($land->xuid === $p->getXuid() || $land->isMember($p->getXuid()) || $landStore->isParty($land->xuid, $p->getXuid())) return false;
+                if (self::checkLand($landStore, $land, $p->getXuid())) return false;
                 $name = $accountStore->getUserName($land->xuid);
                 $p->sendPopup("この土地は$name によって保護されています($land->name)");
                 if (AccountService::isOp($p) && $p->isCreative()) return false;
@@ -181,6 +212,12 @@ class LandService
         return true;
     }
 
+    // その人が掘れる土地だったらtrue
+    static function checkLand(LandStore $store, LandData $land, string $xuid): bool
+    {
+        return $land->xuid === $xuid || $land->isMember($xuid) || $store->isParty($land->xuid, $xuid);
+    }
+
     static function checkSpace(LandStore $store, Player $p): void
     {
         $xuid = $p->getXuid();
@@ -188,7 +225,7 @@ class LandService
             $vec1 = $store->pos[$xuid][1];
             $vec2 = $store->pos[$xuid][2];
             if ($vec1 instanceof Vector3 && $vec2 instanceof Vector3) {
-                $aabb = self::getAabb($vec1->getFloorX(), $vec1->getFloorZ(), $vec2->getFloorX(), $vec2->getFloorZ());
+                $aabb = self::getAabb($vec1->getFloorX(), 0, $vec1->getFloorZ(), $vec2->getFloorX(), 0, $vec2->getFloorZ());
                 $aabb->minY = $p->getPosition()->getFloorY();
                 $aabb->maxY = $p->getPosition()->getFloorY() + 3;
                 $p->sendMessage(TextFormat::DARK_GRAY . "指定されている範囲を表示しています");
@@ -204,7 +241,7 @@ class LandService
         } else $p->sendMessage('地点を2つとも設定してください');
     }
 
-    static private function sendCheckSpaceEffect(Player $p, AxisAlignedBB $aabb, int $x, int $z): void
+    static function sendCheckSpaceEffect(Player $p, AxisAlignedBB $aabb, int $x, int $z): void
     {
         for ($y = $aabb->minY; $y <= $aabb->maxY; $y += 0.6) {
             $p->getWorld()->addParticle(new Vector3($x + 0.5, $y, $z + 0.5), new PortalParticle(), [$p]);
@@ -212,7 +249,7 @@ class LandService
         }
     }
 
-    static function getAabb(int $x1, int $z1, int $x2, int $z2): AxisAlignedBB
+    static function getAabb(int $x1, int $y1, int $z1, int $x2, int $y2, int $z2): AxisAlignedBB
     {
         if ($x1 > $x2) {
             $minX = $x2;
@@ -221,6 +258,13 @@ class LandService
             $minX = $x1;
             $maxX = $x2;
         }
+        if ($y1 > $y2) {
+            $minY = $y2;
+            $maxY = $y1;
+        } else {
+            $minY = $y1;
+            $maxY = $y2;
+        }
         if ($z1 > $z2) {
             $minZ = $z2;
             $maxZ = $z1;
@@ -228,6 +272,6 @@ class LandService
             $minZ = $z1;
             $maxZ = $z2;
         }
-        return new AxisAlignedBB($minX, 0, $minZ, $maxX, 0, $maxZ);
+        return new AxisAlignedBB($minX, $minY, $minZ, $maxX, $maxY, $maxZ);
     }
 }
