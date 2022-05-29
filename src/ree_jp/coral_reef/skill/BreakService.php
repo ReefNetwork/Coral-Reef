@@ -41,7 +41,6 @@ class BreakService
     static function breakBlockBySkill(SQLRepository $repo, LandStore $landStore, SessionData $session, Player $p, UserAccount $user, AxisAlignedBB $aabb,
                                       Vector3       $origin): void
     {
-        var_dump($aabb);
         for ($i = 0; $i < 5; $i++) {
             for ($x = $aabb->minX; $x <= $aabb->maxX; $x += 0.6) {
                 LandService::sendCheckSpaceEffect($p, $aabb, $x, $aabb->minZ);
@@ -53,7 +52,6 @@ class BreakService
             }
         }
         $lands = LandService::getDuplicateLand($landStore, $p->getWorld()->getFolderName(), $aabb);
-        var_dump($lands);
         $hand = $p->getInventory()->getItemInHand();
         $isNoFreeze = SettingManager::isEnableOption($p->getXuid(), SettingConst::NO_FREEZE_WATER);
         $freezeBlock = self::getFreezeBlock($hand);
@@ -86,10 +84,13 @@ class BreakService
                 for ($nowY = $aabb->maxY; $nowY >= $aabb->minY; $nowY--) {
                     $bl = $p->getWorld()->getBlockAt($nowX, $nowY, $nowZ);
                     if ($bl->getBreakInfo()->getHardness() < 0 || $origin->equals($bl->getPosition())) continue;
+                    var_dump("前" . $bl);
                     if (!$isNoFreeze && $bl instanceof Liquid) {
+                        var_dump("置き換え");
                         $freezeBlock->position($p->getWorld(), $nowX, $nowY, $nowZ);
                         $bl = $freezeBlock;
                     }
+                    var_dump($bl);
                     $session->breakBlock();
                     $user->addXp($p, ServerUpdateTask::$exp_buff);
                     MoneyService::addMoney($repo, $p->getXuid(), 1);
@@ -99,9 +100,7 @@ class BreakService
             }
         }
         if ($popupMessage !== "") $p->sendPopup($popupMessage);
-        if (!SettingManager::isEnableOption($p->getXuid(), SettingConst::NO_FREEZE_WATER)) {
-            self::freezeEdge($p, $aabb, $freezeBlock);
-        }
+        if (!$isNoFreeze) self::freezeEdge($p, $aabb, $freezeBlock);
     }
 
     private static function highCheck(Player $p, Vector3 $highVec): false|array
