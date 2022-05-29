@@ -60,10 +60,9 @@ class BreakService
 
         for ($nowX = $aabb->minX; $nowX <= $aabb->maxX; $nowX++) {
             for ($nowZ = $aabb->minZ; $nowZ <= $aabb->maxZ; $nowZ++) {
-                var_dump("z");
                 $highVec3 = new Vector3($nowX, $aabb->maxY, $nowZ);
                 $highCheck = self::highCheck($p, $highVec3);
-                if (!$highCheck) {
+                if ($highCheck === false) {
                     var_dump("上せいげん");
                     $popupMessage = "上から掘ってください";
                     continue;

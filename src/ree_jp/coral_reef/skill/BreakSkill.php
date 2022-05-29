@@ -72,10 +72,10 @@ class BreakSkill
             var_dump("block" . $blockVec->getY());
             // 下のブロックを掘ったとき
             $forward = $this->getSideFromUserView(Vector3::zero(), $direction, self::FORWARD, $depthSide);
-            $rightForward = $p->getPosition()->addVector($right)->addVector($forward);
-            $leftBackward = $p->getPosition()->subtractVector($right)->subtractVector($forward);
+            $rightForward = $blockVec->addVector($right)->addVector($forward);
+            $leftBackward = $blockVec->subtractVector($right)->subtractVector($forward);
 
-            $highY = $playerY - 1;
+            $highY = $blockVec->getFloorY();
             $lowY = $highY - $this->height;
         } else {
             // ブロックがプレイヤーより上の場合
