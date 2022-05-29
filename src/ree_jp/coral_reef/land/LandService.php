@@ -68,7 +68,7 @@ class LandService
             if ($level !== $checkLand->level) continue;
 
             foreach ($lands as $land) {
-                if ($land->aabb->intersectsWith($checkLand->aabb, -0.00001) && ($land->level === $level)) {
+                if (self::isDuplicateWithoutY($land->aabb, $checkLand->aabb) && ($land->level === $level)) {
                     return $land;
                 }
             }
@@ -89,12 +89,22 @@ class LandService
             if ($landLevel !== $level) continue;
 
             foreach ($lands as $land) {
-                if ($land->aabb->intersectsWith($aabb, -0.00001) && ($land->level === $level)) {
+
+                if (self::isDuplicateWithoutY($aabb, $land->aabb) && ($land->level === $level)) {
                     $duplicateLands[] = $land;
                 }
             }
         }
         return $duplicateLands;
+    }
+
+    static function isDuplicateWithoutY(AxisAlignedBB $aabb1, AxisAlignedBB $aabb2): bool
+    {
+        if ($aabb1->maxX - $aabb2->minX >= 0 and $aabb2->maxX - $aabb1->minX >= 0) {
+            return $aabb1->maxZ - $aabb2->minZ >= 0 and $aabb2->maxZ - $aabb1->minZ >= 0;
+        }
+
+        return false;
     }
 
     static function addShareMember(SQLRepository $repo, LandData $land, ?Player $p, string $xuid): void
