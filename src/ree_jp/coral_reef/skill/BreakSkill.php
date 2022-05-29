@@ -67,6 +67,9 @@ class BreakSkill
 
         $right = $this->getSideFromUserView(Vector3::zero(), $direction, self::RIGHT, $widthSide);
         if ($playerY > $blockVec->getFloorY()) {
+            var_dump("exact" . $playerY);
+            var_dump("origin" . $p->getPosition()->getY());
+            var_dump("block" . $blockVec->getY());
             // 下のブロックを掘ったとき
             $forward = $this->getSideFromUserView(Vector3::zero(), $direction, self::FORWARD, $depthSide);
             $rightForward = $p->getPosition()->addVector($right)->addVector($forward);
@@ -82,8 +85,8 @@ class BreakSkill
             $isSkillHigh = ($blockVec->getFloorY() - $playerY) <= $this->height;
 
             $forward = $this->getSideFromUserView(Vector3::zero(), $direction, self::FORWARD, $this->depth);
-            $rightForward = $p->getPosition()->addVector($right)->addVector($forward);
-            $leftBackward = $p->getPosition()->subtractVector($right);
+            $rightForward = $blockVec->addVector($right)->addVector($forward);
+            $leftBackward = $blockVec->subtractVector($right);
 
             if ($isSkillHigh) {
                 $highY = $playerY + $this->height;

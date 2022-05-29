@@ -60,9 +60,11 @@ class BreakService
 
         for ($nowX = $aabb->minX; $nowX <= $aabb->maxX; $nowX++) {
             for ($nowZ = $aabb->minZ; $nowZ <= $aabb->maxZ; $nowZ++) {
+                var_dump("z");
                 $highVec3 = new Vector3($nowX, $aabb->maxY, $nowZ);
                 $highCheck = self::highCheck($p, $highVec3);
                 if (!$highCheck) {
+                    var_dump("上せいげん");
                     $popupMessage = "上から掘ってください";
                     continue;
                 }
@@ -79,6 +81,7 @@ class BreakService
                         }
                     }
                 }
+                var_dump("can");
                 foreach ($highCheck as $bl) {
                     self::silentBreak($p->getWorld(), $bl, $hand, $p);
                 }
@@ -169,6 +172,7 @@ class BreakService
     /** @noinspection DuplicatedCode */
     static function silentBreak(World $world, Block $bl, Item $item = null, Player $p = null): void
     {
+        var_dump("break");
         $vector = $bl->getPosition()->floor();
 
         $chunkX = $vector->getFloorX() >> Chunk::COORD_BIT_SIZE;
