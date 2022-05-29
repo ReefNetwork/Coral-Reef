@@ -19,9 +19,7 @@ use pocketmine\math\Vector3;
 use pocketmine\player\Player;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat;
-use ree_jp\coral_reef\account\AccountService;
 use ree_jp\coral_reef\account\AccountStore;
-use ree_jp\coral_reef\CoralReefPlugin;
 use ree_jp\coral_reef\form\gatya\GatyaForm;
 use ree_jp\coral_reef\form\item\DocsForm;
 use ree_jp\coral_reef\form\ranking\RankingForm;
@@ -63,7 +61,7 @@ class MenuForm
                     }),
                     new ClosureButton(
                         "ワールド移動 \n§7ロビーやショップに移動ができます", null, function (Player $p) {
-                        self::sendWorldTeleportForm($p);
+                        WorldTeleportForm::sendForm($p);
                     }),
                     new ClosureButton(
                         "スキル設定 \n§7掘った時に発動するスキルを設定できます", null, function (Player $p) use ($store) {
@@ -121,44 +119,6 @@ class MenuForm
                 );
             $p->sendForm($form);
         });
-    }
-
-    static function sendWorldTeleportForm(Player $p): void
-    {
-        $form = (new SimpleForm())
-            ->setTitle("Menu -> World")
-            ->setText("移動するワールドを選択してください")
-            ->addElements(
-                new ClosureButton(
-                    "ロビー", null, function (Player $p) {
-                    AccountService::teleport($p, "lobby");
-                }),
-                new ClosureButton(
-                    "ショップ", null, function (Player $p) {
-                    if (CoralReefPlugin::$plugin->isMain) {
-                        AccountService::teleport($p, "shop");
-                    } else {
-                        $p->sendMessage("ショップは整地サーバー1のみです");
-                    }
-                }),
-                new ClosureButton(
-                    "整地ワールド1", null, function (Player $p) {
-                    AccountService::teleport($p, "main_1");
-                }),
-                new ClosureButton(
-                    "整地ワールド2", null, function (Player $p) {
-                    AccountService::teleport($p, "main_2");
-                }),
-                new ClosureButton(
-                    "よくある質問", null, function (Player $p) {
-                    if (CoralReefPlugin::$plugin->isMain) {
-                        AccountService::teleport($p, "lobby", new Vector3(-7, 5, 328));
-                    } else {
-                        $p->sendMessage("よくある質問は整地サーバー1のみです");
-                    }
-                }),
-            );
-        $p->sendForm($form);
     }
 
     private static function sendRandomWarpForm(SQLRepository $repo, AccountStore $store, Player $p): void
