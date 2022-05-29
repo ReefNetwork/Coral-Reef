@@ -83,14 +83,11 @@ class BreakService
                 }
                 for ($nowY = $aabb->maxY; $nowY >= $aabb->minY; $nowY--) {
                     $bl = $p->getWorld()->getBlockAt($nowX, $nowY, $nowZ);
-                    if ($bl->getBreakInfo()->getHardness() < 0 || $origin->equals($bl->getPosition())) continue;
-                    var_dump("前" . $bl);
                     if (!$isNoFreeze && $bl instanceof Liquid) {
-                        var_dump("置き換え");
                         $freezeBlock->position($p->getWorld(), $nowX, $nowY, $nowZ);
                         $bl = $freezeBlock;
                     }
-                    var_dump($bl);
+                    if ($bl->getBreakInfo()->getHardness() < 0 || $origin->equals($bl->getPosition())) continue;
                     $session->breakBlock();
                     $user->addXp($p, ServerUpdateTask::$exp_buff);
                     MoneyService::addMoney($repo, $p->getXuid(), 1);
