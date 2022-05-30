@@ -8,6 +8,9 @@
       "email": "mail@ree-jp.net"
     }
   ],
+  "require": {
+    "ext-mbstring": "*"
+  },
   "require-dev": {
     "ext-pdo": "*",
     "ext-yaml": "*",
@@ -18,8 +21,7 @@
     "sof3/libasynql": "4.0.*",
     "sof3/await-generator": "3.4.*",
     "ree_jp_minecraft/invmenu": "4.3.*",
-    "ree_jp/stackstorage": "dev-master",
-    "ext-mbstring": "*"
+    "ree_jp/stackstorage": "dev-master"
   },
   "repositories": [
     {

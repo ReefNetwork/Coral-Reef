@@ -48,7 +48,6 @@ class AccountService
         $repo->setUser($xuid, $p->getName(), $p->getNetworkSession()->getIp());
         QuestManager::updateQuests($repo, $store, $xuid);
         GiftService::checkAllExpired($repo, $xuid);
-        SettingManager::updateNickName($repo, $p);
         SettingManager::updateShowCoordinates($repo, $p);
         SettingManager::updateOption($repo, $p, SettingConst::SNEAK_SKILL);
         SettingManager::updateOption($repo, $p, SettingConst::HIDE_SERVER_TIP);

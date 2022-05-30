@@ -48,7 +48,10 @@ class UserAccount
         $this->name = $name;
         $this->experience = $experience;
         $this->setLevelAndNecessaryExperience();
-        $this->skill = SkillManager::getSkill($skill);
+        $skillInst = SkillManager::getSkill($skill);
+        if ($skillInst > $this->level) {
+            $this->skill = null;
+        } else $this->skill = $skillInst;
     }
 
     function save(RepositoryPool $pool, Player $p): Generator

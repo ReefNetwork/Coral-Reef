@@ -117,17 +117,6 @@ class SettingForm
                         );
                     }
                 ),
-                new ClosureButton(
-                    "ニックネーム", null,
-                    function (Player $p) use ($repo) {
-                        self::sendInputForm($repo, $p, "ニックネームを設定できます\n無効にするにはニックネームを空白に設定してください", 'ニックネーム',
-                            'せいちのかみ', SettingConst::NICK_NAME, 10, function () use ($repo, $p) {
-                                $p->sendMessage('設定を保存しました');
-                                SettingManager::updateNickName($repo, $p);
-                            }
-                        );
-                    }
-                ),
             );
         $p->sendForm($form);
     }
