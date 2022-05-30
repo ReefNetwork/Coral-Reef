@@ -16,7 +16,6 @@ use pocketmine\network\mcpe\protocol\GameRulesChangedPacket;
 use pocketmine\network\mcpe\protocol\types\BoolGameRule;
 use pocketmine\player\Player;
 use pocketmine\Server;
-use pocketmine\utils\TextFormat;
 use poggit\libasynql\SqlError;
 use ree_jp\coral_reef\sql\SettingConst;
 use ree_jp\coral_reef\sql\SQLConst;
@@ -25,23 +24,6 @@ use ree_jp\coral_reef\sql\SQLRepository;
 class SettingManager
 {
     static array $settingCache = [];
-
-    static function updateNickName(SQLRepository $repo, Player $p): void
-    {
-        $repo->getValue($p->getXuid(), SQLConst::TYPE_SETTINGS, SettingConst::NICK_NAME,
-            function (array $rows) use ($p) {
-                if (!$p->isOnline()) return;
-
-                $row = array_shift($rows);
-                if (!isset($row['value'])) return;
-                $nick = $row['value'];
-                $p->sendMessage(TextFormat::GRAY . "現在のユーザーネームは" . $nick . "に設定されています");
-                $p->setDisplayName($nick . TextFormat::DARK_GRAY . "(" . $p->getName() . ")" . TextFormat::RESET);
-            }, function (SqlError $error) use ($p) {
-                $p->sendMessage('ニックネームを読み込み中にエラーが発生しました');
-                Server::getInstance()->getLogger()->warning("[setting nick]" . $error->getMessage());
-            });
-    }
 
     static function updateShowCoordinates(SQLRepository $repo, Player $p): void
     {
