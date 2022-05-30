@@ -29,7 +29,7 @@ runs:
         path: install_plugins
 
     - name: deploy
-      uses: sand4rt/ftp-deployer@v1.3
+      uses: sand4rt/ftp-deployer@v1.4
       with:
         sftp: true
         host: ${{ inputs.host }}
