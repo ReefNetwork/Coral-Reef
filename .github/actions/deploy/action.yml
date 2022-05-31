@@ -37,5 +37,5 @@ runs:
         username: ${{ inputs.user }}
         password: ${{ inputs.pass }}
         remote_folder: /install_plugins/
-        local_folder: ./install_plugins/
+        local_folder: ./install_plugin/
         cleanup: false
