@@ -49,7 +49,7 @@ class UserAccount
         $this->experience = $experience;
         $this->setLevelAndNecessaryExperience();
         $skillInst = SkillManager::getSkill($skill);
-        if ($skillInst > $this->level) {
+        if ($skillInst->needLevel > $this->level) {
             $this->skill = null;
         } else $this->skill = $skillInst;
     }
