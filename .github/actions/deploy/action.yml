@@ -20,13 +20,13 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - run: mkdir -p ~/install_plugins
+    - run: mkdir -p ~/install_plugin
       shell: bash
     - name: download
       uses: actions/download-artifact@v3
       with:
         name: ${{ inputs.artifact_name }}
-        path: install_plugins
+        path: install_plugin
 
     - name: deploy
       uses: sand4rt/ftp-deployer@v1.4
