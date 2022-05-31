@@ -66,7 +66,7 @@ class WorldTeleportForm
         $x = new Input("移動したいX座標を入力してください", "数字");
         $y = new Input("移動したいY座標を入力してください(埋まらない位置を指定してください)", "数字");
         $z = new Input("移動したいZ座標を入力してください", "数字");
-        $form = new ClosureCustomForm(function () use ($p, $x, $y, $z, $worldSelect): void {
+        $form = new ClosureCustomForm(function () use ($p, $x, $y, $z, $worldSelect, $worlds): void {
             if (!isset($worlds[$worldSelect->getValue()])) {
                 $p->sendMessage("エラーが発生しました");
                 return;
