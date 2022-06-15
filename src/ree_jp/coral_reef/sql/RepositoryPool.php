@@ -16,6 +16,7 @@ use poggit\libasynql\DataConnector;
 use poggit\libasynql\libasynql;
 use poggit\libasynql\SqlError;
 use ree_jp\coral_reef\CoralReefPlugin;
+use ree_jp\coral_reef\sql\repo\Repository;
 use RuntimeException;
 
 class RepositoryPool

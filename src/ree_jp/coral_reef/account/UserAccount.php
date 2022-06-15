@@ -25,7 +25,7 @@ use ree_jp\coral_reef\skill\BreakSkill;
 use ree_jp\coral_reef\skill\SkillManager;
 use ree_jp\coral_reef\sql\model\PlayerData;
 use ree_jp\coral_reef\sql\mysql\SQLRepository;
-use ree_jp\coral_reef\sql\PlayerRepository;
+use ree_jp\coral_reef\sql\repo\PlayerRepository;
 use ree_jp\coral_reef\sql\RepositoryPool;
 use ree_jp\reef_edge\ReefEdgePlugin;
 use ree_jp\reef_edge\socket\SocketData;

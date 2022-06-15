@@ -30,7 +30,7 @@ use ree_jp\coral_reef\skill\SkillManager;
 use ree_jp\coral_reef\skill\TreeBreakService;
 use ree_jp\coral_reef\sql\model\PlayerData;
 use ree_jp\coral_reef\sql\mysql\SQLRepository;
-use ree_jp\coral_reef\sql\PlayerRepository;
+use ree_jp\coral_reef\sql\repo\PlayerRepository;
 use ree_jp\coral_reef\sql\RepositoryPool;
 use ree_jp\coral_reef\sql\SettingConst;
 use ree_jp\coral_reef\task\ServerUpdateTask;

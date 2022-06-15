@@ -41,7 +41,7 @@ use ree_jp\coral_reef\session\SessionStore;
 use ree_jp\coral_reef\shop\ShopStore;
 use ree_jp\coral_reef\sql\mysql\MysqlPlayerDataRepo;
 use ree_jp\coral_reef\sql\mysql\SQLRepository;
-use ree_jp\coral_reef\sql\PlayerRepository;
+use ree_jp\coral_reef\sql\repo\PlayerRepository;
 use ree_jp\coral_reef\sql\RepositoryPool;
 use ree_jp\coral_reef\task\DataSaveTask;
 use ree_jp\coral_reef\task\EffectTask;
