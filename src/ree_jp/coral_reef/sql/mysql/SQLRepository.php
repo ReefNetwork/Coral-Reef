@@ -24,7 +24,7 @@ use ree_jp\coral_reef\CoralReefPlugin;
 use ree_jp\coral_reef\land\LandData;
 use ree_jp\coral_reef\money\MoneyCache;
 use ree_jp\coral_reef\session\SessionData;
-use ree_jp\coral_reef\sql\Repository;
+use ree_jp\coral_reef\sql\repo\Repository;
 use ree_jp\coral_reef\sql\RepositoryPool;
 use ree_jp\coral_reef\sql\SQLConst;
 use ree_jp\reef_edge\ReefEdgePlugin;
