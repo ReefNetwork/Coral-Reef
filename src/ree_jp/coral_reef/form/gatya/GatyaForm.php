@@ -62,6 +62,11 @@ class GatyaForm
                             GatyaHistoryForm::sendForm($p, $repo);
                         }
                     ),
+                    new ClosureButton("ガチャとは", null,
+                        function (Player $p) {
+                            $p->getServer()->dispatchCommand($p, "exe-p wp-view category 110");
+                        }
+                    ),
                 );
             $p->sendForm($form);
         });
@@ -85,8 +90,12 @@ class GatyaForm
         return str_replace(SQLConst::TICKETS_CHRISTMAS_2021, "クリスマスガチャチケット", $text);
     }
 
-    private static function sendGatyaConfirmForm(SQLRepository $repo, Player $p, string $ticketType, int $num, int $tickets)
+    private static function sendGatyaConfirmForm(SQLRepository $repo, Player $p, string $ticketType, int $num, int $tickets): void
     {
+        if ($num > 50) {
+            $p->sendMessage("50連が限界です");
+            return;
+        }
         $after = $tickets - $num;
         $form = new ModalForm(
             new ClosureButton(

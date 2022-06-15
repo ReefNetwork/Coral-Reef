@@ -36,7 +36,7 @@ class ScoreBoardService
         $pk = new SetDisplayObjectivePacket();
         $pk->displaySlot = self::object;
         $pk->objectiveName = self::board;
-        $pk->displayName = TextFormat::GREEN . "Reef " . TextFormat::YELLOW . "Server " . TextFormat::DARK_GRAY . CoralReefPlugin::$serverID;
+        $pk->displayName = TextFormat::GREEN . "Reef " . TextFormat::YELLOW . "Server " . TextFormat::DARK_GRAY . CoralReefPlugin::$server;
         $pk->criteriaName = "dummy";
         $pk->sortOrder = 0;
         $p->getNetworkSession()->sendDataPacket($pk);
@@ -64,7 +64,7 @@ class ScoreBoardService
 
         if ($store->hasValue($p->getXuid(), "wait_action")) {
             self::setScore($pk, 11, "現在処理中です....");
-            self::setScore($pk, 11, "数秒たってもこの状態の場合は");
+            self::setScore($pk, 12, "数秒たってもこの状態の場合は");
             self::setScore($pk, 13, "/lobbyでリログをお願いします");
         }
         if (CoralReefPlugin::$plugin->isDev) {

@@ -84,7 +84,7 @@ class DataSaveTask extends Task
                 break;
             case 5:
                 Server::getInstance()->broadcastMessage(TextFormat::GRAY . "5秒後に再起動を行います");
-                SocketService::sendBroadcastMessage(ReefEdgePlugin::$socketClient, CoralReefPlugin::$serverID . "サーバーを§c定期再起動§rします...");
+                SocketService::sendBroadcastMessage(ReefEdgePlugin::$socketClient, CoralReefPlugin::$server . "サーバーを§c定期再起動§rします...");
                 break;
         }
         if ($this->timer < 0) {
