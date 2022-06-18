@@ -14,8 +14,9 @@ namespace ree_jp\coral_reef\account;
 use pocketmine\scheduler\ClosureTask;
 use ree_jp\coral_reef\CoralReefPlugin;
 use ree_jp\coral_reef\sql\mysql\SQLRepository;
+use ree_jp\coral_reef\Store;
 
-class AccountStore
+class AccountStore implements Store
 {
     public array $users = [];
     private array $values = array();

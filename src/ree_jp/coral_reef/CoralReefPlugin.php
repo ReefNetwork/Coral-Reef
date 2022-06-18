@@ -34,14 +34,19 @@ use ree_jp\coral_reef\command\TrashCommand;
 use ree_jp\coral_reef\gatya\items\ReefItems;
 use ree_jp\coral_reef\item\CustomItemService;
 use ree_jp\coral_reef\land\LandStore;
+use ree_jp\coral_reef\listener\CommonListener;
 use ree_jp\coral_reef\money\MoneyCache;
 use ree_jp\coral_reef\proxy\SocketHandler;
 use ree_jp\coral_reef\quest\QuestListener;
 use ree_jp\coral_reef\session\SessionStore;
 use ree_jp\coral_reef\shop\ShopStore;
 use ree_jp\coral_reef\sql\mysql\MysqlPlayerDataRepo;
+use ree_jp\coral_reef\sql\mysql\MysqlUserRepo;
+use ree_jp\coral_reef\sql\mysql\MysqlWarpRepo;
 use ree_jp\coral_reef\sql\mysql\SQLRepository;
 use ree_jp\coral_reef\sql\repo\PlayerRepository;
+use ree_jp\coral_reef\sql\repo\UserRepository;
+use ree_jp\coral_reef\sql\repo\WarpRepository;
 use ree_jp\coral_reef\sql\RepositoryPool;
 use ree_jp\coral_reef\task\DataSaveTask;
 use ree_jp\coral_reef\task\EffectTask;
@@ -59,11 +64,8 @@ class CoralReefPlugin extends PluginBase
     public bool $isMain = false;
 
     private SQLRepository $sqlRepo;
-    private AccountStore $accountStore;
-    private LandStore $landStore;
-    private ShopStore $shopStore;
-    private SessionStore $sessionStore;
     public RepositoryPool $pool;
+    public StoreHouse $store;
 
     public function onLoad(): void
     {
@@ -82,24 +84,32 @@ class CoralReefPlugin extends PluginBase
             InvMenuHandler::register($this);
         }
         date_default_timezone_set('Asia/Tokyo');
-        $this->accountStore = new AccountStore();
+        $this->store = new StoreHouse();
+        $this->store->register(new AccountStore(), AccountStore::class);
+        $this->store->register(new ShopStore($this->getDataFolder()), ShopStore::class);
+        $this->store->register(new SessionStore(), SessionStore::class);
+
         $this->initRepository();
-        $this->landStore = new LandStore($this->sqlRepo);
-        $this->shopStore = new ShopStore($this->getDataFolder());
-        $this->sessionStore = new SessionStore();
+        /** @var SQLRepository */
+        $sqlRepo = $this->pool->get(SQLRepository::class);
+        $this->store->register(new LandStore($sqlRepo), LandStore::class);
 
         $this->registerCommands();
         $this->registerListeners();
         $this->registerSchedules();
         $this->registerRecipe();
         $this->loadWorlds();
-        SocketHandler::register(ReefEdgePlugin::$socketHandler, $this->pool, $this->accountStore);
+
+        /** @var AccountStore */
+        $accountStore = $this->store->get(AccountStore::class);
+
+        SocketHandler::register(ReefEdgePlugin::$socketHandler, $this->pool, $accountStore);
         ReefEdgePlugin::$isSocketStartUp = true;
         if (isset(ReefEdgePlugin::$socketClient) && !ReefEdgePlugin::$socketClient->isConnected()) {
             ReefEdgePlugin::$socketClient->connect();
         }
 
-        $this->accountStore->updateUserNameList($this->sqlRepo);
+        $accountStore->updateUserNameList($this->sqlRepo);
         ReefItems::registerAll();
         CustomItemService::registerAll();
         $this->pluginInformation();
@@ -121,32 +131,47 @@ class CoralReefPlugin extends PluginBase
 
     private function registerListeners(): void
     {
-        $this->getServer()->getPluginManager()->registerEvents(new EventListener($this->pool, $this->accountStore, $this->landStore,
-            $this->shopStore, $this->sessionStore), $this);
+        /** @var AccountStore */
+        $accountStore = $this->store->get(AccountStore::class);
+        /** @var LandStore */
+        $landStore = $this->store->get(LandStore::class);
+        /** @var ShopStore */
+        $shopStore = $this->store->get(ShopStore::class);
+        /** @var SessionStore */
+        $sessionStore = $this->store->get(SessionStore::class);
+
+        $this->getServer()->getPluginManager()->registerEvents(new EventListener($this->pool, $accountStore, $landStore,
+            $shopStore, $sessionStore), $this);
         $this->getServer()->getPluginManager()->registerEvents(new QuestListener(), $this); // クエスト用
+        $this->getServer()->getPluginManager()->registerEvents(new CommonListener($this->pool, $this->store), $this);
     }
 
     private function registerCommands(): void
     {
+        /** @var AccountStore */
+        $accountStore = $this->store->get(AccountStore::class);
+        /** @var LandStore */
+        $landStore = $this->store->get(LandStore::class);
+
         $this->getServer()->getCommandMap()->registerAll("reef", [
-            new MenuCommand($this, $this->sqlRepo, $this->accountStore),
-            new BlockLogCommand($this, $this->accountStore),
+            new MenuCommand($this, $this->sqlRepo, $accountStore),
+            new BlockLogCommand($this, $accountStore),
             new TrashCommand($this),
             new ReefCommand($this),
-            new ReefAdminCommand($this, $this->sqlRepo, $this->accountStore, $this->landStore),
-            new ReefConsoleCommand($this, $this->sqlRepo, $this->accountStore),
-            new ReefFormCommand($this, $this->sqlRepo, $this->accountStore, $this->landStore),
+            new ReefAdminCommand($this, $this->sqlRepo, $accountStore, $landStore),
+            new ReefConsoleCommand($this, $this->sqlRepo, $accountStore),
+            new ReefFormCommand($this, $this->sqlRepo, $accountStore, $landStore),
         ]);
     }
 
     private function registerSchedules(): void
     {
         $this->getScheduler()->scheduleRepeatingTask(new SendServerTipTask(), 15);
-        $this->getScheduler()->scheduleRepeatingTask(new DataSaveTask($this->pool, $this->accountStore), 20);
+        $this->getScheduler()->scheduleRepeatingTask(new DataSaveTask($this->pool, $this->store), 20);
         $this->getScheduler()->scheduleRepeatingTask(new EffectTask(), 200);
         $this->getScheduler()->scheduleRepeatingTask(new ServerUpdateTask($this->sqlRepo), 200);
         $this->getScheduler()->scheduleRepeatingTask(new ClosureTask(function (): void {
-            foreach (Server::getInstance()->getOnlinePlayers() as $p) ScoreBoardService::sendScoreBoard($this->accountStore, $p);
+            foreach (Server::getInstance()->getOnlinePlayers() as $p) ScoreBoardService::sendScoreBoard($this->store, $p);
         }), 15);
         $this->getScheduler()->scheduleRepeatingTask(new ClosureTask(function (): void {
             MoneyCache::purgeAll($this->sqlRepo);
@@ -187,9 +212,11 @@ class CoralReefPlugin extends PluginBase
         $this->getLogger()->info("[SQL] サーバーに接続中...");
         $this->pool = new RepositoryPool($this, $this->getDataFolder());
         $this->getLogger()->info("[SQL] 準備しています");
-        $this->sqlRepo = new SQLRepository($this->pool, $this->accountStore, $isInit);
+        $this->sqlRepo = new SQLRepository($this->pool, $isInit);
         $this->pool->register($this->sqlRepo, SQLRepository::class);
-        $this->pool->register(new MysqlPlayerDataRepo($this->pool, true), PlayerRepository::class);
+        $this->pool->register(new MysqlPlayerDataRepo($this->pool, $isInit), PlayerRepository::class);
+        $this->pool->register(new MysqlUserRepo($this->pool, $isInit), UserRepository::class);
+        $this->pool->register(new MysqlWarpRepo($this->pool, $isInit), WarpRepository::class);
         $this->pool->getConnection()->waitAll();
         $this->getLogger()->info("[SQL] 完了しました");
     }

@@ -12,14 +12,9 @@
 namespace ree_jp\coral_reef\sql\mysql;
 
 use Closure;
-use Generator;
-use pocketmine\player\Player;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat;
 use poggit\libasynql\SqlError;
-use ree_jp\coral_reef\account\AccountService;
-use ree_jp\coral_reef\account\AccountStore;
-use ree_jp\coral_reef\account\UserAccount;
 use ree_jp\coral_reef\CoralReefPlugin;
 use ree_jp\coral_reef\land\LandData;
 use ree_jp\coral_reef\money\MoneyCache;
@@ -27,16 +22,10 @@ use ree_jp\coral_reef\session\SessionData;
 use ree_jp\coral_reef\sql\repo\Repository;
 use ree_jp\coral_reef\sql\RepositoryPool;
 use ree_jp\coral_reef\sql\SQLConst;
-use ree_jp\reef_edge\ReefEdgePlugin;
-use ree_jp\reef_edge\socket\SocketService;
-use SOFe\AwaitGenerator\Await;
 
 class SQLRepository implements Repository
 {
-    public array $setting = [];
-    public string $server;
-
-    public function __construct(private RepositoryPool $pool, private AccountStore $accountStore, bool $isInit)
+    public function __construct(private RepositoryPool $pool, bool $isInit)
     {
         if ($isInit) {
             $this->createFunction();
@@ -50,61 +39,6 @@ class SQLRepository implements Repository
     public function close(): void
     {
         MoneyCache::purgeAll($this);
-    }
-
-    public function loadUser(Player $p): void
-    {
-        $xuid = $p->getXuid();
-
-        // ユーザーデータを読み込む
-        $this->accountStore->setValue($xuid, "wait_action");
-        $p->setImmobile();
-        $await = [];
-        $await[] = Await::promise(fn($func) => $this->pool->getConnection()->executeSelect('coral_reef.user.get', ['xuid' => intval($p->getXuid())],
-            function (array $rows) use ($func, $p) {
-                if (!$p->isOnline()) return;
-
-                $xuid = $p->getXuid();
-                $name = $p->getName();
-                $arrayAccount = array_shift($rows);
-                if (isset($arrayAccount['xuid']) && isset($arrayAccount['name']) && isset($arrayAccount['experience'])) {
-                    $skill = $arrayAccount['skill'] ?? null;
-                    $account = new UserAccount($arrayAccount['xuid'], $arrayAccount['name'], intval($arrayAccount['experience']), $skill);
-                    $this->accountStore->users[$account->xuid] = $account;
-                } elseif (empty($arrayAccount)) { // データが存在しないとき新しくデータを作る
-                    $this->accountStore->users[$xuid] = new UserAccount($xuid, $name, 0, null);
-                    SocketService::sendBroadcastMessage(ReefEdgePlugin::$socketClient, TextFormat::AQUA . $name . "さんが初めてサーバーにログインしました");
-                } else { // データ壊れてるよ
-                    Server::getInstance()->getLogger()->warning($xuid . 'のデータの読み込みに失敗しました');
-                    $p->kick("\n§cデータの読み込みに失敗しました");
-                    return;
-                }
-                $func();
-            }));
-
-        $await[] = Await::promise(fn($func) => $this->getAllSubtypeValue($xuid, SQLConst::TYPE_SETTINGS,
-            function (array $rows) use ($func, $xuid) {
-                /** @noinspection PhpUndefinedVariableInspection */
-                foreach ($rows as $option) {
-                    if (array_key_exists("subtype", $option) && array_key_exists("value", $option)) {
-                        $this->setting[$xuid][$option["subtype"]] = $option["value"];
-                    } else {
-                        Server::getInstance()->getLogger()->warning($xuid . "の設定の読み込みに失敗しました");
-                    }
-                }
-                $func();
-            }));
-        $await[] = AccountService::loadPlayerData($this->pool, $p);
-        Await::f2c(function () use ($p, $await): Generator {
-            yield Await::all($await);
-            if (!$p->isConnected()) return;
-
-            // データ読み込めたら動けるように
-            $p->setImmobile(false);
-            $this->accountStore->setValue($p->getXuid(), "wait_action", 0);
-            yield AccountService::warpAutoSavePoint($this->pool, $p);
-            $p->sendMessage("データを読み込みました");
-        });
     }
 
     public function getAllUser(Closure $func): void
@@ -192,26 +126,6 @@ class SQLRepository implements Repository
     {
         $this->pool->getConnection()->executeGeneric('coral_reef.values.delete', ['xuid' => intval($xuid), 'type' => strtolower($type), 'subtype' => strtolower($subtype)],
             $func, $failure);
-    }
-
-    public function getWarps(string $xuid, ?Closure $func): void
-    {
-        $this->pool->getConnection()->executeSelect('coral_reef.warp.get', ['xuid' => intval($xuid), 'server' => CoralReefPlugin::$serverID],
-            $func, $this->noticeByXUid($xuid, '§c >> エラーが発生しました'));
-    }
-
-    public function addWarp(string $xuid, string $name, string $level, int $x, int $y, int $z, ?Closure $func): void
-    {
-        if ($func == null) $func = $this->noticeByXUid($xuid, '§aワープ地点を作成しました');
-        $this->pool->getConnection()->executeInsert('coral_reef.warp.create',
-            ['xuid' => intval($xuid), 'name' => $name, 'server' => CoralReefPlugin::$serverID, 'level' => $level, 'x' => $x, 'y' => $y, 'z' => $z],
-            $func, $this->noticeByXUid($xuid, '§cワープ地点の作成中にエラーが発生しました'));
-    }
-
-    public function deleteWarp(string $xuid, string $name): void
-    {
-        $this->pool->getConnection()->executeGeneric('coral_reef.warp.delete', ['xuid' => intval($xuid), 'name' => $name, 'server' => CoralReefPlugin::$serverID],
-            $this->noticeByXUid($xuid, '§a >> ワープ地点を削除しました'), $this->noticeByXUid($xuid, '§c >> エラーが発生しました'));
     }
 
     public function loadProtectLand(Closure $func, Closure $failure): void

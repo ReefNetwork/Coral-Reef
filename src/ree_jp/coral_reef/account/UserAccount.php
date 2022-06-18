@@ -17,6 +17,7 @@ use Generator;
 use pocketmine\player\Player;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat;
+use pocketmine\world\Position;
 use pocketmine\world\sound\XpLevelUpSound;
 use ree_jp\coral_reef\CoralReefPlugin;
 use ree_jp\coral_reef\quest\QuestListener;
@@ -24,8 +25,10 @@ use ree_jp\coral_reef\quest\QuestManager;
 use ree_jp\coral_reef\skill\BreakSkill;
 use ree_jp\coral_reef\skill\SkillManager;
 use ree_jp\coral_reef\sql\model\PlayerData;
+use ree_jp\coral_reef\sql\model\WarpPoint;
 use ree_jp\coral_reef\sql\mysql\SQLRepository;
 use ree_jp\coral_reef\sql\repo\PlayerRepository;
+use ree_jp\coral_reef\sql\repo\WarpRepository;
 use ree_jp\coral_reef\sql\RepositoryPool;
 use ree_jp\reef_edge\ReefEdgePlugin;
 use ree_jp\reef_edge\socket\SocketData;
@@ -65,12 +68,13 @@ class UserAccount
         $sqlRepo = $pool->get(SQLRepository::class);
         /** @var PlayerRepository */
         $playerRepo = $pool->get(PlayerRepository::class);
+        /** @var WarpRepository */
+        $warpRepo = $pool->get(WarpRepository::class);
 
         $await = [];
         try {
-            $await[] = Await::promise(fn($func) => $sqlRepo->addWarp($p->getXuid(), "自動セーブ(" . CoralReefPlugin::$server . ")",
-                $p->getWorld()->getFolderName(), $p->getPosition()->getFloorX(), $p->getPosition()->getFloorY(),
-                $p->getPosition()->getFloorZ(), $func));
+            $await[] = $warpRepo->setWarp(new WarpPoint($p->getXuid(), "自動セーブ(" . CoralReefPlugin::$server . ")", CoralReefPlugin::$serverID,
+                new Position($p->getPosition()->getFloorX(), $p->getPosition()->getFloorY(), $p->getPosition()->getFloorZ(), $p->getWorld())));
             $await[] = Await::promise(fn($func) => $sqlRepo->setXp($this->xuid, $this->experience, $func));
             $await[] = Await::promise(fn($func) => $sqlRepo->setSkill($this->xuid, $skillId, $func));
             $await[] = Await::promise(fn($func) => QuestManager::save($sqlRepo, $this->xuid, $func));
@@ -78,7 +82,7 @@ class UserAccount
             $await[] = Queue::doCache($this->xuid);
             yield Await::all($await);
         } catch (Exception $e) {
-            Server::getInstance()->getLogger()->error($this->name . 'のデータ保存に失敗しました' . $e->getMessage());
+            Server::getInstance()->getLogger()->error($this->name . "のデータ保存に失敗しました" . $e->getMessage());
         }
     }
 

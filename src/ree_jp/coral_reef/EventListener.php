@@ -36,12 +36,8 @@ use pocketmine\event\player\PlayerGameModeChangeEvent;
 use pocketmine\event\player\PlayerInteractEvent;
 use pocketmine\event\player\PlayerItemConsumeEvent;
 use pocketmine\event\player\PlayerItemUseEvent;
-use pocketmine\event\player\PlayerJoinEvent;
-use pocketmine\event\player\PlayerLoginEvent;
-use pocketmine\event\player\PlayerQuitEvent;
 use pocketmine\inventory\ArmorInventory;
 use pocketmine\item\ItemIds;
-use pocketmine\item\VanillaItems;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\player\Player;
 use pocketmine\scheduler\ClosureTask;
@@ -74,43 +70,7 @@ class EventListener implements Listener
     {
     }
 
-    public function onPreLogin(PlayerLoginEvent $ev): void
-    {
-        /** @var SQLRepository */
-        $sqlRepo = $this->pool->get(SQLRepository::class);
-        $sqlRepo->loadUser($ev->getPlayer());
-    }
 
-    public function onJoin(PlayerJoinEvent $ev): void
-    {
-        $p = $ev->getPlayer();
-        $xuid = $p->getXuid();
-        /** @var SQLRepository */
-        $sqlRepo = $this->pool->get(SQLRepository::class);
-
-        if ($this->accountStore->hasValue($xuid, "wait_action")) {
-            $p->sendMessage("データを確認しています...");
-        }
-        AccountService::userJoin($sqlRepo, $this->accountStore, $p);
-        $this->sessionStore->createSession($xuid);
-
-        $ev->setJoinMessage(""); // プロキシ側で参加メッセージを流す
-        $p->sendTitle(TextFormat::GREEN . 'Reef ' . TextFormat::YELLOW . 'Server');
-        if (!$p->getInventory()->contains(VanillaItems::STICK())) {
-            $p->getInventory()->addItem(VanillaItems::STICK()->setCustomName('メニューを開く'));
-        }
-    }
-
-    public function onQuit(PlayerQuitEvent $ev): void
-    {
-        $p = $ev->getPlayer();
-        /** @var SQLRepository */
-        $sqlRepo = $this->pool->get(SQLRepository::class);
-
-        AccountService::userQuit($this->pool, $this->accountStore, $p);
-        $this->sessionStore->destruction($sqlRepo, $p->getXuid());
-        $ev->setQuitMessage(""); // プロキシ側で退出メッセージを流す
-    }
 
     public function onDamage(EntityDamageEvent $ev)
     {
@@ -365,10 +325,10 @@ class EventListener implements Listener
         switch ($ev->getBlock()->getId()) {
             case BlockLegacyIds::SIGN_POST:
             case BlockLegacyIds::WALL_SIGN:
-            if ($this->accountStore->hasValue($xuid, 'form_cool_time')) return;
-            $this->accountStore->setValue($xuid, 'form_cool_time', 10);
-            ShopService::showShop($sqlRepo, $p, $this->shopStore, $ev->getBlock()->getPosition());
-            break;
+                if ($this->accountStore->hasValue($xuid, 'form_cool_time')) return;
+                $this->accountStore->setValue($xuid, 'form_cool_time', 10);
+                ShopService::showShop($sqlRepo, $p, $this->shopStore, $ev->getBlock()->getPosition());
+                break;
         }
         if (in_array($ev->getBlock()->getId(),
             [BlockLegacyIds::GRASS, BlockLegacyIds::DIRT, BlockLegacyIds::FRAME_BLOCK, BlockLegacyIds::CHEST, BlockLegacyIds::LECTERN])) {

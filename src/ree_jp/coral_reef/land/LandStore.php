@@ -17,8 +17,9 @@ use poggit\libasynql\SqlError;
 use ree_jp\coral_reef\CoralReefPlugin;
 use ree_jp\coral_reef\sql\mysql\SQLRepository;
 use ree_jp\coral_reef\sql\SQLConst;
+use ree_jp\coral_reef\Store;
 
-class LandStore
+class LandStore implements Store
 {
     /**
      * @var LandData[][]
