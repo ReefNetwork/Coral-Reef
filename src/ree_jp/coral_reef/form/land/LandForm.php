@@ -27,12 +27,16 @@ use ree_jp\coral_reef\account\AccountStore;
 use ree_jp\coral_reef\land\LandData;
 use ree_jp\coral_reef\land\LandService;
 use ree_jp\coral_reef\land\LandStore;
-use ree_jp\coral_reef\sql\mysql\SQLRepository;
+use ree_jp\coral_reef\sql\RepositoryPool;
+use ree_jp\coral_reef\StoreHouse;
 
 class LandForm
 {
-    static function sendForm(SQLRepository $repo, AccountStore $accountStore, LandStore $landStore, Player $p): void
+    static function sendForm(RepositoryPool $pool, StoreHouse $store, Player $p): void
     {
+        /** @var LandStore */
+        $landStore = $store->get(LandStore::class);
+
         $form = (new SimpleForm())
             ->setTitle("Land")
             ->setText("土地を保護できます");
@@ -41,8 +45,8 @@ class LandForm
             if ($land instanceof LandData) {
                 $button = new ClosureButton(
                     $land->name, null,
-                    function (Player $p) use ($accountStore, $landStore, $repo, $land) {
-                        LandDetailForm::sendForm($repo, $accountStore, $landStore, $land, $p);
+                    function (Player $p) use ($pool, $store, $land) {
+                        LandDetailForm::sendForm($pool, $store, $land, $p);
                     }
                 );
             } else {
@@ -52,8 +56,8 @@ class LandForm
         }
         $form->addElements(
             new ClosureButton(
-                "パーティー", null, function (Player $p) use ($landStore, $accountStore) {
-                LandPartyForm::sendForm($accountStore, $landStore, $p);
+                "パーティー", null, function (Player $p) use ($store) {
+                LandPartyForm::sendForm($store, $p);
             }),
             new ClosureButton(
                 "土地保護とは", null, function () use ($p): void {
@@ -70,18 +74,21 @@ class LandForm
         $p->sendForm($form);
     }
 
-    static function sendLandCreateAssistForm(SQLRepository $repo, AccountStore $accountStore, LandStore $landStore, Player $p, Vector3 $vec3): void
+    static function sendLandCreateAssistForm(RepositoryPool $pool, StoreHouse $store, Player $p, Vector3 $vec3): void
     {
+        /** @var LandStore */
+        $landStore = $store->get(LandStore::class);
+
         $xuid = $p->getXuid();
-        $x1 = '設定されていません';
-        $z1 = '設定されていません';
+        $x1 = "設定されていません";
+        $z1 = "設定されていません";
         if (isset($landStore->pos[$xuid][1]) && $landStore->pos[$xuid][1] instanceof Vector3) {
             $storeVec = $landStore->pos[$xuid][1];
             $x1 = $storeVec->getFloorX();
             $z1 = $storeVec->getFloorZ();
         }
-        $x2 = '設定されていません';
-        $z2 = '設定されていません';
+        $x2 = "設定されていません";
+        $z2 = "設定されていません";
         if (isset($landStore->pos[$xuid][2]) && $landStore->pos[$xuid][2] instanceof Vector3) {
             $storeVec = $landStore->pos[$xuid][2];
             $x2 = $storeVec->getFloorX();
@@ -93,8 +100,8 @@ class LandForm
             ->addElements(
                 new ClosureButton(
                     "土地保護を作成する", null,
-                    function (Player $p) use ($accountStore, $repo, $landStore, $x1, $z1, $x2, $z2) {
-                        self::sendLandCreateForm($repo, $accountStore, $landStore, $p, $x1, $z1, $x2, $z2);
+                    function (Player $p) use ($pool, $store, $x1, $z1, $x2, $z2) {
+                        self::sendLandCreateForm($pool, $store, $p, $x1, $z1, $x2, $z2);
                     }
                 ),
                 new ClosureButton(
@@ -115,15 +122,15 @@ class LandForm
         $land = LandService::getLand($landStore, Position::fromObject($vec3, $p->getWorld()));
         if (!is_null($land)) {
             $form->addElement(new ClosureButton("この土地の詳細を見る", null,
-                function () use ($land, $p, $landStore, $accountStore, $repo): void {
-                    LandDetailForm::sendForm($repo, $accountStore, $landStore, $land, $p);
+                function () use ($pool, $store, $land, $p): void {
+                    LandDetailForm::sendForm($pool, $store, $land, $p);
                 }
             ));
         }
         $p->sendForm($form);
     }
 
-    static function sendLandCreateForm(SQLRepository $repo, AccountStore $accountStore, LandStore $store, Player $p, string $x1 = '', string $z1 = '', string $x2 = '', string $z2 = ''): void
+    static function sendLandCreateForm(RepositoryPool $pool, StoreHouse $store, Player $p, string $x1 = '', string $z1 = '', string $x2 = '', string $z2 = ''): void
     {
         $landNameInput = new Input('土地の名前', '土地1', '');
         $x1Input = new Input('x座標1', '1', $x1);
@@ -131,19 +138,23 @@ class LandForm
         $x2Input = new Input('x座標2', '10', $x2);
         $z2Input = new Input('z座標2', '10', $z2);
         $form = new ClosureCustomForm(
-            function (Player $p) use ($accountStore, $repo, $store, $landNameInput, $x1Input, $z1Input, $x2Input, $z2Input) {
+            function (Player $p) use ($pool, $store, $landNameInput, $x1Input, $z1Input, $x2Input, $z2Input) {
                 if (!in_array($p->getWorld()->getFolderName(), LandService::CAN_CREATE_LAND) && !AccountService::isOp($p)) {
                     $p->sendMessage('このワールドでは土地保護が出来ません');
                     return;
                 }
-                if (is_numeric($x1Input->getValue()) && is_numeric($z1Input->getValue())
-                    && is_numeric($x2Input->getValue()) && is_numeric($z2Input->getValue())) {
+                if (!(is_numeric($x1Input->getValue()) && is_numeric($z1Input->getValue())
+                    && is_numeric($x2Input->getValue()) && is_numeric($z2Input->getValue()))) {
+                    $p->sendMessage("座標の欄には数字を入力してください");
+                } else {
                     $x1 = intval($x1Input->getValue());
                     $z1 = intval($z1Input->getValue());
                     $x2 = intval($x2Input->getValue());
                     $z2 = intval($z2Input->getValue());
                     $name = $landNameInput->getValue();
-                    if (mb_strlen($name) > 0) {
+                    if (mb_strlen($name) <= 0) {
+                        $p->sendMessage("名前が短すぎます");
+                    } else {
                         $aabb = LandService::getAabb($x1, 0, $z1, $x2, 0, $z2);
                         $land = new LandData($p->getXuid(), $name, $p->getWorld()->getFolderName(), $aabb);
                         $result = LandService::canCreateLand($store, $land);
@@ -158,13 +169,16 @@ class LandForm
                             return;
                         }
                         if (is_null($result)) {
-                            LandService::addLand($repo, $store, $land, $p);
+                            LandService::addLand($pool, $store, $land, $p);
                         } else {
+                            /** @var AccountStore */
+                            $accountStore = $store->get(AccountStore::class);
+
                             $name = $accountStore->getUserName($land->xuid);
                             $p->sendMessage("指定した土地の一部が$name さんの$result->name とかぶっていたため土地を作成することが出来ませんでした");
                         }
-                    } else $p->sendMessage('名前が短すぎます');
-                } else $p->sendMessage('座標の欄には数字を入力してください');
+                    }
+                }
             }
         );
         $form->setTitle("Land -> Create")->addElements(

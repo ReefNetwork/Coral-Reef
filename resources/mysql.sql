@@ -291,12 +291,10 @@ VALUES (:xuid, :name, :server, :level, :mx, :sx, :mz, :sz);
 -- #        { delete
 -- #        :xuid int
 -- #        :name string
--- #        :server string
 DELETE
 FROM LAND
 WHERE xuid = :xuid
-  AND name = :name
-  AND server = :server;
+  AND name = :name;
 -- #        }
 -- #    }
 -- #    { log

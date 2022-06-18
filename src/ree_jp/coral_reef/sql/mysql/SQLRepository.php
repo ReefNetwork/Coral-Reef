@@ -89,11 +89,6 @@ class SQLRepository implements Repository
             $func, $failure);
     }
 
-    public function loadProtectLand(Closure $func, Closure $failure): void
-    {
-        $this->pool->getConnection()->executeSelect('coral_reef.land.get', ['server' => CoralReefPlugin::$serverID], $func, $failure);
-    }
-
     public function addProtectLand(LandData $land, Closure $func, Closure $failure): void
     {
         $this->pool->getConnection()->executeInsert('coral_reef.land.create', ['xuid' => intval($land->xuid), 'name' => $land->name, 'server' => CoralReefPlugin::$serverID,
@@ -154,11 +149,7 @@ class SQLRepository implements Repository
 
     private function createTable(): void
     {
-        $this->pool->getConnection()->executeGeneric('coral_reef.init.tables.user');
-        $this->pool->getConnection()->executeGeneric('coral_reef.init.tables.ban');
         $this->pool->getConnection()->executeGeneric('coral_reef.init.tables.money');
-        $this->pool->getConnection()->executeGeneric('coral_reef.init.tables.warp');
-        $this->pool->getConnection()->executeGeneric('coral_reef.init.tables.land');
         $this->pool->getConnection()->executeGeneric('coral_reef.init.tables.virtual_value');
         $this->pool->getConnection()->executeGeneric('coral_reef.init.tables.log');
         $this->pool->getConnection()->executeGeneric("coral_reef.init.tables.session");

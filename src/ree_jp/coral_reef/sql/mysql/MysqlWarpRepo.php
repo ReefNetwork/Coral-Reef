@@ -40,12 +40,6 @@ class MysqlWarpRepo implements WarpRepository
         return $warps;
     }
 
-    private function setWarpPointModel(array $data): WarpPoint
-    {
-        return new WarpPoint($data["xuid"], $data["name"], $data["server"], new Position($data["x"], $data["y"], $data["z"],
-            Server::getInstance()->getWorldManager()->getWorldByName($data["level"])));
-    }
-
     public function setWarp(WarpPoint $warp): Generator
     {
         $pos = $warp->pos;
@@ -60,6 +54,12 @@ class MysqlWarpRepo implements WarpRepository
         yield from Await::promise(
             fn($resolve, $reject) => $this->pool->getConnection()->executeInsert("coral_reef.warp.delete", ["xuid" => $warp->xuid,
                 "name" => $warp->warpName, "server" => $warp->server], $resolve, $reject));
+    }
+
+    private function setWarpPointModel(array $data): WarpPoint
+    {
+        return new WarpPoint($data["xuid"], $data["name"], $data["server"], new Position($data["x"], $data["y"], $data["z"],
+            Server::getInstance()->getWorldManager()->getWorldByName($data["level"])));
     }
 
     public function close(): void
