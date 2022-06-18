@@ -14,7 +14,6 @@ namespace ree_jp\coral_reef\sql\mysql;
 use Closure;
 use pocketmine\Server;
 use ree_jp\coral_reef\CoralReefPlugin;
-use ree_jp\coral_reef\land\LandData;
 use ree_jp\coral_reef\money\MoneyCache;
 use ree_jp\coral_reef\session\SessionData;
 use ree_jp\coral_reef\sql\repo\Repository;
@@ -86,19 +85,6 @@ class SQLRepository implements Repository
     public function deleteValue(string $xuid, string $type, string $subtype, ?Closure $func, ?Closure $failure = null): void
     {
         $this->pool->getConnection()->executeGeneric('coral_reef.values.delete', ['xuid' => intval($xuid), 'type' => strtolower($type), 'subtype' => strtolower($subtype)],
-            $func, $failure);
-    }
-
-    public function addProtectLand(LandData $land, Closure $func, Closure $failure): void
-    {
-        $this->pool->getConnection()->executeInsert('coral_reef.land.create', ['xuid' => intval($land->xuid), 'name' => $land->name, 'server' => CoralReefPlugin::$serverID,
-            'level' => $land->level, 'mx' => $land->aabb->maxX, 'sx' => $land->aabb->minX, 'mz' => $land->aabb->maxZ, 'sz' => $land->aabb->minZ],
-            $func, $failure);
-    }
-
-    public function deleteProtectLand(LandData $land, Closure $func, Closure $failure): void
-    {
-        $this->pool->getConnection()->executeGeneric('coral_reef.land.delete', ['xuid' => intval($land->xuid), 'name' => $land->name, 'server' => CoralReefPlugin::$serverID],
             $func, $failure);
     }
 
