@@ -84,8 +84,10 @@ class MyWarpForm
                             (new ModalForm(
                                 new ClosureButton(
                                     "はい", null,
-                                    function () use ($repo, $warp) {
-                                        $repo->deleteWarp($warp);
+                                    function () use ($p, $repo, $warp) {
+                                        Await::g2c($repo->deleteWarp($warp), function () use ($p): void {
+                                            $p->sendMessage("削除しました");
+                                        });
                                     }
                                 ),
                                 new ClosureButton(
