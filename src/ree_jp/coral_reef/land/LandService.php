@@ -15,12 +15,10 @@ use pocketmine\math\AxisAlignedBB;
 use pocketmine\math\Vector3;
 use pocketmine\player\Player;
 use pocketmine\scheduler\ClosureTask;
-use pocketmine\Server;
 use pocketmine\utils\TextFormat;
 use pocketmine\world\particle\PortalParticle;
 use pocketmine\world\Position;
 use pocketmine\world\sound\EndermanTeleportSound;
-use poggit\libasynql\SqlError;
 use ree_jp\coral_reef\account\AccountService;
 use ree_jp\coral_reef\account\AccountStore;
 use ree_jp\coral_reef\CoralReefPlugin;
@@ -143,23 +141,17 @@ class LandService
 
     static function addLand(RepositoryPool $pool, StoreHouse $store, LandData $land, ?Player $p): void
     {
-        /** @var SQLRepository */
-        $sqlRepo = $pool->get(SQLRepository::class);
+        /** @var LandRepository */
+        $repo = $pool->get(SQLRepository::class);
         /** @var LandStore */
         $landStore = $store->get(LandStore::class);
 
-        $sqlRepo->addProtectLand($land, function () use ($landStore, $p, $land) {
+        Await::g2c($repo->setLand($land, CoralReefPlugin::$serverID), function () use ($landStore, $p, $land) {
             if (!isset($store->lands[$land->level])) $landStore->lands[$land->level] = [];
             $landStore->lands[$land->level][] = $land;
 
             if ($p instanceof Player && $p->isOnline()) {
                 $p->sendMessage($land->name . 'を作成しました');
-            }
-        }, function (SqlError $error) use ($p, $land) {
-            Server::getInstance()->getLogger()->error("[LandSQL] $land->name の作成中に" . $error->getErrorMessage());
-
-            if ($p instanceof Player && $p->isOnline()) {
-                $p->sendMessage('エラーが発生しました');
             }
         });
     }
