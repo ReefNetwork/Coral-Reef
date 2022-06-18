@@ -154,35 +154,15 @@ FROM USER
 WHERE xuid = :xuid;
 -- #        }
 -- #        { set
--- #            { account
--- #            :xuid int
--- #            :name string
--- #            :ips string
+-- #        :xuid int
+-- #        :name string
+-- #        :experience int
+-- #        :skill ?string
 INSERT INTO USER
-VALUES (:xuid, :name, :ips, 0, null)
-ON DUPLICATE KEY UPDATE name = :name,
-                        ips  = :ips;
--- #            }
--- #            { xp
--- #            :xuid int
--- #            :experience int
-UPDATE USER
-SET experience = :experience
-WHERE xuid = :xuid;
--- #            }
--- #            { skill
--- #            :xuid int
--- #            :skill ?string
-UPDATE USER
-SET skill = :skill
-WHERE xuid = :xuid;
--- #            }
--- #        }
--- #    }
--- #    { ban
--- #        { get
-SELECT *
-FROM BAN;
+VALUES (:xuid, :name, 0, 0, null)
+ON DUPLICATE KEY UPDATE name       = :name,
+                        experience = :experience,
+                        skill      = :skill;
 -- #        }
 -- #    }
 -- #    { money

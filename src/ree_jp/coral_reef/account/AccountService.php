@@ -41,7 +41,6 @@ class AccountService
         $xuid = $p->getXuid();
         $store->setValue($xuid, "skill_cool_time", 0);
 
-        $repo->setUser($xuid, $p->getName(), $p->getNetworkSession()->getIp());
         QuestManager::updateQuests($repo, $store, $xuid);
         GiftService::checkAllExpired($repo, $xuid);
         SettingManager::updateShowCoordinates($repo, $p);

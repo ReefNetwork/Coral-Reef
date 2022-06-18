@@ -13,8 +13,6 @@ namespace ree_jp\coral_reef\sql\mysql;
 
 use Closure;
 use pocketmine\Server;
-use pocketmine\utils\TextFormat;
-use poggit\libasynql\SqlError;
 use ree_jp\coral_reef\CoralReefPlugin;
 use ree_jp\coral_reef\land\LandData;
 use ree_jp\coral_reef\money\MoneyCache;
@@ -31,8 +29,7 @@ class SQLRepository implements Repository
             $this->createFunction();
             $this->createTable();
 
-            // サーバーアカウントを作成(初期スポーンの保護などに使う)
-            $this->setUser("0", TextFormat::GREEN . "Reef " . TextFormat::YELLOW . "Server" . TextFormat::RESET, "0.0.0.0");
+
         }
     }
 
@@ -44,42 +41,6 @@ class SQLRepository implements Repository
     public function getAllUser(Closure $func): void
     {
         $this->pool->getConnection()->executeSelect("coral_reef.user.all", [], $func);
-    }
-
-    public function setUser(string $xuid, string $name, string $ip): void
-    {
-        $this->pool->getConnection()->executeSelect('coral_reef.user.get_ip', ['xuid' => intval($xuid)], function (array $rows) use ($ip, $name, $xuid) {
-            // 新しいipアドレスからのログインだったら記録する
-            $row = array_shift($rows);
-            $ips = [];
-            if (isset($row['ips'])) {
-                $ips = explode(':', $row['ips']);
-            }
-            if (!in_array($ip, $ips)) $ips[] = $ip;
-            $this->pool->getConnection()->executeInsert('coral_reef.user.set.account',
-                ['xuid' => intval($xuid), 'name' => $name, 'ips' => implode(':', $ips)], null,
-                function (SqlError $error) use ($name) {
-                    Server::getInstance()->getLogger()->error("[SQL] $name のデータ保存中に" . $error->getErrorMessage());
-                });
-        }, function (SqlError $error) use ($name) {
-            Server::getInstance()->getLogger()->error("[SQL] $name のip取得中に" . $error->getErrorMessage());
-        });
-    }
-
-    public function setXp(string $xuid, string $experience, ?Closure $func): void
-    {
-        $this->pool->getConnection()->executeGeneric('coral_reef.user.set.xp', ['xuid' => intval($xuid), 'experience' => intval($experience)], $func,
-            function (SqlError $error) use ($xuid) {
-                Server::getInstance()->getLogger()->error("[SQL] $xuid のxp保存中に" . $error->getErrorMessage());
-            });
-    }
-
-    public function setSkill(string $xuid, ?string $skill, ?Closure $func): void
-    {
-        $this->pool->getConnection()->executeGeneric('coral_reef.user.set.skill', ['xuid' => intval($xuid), 'skill' => $skill], $func,
-            function (SqlError $error) use ($xuid) {
-                Server::getInstance()->getLogger()->error("[SQL] $xuid のスキル保存中に" . $error->getErrorMessage());
-            });
     }
 
     public function getMoney(string $xuid, ?Closure $func, ?Closure $failure = null): void
