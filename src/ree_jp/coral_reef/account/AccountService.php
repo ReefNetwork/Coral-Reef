@@ -13,13 +13,11 @@ namespace ree_jp\coral_reef\account;
 
 
 use Exception;
-use Generator;
 use pocketmine\block\Block;
 use pocketmine\math\Vector3;
 use pocketmine\player\Player;
 use pocketmine\Server;
 use pocketmine\world\Position;
-use ree_jp\coral_reef\CoralReefPlugin;
 use ree_jp\coral_reef\land\LandStore;
 use ree_jp\coral_reef\money\MoneyCache;
 use ree_jp\coral_reef\money\MoneyService;
@@ -28,9 +26,7 @@ use ree_jp\coral_reef\session\SessionData;
 use ree_jp\coral_reef\skill\BreakSkill;
 use ree_jp\coral_reef\skill\SkillManager;
 use ree_jp\coral_reef\skill\TreeBreakService;
-use ree_jp\coral_reef\sql\model\PlayerData;
 use ree_jp\coral_reef\sql\mysql\SQLRepository;
-use ree_jp\coral_reef\sql\repo\PlayerRepository;
 use ree_jp\coral_reef\sql\RepositoryPool;
 use ree_jp\coral_reef\sql\SettingConst;
 use ree_jp\coral_reef\task\ServerUpdateTask;
@@ -172,36 +168,6 @@ class AccountService
             $p->setFlying(false);
             $p->setAllowFlight(false);
             $p->sendPopup("このワールドでは飛行することはできません");
-        }
-    }
-
-    static function loadPlayerData(RepositoryPool $pool, Player $p): Generator
-    {
-        /** @var PlayerRepository */
-        $repo = $pool->get(PlayerRepository::class);
-        $data = yield from $repo->getPlayerData($p->getXuid());
-        if (!$data instanceof PlayerData) return;
-        $p->getInventory()->setContents($data->inv);
-        $p->getArmorInventory()->setContents($data->armorInv);
-        $p->getOffHandInventory()->setContents($data->offHandInv);
-        $p->getEnderInventory()->setContents($data->enderInv);
-        $p->getEffects()->clear();
-        foreach ($data->effects as $effect) {
-            $p->getEffects()->add($effect);
-        }
-        $p->setHealth($data->health);
-        $p->getHungerManager()->setFood($data->hunger);
-        $p->getXpManager()->addXp($data->xp);
-    }
-
-    static function warpAutoSavePoint(RepositoryPool $pool, Player $p): Generator
-    {
-        /** @var SQLRepository */
-        $repo = $pool->get(SQLRepository::class);
-        $warps = yield from Await::promise(fn($resolve) => $repo->getWarps($p->getXuid(), $resolve));
-        foreach ($warps as $warp) {
-            if ($warp["name"] != "自動セーブ(" . CoralReefPlugin::$server . ")") continue;
-            self::teleport($p, $warp['level'], new Vector3($warp['x'], $warp['y'], $warp['z']));
         }
     }
 }

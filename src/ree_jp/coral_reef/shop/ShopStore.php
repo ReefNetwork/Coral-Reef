@@ -17,8 +17,9 @@ use pocketmine\world\Position;
 use ree_jp\coral_reef\CoralReefPlugin;
 use ree_jp\coral_reef\shop\data\DataShop;
 use ree_jp\coral_reef\shop\item\ItemShop;
+use ree_jp\coral_reef\Store;
 
-class ShopStore
+class ShopStore implements Store
 {
     /** @var Shop[] */
     private array $shops;

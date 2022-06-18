@@ -13,8 +13,9 @@
 namespace ree_jp\coral_reef\session;
 
 use ree_jp\coral_reef\sql\mysql\SQLRepository;
+use ree_jp\coral_reef\Store;
 
-class SessionStore
+class SessionStore implements Store
 {
     /**@var SessionData[] */
     private array $sessions = [];
