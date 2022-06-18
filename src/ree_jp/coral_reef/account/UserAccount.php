@@ -28,6 +28,7 @@ use ree_jp\coral_reef\sql\model\PlayerData;
 use ree_jp\coral_reef\sql\model\WarpPoint;
 use ree_jp\coral_reef\sql\mysql\SQLRepository;
 use ree_jp\coral_reef\sql\repo\PlayerRepository;
+use ree_jp\coral_reef\sql\repo\UserRepository;
 use ree_jp\coral_reef\sql\repo\WarpRepository;
 use ree_jp\coral_reef\sql\RepositoryPool;
 use ree_jp\reef_edge\ReefEdgePlugin;
@@ -68,6 +69,8 @@ class UserAccount
         $sqlRepo = $pool->get(SQLRepository::class);
         /** @var PlayerRepository */
         $playerRepo = $pool->get(PlayerRepository::class);
+        /** @var UserRepository */
+        $userRepo = $pool->get(UserRepository::class);
         /** @var WarpRepository */
         $warpRepo = $pool->get(WarpRepository::class);
 
@@ -75,10 +78,9 @@ class UserAccount
         try {
             $await[] = $warpRepo->setWarp(new WarpPoint($p->getXuid(), "自動セーブ(" . CoralReefPlugin::$server . ")", CoralReefPlugin::$serverID,
                 new Position($p->getPosition()->getFloorX(), $p->getPosition()->getFloorY(), $p->getPosition()->getFloorZ(), $p->getWorld())));
-            $await[] = Await::promise(fn($func) => $sqlRepo->setXp($this->xuid, $this->experience, $func));
-            $await[] = Await::promise(fn($func) => $sqlRepo->setSkill($this->xuid, $skillId, $func));
-            $await[] = Await::promise(fn($func) => QuestManager::save($sqlRepo, $this->xuid, $func));
             $await[] = $playerRepo->setPlayerData(PlayerData::create($p));
+            $await[] = $userRepo->setUserData($this);
+            $await[] = Await::promise(fn($func) => QuestManager::save($sqlRepo, $this->xuid, $func));
             $await[] = Queue::doCache($this->xuid);
             yield Await::all($await);
         } catch (Exception $e) {
