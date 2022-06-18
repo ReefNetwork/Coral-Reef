@@ -11,13 +11,16 @@
 
 namespace ree_jp\coral_reef\land;
 
-use pocketmine\math\AxisAlignedBB;
+use Generator;
 use pocketmine\math\Vector3;
 use poggit\libasynql\SqlError;
 use ree_jp\coral_reef\CoralReefPlugin;
 use ree_jp\coral_reef\sql\mysql\SQLRepository;
+use ree_jp\coral_reef\sql\repo\LandRepository;
+use ree_jp\coral_reef\sql\RepositoryPool;
 use ree_jp\coral_reef\sql\SQLConst;
 use ree_jp\coral_reef\Store;
+use SOFe\AwaitGenerator\Await;
 
 class LandStore implements Store
 {
@@ -36,19 +39,23 @@ class LandStore implements Store
      */
     public array $party = [];
 
-    public function __construct(SQLRepository $repo)
+    public function __construct(RepositoryPool $pool)
     {
+        /** @var SQLRepository */
+        $sqlRepo = $pool->get(SQLRepository::class);
+
         // LandKey(土地保護を共有してる人をメモってるやつ)を確認
-        $repo->getAllUserSubtypeValue(SQLConst::TYPE_LAND_KEY, function (array $landKeys) use ($repo): void {
+        $sqlRepo->getAllUserSubtypeValue(SQLConst::TYPE_LAND_KEY, function (array $landKeys) use ($pool): void {
 
-            $repo->loadProtectLand(function (array $rows) use ($repo, $landKeys) {
-                foreach ($rows as $arrayLand) {
-                    $level = $arrayLand['level'];
-                    if (!isset($this->lands[$level])) $this->lands[$level] = [];
 
-                    $land = new LandData($arrayLand['xuid'], $arrayLand['name'], $level,
-                        new AxisAlignedBB($arrayLand['sx'], 0, $arrayLand['sz'], $arrayLand['mx'], 0, $arrayLand['mz']));
-                    $this->lands[$level][] = $land;
+            Await::f2c(function () use ($landKeys, $pool): Generator {
+                /** @var LandRepository */
+                $landRepo = $pool->get(LandRepository::class);
+
+                /** @var LandData[] */
+                $lands = yield from $landRepo->getLands(CoralReefPlugin::$serverID);
+                foreach ($lands as $land) {
+                    $this->lands[$land->level][] = $land;
 
                     foreach ($landKeys as $key) {
                         if (($key["xuid"] == $land->xuid) && ($key["subtype"] === CoralReefPlugin::$serverID . ":" . $land->name) && !is_null($key["value"])) {
@@ -58,8 +65,6 @@ class LandStore implements Store
                         }
                     }
                 }
-            }, function (SqlError $error) {
-                CoralReefPlugin::$plugin->criticalError("土地情報を取得中に" . $error->getErrorMessage());
             });
         }, function (SqlError $error) {
             CoralReefPlugin::$plugin->criticalError("土地キー情報を取得中に" . $error->getErrorMessage());

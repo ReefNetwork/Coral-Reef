@@ -40,10 +40,12 @@ use ree_jp\coral_reef\proxy\SocketHandler;
 use ree_jp\coral_reef\quest\QuestListener;
 use ree_jp\coral_reef\session\SessionStore;
 use ree_jp\coral_reef\shop\ShopStore;
+use ree_jp\coral_reef\sql\mysql\MysqlLandRepo;
 use ree_jp\coral_reef\sql\mysql\MysqlPlayerDataRepo;
 use ree_jp\coral_reef\sql\mysql\MysqlUserRepo;
 use ree_jp\coral_reef\sql\mysql\MysqlWarpRepo;
 use ree_jp\coral_reef\sql\mysql\SQLRepository;
+use ree_jp\coral_reef\sql\repo\LandRepository;
 use ree_jp\coral_reef\sql\repo\PlayerRepository;
 use ree_jp\coral_reef\sql\repo\UserRepository;
 use ree_jp\coral_reef\sql\repo\WarpRepository;
@@ -90,9 +92,8 @@ class CoralReefPlugin extends PluginBase
         $this->store->register(new SessionStore(), SessionStore::class);
 
         $this->initRepository();
-        /** @var SQLRepository */
-        $sqlRepo = $this->pool->get(SQLRepository::class);
-        $this->store->register(new LandStore($sqlRepo), LandStore::class);
+
+        $this->store->register(new LandStore($this->pool), LandStore::class);
 
         $this->registerCommands();
         $this->registerListeners();
@@ -160,7 +161,7 @@ class CoralReefPlugin extends PluginBase
             new ReefCommand($this),
             new ReefAdminCommand($this, $this->sqlRepo, $accountStore, $landStore),
             new ReefConsoleCommand($this, $this->sqlRepo, $accountStore),
-            new ReefFormCommand($this, $this->sqlRepo, $accountStore, $landStore),
+            new ReefFormCommand($this, $this->pool, $this->store),
         ]);
     }
 
@@ -217,6 +218,7 @@ class CoralReefPlugin extends PluginBase
         $this->pool->register(new MysqlPlayerDataRepo($this->pool, $isInit), PlayerRepository::class);
         $this->pool->register(new MysqlUserRepo($this->pool, $isInit), UserRepository::class);
         $this->pool->register(new MysqlWarpRepo($this->pool, $isInit), WarpRepository::class);
+        $this->pool->register(new MysqlLandRepo($this->pool, $isInit), LandRepository::class);
         $this->pool->getConnection()->waitAll();
         $this->getLogger()->info("[SQL] 完了しました");
     }
