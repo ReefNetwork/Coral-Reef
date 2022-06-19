@@ -52,13 +52,13 @@ class CommonListener implements Listener
             /** @var AccountStore */
             $accountStore = $this->store->get(AccountStore::class);
 
-            yield Await::all($await);
+            yield from Await::all($await);
             if (!$p->isConnected()) return;
 
             // データ読み込めたら動けるように
             $p->setImmobile(false);
             $accountStore->setValue($p->getXuid(), "wait_action", 0);
-            yield $this->warpAutoSavePoint($this->pool, $p);
+            yield from $this->warpAutoSavePoint($this->pool, $p);
             $p->sendMessage("データを読み込みました");
         });
     }
