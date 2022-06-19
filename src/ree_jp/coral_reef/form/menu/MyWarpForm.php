@@ -126,9 +126,13 @@ class MyWarpForm
                 } else {
                     /** @var WarpRepository */
                     $repo = $pool->get(WarpRepository::class);
-                    $repo->setWarp(new WarpPoint($p->getXuid(), $nameInput->getValue(), CoralReefPlugin::$serverID,
+                    Await::g2c($repo->setWarp(new WarpPoint($p->getXuid(), $nameInput->getValue(), CoralReefPlugin::$serverID,
                         new Position($p->getPosition()->getFloorX(), $p->getPosition()->getFloorY(),
-                            $p->getPosition()->getFloorZ(), $p->getWorld())));
+                            $p->getPosition()->getFloorZ(), $p->getWorld()))),
+                        function () use ($p): void {
+                            $p->sendMessage("ワープ地点を作成しました");
+                        }
+                    );
                     QuestListener::callSubscribedQuest($p->getXuid(), QuestListener::CREATE_WARP_POINT, null);
                 }
             }

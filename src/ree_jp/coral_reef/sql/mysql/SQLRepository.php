@@ -12,10 +12,7 @@
 namespace ree_jp\coral_reef\sql\mysql;
 
 use Closure;
-use pocketmine\Server;
-use ree_jp\coral_reef\CoralReefPlugin;
 use ree_jp\coral_reef\money\MoneyCache;
-use ree_jp\coral_reef\session\SessionData;
 use ree_jp\coral_reef\sql\repo\Repository;
 use ree_jp\coral_reef\sql\RepositoryPool;
 use ree_jp\coral_reef\sql\SQLConst;
@@ -100,31 +97,10 @@ class SQLRepository implements Repository
         $this->pool->getConnection()->executeSelect("coral_reef.log.get.type_sort_newest", ["xuid" => intval($xuid), "type" => $type], $func, $failure);
     }
 
-    public function recordSession(string $xuid, SessionData $session): void
-    {
-        $this->pool->getConnection()->executeGeneric("coral_reef.session.add", ["xuid" => $xuid, "server" => CoralReefPlugin::$serverID,
-            "join_time" => date(SQLConst::DATE_FORMAT, $session->joinTime), "quit_time" => date(SQLConst::DATE_FORMAT, $session->quitTime),
-            "break_count" => $session->breakCount, "place_count" => $session->placeCount, "skill_count" => $session->skillCount]);
-    }
-
-    public function getRecentSession(string $xuid, Closure $func, ?Closure $failure): void
-    {
-        $this->pool->getConnection()->executeSelect("coral_reef.session.get_recent", ["xuid" => $xuid, "server" => CoralReefPlugin::$serverID], $func, $failure);
-    }
-
     public function getAllCountWithQuit(int $firstTime, int $lastTime, Closure $func, ?Closure $failure): void
     {
         $this->pool->getConnection()->executeSelect("coral_reef.session.all_get_count_quit_between_sort_desc", ["first_time" => date(SQLConst::DATE_FORMAT, $firstTime),
             "last_time" => date(SQLConst::DATE_FORMAT, $lastTime)], $func, $failure);
-    }
-
-    private function noticeByXUid(string $xuid, string $notice): Closure
-    {
-        return function () use ($notice, $xuid) {
-            foreach (Server::getInstance()->getOnlinePlayers() as $p) {
-                if ($p->getXuid() === $xuid) $p->sendMessage($notice);
-            }
-        };
     }
 
     private function createFunction(): void
@@ -138,6 +114,5 @@ class SQLRepository implements Repository
         $this->pool->getConnection()->executeGeneric('coral_reef.init.tables.money');
         $this->pool->getConnection()->executeGeneric('coral_reef.init.tables.virtual_value');
         $this->pool->getConnection()->executeGeneric('coral_reef.init.tables.log');
-        $this->pool->getConnection()->executeGeneric("coral_reef.init.tables.session");
     }
 }

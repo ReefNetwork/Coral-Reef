@@ -11,7 +11,9 @@
 
 namespace ree_jp\coral_reef\session;
 
-use ree_jp\coral_reef\sql\mysql\SQLRepository;
+use ree_jp\coral_reef\sql\repo\SessionRepository;
+use ree_jp\coral_reef\sql\RepositoryPool;
+use SOFe\AwaitGenerator\Await;
 
 class SessionData
 {
@@ -22,7 +24,7 @@ class SessionData
     public int $placeCount = 0;
     public int $skillCount = 0;
 
-    public function __construct(private string $xuid)
+    public function __construct(public string $xuid, public string $server)
     {
         $this->joinTime = time();
     }
@@ -42,9 +44,12 @@ class SessionData
         $this->skillCount++;
     }
 
-    public function quit(SQLRepository $repo): void
+    public function quit(RepositoryPool $pool): void
     {
+        /** @var SessionRepository */
+        $repo = $pool->get(SessionRepository::class);
+
         $this->quitTime = time();
-        $repo->recordSession($this->xuid, $this);
+        Await::g2c($repo->addSession($this->xuid, $this));
     }
 }

@@ -14,31 +14,37 @@ namespace ree_jp\coral_reef\form\land;
 use bbo51dog\bboform\element\ClosureButton;
 use bbo51dog\bboform\form\ModalForm;
 use bbo51dog\bboform\form\SimpleForm;
+use Generator;
 use pocketmine\player\Player;
 use pocketmine\utils\TextFormat;
 use ree_jp\coral_reef\account\AccountStore;
 use ree_jp\coral_reef\land\LandData;
 use ree_jp\coral_reef\land\LandService;
+use ree_jp\coral_reef\session\SessionData;
 use ree_jp\coral_reef\sql\mysql\SQLRepository;
+use ree_jp\coral_reef\sql\repo\SessionRepository;
 use ree_jp\coral_reef\sql\RepositoryPool;
 use ree_jp\coral_reef\StoreHouse;
+use SOFe\AwaitGenerator\Await;
 
 class LandDetailForm
 {
     static function sendForm(RepositoryPool $pool, StoreHouse $store, LandData $land, Player $p): void
     {
-        /** @var SQLRepository */
-        $sqlRepo = $pool->get(SQLRepository::class);
-
-        $sqlRepo->getRecentSession($land->xuid, function (array $rows) use ($pool, $store, $land, $p): void {
-            if (!$p->isOnline()) return;
-            $session = array_shift($rows);
-            $logoutIntervalDay = "不明";
-            if (!empty($session)) {
-                $logoutIntervalDay = floor((time() - strtotime($session["join_time"])) / (60 * 60 * 24)) . "日前";
-            }
+        Await::f2c(function () use ($pool, $store, $land, $p): Generator {
+            /** @var SessionRepository */
+            $repo = $pool->get(SQLRepository::class);
             /** @var AccountStore */
             $accountStore = $store->get(AccountStore::class);
+
+            $session = yield from $repo->getRecentSession($land->xuid);
+            if (!$p->isOnline()) return;
+
+            if ($session instanceof SessionData) {
+                $logoutIntervalDay = $session->joinTime;
+            } else {
+                $logoutIntervalDay = "不明";
+            }
 
             $ownerName = $accountStore->getUserName($land->xuid);
             $aabb = $land->aabb;
@@ -71,7 +77,7 @@ class LandDetailForm
                 ));
             }
             $p->sendForm($form);
-        }, null);
+        });
     }
 
     private static function sendLandDeleteConfirmForm(RepositoryPool $pool, StoreHouse $store, Player $p, LandData $land,
@@ -97,8 +103,6 @@ class LandDetailForm
 
     private static function sendLandTakeForm(RepositoryPool $pool, StoreHouse $store, Player $p, LandData $land): void
     {
-        /** @var SQLRepository */
-        $sqlRepo = $pool->get(SQLRepository::class);
         /** @var AccountStore */
         $accountStore = $store->get(AccountStore::class);
 
@@ -107,12 +111,18 @@ class LandDetailForm
             $p->sendMessage("30レベル未満は土地を奪うことができません");
             return;
         }
-        $sqlRepo->getRecentSession($land->xuid, function (array $rows) use ($pool, $store, $land, $p): void {
+
+        Await::f2c(function () use ($land, $store, $p, $pool): Generator {
+            /** @var SessionRepository */
+            $repo = $pool->get(SQLRepository::class);
+            /** @var SessionData */
+            $session = yield from $repo->getRecentSession($p->getXuid());
             if (!$p->isOnline()) return;
-            $session = array_shift($rows);
-            $logoutIntervalDay = 99999;
-            if (!empty($session)) {
-                $logoutIntervalDay = floor((time() - strtotime($session["join_time"])) / (60 * 60 * 24));
+
+            if ($session instanceof SessionData) {
+                $logoutIntervalDay = floor((time() - $session->joinTime) / (60 * 60 * 24));
+            } else {
+                $logoutIntervalDay = 99999;
             }
             if ($logoutIntervalDay >= 30) {
                 self::sendLandDeleteConfirmForm($pool, $store, $p, $land, "ランクが30以上かつ、この土地の所有者が30日以上ログインしていないため" .
@@ -122,6 +132,6 @@ class LandDetailForm
                 $remainder = 30 - $logoutIntervalDay;
                 $p->sendMessage("この土地の所有者の直近ログインは$logoutIntervalDay 日前です\n土地が奪えるようになるまであと$remainder 日です");
             }
-        }, null);
+        });
     }
 }
