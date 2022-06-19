@@ -82,7 +82,7 @@ class UserAccount
             $await[] = $userRepo->setUserData($this);
             $await[] = Await::promise(fn($func) => QuestManager::save($sqlRepo, $this->xuid, $func));
             $await[] = Queue::doCache($this->xuid);
-            yield Await::all($await);
+            yield from Await::all($await);
         } catch (Exception $e) {
             Server::getInstance()->getLogger()->error($this->name . "のデータ保存に失敗しました" . $e->getMessage());
         }
