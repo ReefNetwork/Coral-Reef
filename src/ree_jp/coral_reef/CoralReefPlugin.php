@@ -42,11 +42,13 @@ use ree_jp\coral_reef\session\SessionStore;
 use ree_jp\coral_reef\shop\ShopStore;
 use ree_jp\coral_reef\sql\mysql\MysqlLandRepo;
 use ree_jp\coral_reef\sql\mysql\MysqlPlayerDataRepo;
+use ree_jp\coral_reef\sql\mysql\MysqlSessionRepo;
 use ree_jp\coral_reef\sql\mysql\MysqlUserRepo;
 use ree_jp\coral_reef\sql\mysql\MysqlWarpRepo;
 use ree_jp\coral_reef\sql\mysql\SQLRepository;
 use ree_jp\coral_reef\sql\repo\LandRepository;
 use ree_jp\coral_reef\sql\repo\PlayerRepository;
+use ree_jp\coral_reef\sql\repo\SessionRepository;
 use ree_jp\coral_reef\sql\repo\UserRepository;
 use ree_jp\coral_reef\sql\repo\WarpRepository;
 use ree_jp\coral_reef\sql\RepositoryPool;
@@ -219,6 +221,7 @@ class CoralReefPlugin extends PluginBase
         $this->pool->register(new MysqlUserRepo($this->pool, $isInit), UserRepository::class);
         $this->pool->register(new MysqlWarpRepo($this->pool, $isInit), WarpRepository::class);
         $this->pool->register(new MysqlLandRepo($this->pool, $isInit), LandRepository::class);
+        $this->pool->register(new MysqlSessionRepo($this->pool, $isInit), SessionRepository::class);
         $this->pool->getConnection()->waitAll();
         $this->getLogger()->info("[SQL] 完了しました");
     }

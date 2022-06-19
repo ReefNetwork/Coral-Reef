@@ -127,7 +127,7 @@ class CommonListener implements Listener
             $p->sendMessage("データを確認しています...");
         }
         AccountService::userJoin($repo, $accountStore, $p);
-        $sessionStore->createSession($xuid);
+        $sessionStore->createSession($xuid, CoralReefPlugin::$serverID);
 
         $ev->setJoinMessage(""); // プロキシ側で参加メッセージを流す
         $p->sendTitle(TextFormat::GREEN . "Reef " . TextFormat::YELLOW . "Server");
@@ -139,15 +139,13 @@ class CommonListener implements Listener
     public function onQuit(PlayerQuitEvent $ev): void
     {
         $p = $ev->getPlayer();
-        /** @var SQLRepository */
-        $sqlRepo = $this->pool->get(SQLRepository::class);
         /** @var AccountStore */
         $accountStore = $this->store->get(AccountStore::class);
         /** @var SessionStore */
         $sessionStore = $this->store->get(SessionStore::class);
 
         AccountService::userQuit($this->pool, $accountStore, $p);
-        $sessionStore->destruction($sqlRepo, $p->getXuid());
+        $sessionStore->destruction($this->pool, $p->getXuid());
         $ev->setQuitMessage(""); // プロキシ側で退出メッセージを流す
     }
 }
