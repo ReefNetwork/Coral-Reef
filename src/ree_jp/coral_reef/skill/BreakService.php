@@ -55,18 +55,18 @@ class BreakService
                     $popupMessage = "上から掘ってください";
                     continue;
                 }
+                $isMyLand = false;
                 foreach ($lands as $land) {
                     if ($land->isLand($highVec3)) {
                         if (!LandService::checkLand($landStore, $land, $p->getXuid())) {
                             $popupMessage = "この土地は保護されています($land->name)";
                             continue 2;
                         }
-                    } else {
-                        if (in_array($p->getWorld()->getFolderName(), LandService::NEED_LAND_PROTECT)) {
-                            $popupMessage = "このワールドは土地保護が必要です";
-                            continue 2;
-                        }
+                        $isMyLand = true;
                     }
+                }
+                if (!$isMyLand && in_array($p->getWorld()->getFolderName(), LandService::NEED_LAND_PROTECT)) {
+                    $popupMessage = "このワールドは土地保護が必要です";
                 }
                 foreach ($highCheck as $bl) {
                     self::silentBreak($p->getWorld(), $bl, $hand, $p);
