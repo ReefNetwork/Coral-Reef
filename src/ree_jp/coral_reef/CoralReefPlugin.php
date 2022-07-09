@@ -12,8 +12,12 @@
 namespace ree_jp\coral_reef;
 
 use muqsit\invmenu\InvMenuHandler;
+use pocketmine\block\VanillaBlocks;
+use pocketmine\crafting\FurnaceType;
 use pocketmine\crafting\ShapedRecipe;
+use pocketmine\item\ItemBlock;
 use pocketmine\item\ItemFactory;
+use pocketmine\item\ItemIdentifier;
 use pocketmine\item\ItemIds;
 use pocketmine\item\VanillaItems;
 use pocketmine\plugin\PluginBase;
@@ -155,12 +159,15 @@ class CoralReefPlugin extends PluginBase
 
     private function registerRecipe(): void
     {
-        foreach ([ItemIds::COAL_ORE => VanillaItems::COAL(), ItemIds::IRON_ORE => VanillaItems::IRON_INGOT(), ItemIds::GOLD_ORE => VanillaItems::GOLD_INGOT(),
-                     ItemIds::DIAMOND_ORE => VanillaItems::DIAMOND(), ItemIds::EMERALD_ORE => VanillaItems::EMERALD()] as $oreID => $result) {
-            $ore = ItemFactory::getInstance()->get($oreID);
-            $result->setCount(8);
-            $this->getServer()->getCraftingManager()->registerShapedRecipe(new ShapedRecipe(["AAA", "ABA", "AAA"], ["A" => $ore, "B" => VanillaItems::COAL()], [$result]));
-            $this->getServer()->getCraftingManager()->registerShapedRecipe(new ShapedRecipe(["AAA", "ABA", "AAA"], ["A" => $ore, "B" => VanillaItems::CHARCOAL()], [$result]));
+        foreach ([ItemIds::COAL_ORE => VanillaBlocks::COAL_ORE(), ItemIds::IRON_ORE => VanillaBlocks::IRON_ORE(), ItemIds::GOLD_ORE => VanillaBlocks::GOLD_ORE(),
+                     ItemIds::DIAMOND_ORE => VanillaBlocks::DIAMOND_ORE(), ItemIds::EMERALD_ORE => VanillaBlocks::EMERALD_ORE()] as $oreID => $oreBlock) {
+            $oreItem = ItemFactory::getInstance()->get($oreID);
+            $furnace = $this->getServer()->getCraftingManager()->getFurnaceRecipeManager(FurnaceType::FURNACE())->match($oreItem);
+            $result = $furnace->getResult()->setCount(8);
+
+            ItemFactory::getInstance()->register(new ItemBlock(new ItemIdentifier($oreID, 0), $oreBlock), true);
+            $this->getServer()->getCraftingManager()->registerShapedRecipe(new ShapedRecipe(["AAA", "ABA", "AAA"], ["A" => $oreItem, "B" => VanillaItems::COAL()], [$result]));
+            $this->getServer()->getCraftingManager()->registerShapedRecipe(new ShapedRecipe(["AAA", "ABA", "AAA"], ["A" => $oreItem, "B" => VanillaItems::CHARCOAL()], [$result]));
         }
     }
 
