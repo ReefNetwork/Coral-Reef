@@ -24,19 +24,12 @@ class SQLRepository implements Repository
         if ($isInit) {
             $this->createFunction();
             $this->createTable();
-
-
         }
     }
 
     public function close(): void
     {
         MoneyCache::purgeAll($this);
-    }
-
-    public function getAllUser(Closure $func): void
-    {
-        $this->pool->getConnection()->executeSelect("coral_reef.user.all", [], $func);
     }
 
     public function getMoney(string $xuid, ?Closure $func, ?Closure $failure = null): void
@@ -95,12 +88,6 @@ class SQLRepository implements Repository
     public function getLog(string $xuid, string $type, Closure $func, Closure $failure): void
     {
         $this->pool->getConnection()->executeSelect("coral_reef.log.get.type_sort_newest", ["xuid" => intval($xuid), "type" => $type], $func, $failure);
-    }
-
-    public function getAllCountWithQuit(int $firstTime, int $lastTime, Closure $func, ?Closure $failure): void
-    {
-        $this->pool->getConnection()->executeSelect("coral_reef.session.all_get_count_quit_between_sort_desc", ["first_time" => date(SQLConst::DATE_FORMAT, $firstTime),
-            "last_time" => date(SQLConst::DATE_FORMAT, $lastTime)], $func, $failure);
     }
 
     private function createFunction(): void

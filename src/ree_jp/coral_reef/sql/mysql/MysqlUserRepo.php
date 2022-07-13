@@ -38,6 +38,19 @@ class MysqlUserRepo implements UserRepository
         return $this->setUserDataModel(current($result));
     }
 
+    public function getAllUserData(): Generator
+    {
+        $result = yield from Await::promise(
+            fn($resolve, $reject) => $this->pool->getConnection()->executeSelect("coral_reef.user.all", [], $resolve, $reject));
+        if (!$result) return [];
+
+        $users = [];
+        foreach ($result as $userRaw) {
+            $users[] = $this->setUserDataModel($userRaw);
+        }
+        return $users;
+    }
+
     public function setUserData(UserAccount $data): Generator
     {
         $skillId = $data->skill?->id;

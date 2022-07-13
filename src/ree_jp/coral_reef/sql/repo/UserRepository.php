@@ -18,5 +18,7 @@ interface UserRepository extends Repository
 {
     public function getUserData(string $xuid): Generator;
 
+    public function getAllUserData(): Generator;
+
     public function setUserData(UserAccount $data): Generator;
 }
