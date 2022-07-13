@@ -27,21 +27,28 @@ class MysqlLandRepo implements LandRepository
         }
     }
 
+    /**
+     * @param string $server
+     * @return Generator LandData[]
+     */
     public function getLands(string $server): Generator
     {
         $result = yield from Await::promise(
             fn($resolve, $reject) => $this->pool->getConnection()->executeInsert("coral_reef.land.get",
                 ["server" => $server], $resolve, $reject));
-        $lands = [];
-        foreach ($result as $data) {
-            $lands[] = $this->setLandModel($data);
-        }
-        return $lands;
+        if (!$result) return [];
+
+        return $this->setLandModels($result);
     }
 
-    private function setLandModel(array $data): LandData
+    private function setLandModels(array $data): array
     {
-        return new LandData($data["xuid"], $data["name"], $data["level"], new AxisAlignedBB($data["sx"], 0, $data["sz"], $data["mx"], 0, $data["mz"]));
+        $lands = [];
+        foreach ($data as $landRaw) {
+            $lands[] = new LandData($landRaw["xuid"], $landRaw["name"], $landRaw["level"], new AxisAlignedBB($landRaw["sx"], 0, $landRaw["sz"],
+                $landRaw["mx"], 0, $landRaw["mz"]));
+        }
+        return $lands;
     }
 
     public function setLand(LandData $land, string $server): Generator
