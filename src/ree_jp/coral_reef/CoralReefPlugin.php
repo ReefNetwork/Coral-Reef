@@ -57,6 +57,7 @@ use ree_jp\coral_reef\task\EffectTask;
 use ree_jp\coral_reef\task\SendServerTipTask;
 use ree_jp\coral_reef\task\ServerUpdateTask;
 use ree_jp\reef_edge\ReefEdgePlugin;
+use SOFe\AwaitGenerator\Await;
 
 class CoralReefPlugin extends PluginBase
 {
@@ -111,8 +112,7 @@ class CoralReefPlugin extends PluginBase
         if (isset(ReefEdgePlugin::$socketClient) && !ReefEdgePlugin::$socketClient->isConnected()) {
             ReefEdgePlugin::$socketClient->connect();
         }
-
-        $accountStore->updateUserNameList($this->sqlRepo);
+        Await::g2c($accountStore->updateUserNameList($this->pool));
         ReefItems::registerAll();
         CustomItemService::registerAll();
         $this->pluginInformation();

@@ -13,6 +13,7 @@ namespace ree_jp\coral_reef\sql\mysql;
 
 use Generator;
 use ree_jp\coral_reef\session\SessionData;
+use ree_jp\coral_reef\sql\model\BlockStatisticsModel;
 use ree_jp\coral_reef\sql\repo\SessionRepository;
 use ree_jp\coral_reef\sql\RepositoryPool;
 use ree_jp\coral_reef\sql\SQLConst;
@@ -40,19 +41,51 @@ class MysqlSessionRepo implements SessionRepository
         $result = yield from Await::promise(
             fn($resolve, $reject) => $this->pool->getConnection()->executeSelect("coral_reef.session.get_recent",
                 ["xuid" => $xuid], $resolve, $reject));
-        return $this->setSessionModel($result);
+        return current($this->setSessionModels($result));
     }
 
-    private function setSessionModel(array $data): ?SessionData
+    public function getAllCountWithQuit(int $firstTime, int $lastTime): Generator
     {
-        if (empty($data)) return null;
-        $session = new SessionData($data["xuid"], $data["server"]);
-        $session->joinTime = strtotime($data["join_time"]);
-        $session->quitTime = strtotime($data["quit_time"]);
-        $session->breakCount = $data["break_count"];
-        $session->placeCount = $data["place_count"];
-        $session->skillCount = $data["skill_count"];
-        return $session;
+        $result = yield from Await::promise(
+            fn($resolve, $reject) => $this->pool->getConnection()->executeSelect("coral_reef.session.all_get_count_quit_between_sort_desc",
+                ["first_time" => date(SQLConst::DATE_FORMAT, $firstTime), "last_time" => date(SQLConst::DATE_FORMAT, $lastTime)], $resolve, $reject));
+        return $this->setBlockStatisticsModels($result);
+    }
+
+    /**
+     * @param array $data
+     * @return SessionData[]
+     */
+    private function setSessionModels(array $data): array
+    {
+        if (empty($data)) return [];
+
+        $sessions = [];
+        foreach ($data as $sessionRaw) {
+            $session = new SessionData($sessionRaw["xuid"], $sessionRaw["server"]);
+            $session->joinTime = strtotime($sessionRaw["join_time"]);
+            $session->quitTime = strtotime($sessionRaw["quit_time"]);
+            $session->breakCount = $sessionRaw["break_count"];
+            $session->placeCount = $sessionRaw["place_count"];
+            $session->skillCount = $sessionRaw["skill_count"];
+            $sessions[] = $session;
+        }
+        return $sessions;
+    }
+
+    /**
+     * @param array $data
+     * @return BlockStatisticsModel[]
+     */
+    private function setBlockStatisticsModels(array $data): array
+    {
+        if (empty($data)) return [];
+
+        $statistics = [];
+        foreach ($data as $statisticsRaw) {
+            $statistics[] = new BlockStatisticsModel($statisticsRaw["xuid"], $statisticsRaw["break_count"], $statisticsRaw["place_count"], $statisticsRaw["skill_count"]);
+        }
+        return $statistics;
     }
 
     public function close(): void

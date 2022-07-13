@@ -9,16 +9,11 @@
  * Copyright (c) 2022. Ree-jp(https://ree-jp.net)
  */
 
-namespace ree_jp\coral_reef\sql\repo;
+namespace ree_jp\coral_reef\sql\model;
 
-use Generator;
-use ree_jp\coral_reef\session\SessionData;
-
-interface SessionRepository extends Repository
+class BlockStatisticsModel
 {
-    public function addSession(string $xuid, SessionData $session): Generator;
-
-    public function getRecentSession(string $xuid): Generator;
-
-    public function getAllCountWithQuit(int $firstTime, int $lastTime): Generator;
+    public function __construct(public string $xuid, public int $breakCount, public int $placeCount, public int $skillCount)
+    {
+    }
 }
