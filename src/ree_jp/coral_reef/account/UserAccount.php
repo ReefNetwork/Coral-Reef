@@ -130,6 +130,8 @@ class UserAccount
 
     private function updateLevelTag(): void
     {
+        if ($this->xuid === "0") return;
+
         ReefEdgePlugin::$socketClient->send(new SocketData("item-add",
             ["xuid" => $this->xuid, "type" => "info_tag", "subType" => "seichi_level", "item" => "§g{$this->level}レベル", "count" => 1, "isNotDuplicate" => true]),
             function (): void {
