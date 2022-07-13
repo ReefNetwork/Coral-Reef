@@ -28,16 +28,18 @@ class MysqlWarpRepo implements WarpRepository
         }
     }
 
+    /**
+     * @param string $xuid
+     * @param string $server
+     * @return Generator WarpPoint[]
+     */
     public function getWarps(string $xuid, string $server): Generator
     {
         $result = yield from Await::promise(
             fn($resolve, $reject) => $this->pool->getConnection()->executeSelect("coral_reef.warp.get", ["xuid" => $xuid, "server" => $server], $resolve, $reject));
         if (!$result) return null;
-        $warps = [];
-        foreach ($result as $data) {
-            $warps[] = $this->setWarpPointModel($data);
-        }
-        return $warps;
+
+        return $this->setWarpPointModels($result);
     }
 
     public function setWarp(WarpPoint $warp): Generator
@@ -56,10 +58,14 @@ class MysqlWarpRepo implements WarpRepository
                 "name" => $warp->warpName, "server" => $warp->server], $resolve, $reject));
     }
 
-    private function setWarpPointModel(array $data): WarpPoint
+    private function setWarpPointModels(array $data): array
     {
-        return new WarpPoint($data["xuid"], $data["name"], $data["server"], new Position($data["x"], $data["y"], $data["z"],
-            Server::getInstance()->getWorldManager()->getWorldByName($data["level"])));
+        $warps = [];
+        foreach ($data as $warpRaw) {
+            $warps[] = new WarpPoint($warpRaw["xuid"], $warpRaw["name"], $warpRaw["server"], new Position($warpRaw["x"], $warpRaw["y"], $warpRaw["z"],
+                Server::getInstance()->getWorldManager()->getWorldByName($warpRaw["level"])));
+        }
+        return $warps;
     }
 
     public function close(): void

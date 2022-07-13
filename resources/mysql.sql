@@ -238,7 +238,7 @@ WHERE xuid = :xuid
 -- #        { get
 -- #        :xuid int
 -- #        :server string
-SELECT name, level, x, y, z
+SELECT *
 FROM WARP
 WHERE xuid = :xuid
   AND server = :server;
