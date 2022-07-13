@@ -16,8 +16,8 @@ use bbo51dog\bboform\form\SimpleForm;
 use Generator;
 use pocketmine\player\Player;
 use ree_jp\coral_reef\account\AccountStore;
-use ree_jp\coral_reef\account\UserAccount;
 use ree_jp\coral_reef\form\PageViewForm;
+use ree_jp\coral_reef\sql\model\LiteUserModel;
 use ree_jp\coral_reef\sql\repo\UserRepository;
 use ree_jp\coral_reef\sql\RepositoryPool;
 use SOFe\AwaitGenerator\Await;
@@ -55,14 +55,14 @@ class RankingForm
         Await::f2c(function () use ($p, $pool): Generator {
             /** @var UserRepository */
             $repo = $pool->get(UserRepository::class);
-            /** @var UserAccount[] */
-            $userAccounts = yield from $repo->getAllUserData();
+            /** @var LiteUserModel[] */
+            $userModels = yield from $repo->getAllUserData();
 
             if (!$p->isOnline()) return;
             $list[] = [];
-            foreach ($userAccounts as $userAccount) {
-                if ($userAccount->xuid === "0") continue; // サーバー管理用アカウントをランキングに入れない
-                $list[$userAccount->experience][] = $userAccount->name;
+            foreach ($userModels as $userModel) {
+                if ($userModel->xuid === "0") continue; // サーバー管理用アカウントをランキングに入れない
+                $list[$userModel->experience][] = $userModel->name;
             }
             krsort($list, SORT_NUMERIC);
             $content = [];

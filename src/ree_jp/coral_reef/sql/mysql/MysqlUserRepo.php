@@ -14,6 +14,7 @@ namespace ree_jp\coral_reef\sql\mysql;
 use Generator;
 use pocketmine\utils\TextFormat;
 use ree_jp\coral_reef\account\UserAccount;
+use ree_jp\coral_reef\sql\model\LiteUserModel;
 use ree_jp\coral_reef\sql\repo\UserRepository;
 use ree_jp\coral_reef\sql\RepositoryPool;
 use SOFe\AwaitGenerator\Await;
@@ -30,25 +31,28 @@ class MysqlUserRepo implements UserRepository
         }
     }
 
+    /**
+     * @param string $xuid
+     * @return Generator UserAccount | false
+     */
     public function getUserData(string $xuid): Generator
     {
         $result = yield from Await::promise(
             fn($resolve, $reject) => $this->pool->getConnection()->executeSelect("coral_reef.user.get", ["xuid" => $xuid], $resolve, $reject));
         if (!$result) return null;
-        return $this->setUserDataModel(current($result));
+        return current($this->setUserDataModels($result));
     }
 
+    /**
+     * @return Generator LiteUserModel[]
+     */
     public function getAllUserData(): Generator
     {
         $result = yield from Await::promise(
             fn($resolve, $reject) => $this->pool->getConnection()->executeSelect("coral_reef.user.all", [], $resolve, $reject));
         if (!$result) return [];
 
-        $users = [];
-        foreach ($result as $userRaw) {
-            $users[] = $this->setUserDataModel($userRaw);
-        }
-        return $users;
+        return $this->setLiteUserDataModels($result);
     }
 
     public function setUserData(UserAccount $data): Generator
@@ -59,11 +63,26 @@ class MysqlUserRepo implements UserRepository
                 "name" => $data->name, "experience" => $data->experience, "skill" => $skillId], $resolve, $reject));
     }
 
-    private function setUserDataModel(array $data): ?UserAccount
+    private function setUserDataModels(array $data): array
     {
-        if (empty($data)) return null;
+        if (empty($data)) return [];
 
-        return new UserAccount($data["xuid"], $data["name"], $data["experience"], $data["skill"]);
+        $users = [];
+        foreach ($data as $userRaw) {
+            $users[] = new UserAccount($userRaw["xuid"], $userRaw["name"], $userRaw["experience"], $userRaw["skill"]);
+        }
+        return $users;
+    }
+
+    private function setLiteUserDataModels(array $data): array
+    {
+        if (empty($data)) return [];
+
+        $users = [];
+        foreach ($data as $userRaw) {
+            $users[] = new LiteUserModel($userRaw["xuid"], $userRaw["name"], $userRaw["experience"]);
+        }
+        return $users;
     }
 
     public function close(): void

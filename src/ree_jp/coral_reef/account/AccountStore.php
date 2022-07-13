@@ -14,6 +14,7 @@ namespace ree_jp\coral_reef\account;
 use Generator;
 use pocketmine\scheduler\ClosureTask;
 use ree_jp\coral_reef\CoralReefPlugin;
+use ree_jp\coral_reef\sql\model\LiteUserModel;
 use ree_jp\coral_reef\sql\repo\UserRepository;
 use ree_jp\coral_reef\sql\RepositoryPool;
 use ree_jp\coral_reef\Store;
@@ -88,7 +89,7 @@ class AccountStore implements Store
     {
         /** @var UserRepository */
         $repo = $pool->get(UserRepository::class);
-        /** @var UserAccount[] */
+        /** @var LiteUserModel[] */
         $users = yield from $repo->getAllUserData();
         $list = [];
         foreach ($users as $user) {
