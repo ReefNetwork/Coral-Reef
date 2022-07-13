@@ -81,7 +81,7 @@ class WorldTeleportForm
                 return;
             }
             $p->sendMessage("テレポートしています...");
-            AccountService::teleport($p, $world, new Vector3($x->getValue(), $y->getValue(), $z->getValue()));
+            AccountService::teleport($p, $world, new Vector3(intval($x->getValue()), intval($y->getValue()), intval($z->getValue())));
         });
         $form->setTitle("Menu -> Teleport");
         $form->addElements($worldSelect, $x, $y, $z);
