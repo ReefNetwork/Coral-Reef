@@ -157,7 +157,7 @@ class CoralReefPlugin extends PluginBase
         $landStore = $this->store->get(LandStore::class);
 
         $this->getServer()->getCommandMap()->registerAll("reef", [
-            new MenuCommand($this, $this->sqlRepo, $accountStore),
+            new MenuCommand($this, $this->pool, $accountStore),
             new BlockLogCommand($this, $accountStore),
             new TrashCommand($this),
             new ReefCommand($this),
