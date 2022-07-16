@@ -76,7 +76,7 @@ class UserAccount
 
         $await = [];
         try {
-            $await[] = $warpRepo->setWarp(new WarpPoint($p->getXuid(), "自動セーブ(" . CoralReefPlugin::$serverID . ")", CoralReefPlugin::$serverID,
+            $await[] = $warpRepo->setWarp(new WarpPoint($p->getXuid(), AccountService::autoSaveWarpName(), CoralReefPlugin::$serverID,
                 new Position($p->getPosition()->getFloorX(), $p->getPosition()->getFloorY(), $p->getPosition()->getFloorZ(), $p->getWorld())));
             $await[] = $playerRepo->setPlayerData(PlayerData::create($p));
             $await[] = $userRepo->setUserData($this);

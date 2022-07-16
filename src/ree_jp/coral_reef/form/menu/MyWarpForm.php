@@ -77,6 +77,8 @@ class MyWarpForm
             ->setTitle("MyWarp -> Edit")
             ->setText("ワープ地点を作成するか削除したいワープ地点を選択してください");
         foreach ($warpPoints as $warp) {
+            if (str_starts_with($warp->warpName, "[auto-save]")) continue;
+
             $form->addElement(
                 self::createWarpButton($warp,
                     function (Player $p) use ($pool, $repo, $warp) {
@@ -98,7 +100,7 @@ class MyWarpForm
                                 )
                             ))
                                 ->setTitle("MyWarpEdit -> Delete")
-                                ->setText(TextFormat::RED . "「" . $warp["name"] . "」を本当に削除しますか?\n" .
+                                ->setText(TextFormat::RED . "「" . $warp->warpName . "」を本当に削除しますか?\n" .
                                     TextFormat::DARK_RED . "消してしまったら戻すことはできません！")
                         );
                     }
@@ -122,7 +124,9 @@ class MyWarpForm
         $form = new ClosureCustomForm(
             function (Player $p) use ($pool, $nameInput) {
                 if (mb_strlen($nameInput->getValue()) < 1) {
-                    $p->sendMessage('ワープ地点の名前が短すぎます');
+                    $p->sendMessage("ワープ地点の名前が短すぎます");
+                } else if (str_starts_with($nameInput->getValue(), "[auto-save]")) {
+                    $p->sendMessage("使えない文字が含まれています");
                 } else {
                     /** @var WarpRepository */
                     $repo = $pool->get(WarpRepository::class);
