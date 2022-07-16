@@ -60,11 +60,6 @@ class UserAccount
 
     function save(RepositoryPool $pool, Player $p): Generator
     {
-        if (is_null($this->skill)) {
-            $skillId = null;
-        } else {
-            $skillId = $this->skill->id;
-        }
         /** @var SQLRepository */
         $sqlRepo = $pool->get(SQLRepository::class);
         /** @var PlayerRepository */
