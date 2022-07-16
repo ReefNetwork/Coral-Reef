@@ -15,17 +15,38 @@ use pocketmine\player\Player;
 use pocketmine\Server;
 use Ramsey\Uuid\Uuid;
 use ree_jp\coral_reef\account\AccountStore;
+use ree_jp\coral_reef\session\SessionService;
 use ree_jp\coral_reef\sql\RepositoryPool;
+use ree_jp\coral_reef\StoreHouse;
 
 class SocketHandler
 {
-    static function register(\ree_jp\reef_edge\socket\SocketHandler $handler, RepositoryPool $pool, AccountStore $accountStore): void
+    static function register(\ree_jp\reef_edge\socket\SocketHandler $handler, RepositoryPool $pool, StoreHouse $store): void
     {
+        /** @var AccountStore */
+        $accountStore = $store->get(AccountStore::class);
+
+
         $handler->registerHandler("transfer-request", function (array $data) use ($accountStore, $pool): void {
             if (isset($data["player"]) && isset($data["server"])) {
                 $p = Server::getInstance()->getPlayerByUUID(Uuid::fromString($data["player"]));
                 if ($p instanceof Player) {
                     ProxyService::transferServerWithSave($pool, $accountStore, $p, $data["server"]);
+                }
+            }
+        });
+
+        $day = date("d");
+
+        $handler->registerHandler("timer", function (array $data) use ($pool, $store, $day): void {
+            if (isset($data["time"])) {
+                $nowDay = date("d", strtotime($data["time"]));
+
+                if ($nowDay === $day) return;
+                $day = $nowDay;
+
+                foreach (Server::getInstance()->getOnlinePlayers() as $p) {
+                    SessionService::reCreateSession($pool, $store, $p->getXuid());
                 }
             }
         });

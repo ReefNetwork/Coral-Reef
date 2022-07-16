@@ -63,7 +63,7 @@ class CoralReefPlugin extends PluginBase
 {
     static CoralReefPlugin $plugin;
     static string $serverID;
-    static string $server;
+    static string $serverDisplay;
 
     public bool $isDev = false;
     public bool $isMain = false;
@@ -81,7 +81,7 @@ class CoralReefPlugin extends PluginBase
     public function onEnable(): void
     {
         self::$serverID = $this->getConfig()->get(ConfigConst::SERVER_NAME);
-        self::$server = $this->getConfig()->get(ConfigConst::SERVER);
+        self::$serverDisplay = $this->getConfig()->get(ConfigConst::SERVER);
         $this->isDev = !str_contains($this->getDescription()->getVersion(), 'stable');
         $this->isMain = self::$serverID === "seichi_1";
 
@@ -107,7 +107,7 @@ class CoralReefPlugin extends PluginBase
         /** @var AccountStore */
         $accountStore = $this->store->get(AccountStore::class);
 
-        SocketHandler::register(ReefEdgePlugin::$socketHandler, $this->pool, $accountStore);
+        SocketHandler::register(ReefEdgePlugin::$socketHandler, $this->pool, $this->store);
         ReefEdgePlugin::$isSocketStartUp = true;
         if (isset(ReefEdgePlugin::$socketClient) && !ReefEdgePlugin::$socketClient->isConnected()) {
             ReefEdgePlugin::$socketClient->connect();

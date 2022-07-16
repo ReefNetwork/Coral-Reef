@@ -106,7 +106,7 @@ class CommonListener implements Listener
         /** @var WarpPoint[] */
         $warps = yield from $repo->getWarps($p->getXuid(), CoralReefPlugin::$serverID);
         foreach ($warps as $warp) {
-            if ($warp->warpName != "自動セーブ(" . CoralReefPlugin::$server . ")") continue;
+            if ($warp->warpName != "自動セーブ(" . CoralReefPlugin::$serverID . ")") continue;
             AccountService::teleport($p, $warp->pos->getWorld()->getFolderName(), $warp->pos);
         }
     }

@@ -39,7 +39,7 @@ class ScoreBoardService
         $pk = new SetDisplayObjectivePacket();
         $pk->displaySlot = self::object;
         $pk->objectiveName = self::board;
-        $pk->displayName = TextFormat::GREEN . "Reef " . TextFormat::YELLOW . "Server " . TextFormat::DARK_GRAY . CoralReefPlugin::$server;
+        $pk->displayName = TextFormat::GREEN . "Reef " . TextFormat::YELLOW . "Server " . TextFormat::DARK_GRAY . CoralReefPlugin::$serverDisplay;
         $pk->criteriaName = "dummy";
         $pk->sortOrder = 0;
         $p->getNetworkSession()->sendDataPacket($pk);
