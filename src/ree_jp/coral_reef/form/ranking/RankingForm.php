@@ -13,32 +13,36 @@ namespace ree_jp\coral_reef\form\ranking;
 
 use bbo51dog\bboform\element\ClosureButton;
 use bbo51dog\bboform\form\SimpleForm;
+use Generator;
 use pocketmine\player\Player;
 use ree_jp\coral_reef\account\AccountStore;
 use ree_jp\coral_reef\form\PageViewForm;
-use ree_jp\coral_reef\sql\mysql\SQLRepository;
+use ree_jp\coral_reef\sql\model\LiteUserModel;
+use ree_jp\coral_reef\sql\repo\UserRepository;
+use ree_jp\coral_reef\sql\RepositoryPool;
+use SOFe\AwaitGenerator\Await;
 
 class RankingForm
 {
-    static function sendForm(SQLRepository $repo, AccountStore $store, Player $p): void
+    static function sendForm(RepositoryPool $pool, AccountStore $store, Player $p): void
     {
         $form = (new SimpleForm())
             ->setTitle("Ranking")
             ->setText("表示したいランキングを選択してください");
         $form->addElements(
             new ClosureButton("経験値ランキング", null,
-                function () use ($p, $repo): void {
-                    self::sendAllExperienceForm($repo, $p);
+                function () use ($pool, $p): void {
+                    self::sendAllExperienceForm($pool, $p);
                 }
             ),
             new ClosureButton("毎日採掘量ランキング", null,
-                function () use ($store, $p, $repo): void {
-                    DigRankingForm::sendDailyDigForm($repo, $store, $p);
+                function () use ($store, $p, $pool): void {
+                    DigRankingForm::sendDailyDigForm($pool, $store, $p);
                 }
             ),
             new ClosureButton("週間採掘量ランキング", null,
-                function () use ($store, $p, $repo): void {
-                    DigRankingForm::sendWeeklyDigForm($repo, $store, $p);
+                function () use ($store, $p, $pool): void {
+                    DigRankingForm::sendWeeklyDigForm($pool, $store, $p);
                 }
             )
         );
@@ -46,15 +50,19 @@ class RankingForm
         $p->sendForm($form);
     }
 
-    static function sendAllExperienceForm(SQLRepository $repo, Player $p): void
+    static function sendAllExperienceForm(RepositoryPool $pool, Player $p): void
     {
-        $repo->getAllUser(function (array $rows) use ($p): void {
-            if (!$p->isOnline()) return;
+        Await::f2c(function () use ($p, $pool): Generator {
+            /** @var UserRepository */
+            $repo = $pool->get(UserRepository::class);
+            /** @var LiteUserModel[] */
+            $userModels = yield from $repo->getAllUserData();
 
+            if (!$p->isOnline()) return;
             $list[] = [];
-            foreach ($rows as $row) {
-                if ($row["xuid"] === 0) continue; // サーバー管理用アカウントをランキングに入れない
-                $list[$row["experience"]][] = $row["name"];
+            foreach ($userModels as $userModel) {
+                if ($userModel->xuid === "0") continue; // サーバー管理用アカウントをランキングに入れない
+                $list[$userModel->experience][] = $userModel->name;
             }
             krsort($list, SORT_NUMERIC);
             $content = [];

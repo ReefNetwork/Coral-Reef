@@ -18,6 +18,7 @@ use pocketmine\network\mcpe\protocol\types\ScorePacketEntry;
 use pocketmine\player\Player;
 use pocketmine\utils\TextFormat;
 use ree_jp\coral_reef\CoralReefPlugin;
+use ree_jp\coral_reef\StoreHouse;
 use ree_jp\coral_reef\task\ServerUpdateTask;
 
 class ScoreBoardService
@@ -25,9 +26,11 @@ class ScoreBoardService
     const board = "board";
     const object = "sidebar";
 
-    static function sendScoreBoard(AccountStore $store, Player $p): void
+    static function sendScoreBoard(StoreHouse $store, Player $p): void
     {
-        $user = $store->getUser($p->getXuid());
+        /** @var AccountStore */
+        $accountStore = $store->get(AccountStore::class);
+        $user = $accountStore->getUser($p->getXuid());
         if (is_null($user)) return;
 
         $pk = new RemoveObjectivePacket();
@@ -62,7 +65,7 @@ class ScoreBoardService
         self::setScore($pk, 8, TextFormat::DARK_GRAY . $p->getDisplayName());
         self::setScore($pk, 9, TextFormat::DARK_GRAY . date("Y/m/d H:i"));
 
-        if ($store->hasValue($p->getXuid(), "wait_action")) {
+        if ($accountStore->hasValue($p->getXuid(), "wait_action")) {
             self::setScore($pk, 11, "現在処理中です....");
             self::setScore($pk, 12, "数秒たってもこの状態の場合は");
             self::setScore($pk, 13, "/lobbyでリログをお願いします");

@@ -22,24 +22,28 @@ use pocketmine\Server;
 use ree_jp\coral_reef\account\AccountStore;
 use ree_jp\coral_reef\land\LandData;
 use ree_jp\coral_reef\land\LandService;
-use ree_jp\coral_reef\sql\mysql\SQLRepository;
+use ree_jp\coral_reef\sql\RepositoryPool;
+use ree_jp\coral_reef\StoreHouse;
 
 class LandShareForm
 {
-    static function sendForm(SQLRepository $repo, AccountStore $store, LandData $land, Player $p): void
+    static function sendForm(RepositoryPool $pool, StoreHouse $store, LandData $land, Player $p): void
     {
+        /** @var AccountStore */
+        $accountStore = $store->get(AccountStore::class);
+
         $form = (new SimpleForm())
             ->setTitle("Land -> Share")
             ->setText("土地保護の共有をする人を追加するか削除したいメンバーを選択してください\n土地保護を一緒に掘れるようになります\n" .
                 "サーバーが再起動しても解除されません");
 
         foreach ($land->members as $member) {
-            $name = $store->getUserName($member);
+            $name = $accountStore->getUserName($member);
             $form->addElement(
                 new ClosureButton(
                     $name, null,
-                    function (Player $p) use ($land, $repo, $store, $name, $member) {
-                        self::sendMemberDeleteConfirmForm($repo, $store, $land, $p, $name, $member);
+                    function (Player $p) use ($pool, $land, $store, $name, $member) {
+                        self::sendMemberDeleteConfirmForm($pool, $store, $land, $p, $name, $member);
                     }
                 )
             );
@@ -48,26 +52,26 @@ class LandShareForm
         $form->addElement(
             new ClosureButton(
                 "メンバーを追加する", null,
-                function (Player $p) use ($repo, $store, $land) {
-                    self::sendMemberAddForm($repo, $store, $land, $p);
+                function (Player $p) use ($pool, $store, $land) {
+                    self::sendMemberAddForm($pool, $store, $land, $p);
                 }
             )
         );
         $p->sendForm($form);
     }
 
-    private static function sendMemberDeleteConfirmForm(SQLRepository $repo, AccountStore $store, LandData $land, Player $p, string $name, string $xuid): void
+    private static function sendMemberDeleteConfirmForm(RepositoryPool $pool, StoreHouse $store, LandData $land, Player $p, string $name, string $xuid): void
     {
         $form = new ModalForm(
             new ClosureButton(
                 "はい", null,
-                function (Player $p) use ($repo, $land, $xuid) {
-                    LandService::deleteShareMember($repo, $land, $p, $xuid);
+                function (Player $p) use ($pool, $land, $xuid) {
+                    LandService::deleteShareMember($pool, $land, $p, $xuid);
                 }
             ),
             new ClosureButton(
-                "いいえ", null, function (Player $p) use ($repo, $store, $land) {
-                self::sendForm($repo, $store, $land, $p);
+                "いいえ", null, function (Player $p) use ($pool, $store, $land) {
+                self::sendForm($pool, $store, $land, $p);
             })
         );
         $form->setTitle("Share -> Delete")
@@ -75,17 +79,20 @@ class LandShareForm
         $p->sendForm($form);
     }
 
-    static function sendMemberAddForm(SQLRepository $repo, AccountStore $store, LandData $land, Player $p): void
+    static function sendMemberAddForm(RepositoryPool $pool, StoreHouse $store, LandData $land, Player $p): void
     {
         $memberNameInput = new Input("追加したいメンバーの名前を入力してください", "名前");
         $form = new ClosureCustomForm(
-            function (Player $p) use ($repo, $land, $store, $memberNameInput) {
-                $member = $store->getXuid($memberNameInput->getValue());
+            function (Player $p) use ($pool, $land, $store, $memberNameInput) {
+                /** @var AccountStore */
+                $accountStore = $store->get(AccountStore::class);
+
+                $member = $accountStore->getXuid($memberNameInput->getValue());
                 if (!is_null($member)) {
                     if ($member === $p->getXuid()) {
                         $p->sendMessage("メンバーに自分を追加することはできません");
                     } else {
-                        self::sendPartyAddConfirmForm($repo, $store, $land, $p, $memberNameInput->getValue(), $member);
+                        self::sendPartyAddConfirmForm($pool, $store, $land, $p, $memberNameInput->getValue(), $member);
                     }
                 } else {
                     $p->sendMessage($memberNameInput->getValue() . "さんは見つかりませんでした");
@@ -97,21 +104,21 @@ class LandShareForm
         $p->sendForm($form);
     }
 
-    private static function sendPartyAddConfirmForm(SQLRepository $repo, AccountStore $store, LandData $land, Player $p, string $name, string $xuid): void
+    private static function sendPartyAddConfirmForm(RepositoryPool $pool, StoreHouse $store, LandData $land, Player $p, string $name, string $xuid): void
     {
         $form = new ModalForm(
             new ClosureButton(
                 "はい", null,
-                function (Player $p) use ($name, $repo, $land, $xuid) {
-                    LandService::addShareMember($repo, $land, $p, $xuid);
+                function (Player $p) use ($pool, $name, $land, $xuid) {
+                    LandService::addShareMember($pool, $land, $p, $xuid);
                     $partyMember = Server::getInstance()->getPlayerByPrefix($name);
                     if ($partyMember instanceof Player) $partyMember->sendMessage($p->getName() . "さんの土地保護($land->name)に参加しました");
                 }
             ),
             new ClosureButton(
                 "いいえ", null,
-                function (Player $p) use ($repo, $land, $store) {
-                    self::sendMemberAddForm($repo, $store, $land, $p);
+                function (Player $p) use ($pool, $land, $store) {
+                    self::sendMemberAddForm($pool, $store, $land, $p);
                 }
             )
         );

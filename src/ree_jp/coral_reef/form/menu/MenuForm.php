@@ -27,16 +27,20 @@ use ree_jp\coral_reef\form\skill\SkillSettingForm;
 use ree_jp\coral_reef\money\MoneyService;
 use ree_jp\coral_reef\quest\QuestListener;
 use ree_jp\coral_reef\sql\mysql\SQLRepository;
+use ree_jp\coral_reef\sql\RepositoryPool;
 
 class MenuForm
 {
-    static function sendMenu(SQLRepository $repo, AccountStore $store, Player $p): void
+    static function sendMenu(RepositoryPool $pool, AccountStore $store, Player $p): void
     {
         $xuid = $p->getXuid();
         if ($store->hasValue($xuid, 'form_cool_time')) return;
         $store->setValue($xuid, 'form_cool_time', 10);
 
-        MoneyService::getMoney($repo, $xuid, function (int $money) use ($store, $repo, $xuid, $p) {
+        /** @var SQLRepository */
+        $sqlRepo = $pool->get(SQLRepository::class);
+
+        MoneyService::getMoney($sqlRepo, $xuid, function (int $money) use ($pool, $store, $sqlRepo, $xuid, $p) {
             if (!$p->isOnline()) return;
 
             $user = $store->getUser($xuid);
@@ -56,8 +60,8 @@ class MenuForm
                         }
                     ),
                     new ClosureButton(
-                        "ワープ地点 \n§7自分だけのワープ地点を作成します", null, function (Player $p) use ($repo) {
-                        MyWarpForm::sendForm($repo, $p);
+                        "ワープ地点 \n§7自分だけのワープ地点を作成します", null, function (Player $p) use ($pool) {
+                        MyWarpForm::sendForm($pool, $p);
                     }),
                     new ClosureButton(
                         "ワールド移動 \n§7ロビーやショップに移動ができます", null, function (Player $p) {
@@ -72,8 +76,8 @@ class MenuForm
                         QuestForm::sendForm($p);
                     }),
                     new ClosureButton(
-                        "ランダムワープ \n§7ランダムな場所にワープします", null, function (Player $p) use ($repo, $store) {
-                        self::sendRandomWarpForm($repo, $store, $p);
+                        "ランダムワープ \n§7ランダムな場所にワープします", null, function (Player $p) use ($pool, $store) {
+                        self::sendRandomWarpForm($pool, $store, $p);
                     }),
                     new ClosureButton(
                         "ゴミ箱 \n§7アイテムを捨てる事ができます", null,
@@ -86,31 +90,31 @@ class MenuForm
                         Server::getInstance()->dispatchCommand($p, "reef-form land");
                     }),
                     new ClosureButton(
-                        "ランキング \n§7所持金ランキングなどが見れます", null, function (Player $p) use ($store, $repo) {
-                        RankingForm::sendForm($repo, $store, $p);
+                        "ランキング \n§7所持金ランキングなどが見れます", null, function (Player $p) use ($pool, $store) {
+                        RankingForm::sendForm($pool, $store, $p);
                     }),
                     new ClosureButton(
-                        "ガチャ \n§7ガチャチケットでひくことができます", null, function (Player $p) use ($repo) {
-                        GatyaForm::sendForm($repo, $p);
+                        "ガチャ \n§7ガチャチケットでひくことができます", null, function (Player $p) use ($sqlRepo) {
+                        GatyaForm::sendForm($sqlRepo, $p);
                     }),
                     new ClosureButton(
-                        "ギフト \n§7ギフトがある場合はここから受け取れます", null, function (Player $p) use ($repo, $store) {
-                        GiftForm::sendForm($repo, $store, $p);
+                        "ギフト \n§7ギフトがある場合はここから受け取れます", null, function (Player $p) use ($sqlRepo, $store) {
+                        GiftForm::sendForm($sqlRepo, $store, $p);
                     }),
                     new ClosureButton(
-                        "ボーナスコード \n§7運営が配布するコードで特別なアイテムが受け取れます", null, function (Player $p) use ($repo) {
-                        BonusCodeForm::sendForm($repo, $p);
+                        "ボーナスコード \n§7運営が配布するコードで特別なアイテムが受け取れます", null, function (Player $p) use ($sqlRepo) {
+                        BonusCodeForm::sendForm($sqlRepo, $p);
                     }),
                     new ClosureButton(
-                        "サーバー移動 \n§7整地2などへの移動ができます", null, function (Player $p) use ($store, $repo) {
+                        "サーバー移動 \n§7整地2などへの移動ができます", null, function (Player $p) {
                         Server::getInstance()->dispatchCommand($p, "exe-p server-select");
                     }),
                     new ClosureButton(
-                        "設定", null, function (Player $p) use ($repo) {
-                        SettingForm::sendForm($repo, $p);
+                        "設定", null, function (Player $p) use ($sqlRepo) {
+                        SettingForm::sendForm($sqlRepo, $p);
                     }),
                     new ClosureButton(
-                        "アカウント設定 \n§7称号の変更や自分の情報を確認できます", null, function (Player $p) use ($store, $repo) {
+                        "アカウント設定 \n§7称号の変更や自分の情報を確認できます", null, function (Player $p) {
                         Server::getInstance()->dispatchCommand($p, "exe-p setting");
                     }),
                     new ClosureButton("解説 \n§7機能の解説やルールの確認ができます", null, function () use ($p): void {
@@ -121,7 +125,7 @@ class MenuForm
         });
     }
 
-    private static function sendRandomWarpForm(SQLRepository $repo, AccountStore $store, Player $p): void
+    private static function sendRandomWarpForm(RepositoryPool $pool, AccountStore $store, Player $p): void
     {
         $form = new ModalForm(
             new ClosureButton(
@@ -154,8 +158,8 @@ class MenuForm
                 }
             ),
             new ClosureButton(
-                "いいえ", null, function (Player $p) use ($store, $repo) {
-                MenuForm::sendMenu($repo, $store, $p);
+                "いいえ", null, function (Player $p) use ($pool, $store) {
+                MenuForm::sendMenu($pool, $store, $p);
             })
         );
         $form->setTitle("RandomWarp")

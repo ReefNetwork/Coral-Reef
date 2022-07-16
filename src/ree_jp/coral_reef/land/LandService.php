@@ -11,22 +11,23 @@
 
 namespace ree_jp\coral_reef\land;
 
-use JetBrains\PhpStorm\Pure;
 use pocketmine\math\AxisAlignedBB;
 use pocketmine\math\Vector3;
 use pocketmine\player\Player;
 use pocketmine\scheduler\ClosureTask;
-use pocketmine\Server;
 use pocketmine\utils\TextFormat;
 use pocketmine\world\particle\PortalParticle;
 use pocketmine\world\Position;
 use pocketmine\world\sound\EndermanTeleportSound;
-use poggit\libasynql\SqlError;
 use ree_jp\coral_reef\account\AccountService;
 use ree_jp\coral_reef\account\AccountStore;
 use ree_jp\coral_reef\CoralReefPlugin;
 use ree_jp\coral_reef\sql\mysql\SQLRepository;
+use ree_jp\coral_reef\sql\repo\LandRepository;
+use ree_jp\coral_reef\sql\RepositoryPool;
 use ree_jp\coral_reef\sql\SQLConst;
+use ree_jp\coral_reef\StoreHouse;
+use SOFe\AwaitGenerator\Await;
 
 class LandService
 {
@@ -62,9 +63,12 @@ class LandService
         return $myLands;
     }
 
-    #[Pure] static function canCreateLand(LandStore $store, LandData $checkLand): ?LandData
+    static function canCreateLand(StoreHouse $store, LandData $checkLand): ?LandData
     {
-        foreach ($store->lands as $level => $lands) {
+        /** @var LandStore */
+        $landStore = $store->get(LandStore::class);
+
+        foreach ($landStore->lands as $level => $lands) {
             if ($level !== $checkLand->level) continue;
 
             foreach ($lands as $land) {
@@ -107,11 +111,14 @@ class LandService
         return false;
     }
 
-    static function addShareMember(SQLRepository $repo, LandData $land, ?Player $p, string $xuid): void
+    static function addShareMember(RepositoryPool $pool, LandData $land, ?Player $p, string $xuid): void
     {
+        /** @var SQLRepository */
+        $sqlRepo = $pool->get(SQLRepository::class);
+
         if (!$land->isMember($xuid)) {
             $land->addMember($xuid);
-            $repo->setValue($land->xuid, SQLConst::TYPE_LAND_KEY, CoralReefPlugin::$serverID . ":" . $land->name, implode(":", $land->members),
+            $sqlRepo->setValue($land->xuid, SQLConst::TYPE_LAND_KEY, CoralReefPlugin::$serverID . ":" . $land->name, implode(":", $land->members),
                 function () use ($p): void {
                     if (!is_null($p)) $p->sendMessage("土地保護の共有を追加しました");
                 }
@@ -119,53 +126,57 @@ class LandService
         }
     }
 
-    static function deleteShareMember(SQLRepository $repo, LandData $land, ?Player $p, string $xuid): void
+    static function deleteShareMember(RepositoryPool $pool, LandData $land, ?Player $p, string $xuid): void
     {
+        /** @var SQLRepository */
+        $sqlRepo = $pool->get(SQLRepository::class);
+
         $land->deleteMember($xuid);
-        $repo->setValue($land->xuid, SQLConst::TYPE_LAND_KEY, CoralReefPlugin::$serverID . ":" . $land->name, implode(":", $land->members),
+        $sqlRepo->setValue($land->xuid, SQLConst::TYPE_LAND_KEY, CoralReefPlugin::$serverID . ":" . $land->name, implode(":", $land->members),
             function () use ($p): void {
                 if (!is_null($p)) $p->sendMessage("土地保護の共有を削除しました");
             }
         );
     }
 
-    static function addLand(SQLRepository $sqlRepo, LandStore $store, LandData $land, ?Player $p): void
+    static function addLand(RepositoryPool $pool, StoreHouse $store, LandData $land, ?Player $p): void
     {
-        $sqlRepo->addProtectLand($land, function () use ($store, $p, $land) {
-            if (!isset($store->lands[$land->level])) $store->lands[$land->level] = [];
-            $store->lands[$land->level][] = $land;
+        /** @var LandRepository */
+        $repo = $pool->get(SQLRepository::class);
+        /** @var LandStore */
+        $landStore = $store->get(LandStore::class);
+
+        Await::g2c($repo->setLand($land, CoralReefPlugin::$serverID), function () use ($landStore, $p, $land) {
+            if (!isset($store->lands[$land->level])) $landStore->lands[$land->level] = [];
+            $landStore->lands[$land->level][] = $land;
 
             if ($p instanceof Player && $p->isOnline()) {
                 $p->sendMessage($land->name . 'を作成しました');
             }
-        }, function (SqlError $error) use ($p, $land) {
-            Server::getInstance()->getLogger()->error("[LandSQL] $land->name の作成中に" . $error->getErrorMessage());
-
-            if ($p instanceof Player && $p->isOnline()) {
-                $p->sendMessage('エラーが発生しました');
-            }
         });
     }
 
-    static function deleteLand(SQLRepository $sqlRepo, LandStore $store, LandData $land, ?Player $p): void
+    static function deleteLand(RepositoryPool $pool, StoreHouse $store, LandData $land, ?Player $p): void
     {
-        $sqlRepo->deleteProtectLand($land, function () use ($store, $p, $land) {
-            foreach ($store->lands as $level => $cacheLands) {
-                if ($level !== $land->level) continue;
+        /** @var LandRepository */
+        $repo = $pool->get(LandRepository::class);
+        /** @var LandStore */
+        $landStore = $store->get(LandStore::class);
 
-                foreach ($cacheLands as $key => $cacheLand) {
-                    if ($cacheLand->xuid === $land->xuid && $cacheLand->name === $land->name) {
-                        array_splice($store->lands[$level], $key, 1);
-                        $p->sendMessage("土地を削除しました");
-                        return;
-                    }
+        Await::g2c($repo->deleteLand($land));
+
+        foreach ($landStore->lands as $level => $cacheLands) {
+            if ($level !== $land->level) continue;
+
+            foreach ($cacheLands as $key => $cacheLand) {
+                if ($cacheLand->xuid === $land->xuid && $cacheLand->name === $land->name) {
+                    array_splice($landStore->lands[$level], $key, 1);
+                    $p->sendMessage("土地を削除しました");
+                    return;
                 }
             }
-            $p->sendMessage("エラーが発生しました");
-        }, function (SqlError $error) use ($p, $land) {
-            Server::getInstance()->getLogger()->error("[LandSQL] $land->name の削除中に" . $error->getErrorMessage());
-            $p->sendMessage("エラーが発生しました");
-        });
+        }
+        $p->sendMessage("エラーが発生しました");
     }
 
     static function protect(LandStore $landStore, AccountStore $accountStore, Player $p, Position $pos, ?string $message,

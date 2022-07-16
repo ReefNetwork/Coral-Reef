@@ -21,11 +21,17 @@ use pocketmine\player\Player;
 use pocketmine\Server;
 use ree_jp\coral_reef\account\AccountStore;
 use ree_jp\coral_reef\land\LandStore;
+use ree_jp\coral_reef\StoreHouse;
 
 class LandPartyForm
 {
-    static function sendForm(AccountStore $accountStore, LandStore $landStore, Player $p): void
+    static function sendForm(StoreHouse $store, Player $p): void
     {
+        /** @var AccountStore */
+        $accountStore = $store->get(AccountStore::class);
+        /** @var LandStore */
+        $landStore = $store->get(LandStore::class);
+
         $form = (new SimpleForm())
             ->setTitle("Land -> Party")
             ->setText("パーティーメンバーを追加するか削除したいメンバーを選択してください\nパーティーメンバーになると土地保護を一緒に掘れるようになります\n" .
@@ -36,8 +42,8 @@ class LandPartyForm
             $form->addElement(
                 new ClosureButton(
                     $name, null,
-                    function (Player $p) use ($landStore, $accountStore, $name, $member) {
-                        self::sendPartyDeleteConfirmForm($accountStore, $landStore, $p, $name, $member);
+                    function (Player $p) use ($store, $name, $member) {
+                        self::sendPartyDeleteConfirmForm($store, $p, $name, $member);
                     }
                 )
             );
@@ -46,16 +52,19 @@ class LandPartyForm
         $form->addElement(
             new ClosureButton(
                 "パーティーを追加する", null,
-                function (Player $p) use ($landStore) {
-                    self::sendPartyAddForm($landStore, $p);
+                function (Player $p) use ($store) {
+                    self::sendPartyAddForm($store, $p);
                 }
             )
         );
         $p->sendForm($form);
     }
 
-    private static function sendPartyDeleteConfirmForm(AccountStore $accountStore, LandStore $landStore, Player $p, string $name, string $xuid): void
+    private static function sendPartyDeleteConfirmForm(StoreHouse $store, Player $p, string $name, string $xuid): void
     {
+        /** @var LandStore */
+        $landStore = $store->get(LandStore::class);
+
         $form = new ModalForm(
             new ClosureButton(
                 "はい", null,
@@ -65,8 +74,8 @@ class LandPartyForm
                 }
             ),
             new ClosureButton(
-                "いいえ", null, function (Player $p) use ($accountStore, $landStore) {
-                self::sendForm($accountStore, $landStore, $p);
+                "いいえ", null, function (Player $p) use ($store) {
+                self::sendForm($store, $p);
             })
         );
         $form->setTitle("Party -> Delete")
@@ -74,9 +83,9 @@ class LandPartyForm
         $p->sendForm($form);
     }
 
-    static function sendPartyAddForm(LandStore $store, Player $p): void
+    static function sendPartyAddForm(StoreHouse $store, Player $p): void
     {
-        $memberNameInput = new Input('追加したいパーティーの名前を入力してください', '名前');
+        $memberNameInput = new Input("追加したいパーティーの名前を入力してください", "名前");
         $form = new ClosureCustomForm(
             function (Player $p) use ($store, $memberNameInput) {
                 $member = Server::getInstance()->getPlayerByPrefix($memberNameInput->getValue());
@@ -96,13 +105,16 @@ class LandPartyForm
         $p->sendForm($form);
     }
 
-    private static function sendPartyAddConfirmForm(LandStore $store, Player $p, Player $member): void
+    private static function sendPartyAddConfirmForm(StoreHouse $store, Player $p, Player $member): void
     {
+        /** @var LandStore */
+        $landStore = $store->get(LandStore::class);
+
         $form = new ModalForm(
             new ClosureButton(
                 "はい", null,
-                function (Player $p) use ($store, $member) {
-                    $store->addParty($p->getXuid(), $member->getXuid());
+                function (Player $p) use ($landStore, $member) {
+                    $landStore->addParty($p->getXuid(), $member->getXuid());
                     $p->sendMessage($member->getName() . 'さんをパーティーに追加しました');
                     $member->sendMessage($p->getName() . 'さんのパーティーに追加されました');
                 }

@@ -13,7 +13,7 @@ namespace ree_jp\coral_reef\sql\mysql;
 
 use Generator;
 use ree_jp\coral_reef\sql\model\PlayerData;
-use ree_jp\coral_reef\sql\PlayerRepository;
+use ree_jp\coral_reef\sql\repo\PlayerRepository;
 use ree_jp\coral_reef\sql\RepositoryPool;
 use SOFe\AwaitGenerator\Await;
 

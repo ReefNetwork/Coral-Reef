@@ -11,20 +11,30 @@
 
 namespace ree_jp\coral_reef\form\ranking;
 
+use Generator;
 use pocketmine\player\Player;
 use ree_jp\coral_reef\account\AccountStore;
 use ree_jp\coral_reef\form\PageViewForm;
-use ree_jp\coral_reef\sql\mysql\SQLRepository;
+use ree_jp\coral_reef\sql\model\BlockStatisticsModel;
+use ree_jp\coral_reef\sql\repo\SessionRepository;
+use ree_jp\coral_reef\sql\RepositoryPool;
+use SOFe\AwaitGenerator\Await;
 
 class DigRankingForm
 {
 
-    static function sendDailyDigForm(SQLRepository $repo, AccountStore $store, Player $p): void
+    static function sendDailyDigForm(RepositoryPool $pool, AccountStore $store, Player $p): void
     {
-        $lastTime = self::getLatestTime();
-        $repo->getAllCountWithQuit(strtotime("-1 day", $lastTime), $lastTime, function (array $rows) use ($store, $p): void {
-            self::sendCountForm($store, $p, $rows, "Ranking -> DailyDig");
-        }, null);
+        Await::f2c(function () use ($pool, $p, $store): Generator {
+            $lastTime = self::getLatestTime();
+            /** @var SessionRepository */
+            $repo = $pool->get(SessionRepository::class);
+
+            /** @var BlockStatisticsModel[] */
+            $statistics = yield from $repo->getAllCountWithQuit(strtotime("-1 day", $lastTime), $lastTime);
+
+            self::sendCountForm($store, $p, $statistics, "Ranking -> DailyDig");
+        });
     }
 
     static private function getLatestTime(): int
@@ -37,29 +47,42 @@ class DigRankingForm
         }
     }
 
-    static private function sendCountForm(AccountStore $store, Player $p, array $rows, string $title): void
+    /**
+     * @param AccountStore $store
+     * @param Player $p
+     * @param BlockStatisticsModel[] $statistics
+     * @param string $title
+     * @return void
+     */
+    static private function sendCountForm(AccountStore $store, Player $p, array $statistics, string $title): void
     {
         $content = [];
         $ranking = 1;
         $my = 0;
-        foreach ($rows as $row) {
-            $xuid = $row["xuid"];
-            $name = $store->getUserName($xuid);
 
-            if ($xuid === $p->getXuid()) {
+        foreach ($statistics as $row) {
+            $name = $store->getUserName($row->xuid);
+
+            if ($row->xuid === $p->getXuid()) {
                 $my = $ranking;
             }
-            $content[] = "$ranking 位: $name さん(" . $row["break_count"] . ")";
+            $content[] = "$ranking 位: $name さん(" . $row->breakCount . ")";
             $ranking++;
         }
         PageViewForm::sendForm($p, $title, "あなたは$my 位です\n\n", $content, 100);
     }
 
-    static function sendWeeklyDigForm(SQLRepository $repo, AccountStore $store, Player $p): void
+    static function sendWeeklyDigForm(RepositoryPool $pool, AccountStore $store, Player $p): void
     {
-        $lastTime = self::getLatestTime();
-        $repo->getAllCountWithQuit(strtotime("-1 week", $lastTime), $lastTime, function (array $rows) use ($store, $p): void {
-            self::sendCountForm($store, $p, $rows, "Ranking -> WeeklyDig");
-        }, null);
+        Await::f2c(function () use ($pool, $p, $store): Generator {
+            $lastTime = self::getLatestTime();
+            /** @var SessionRepository */
+            $repo = $pool->get(SessionRepository::class);
+
+            /** @var BlockStatisticsModel[] */
+            $statistics = yield from $repo->getAllCountWithQuit(strtotime("-1 week", $lastTime), $lastTime);
+
+            self::sendCountForm($store, $p, $statistics, "Ranking -> WeeklyDig");
+        });
     }
 }

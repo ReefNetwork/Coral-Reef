@@ -12,23 +12,24 @@
 
 namespace ree_jp\coral_reef\session;
 
-use ree_jp\coral_reef\sql\mysql\SQLRepository;
+use ree_jp\coral_reef\sql\RepositoryPool;
+use ree_jp\coral_reef\Store;
 
-class SessionStore
+class SessionStore implements Store
 {
     /**@var SessionData[] */
     private array $sessions = [];
 
-    public function createSession(string $xuid): void
+    public function createSession(string $xuid, string $server): void
     {
-        $this->sessions[$xuid] = new SessionData($xuid);
+        $this->sessions[$xuid] = new SessionData($xuid, $server);
     }
 
-    public function destruction(SQLRepository $repo, string $xuid): void
+    public function destruction(RepositoryPool $pool, string $xuid): void
     {
         $session = $this->getSessionData($xuid);
         if (!is_null($session)) {
-            $session->quit($repo);
+            $session->quit($pool);
             unset($this->sessions[$xuid]);
         }
     }

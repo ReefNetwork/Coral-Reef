@@ -14,24 +14,36 @@ namespace ree_jp\coral_reef\form\land;
 use bbo51dog\bboform\element\ClosureButton;
 use bbo51dog\bboform\form\ModalForm;
 use bbo51dog\bboform\form\SimpleForm;
+use Generator;
 use pocketmine\player\Player;
 use pocketmine\utils\TextFormat;
 use ree_jp\coral_reef\account\AccountStore;
 use ree_jp\coral_reef\land\LandData;
 use ree_jp\coral_reef\land\LandService;
-use ree_jp\coral_reef\land\LandStore;
+use ree_jp\coral_reef\session\SessionData;
 use ree_jp\coral_reef\sql\mysql\SQLRepository;
+use ree_jp\coral_reef\sql\repo\SessionRepository;
+use ree_jp\coral_reef\sql\RepositoryPool;
+use ree_jp\coral_reef\StoreHouse;
+use SOFe\AwaitGenerator\Await;
 
 class LandDetailForm
 {
-    static function sendForm(SQLRepository $repo, AccountStore $accountStore, LandStore $landStore, LandData $land, Player $p): void
+    static function sendForm(RepositoryPool $pool, StoreHouse $store, LandData $land, Player $p): void
     {
-        $repo->getRecentSession($land->xuid, function (array $rows) use ($landStore, $repo, $land, $accountStore, $p): void {
+        Await::f2c(function () use ($pool, $store, $land, $p): Generator {
+            /** @var SessionRepository */
+            $repo = $pool->get(SQLRepository::class);
+            /** @var AccountStore */
+            $accountStore = $store->get(AccountStore::class);
+
+            $session = yield from $repo->getRecentSession($land->xuid);
             if (!$p->isOnline()) return;
-            $session = array_shift($rows);
-            $logoutIntervalDay = "不明";
-            if (!empty($session)) {
-                $logoutIntervalDay = floor((time() - strtotime($session["join_time"])) / (60 * 60 * 24)) . "日前";
+
+            if ($session instanceof SessionData) {
+                $logoutIntervalDay = $session->joinTime;
+            } else {
+                $logoutIntervalDay = "不明";
             }
 
             $ownerName = $accountStore->getUserName($land->xuid);
@@ -46,42 +58,42 @@ class LandDetailForm
                 $form->addElements(
                     new ClosureButton(
                         "土地保護を共有する", null,
-                        function (Player $p) use ($accountStore, $repo, $land) {
-                            LandShareForm::sendForm($repo, $accountStore, $land, $p);
+                        function (Player $p) use ($store, $pool, $land) {
+                            LandShareForm::sendForm($pool, $store, $land, $p);
                         }
                     ),
                     new ClosureButton(
                         "土地を削除する", null,
-                        function (Player $p) use ($accountStore, $landStore, $repo, $land) {
-                            self::sendLandDeleteConfirmForm($repo, $accountStore, $landStore, $p, $land, TextFormat::RED . "本当に削除しますか?");
+                        function (Player $p) use ($store, $pool, $land) {
+                            self::sendLandDeleteConfirmForm($pool, $store, $p, $land, TextFormat::RED . "本当に削除しますか?");
                         }
                     )
                 );
             } elseif ($land->xuid != 0) {
                 $form->addElement(new ClosureButton("土地を削除する\n所有者が30日間ログインしていない場合、土地を奪うことができます", null,
-                    function () use ($p, $accountStore, $landStore, $repo, $land) {
-                        self::sendLandTakeForm($repo, $accountStore, $landStore, $p, $land);
+                    function () use ($pool, $store, $p, $land) {
+                        self::sendLandTakeForm($pool, $store, $p, $land);
                     }
                 ));
             }
             $p->sendForm($form);
-        }, null);
+        });
     }
 
-    private static function sendLandDeleteConfirmForm(SQLRepository $repo, AccountStore $accountStore, LandStore $landStore, Player $p, LandData $land,
-                                                      string        $confirmMessage): void
+    private static function sendLandDeleteConfirmForm(RepositoryPool $pool, StoreHouse $store, Player $p, LandData $land,
+                                                      string         $confirmMessage): void
     {
         $form = new ModalForm(
             new ClosureButton(
                 "はい", null,
-                function (Player $p) use ($landStore, $repo, $land) {
-                    LandService::deleteLand($repo, $landStore, $land, $p);
+                function (Player $p) use ($pool, $store, $land) {
+                    LandService::deleteLand($pool, $store, $land, $p);
                 },
             ),
             new ClosureButton(
                 "いいえ", null,
-                function (Player $p) use ($accountStore, $landStore, $repo, $land) {
-                    self::sendForm($repo, $accountStore, $landStore, $land, $p);
+                function (Player $p) use ($pool, $store, $land) {
+                    self::sendForm($pool, $store, $land, $p);
                 },
             ),
         );
@@ -89,28 +101,37 @@ class LandDetailForm
         $p->sendForm($form);
     }
 
-    private static function sendLandTakeForm(SQLRepository $repo, AccountStore $accountStore, LandStore $landStore, Player $p, LandData $land): void
+    private static function sendLandTakeForm(RepositoryPool $pool, StoreHouse $store, Player $p, LandData $land): void
     {
+        /** @var AccountStore */
+        $accountStore = $store->get(AccountStore::class);
+
         $user = $accountStore->getUser($p->getXuid());
         if ($user->level < 30) {
             $p->sendMessage("30レベル未満は土地を奪うことができません");
             return;
         }
-        $repo->getRecentSession($land->xuid, function (array $rows) use ($repo, $accountStore, $landStore, $land, $p): void {
+
+        Await::f2c(function () use ($land, $store, $p, $pool): Generator {
+            /** @var SessionRepository */
+            $repo = $pool->get(SQLRepository::class);
+            /** @var SessionData */
+            $session = yield from $repo->getRecentSession($p->getXuid());
             if (!$p->isOnline()) return;
-            $session = array_shift($rows);
-            $logoutIntervalDay = 99999;
-            if (!empty($session)) {
-                $logoutIntervalDay = floor((time() - strtotime($session["join_time"])) / (60 * 60 * 24));
+
+            if ($session instanceof SessionData) {
+                $logoutIntervalDay = floor((time() - $session->joinTime) / (60 * 60 * 24));
+            } else {
+                $logoutIntervalDay = 99999;
             }
             if ($logoutIntervalDay >= 30) {
-                self::sendLandDeleteConfirmForm($repo, $accountStore, $landStore, $p, $land, "ランクが30以上かつ、この土地の所有者が30日以上ログインしていないため" .
+                self::sendLandDeleteConfirmForm($pool, $store, $p, $land, "ランクが30以上かつ、この土地の所有者が30日以上ログインしていないため" .
                     "この土地の所有者に変わって土地保護を削除することができます\n" . TextFormat::RED . "自分でその土地を使わない場合はむやみやたらにこの機能を使用しないでください\n" .
                     "本当に削除しますか?");
             } else {
                 $remainder = 30 - $logoutIntervalDay;
                 $p->sendMessage("この土地の所有者の直近ログインは$logoutIntervalDay 日前です\n土地が奪えるようになるまであと$remainder 日です");
             }
-        }, null);
+        });
     }
 }

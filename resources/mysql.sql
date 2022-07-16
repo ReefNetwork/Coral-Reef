@@ -154,35 +154,15 @@ FROM USER
 WHERE xuid = :xuid;
 -- #        }
 -- #        { set
--- #            { account
--- #            :xuid int
--- #            :name string
--- #            :ips string
+-- #        :xuid int
+-- #        :name string
+-- #        :experience int
+-- #        :skill ?string
 INSERT INTO USER
-VALUES (:xuid, :name, :ips, 0, null)
-ON DUPLICATE KEY UPDATE name = :name,
-                        ips  = :ips;
--- #            }
--- #            { xp
--- #            :xuid int
--- #            :experience int
-UPDATE USER
-SET experience = :experience
-WHERE xuid = :xuid;
--- #            }
--- #            { skill
--- #            :xuid int
--- #            :skill ?string
-UPDATE USER
-SET skill = :skill
-WHERE xuid = :xuid;
--- #            }
--- #        }
--- #    }
--- #    { ban
--- #        { get
-SELECT *
-FROM BAN;
+VALUES (:xuid, :name, 0, 0, null)
+ON DUPLICATE KEY UPDATE name       = :name,
+                        experience = :experience,
+                        skill      = :skill;
 -- #        }
 -- #    }
 -- #    { money
@@ -258,7 +238,7 @@ WHERE xuid = :xuid
 -- #        { get
 -- #        :xuid int
 -- #        :server string
-SELECT name, level, x, y, z
+SELECT *
 FROM WARP
 WHERE xuid = :xuid
   AND server = :server;
@@ -311,12 +291,10 @@ VALUES (:xuid, :name, :server, :level, :mx, :sx, :mz, :sz);
 -- #        { delete
 -- #        :xuid int
 -- #        :name string
--- #        :server string
 DELETE
 FROM LAND
 WHERE xuid = :xuid
-  AND name = :name
-  AND server = :server;
+  AND name = :name;
 -- #        }
 -- #    }
 -- #    { log
@@ -369,11 +347,9 @@ VALUES (:xuid, :server, :join_time, :quit_time, :break_count, :place_count, :ski
 -- #        }
 -- #        { get_recent
 -- #        :xuid int
--- #        :server string
 SELECT *
 FROM SESSION_RECORD
 WHERE xuid = :xuid
-  AND server = :server
 ORDER BY join_time DESC
 LIMIT 1;
 -- #        }

@@ -11,11 +11,15 @@
 
 namespace ree_jp\coral_reef\account;
 
+use Generator;
 use pocketmine\scheduler\ClosureTask;
 use ree_jp\coral_reef\CoralReefPlugin;
-use ree_jp\coral_reef\sql\mysql\SQLRepository;
+use ree_jp\coral_reef\sql\model\LiteUserModel;
+use ree_jp\coral_reef\sql\repo\UserRepository;
+use ree_jp\coral_reef\sql\RepositoryPool;
+use ree_jp\coral_reef\Store;
 
-class AccountStore
+class AccountStore implements Store
 {
     public array $users = [];
     private array $values = array();
@@ -81,14 +85,16 @@ class AccountStore
         return null;
     }
 
-    public function updateUserNameList(SQLRepository $repo): void
+    public function updateUserNameList(RepositoryPool $pool): Generator
     {
-        $repo->getAllUser(function (array $rows): void {
-            $list = [];
-            foreach ($rows as $row) {
-                $list[$row["xuid"]] = strtolower($row["name"]);
-            }
-            $this->xuid = $list;
-        });
+        /** @var UserRepository */
+        $repo = $pool->get(UserRepository::class);
+        /** @var LiteUserModel[] */
+        $users = yield from $repo->getAllUserData();
+        $list = [];
+        foreach ($users as $user) {
+            $list[$user->xuid] = strtolower($user->name);
+        }
+        $this->xuid = $list;
     }
 }

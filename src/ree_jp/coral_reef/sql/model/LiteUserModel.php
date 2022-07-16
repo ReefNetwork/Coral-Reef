@@ -9,14 +9,12 @@
  * Copyright (c) 2022. Ree-jp(https://ree-jp.net)
  */
 
-namespace ree_jp\coral_reef\sql;
+namespace ree_jp\coral_reef\sql\model;
 
-use Generator;
-use ree_jp\coral_reef\sql\model\PlayerData;
-
-interface PlayerRepository extends Repository
+class LiteUserModel
 {
-    public function getPlayerData(string $xuid): Generator;
+    function __construct(public string $xuid, public string $name, public int $experience)
+    {
 
-    public function setPlayerData(PlayerData $data): Generator;
+    }
 }

@@ -18,11 +18,11 @@ use pocketmine\plugin\Plugin;
 use pocketmine\plugin\PluginOwned;
 use ree_jp\coral_reef\account\AccountStore;
 use ree_jp\coral_reef\form\menu\MenuForm;
-use ree_jp\coral_reef\sql\mysql\SQLRepository;
+use ree_jp\coral_reef\sql\RepositoryPool;
 
 class MenuCommand extends Command implements PluginOwned
 {
-    public function __construct(private Plugin $owner, private SQLRepository $repo, private AccountStore $store)
+    public function __construct(private Plugin $owner, private RepositoryPool $pool, private AccountStore $store)
     {
         parent::__construct("menu", "メニューを表示します", null, ["m"]);
         $this->setPermission("coral_reef.command.menu");
@@ -35,7 +35,7 @@ class MenuCommand extends Command implements PluginOwned
             $sender->sendMessage("このコマンドはプレイヤー専用です");
             return;
         }
-        MenuForm::sendMenu($this->repo, $this->store, $sender);
+        MenuForm::sendMenu($this->pool, $this->store, $sender);
     }
 
     public function getOwningPlugin(): Plugin
