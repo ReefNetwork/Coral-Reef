@@ -161,7 +161,7 @@ class CoralReefPlugin extends PluginBase
             new BlockLogCommand($this, $accountStore),
             new TrashCommand($this),
             new ReefCommand($this),
-            new ReefAdminCommand($this, $this->sqlRepo, $accountStore, $landStore),
+            new ReefAdminCommand($this, $this->pool, $this->store),
             new ReefConsoleCommand($this, $this->sqlRepo, $accountStore),
             new ReefFormCommand($this, $this->pool, $this->store),
         ]);

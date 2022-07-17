@@ -44,6 +44,8 @@ class MyWarpForm
                 ->setTitle("Menu -> MyWarp")
                 ->setText("自分だけのワープ地点を設定できます");
             foreach ($warps as $warp) {
+                if (str_starts_with($warp->warpName, "[auto-save]")) continue;
+
                 $form->addElement(
                     self::createWarpButton($warp,
                         function (Player $p) use ($warp) {
