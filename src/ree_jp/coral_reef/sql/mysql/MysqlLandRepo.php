@@ -45,7 +45,7 @@ class MysqlLandRepo implements LandRepository
     {
         $lands = [];
         foreach ($data as $landRaw) {
-            $lands[] = new LandData($landRaw["xuid"], $landRaw["name"], $landRaw["level"], new AxisAlignedBB($landRaw["sx"], 0, $landRaw["sz"],
+            $lands[] = new LandData(strval($landRaw["xuid"]), $landRaw["name"], $landRaw["level"], new AxisAlignedBB($landRaw["sx"], 0, $landRaw["sz"],
                 $landRaw["mx"], 0, $landRaw["mz"]));
         }
         return $lands;
@@ -54,7 +54,7 @@ class MysqlLandRepo implements LandRepository
     public function setLand(LandData $land, string $server): Generator
     {
         yield from Await::promise(
-            fn($resolve, $reject) => $this->pool->getConnection()->executeInsert("coral_reef.land.create", ["xuid" => $land->xuid,
+            fn($resolve, $reject) => $this->pool->getConnection()->executeInsert("coral_reef.land.create", ["xuid" => intval($land->xuid),
                 "name" => $land->name, "server" => $server, "level" => $land->level,
                 "mx" => $land->aabb->maxX, "sx" => $land->aabb->minX, "mz" => $land->aabb->maxZ, "sz" => $land->aabb->minZ], $resolve, $reject));
     }
@@ -62,7 +62,7 @@ class MysqlLandRepo implements LandRepository
     public function deleteLand(LandData $land): Generator
     {
         yield from Await::promise(
-            fn($resolve, $reject) => $this->pool->getConnection()->executeInsert("coral_reef.land.delete", ["xuid" => $land->xuid,
+            fn($resolve, $reject) => $this->pool->getConnection()->executeInsert("coral_reef.land.delete", ["xuid" => intval($land->xuid),
                 "name" => $land->name], $resolve, $reject));
     }
 

@@ -65,11 +65,10 @@ use Throwable;
 
 class EventListener implements Listener
 {
-    public function __construct(private RepositoryPool $pool, private AccountStore $accountStore, private LandStore $landStore,
+    public function __construct(private RepositoryPool $pool, private StoreHouse $store, private AccountStore $accountStore, private LandStore $landStore,
                                 private ShopStore      $shopStore, private SessionStore $sessionStore)
     {
     }
-
 
 
     public function onDamage(EntityDamageEvent $ev)
@@ -304,7 +303,7 @@ class EventListener implements Listener
                 } else {
                     if ($this->accountStore->hasValue($xuid, 'form_cool_time')) return;
                     $this->accountStore->setValue($xuid, 'form_cool_time', 10);
-                    LandForm::sendLandCreateAssistForm($sqlRepo, $this->accountStore, $this->landStore, $p, $ev->getBlock()->getPosition());
+                    LandForm::sendLandCreateAssistForm($this->pool, $this->store, $p, $ev->getBlock()->getPosition());
                 }
                 break;
 

@@ -38,7 +38,7 @@ class MysqlUserRepo implements UserRepository
     public function getUserData(string $xuid): Generator
     {
         $result = yield from Await::promise(
-            fn($resolve, $reject) => $this->pool->getConnection()->executeSelect("coral_reef.user.get", ["xuid" => $xuid], $resolve, $reject));
+            fn($resolve, $reject) => $this->pool->getConnection()->executeSelect("coral_reef.user.get", ["xuid" => intval($xuid)], $resolve, $reject));
         if (!$result) return null;
         return current($this->setUserDataModels($result));
     }
@@ -59,7 +59,7 @@ class MysqlUserRepo implements UserRepository
     {
         $skillId = $data->skill?->id;
         yield from Await::promise(
-            fn($resolve, $reject) => $this->pool->getConnection()->executeInsert("coral_reef.user.set", ["xuid" => $data->xuid,
+            fn($resolve, $reject) => $this->pool->getConnection()->executeInsert("coral_reef.user.set", ["xuid" => intval($data->xuid),
                 "name" => $data->name, "experience" => $data->experience, "skill" => $skillId], $resolve, $reject));
     }
 
@@ -69,7 +69,7 @@ class MysqlUserRepo implements UserRepository
 
         $users = [];
         foreach ($data as $userRaw) {
-            $users[] = new UserAccount($userRaw["xuid"], $userRaw["name"], $userRaw["experience"], $userRaw["skill"]);
+            $users[] = new UserAccount(strval($userRaw["xuid"]), $userRaw["name"], $userRaw["experience"], $userRaw["skill"]);
         }
         return $users;
     }
@@ -80,7 +80,7 @@ class MysqlUserRepo implements UserRepository
 
         $users = [];
         foreach ($data as $userRaw) {
-            $users[] = new LiteUserModel($userRaw["xuid"], $userRaw["name"], $userRaw["experience"]);
+            $users[] = new LiteUserModel(strval($userRaw["xuid"]), $userRaw["name"], $userRaw["experience"]);
         }
         return $users;
     }

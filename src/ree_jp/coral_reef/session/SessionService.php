@@ -11,9 +11,13 @@
 
 namespace ree_jp\coral_reef\session;
 
+use pocketmine\Server;
 use ree_jp\coral_reef\CoralReefPlugin;
+use ree_jp\coral_reef\sql\repo\SessionRepository;
 use ree_jp\coral_reef\sql\RepositoryPool;
 use ree_jp\coral_reef\StoreHouse;
+use ree_jp\reef_edge\ReefEdgePlugin;
+use ree_jp\reef_edge\socket\SocketService;
 
 class SessionService
 {
@@ -24,5 +28,30 @@ class SessionService
 
         $sessionStore->destruction($pool, $xuid);
         $sessionStore->createSession($xuid, CoralReefPlugin::$serverID);
+    }
+
+    static function sendBetweenRanking(RepositoryPool $pool, SessionStore $beforeStore, SessionStore $afterStore, int $measureTime): void
+    {
+        /** @var SessionRepository */
+        $repo = $pool->get(SessionRepository::class);
+
+        foreach (Server::getInstance()->getOnlinePlayers() as $p) {
+            $beforeSession = $beforeStore->getSessionData($p->getXuid());
+            $afterSession = $afterStore->getSessionData($p->getXuid());
+
+            $brockBreak = $afterSession->breakCount;
+            $lastLoginTime = $measureTime;
+
+            if ($beforeStore !== null) {
+                if ($beforeSession->joinTime === $afterSession->joinTime) {
+                    $brockBreak = $afterSession->breakCount - $beforeSession->breakCount;
+                    continue;
+                } else {
+                    $lastLoginTime = $beforeSession->quitTime;
+                }
+            }
+            $repo->getAllCountWithJoin($lastLoginTime, time());
+        }
+        SocketService::sendBroadcastMessage(ReefEdgePlugin::$socketClient, "");
     }
 }

@@ -31,7 +31,7 @@ class DigRankingForm
             $repo = $pool->get(SessionRepository::class);
 
             /** @var BlockStatisticsModel[] */
-            $statistics = yield from $repo->getAllCountWithQuit(strtotime("-1 day", $lastTime), $lastTime);
+            $statistics = yield from $repo->getAllCountWithJoin(strtotime("-1 day", $lastTime), $lastTime);
 
             self::sendCountForm($store, $p, $statistics, "Ranking -> DailyDig");
         });
@@ -80,7 +80,7 @@ class DigRankingForm
             $repo = $pool->get(SessionRepository::class);
 
             /** @var BlockStatisticsModel[] */
-            $statistics = yield from $repo->getAllCountWithQuit(strtotime("-1 week", $lastTime), $lastTime);
+            $statistics = yield from $repo->getAllCountWithJoin(strtotime("-1 week", $lastTime), $lastTime);
 
             self::sendCountForm($store, $p, $statistics, "Ranking -> WeeklyDig");
         });

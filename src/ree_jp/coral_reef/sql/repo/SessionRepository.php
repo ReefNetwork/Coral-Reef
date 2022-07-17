@@ -20,5 +20,5 @@ interface SessionRepository extends Repository
 
     public function getRecentSession(string $xuid): Generator;
 
-    public function getAllCountWithQuit(int $firstTime, int $lastTime): Generator;
+    public function getAllCountWithJoin(int $firstTime, int $lastTime): Generator;
 }

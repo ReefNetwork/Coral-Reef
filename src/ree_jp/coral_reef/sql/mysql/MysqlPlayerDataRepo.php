@@ -29,7 +29,7 @@ class MysqlPlayerDataRepo implements PlayerRepository
     public function getPlayerData(string $xuid): Generator
     {
         $result = yield from Await::promise(
-            fn($resolve, $reject) => $this->pool->getConnection()->executeSelect("coral_reef.player_data.get", ["xuid" => $xuid], $resolve, $reject));
+            fn($resolve, $reject) => $this->pool->getConnection()->executeSelect("coral_reef.player_data.get", ["xuid" => intval($xuid)], $resolve, $reject));
         if (!$result) return null;
         return $this->setPlayerDataModel(current($result));
     }
@@ -37,7 +37,7 @@ class MysqlPlayerDataRepo implements PlayerRepository
     public function setPlayerData(PlayerData $data): Generator
     {
         yield from Await::promise(
-            fn($resolve, $reject) => $this->pool->getConnection()->executeInsert("coral_reef.player_data.set", ["xuid" => $data->xuid,
+            fn($resolve, $reject) => $this->pool->getConnection()->executeInsert("coral_reef.player_data.set", ["xuid" => intval($data->xuid),
                 "inv" => json_encode($data->inv), "armor_inv" => json_encode($data->armorInv), "off_hand_inv" => json_encode($data->offHandInv),
                 "ender_inv" => json_encode($data->enderInv), "effect" => PlayerData::effectToJson($data->effects), "health" => $data->health,
                 "hunger" => $data->hunger, "xp" => $data->xp], $resolve, $reject));
@@ -47,7 +47,7 @@ class MysqlPlayerDataRepo implements PlayerRepository
     {
         if (empty($data)) return null;
 
-        return new PlayerData($data["xuid"], PlayerData::jsonToItems($data["inventory"]), PlayerData::jsonToItems($data["armor_inventory"]),
+        return new PlayerData(strval($data["xuid"]), PlayerData::jsonToItems($data["inventory"]), PlayerData::jsonToItems($data["armor_inventory"]),
             PlayerData::jsonToItems($data["off_hand_inventory"]), PlayerData::jsonToItems($data["ender_inventory"]), PlayerData::jsonToEffect($data["effect"]),
             $data["health"], $data["hunger"], $data["xp"]);
     }

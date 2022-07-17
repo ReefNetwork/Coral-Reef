@@ -143,7 +143,7 @@ class CoralReefPlugin extends PluginBase
         /** @var SessionStore */
         $sessionStore = $this->store->get(SessionStore::class);
 
-        $this->getServer()->getPluginManager()->registerEvents(new EventListener($this->pool, $accountStore, $landStore,
+        $this->getServer()->getPluginManager()->registerEvents(new EventListener($this->pool, $this->store, $accountStore, $landStore,
             $shopStore, $sessionStore), $this);
         $this->getServer()->getPluginManager()->registerEvents(new QuestListener(), $this); // クエスト用
         $this->getServer()->getPluginManager()->registerEvents(new CommonListener($this->pool, $this->store), $this);

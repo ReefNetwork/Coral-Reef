@@ -31,7 +31,7 @@ class MysqlSessionRepo implements SessionRepository
     public function addSession(string $xuid, SessionData $session): Generator
     {
         yield from Await::promise(
-            fn($resolve, $reject) => $this->pool->getConnection()->executeGeneric("coral_reef.session.add", ["xuid" => $xuid, "server" => $session->server,
+            fn($resolve, $reject) => $this->pool->getConnection()->executeGeneric("coral_reef.session.add", ["xuid" => intval($xuid), "server" => $session->server,
                 "join_time" => date(SQLConst::DATE_FORMAT, $session->joinTime), "quit_time" => date(SQLConst::DATE_FORMAT, $session->quitTime),
                 "break_count" => $session->breakCount, "place_count" => $session->placeCount, "skill_count" => $session->skillCount]));
     }
@@ -40,14 +40,14 @@ class MysqlSessionRepo implements SessionRepository
     {
         $result = yield from Await::promise(
             fn($resolve, $reject) => $this->pool->getConnection()->executeSelect("coral_reef.session.get_recent",
-                ["xuid" => $xuid], $resolve, $reject));
+                ["xuid" => intval($xuid)], $resolve, $reject));
         return current($this->setSessionModels($result));
     }
 
-    public function getAllCountWithQuit(int $firstTime, int $lastTime): Generator
+    public function getAllCountWithJoin(int $firstTime, int $lastTime): Generator
     {
         $result = yield from Await::promise(
-            fn($resolve, $reject) => $this->pool->getConnection()->executeSelect("coral_reef.session.all_get_count_quit_between_sort_desc",
+            fn($resolve, $reject) => $this->pool->getConnection()->executeSelect("coral_reef.session.all_get_count_join_between_sort_desc",
                 ["first_time" => date(SQLConst::DATE_FORMAT, $firstTime), "last_time" => date(SQLConst::DATE_FORMAT, $lastTime)], $resolve, $reject));
         return $this->setBlockStatisticsModels($result);
     }
@@ -62,7 +62,7 @@ class MysqlSessionRepo implements SessionRepository
 
         $sessions = [];
         foreach ($data as $sessionRaw) {
-            $session = new SessionData($sessionRaw["xuid"], $sessionRaw["server"]);
+            $session = new SessionData(strval($sessionRaw["xuid"]), $sessionRaw["server"]);
             $session->joinTime = strtotime($sessionRaw["join_time"]);
             $session->quitTime = strtotime($sessionRaw["quit_time"]);
             $session->breakCount = $sessionRaw["break_count"];
@@ -83,7 +83,7 @@ class MysqlSessionRepo implements SessionRepository
 
         $statistics = [];
         foreach ($data as $statisticsRaw) {
-            $statistics[] = new BlockStatisticsModel($statisticsRaw["xuid"], $statisticsRaw["break_count"], $statisticsRaw["place_count"], $statisticsRaw["skill_count"]);
+            $statistics[] = new BlockStatisticsModel(strval($statisticsRaw["xuid"]), $statisticsRaw["break_count"], $statisticsRaw["place_count"], $statisticsRaw["skill_count"]);
         }
         return $statistics;
     }
