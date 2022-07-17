@@ -11,6 +11,7 @@
 
 namespace ree_jp\coral_reef\session;
 
+use Generator;
 use pocketmine\Server;
 use ree_jp\coral_reef\CoralReefPlugin;
 use ree_jp\coral_reef\sql\repo\SessionRepository;
@@ -18,6 +19,7 @@ use ree_jp\coral_reef\sql\RepositoryPool;
 use ree_jp\coral_reef\StoreHouse;
 use ree_jp\reef_edge\ReefEdgePlugin;
 use ree_jp\reef_edge\socket\SocketService;
+use SOFe\AwaitGenerator\Await;
 
 class SessionService
 {
@@ -32,26 +34,53 @@ class SessionService
 
     static function sendBetweenRanking(RepositoryPool $pool, SessionStore $beforeStore, SessionStore $afterStore, int $measureTime): void
     {
-        /** @var SessionRepository */
-        $repo = $pool->get(SessionRepository::class);
+        Await::f2c(function () use ($measureTime, $pool, $afterStore, $beforeStore): Generator {
+            /** @var SessionRepository */
+            $repo = $pool->get(SessionRepository::class);
 
-        foreach (Server::getInstance()->getOnlinePlayers() as $p) {
-            $beforeSession = $beforeStore->getSessionData($p->getXuid());
-            $afterSession = $afterStore->getSessionData($p->getXuid());
+            $list = [];
 
-            $brockBreak = $afterSession->breakCount;
-            $lastLoginTime = $measureTime;
+            foreach (Server::getInstance()->getOnlinePlayers() as $p) {
+                $beforeSession = $beforeStore->getSessionData($p->getXuid());
+                $afterSession = $afterStore->getSessionData($p->getXuid());
 
-            if ($beforeStore !== null) {
-                if ($beforeSession->joinTime === $afterSession->joinTime) {
-                    $brockBreak = $afterSession->breakCount - $beforeSession->breakCount;
+                $isBeforeUse = false;
+                $lastLoginTime = $measureTime;
+
+                if ($beforeSession instanceof SessionData) {
+                    if ($beforeSession->joinTime === $afterSession->joinTime) {
+                        $list[$afterSession->breakCount - $beforeSession->breakCount][] = $p->getName();
+                        continue;
+                    }
+
+                    $isBeforeUse = true;
+                    $lastLoginTime = $beforeSession->joinTime;
+                }
+                $session = yield from $repo->getCountWithJoin($p->getXuid(), $lastLoginTime, time());
+                if (!$session instanceof SessionData) {
+                    $list[$p->getName()] = $afterSession->breakCount;
                     continue;
+                }
+
+                if ($isBeforeUse) {
+                    $list[$afterSession->breakCount + $session->breakCount - $beforeSession->breakCount][] = $p->getName();
                 } else {
-                    $lastLoginTime = $beforeSession->quitTime;
+                    $list[$afterSession->breakCount + $session->breakCount][] = $p->getName();
                 }
             }
-            $repo->getAllCountWithJoin($lastLoginTime, time());
-        }
-        SocketService::sendBroadcastMessage(ReefEdgePlugin::$socketClient, "");
+
+            $message = CoralReefPlugin::$serverDisplay . "サーバー ---" . round((time() - $measureTime) / 60, 1) . "分の整地ランキング---\n";
+            $now = 1;
+            foreach ($list as $count => $names) {
+                $number = 0;
+                foreach ($names as $name) {
+                    $message .= "$now 位 $name さん($count)\n";
+                    $number++;
+                }
+                $now += $number;
+            }
+            $message .= "--------------";
+            SocketService::sendBroadcastMessage(ReefEdgePlugin::$socketClient, $message);
+        });
     }
 }

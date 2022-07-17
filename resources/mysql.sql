@@ -353,16 +353,14 @@ WHERE xuid = :xuid
 ORDER BY join_time DESC
 LIMIT 1;
 -- #        }
--- #        { get_count_join_between_sort_desc
+-- #        { get_count_join_between
+-- #        :xuid int
 -- #        :first_time string
 -- #        :last_time string
--- #        :xuid int
 SELECT xuid, SUM(break_count) AS "break_count", SUM(place_count) AS "place_count", SUM(skill_count) AS "skill_count"
 FROM SESSION_RECORD
 WHERE join_time BETWEEN :first_time AND :last_time
-  AND xuid = :xuid
-GROUP BY xuid
-ORDER BY break_count DESC;
+  AND xuid = :xuid;
 -- #        }
 -- #        { all_get_count_join_between_sort_desc
 -- #        :first_time string

@@ -44,6 +44,13 @@ class MysqlSessionRepo implements SessionRepository
         return current($this->setSessionModels($result));
     }
 
+    public function getCountWithJoin(string $xuid, int $firstTime, int $lastTime): Generator
+    {
+        $result = yield from Await::promise(fn($resolve, $reject) => $this->pool->getConnection()->executeSelect("coral_reef.session.get_count_join_between", ["xuid" => intval($xuid),
+            "first_time" => date(SQLConst::DATE_FORMAT, $firstTime), "last_time" => date(SQLConst::DATE_FORMAT, $lastTime)], $resolve, $reject));
+        return current($this->setBlockStatisticsModels($result));
+    }
+
     public function getAllCountWithJoin(int $firstTime, int $lastTime): Generator
     {
         $result = yield from Await::promise(

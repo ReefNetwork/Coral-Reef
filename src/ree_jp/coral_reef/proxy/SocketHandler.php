@@ -16,6 +16,7 @@ use pocketmine\Server;
 use Ramsey\Uuid\Uuid;
 use ree_jp\coral_reef\account\AccountStore;
 use ree_jp\coral_reef\session\SessionService;
+use ree_jp\coral_reef\session\SessionStore;
 use ree_jp\coral_reef\sql\RepositoryPool;
 use ree_jp\coral_reef\StoreHouse;
 
@@ -37,10 +38,17 @@ class SocketHandler
         });
 
         $day = date("d");
+        $beforeSessionStore = null;
+        $measureTime = time();
 
-        $handler->registerHandler("timer", function (array $data) use ($pool, $store, $day): void {
+        $handler->registerHandler("timer", function (array $data) use ($measureTime, $pool, $store, $day, $beforeSessionStore): void {
             if (isset($data["time"])) {
                 $nowDay = date("d", strtotime($data["time"]));
+
+                /** @var SessionStore */
+                $newSessionStore = $store->get(SessionStore::class);
+                SessionService::sendBetweenRanking($pool, $beforeSessionStore, $newSessionStore, $measureTime);
+                $beforeSessionStore = clone $newSessionStore;
 
                 if ($nowDay === $day) return;
                 $day = $nowDay;
