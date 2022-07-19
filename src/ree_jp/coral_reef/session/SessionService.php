@@ -58,7 +58,7 @@ class SessionService
                 }
                 $session = yield from $repo->getCountWithJoin($p->getXuid(), $lastLoginTime, time());
                 if (!$session instanceof SessionData) {
-                    $list[$p->getName()] = $afterSession->breakCount;
+                    $list[$p->getName()][] = $afterSession->breakCount;
                     continue;
                 }
 
