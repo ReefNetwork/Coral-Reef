@@ -46,6 +46,7 @@ class SocketHandler
             $newSessionStore = $store->get(SessionStore::class);
             SessionService::sendBetweenRanking($pool, $beforeSessionStore, $newSessionStore, $measureTime);
             $beforeSessionStore = clone $newSessionStore;
+            $measureTime = time();
 
             if ($nowDay === $day) return;
             $day = $nowDay;
