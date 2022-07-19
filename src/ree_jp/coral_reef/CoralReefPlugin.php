@@ -11,7 +11,6 @@
 
 namespace ree_jp\coral_reef;
 
-use Generator;
 use muqsit\invmenu\InvMenuHandler;
 use pocketmine\crafting\ShapedRecipe;
 use pocketmine\item\ItemFactory;
@@ -114,12 +113,6 @@ class CoralReefPlugin extends PluginBase
             ReefEdgePlugin::$socketClient->connect();
         }
         Await::g2c($accountStore->updateUserNameList($this->pool));
-        Await::f2c(function (): Generator {
-            /** @var SessionRepository */
-            $repo = $this->pool->get(SessionRepository::class);
-            $session = yield from $repo->getCountWithJoin("2535453771194279", 1657396571, time());
-            var_dump($session);
-        });
         ReefItems::registerAll();
         CustomItemService::registerAll();
         $this->pluginInformation();

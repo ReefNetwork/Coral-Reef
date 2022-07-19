@@ -14,6 +14,7 @@ namespace ree_jp\coral_reef\session;
 use Generator;
 use pocketmine\Server;
 use ree_jp\coral_reef\CoralReefPlugin;
+use ree_jp\coral_reef\sql\model\BlockStatisticsModel;
 use ree_jp\coral_reef\sql\repo\SessionRepository;
 use ree_jp\coral_reef\sql\RepositoryPool;
 use ree_jp\coral_reef\StoreHouse;
@@ -57,7 +58,7 @@ class SessionService
                     $lastLoginTime = $beforeSession->joinTime;
                 }
                 $session = yield from $repo->getCountWithJoin($p->getXuid(), $lastLoginTime, time());
-                if (!$session instanceof SessionData) {
+                if (!$session instanceof BlockStatisticsModel) {
                     $list[$afterSession->breakCount][] = $p->getName();
                     continue;
                 }
