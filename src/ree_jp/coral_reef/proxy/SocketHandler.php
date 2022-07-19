@@ -29,11 +29,9 @@ class SocketHandler
 
 
         $handler->registerHandler("transfer-request", function (array $data) use ($accountStore, $pool): void {
-            if (isset($data["player"]) && isset($data["server"])) {
-                $p = Server::getInstance()->getPlayerByUUID(Uuid::fromString($data["player"]));
-                if ($p instanceof Player) {
-                    ProxyService::transferServerWithSave($pool, $accountStore, $p, $data["server"]);
-                }
+            $p = Server::getInstance()->getPlayerByUUID(Uuid::fromString($data["player"]));
+            if ($p instanceof Player) {
+                ProxyService::transferServerWithSave($pool, $accountStore, $p, $data["server"]);
             }
         });
 
@@ -42,20 +40,18 @@ class SocketHandler
         $measureTime = time();
 
         $handler->registerHandler("timer", function (array $data) use ($measureTime, $pool, $store, $day, $beforeSessionStore): void {
-            if (isset($data["time"])) {
-                $nowDay = date("d", strtotime($data["time"]));
+            $nowDay = date("d", strtotime($data["time"]));
 
-                /** @var SessionStore */
-                $newSessionStore = $store->get(SessionStore::class);
-                SessionService::sendBetweenRanking($pool, $beforeSessionStore, $newSessionStore, $measureTime);
-                $beforeSessionStore = clone $newSessionStore;
+            /** @var SessionStore */
+            $newSessionStore = $store->get(SessionStore::class);
+            SessionService::sendBetweenRanking($pool, $beforeSessionStore, $newSessionStore, $measureTime);
+            $beforeSessionStore = clone $newSessionStore;
 
-                if ($nowDay === $day) return;
-                $day = $nowDay;
+            if ($nowDay === $day) return;
+            $day = $nowDay;
 
-                foreach (Server::getInstance()->getOnlinePlayers() as $p) {
-                    SessionService::reCreateSession($pool, $store, $p->getXuid());
-                }
+            foreach (Server::getInstance()->getOnlinePlayers() as $p) {
+                SessionService::reCreateSession($pool, $store, $p->getXuid());
             }
         });
     }

@@ -32,7 +32,7 @@ class SessionService
         $sessionStore->createSession($xuid, CoralReefPlugin::$serverID);
     }
 
-    static function sendBetweenRanking(RepositoryPool $pool, SessionStore $beforeStore, SessionStore $afterStore, int $measureTime): void
+    static function sendBetweenRanking(RepositoryPool $pool, ?SessionStore $beforeStore, SessionStore $afterStore, int $measureTime): void
     {
         Await::f2c(function () use ($measureTime, $pool, $afterStore, $beforeStore): Generator {
             /** @var SessionRepository */
@@ -41,7 +41,7 @@ class SessionService
             $list = [];
 
             foreach (Server::getInstance()->getOnlinePlayers() as $p) {
-                $beforeSession = $beforeStore->getSessionData($p->getXuid());
+                $beforeSession = $beforeStore?->getSessionData($p->getXuid());
                 $afterSession = $afterStore->getSessionData($p->getXuid());
 
                 $isBeforeUse = false;
