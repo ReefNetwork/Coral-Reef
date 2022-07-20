@@ -42,11 +42,13 @@ class SocketHandler
         $handler->registerHandler("timer", function (array $data) use ($measureTime, $pool, $store, $day, $beforeSessionStore): void {
             $nowDay = date("d", strtotime($data["time"]));
 
+            var_dump("before" . $measureTime);
             /** @var SessionStore */
             $newSessionStore = $store->get(SessionStore::class);
             SessionService::sendBetweenRanking($pool, $beforeSessionStore, $newSessionStore, $measureTime);
             $beforeSessionStore = clone $newSessionStore;
             $measureTime = time();
+            var_dump("after" . $measureTime);
 
             if ($nowDay === $day) return;
             $day = $nowDay;
