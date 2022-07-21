@@ -15,8 +15,8 @@ use pocketmine\player\Player;
 use pocketmine\Server;
 use Ramsey\Uuid\Uuid;
 use ree_jp\coral_reef\account\AccountStore;
+use ree_jp\coral_reef\account\BetweenRanking;
 use ree_jp\coral_reef\session\SessionService;
-use ree_jp\coral_reef\session\SessionStore;
 use ree_jp\coral_reef\sql\RepositoryPool;
 use ree_jp\coral_reef\StoreHouse;
 
@@ -36,19 +36,12 @@ class SocketHandler
         });
 
         $day = date("d");
-        $beforeSessionStore = null;
-        $measureTime = time();
+        $betweenRanking = new BetweenRanking($pool, $store);
 
-        $handler->registerHandler("timer", function (array $data) use ($measureTime, $pool, $store, $day, $beforeSessionStore): void {
+        $handler->registerHandler("timer", function (array $data) use ($betweenRanking, $pool, $store, $day): void {
             $nowDay = date("d", strtotime($data["time"]));
 
-            var_dump("before" . $measureTime);
-            /** @var SessionStore */
-            $newSessionStore = $store->get(SessionStore::class);
-            SessionService::sendBetweenRanking($pool, $beforeSessionStore, $newSessionStore, $measureTime);
-            $beforeSessionStore = clone $newSessionStore;
-            $measureTime = time();
-            var_dump("after" . $measureTime);
+            $betweenRanking->showRanking();
 
             if ($nowDay === $day) return;
             $day = $nowDay;

@@ -70,8 +70,7 @@ class SessionService
                 }
             }
 
-            var_dump("run" . $measureTime);
-            $message = CoralReefPlugin::$serverDisplay . "サーバー ---" . round((time() - $measureTime) / 60, 1) . "分の整地ランキング---\n";
+            $message = "---" . round((time() - $measureTime) / 60, 1) . "分の整地ランキング---(" . CoralReefPlugin::$serverDisplay . "サーバー)---\n";
             $now = 1;
             foreach ($list as $count => $names) {
                 $number = 0;
