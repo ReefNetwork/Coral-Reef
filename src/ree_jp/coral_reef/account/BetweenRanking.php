@@ -36,5 +36,7 @@ class BetweenRanking
         SessionService::sendBetweenRanking($this->pool, $this->beforeStore, $newSessionStore, $this->measureTime);
         $this->beforeStore = clone $newSessionStore;
         $this->measureTime = time();
+        var_dump($this->beforeStore);
+        var_dump("-----");
     }
 }
