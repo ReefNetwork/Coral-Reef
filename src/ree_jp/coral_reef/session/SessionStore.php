@@ -20,6 +20,15 @@ class SessionStore implements Store
     /**@var SessionData[] */
     private array $sessions = [];
 
+    public function __clone(): void
+    {
+        $cloned = [];
+        foreach ($this->sessions as $xuid => $session) {
+            $cloned[$xuid] = clone $session;
+        }
+        $this->sessions = $cloned;
+    }
+
     public function createSession(string $xuid, string $server): void
     {
         $this->sessions[$xuid] = new SessionData($xuid, $server);
