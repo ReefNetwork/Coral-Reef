@@ -22,6 +22,8 @@ use ree_jp\coral_reef\StoreHouse;
 
 class SocketHandler
 {
+    static string $day;
+
     static function register(\ree_jp\reef_edge\socket\SocketHandler $handler, RepositoryPool $pool, StoreHouse $store): void
     {
         /** @var AccountStore */
@@ -35,16 +37,16 @@ class SocketHandler
             }
         });
 
-        $day = date("d");
+        self::$day = date("d");
         $betweenRanking = new BetweenRanking($pool, $store);
 
-        $handler->registerHandler("timer", function (array $data) use ($betweenRanking, $pool, $store, $day): void {
+        $handler->registerHandler("timer", function (array $data) use ($betweenRanking, $pool, $store): void {
             $nowDay = date("d", strtotime($data["time"]));
 
             $betweenRanking->showRanking();
 
-            if ($nowDay === $day) return;
-            $day = $nowDay;
+            if ($nowDay === self::$day) return;
+            self::$day = $nowDay;
 
             foreach (Server::getInstance()->getOnlinePlayers() as $p) {
                 SessionService::reCreateSession($pool, $store, $p->getXuid());

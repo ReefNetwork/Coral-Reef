@@ -41,6 +41,9 @@ class SessionService
 
             $list = [];
 
+            var_dump($beforeStore);
+            var_dump($afterStore);
+
             foreach (Server::getInstance()->getOnlinePlayers() as $p) {
                 $beforeSession = $beforeStore?->getSessionData($p->getXuid());
                 $afterSession = $afterStore->getSessionData($p->getXuid());
