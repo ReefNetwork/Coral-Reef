@@ -18,18 +18,24 @@ use pocketmine\player\Player;
 use pocketmine\plugin\Plugin;
 use pocketmine\plugin\PluginOwned;
 use ree_jp\coral_reef\account\AccountStore;
+use ree_jp\coral_reef\account\BetweenRanking;
 use ree_jp\coral_reef\gatya\items\SpecialItemService;
 use ree_jp\coral_reef\sql\mysql\SQLRepository;
+use ree_jp\coral_reef\sql\RepositoryPool;
 use ree_jp\coral_reef\sql\SQLConst;
+use ree_jp\coral_reef\StoreHouse;
 
 class ReefConsoleCommand extends Command implements PluginOwned
 {
-    public function __construct(private Plugin $owner, private SQLRepository $repo, private AccountStore $store)
+    private BetweenRanking $betweenRanking;
+
+    public function __construct(private Plugin $owner, private RepositoryPool $pool, private StoreHouse $store)
     {
         parent::__construct("reef-console");
         $this->setUsage("Reef Manage Command");
         $this->setAliases(["reef-c"]);
         $this->setPermission("coral_reef.command.reef_console");
+        $this->betweenRanking = new BetweenRanking($pool, $store);
     }
 
     public function execute(CommandSender $sender, string $commandLabel, array $args)
@@ -44,7 +50,9 @@ class ReefConsoleCommand extends Command implements PluginOwned
                         $sender->sendMessage("引数が間違ってる");
                         return;
                     }
-                    $this->repo->setValue(0, SQLConst::TYPE_ENV, $args[0], $args[1], null);
+                    /** @var SQLRepository */
+                    $repo = $this->pool->get(SQLRepository::class);
+                    $repo->setValue(0, SQLConst::TYPE_ENV, $args[0], $args[1], null);
                     $sender->sendMessage("反映には最大1分かかります");
                     break;
                 case "tool":
@@ -52,10 +60,15 @@ class ReefConsoleCommand extends Command implements PluginOwned
                         $sender->sendMessage("引数が間違ってる");
                         return;
                     }
-                    $item = SpecialItemService::getRenewItem($args[1], $args[2], $args[3], $this->store);
+                    /** @var AccountStore */
+                    $accountStore = $this->store->get(AccountStore::class);
+                    $item = SpecialItemService::getRenewItem($args[1], $args[2], $args[3], $accountStore);
                     if ($sender instanceof Player && $item instanceof Item) {
                         $sender->getInventory()->addItem($item);
                     }
+                    break;
+                case "between_ranking":
+                    $this->betweenRanking->showRanking();
                     break;
                 default:
                     $sender->sendMessage("そのコマンドはない!!!!!!!!");

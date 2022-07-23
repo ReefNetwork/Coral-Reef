@@ -89,6 +89,7 @@ class MysqlSessionRepo implements SessionRepository
         if (empty($data)) return [];
 
         $statistics = [];
+        var_dump($data);
         foreach ($data as $statisticsRaw) {
             $statistics[] = new BlockStatisticsModel(strval($statisticsRaw["xuid"]), $statisticsRaw["break_count"], $statisticsRaw["place_count"], $statisticsRaw["skill_count"]);
         }
