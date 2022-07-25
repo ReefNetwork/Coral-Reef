@@ -41,9 +41,6 @@ class SessionService
 
             $list = [];
 
-            var_dump($beforeStore);
-            var_dump($afterStore);
-
             foreach (Server::getInstance()->getOnlinePlayers() as $p) {
                 $beforeSession = $beforeStore?->getSessionData($p->getXuid());
                 $afterSession = $afterStore->getSessionData($p->getXuid());
@@ -76,6 +73,7 @@ class SessionService
             $message = "---" . round((time() - $measureTime) / 60, 1) . "分の整地ランキング---(" . CoralReefPlugin::$serverDisplay . "サーバー)---\n";
             $now = 1;
             foreach ($list as $count => $names) {
+                if ($now > 5) break;
                 $number = 0;
                 foreach ($names as $name) {
                     $message .= "$now 位 $name さん($count)\n";

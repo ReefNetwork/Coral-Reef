@@ -69,6 +69,7 @@ class MysqlSessionRepo implements SessionRepository
 
         $sessions = [];
         foreach ($data as $sessionRaw) {
+            if ($sessionRaw["xuid"] === null) continue;
             $session = new SessionData(strval($sessionRaw["xuid"]), $sessionRaw["server"]);
             $session->joinTime = strtotime($sessionRaw["join_time"]);
             $session->quitTime = strtotime($sessionRaw["quit_time"]);
@@ -89,8 +90,8 @@ class MysqlSessionRepo implements SessionRepository
         if (empty($data)) return [];
 
         $statistics = [];
-        var_dump($data);
         foreach ($data as $statisticsRaw) {
+            if ($statisticsRaw["xuid"] === null) continue;
             $statistics[] = new BlockStatisticsModel(strval($statisticsRaw["xuid"]), $statisticsRaw["break_count"], $statisticsRaw["place_count"], $statisticsRaw["skill_count"]);
         }
         return $statistics;
