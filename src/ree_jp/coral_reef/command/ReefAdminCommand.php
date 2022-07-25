@@ -7,15 +7,14 @@ use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
 use pocketmine\plugin\Plugin;
 use pocketmine\plugin\PluginOwned;
-use ree_jp\coral_reef\account\AccountStore;
 use ree_jp\coral_reef\form\command\ReefAdminForm;
-use ree_jp\coral_reef\land\LandStore;
-use ree_jp\coral_reef\sql\mysql\SQLRepository;
+use ree_jp\coral_reef\sql\RepositoryPool;
+use ree_jp\coral_reef\StoreHouse;
 
 class ReefAdminCommand extends Command implements PluginOwned
 {
 
-    public function __construct(private Plugin $owner, private SQLRepository $repo, private AccountStore $accountStore, private LandStore $landStore)
+    public function __construct(private Plugin $owner, private RepositoryPool $pool, private StoreHouse $store)
     {
         parent::__construct("reef-admin");
         $this->setUsage("for admin");
@@ -29,7 +28,7 @@ class ReefAdminCommand extends Command implements PluginOwned
             return;
         }
         if (!$this->testPermission($sender)) return;
-        ReefAdminForm::sendForm($this->repo, $this->accountStore, $this->landStore, $sender);
+        ReefAdminForm::sendForm($this->pool, $this->store, $sender);
     }
 
     public function getOwningPlugin(): Plugin

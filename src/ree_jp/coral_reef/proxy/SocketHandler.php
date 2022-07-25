@@ -15,18 +15,41 @@ use pocketmine\player\Player;
 use pocketmine\Server;
 use Ramsey\Uuid\Uuid;
 use ree_jp\coral_reef\account\AccountStore;
+use ree_jp\coral_reef\account\BetweenRanking;
+use ree_jp\coral_reef\session\SessionService;
 use ree_jp\coral_reef\sql\RepositoryPool;
+use ree_jp\coral_reef\StoreHouse;
 
 class SocketHandler
 {
-    static function register(\ree_jp\reef_edge\socket\SocketHandler $handler, RepositoryPool $pool, AccountStore $accountStore): void
+    static string $day;
+
+    static function register(\ree_jp\reef_edge\socket\SocketHandler $handler, RepositoryPool $pool, StoreHouse $store): void
     {
+        /** @var AccountStore */
+        $accountStore = $store->get(AccountStore::class);
+
+
         $handler->registerHandler("transfer-request", function (array $data) use ($accountStore, $pool): void {
-            if (isset($data["player"]) && isset($data["server"])) {
-                $p = Server::getInstance()->getPlayerByUUID(Uuid::fromString($data["player"]));
-                if ($p instanceof Player) {
-                    ProxyService::transferServerWithSave($pool, $accountStore, $p, $data["server"]);
-                }
+            $p = Server::getInstance()->getPlayerByUUID(Uuid::fromString($data["player"]));
+            if ($p instanceof Player) {
+                ProxyService::transferServerWithSave($pool, $accountStore, $p, $data["server"]);
+            }
+        });
+
+        self::$day = date("d");
+        $betweenRanking = new BetweenRanking($pool, $store);
+
+        $handler->registerHandler("timer", function (array $data) use ($betweenRanking, $pool, $store): void {
+            $nowDay = date("d", strtotime($data["time"]));
+
+            $betweenRanking->showRanking();
+
+            if ($nowDay === self::$day) return;
+            self::$day = $nowDay;
+
+            foreach (Server::getInstance()->getOnlinePlayers() as $p) {
+                SessionService::reCreateSession($pool, $store, $p->getXuid());
             }
         });
     }

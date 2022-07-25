@@ -63,7 +63,7 @@ class CoralReefPlugin extends PluginBase
 {
     static CoralReefPlugin $plugin;
     static string $serverID;
-    static string $server;
+    static string $serverDisplay;
 
     public bool $isDev = false;
     public bool $isMain = false;
@@ -81,7 +81,7 @@ class CoralReefPlugin extends PluginBase
     public function onEnable(): void
     {
         self::$serverID = $this->getConfig()->get(ConfigConst::SERVER_NAME);
-        self::$server = $this->getConfig()->get(ConfigConst::SERVER);
+        self::$serverDisplay = $this->getConfig()->get(ConfigConst::SERVER);
         $this->isDev = !str_contains($this->getDescription()->getVersion(), 'stable');
         $this->isMain = self::$serverID === "seichi_1";
 
@@ -107,7 +107,7 @@ class CoralReefPlugin extends PluginBase
         /** @var AccountStore */
         $accountStore = $this->store->get(AccountStore::class);
 
-        SocketHandler::register(ReefEdgePlugin::$socketHandler, $this->pool, $accountStore);
+        SocketHandler::register(ReefEdgePlugin::$socketHandler, $this->pool, $this->store);
         ReefEdgePlugin::$isSocketStartUp = true;
         if (isset(ReefEdgePlugin::$socketClient) && !ReefEdgePlugin::$socketClient->isConnected()) {
             ReefEdgePlugin::$socketClient->connect();
@@ -143,7 +143,7 @@ class CoralReefPlugin extends PluginBase
         /** @var SessionStore */
         $sessionStore = $this->store->get(SessionStore::class);
 
-        $this->getServer()->getPluginManager()->registerEvents(new EventListener($this->pool, $accountStore, $landStore,
+        $this->getServer()->getPluginManager()->registerEvents(new EventListener($this->pool, $this->store, $accountStore, $landStore,
             $shopStore, $sessionStore), $this);
         $this->getServer()->getPluginManager()->registerEvents(new QuestListener(), $this); // クエスト用
         $this->getServer()->getPluginManager()->registerEvents(new CommonListener($this->pool, $this->store), $this);
@@ -161,8 +161,8 @@ class CoralReefPlugin extends PluginBase
             new BlockLogCommand($this, $accountStore),
             new TrashCommand($this),
             new ReefCommand($this),
-            new ReefAdminCommand($this, $this->sqlRepo, $accountStore, $landStore),
-            new ReefConsoleCommand($this, $this->sqlRepo, $accountStore),
+            new ReefAdminCommand($this, $this->pool, $this->store),
+            new ReefConsoleCommand($this, $this->pool, $this->store),
             new ReefFormCommand($this, $this->pool, $this->store),
         ]);
     }

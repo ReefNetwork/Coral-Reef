@@ -60,11 +60,6 @@ class UserAccount
 
     function save(RepositoryPool $pool, Player $p): Generator
     {
-        if (is_null($this->skill)) {
-            $skillId = null;
-        } else {
-            $skillId = $this->skill->id;
-        }
         /** @var SQLRepository */
         $sqlRepo = $pool->get(SQLRepository::class);
         /** @var PlayerRepository */
@@ -76,7 +71,7 @@ class UserAccount
 
         $await = [];
         try {
-            $await[] = $warpRepo->setWarp(new WarpPoint($p->getXuid(), "自動セーブ(" . CoralReefPlugin::$server . ")", CoralReefPlugin::$serverID,
+            $await[] = $warpRepo->setWarp(new WarpPoint($p->getXuid(), AccountService::autoSaveWarpName(), CoralReefPlugin::$serverID,
                 new Position($p->getPosition()->getFloorX(), $p->getPosition()->getFloorY(), $p->getPosition()->getFloorZ(), $p->getWorld())));
             $await[] = $playerRepo->setPlayerData(PlayerData::create($p));
             $await[] = $userRepo->setUserData($this);

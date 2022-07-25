@@ -27,7 +27,10 @@ class DocsForm
             }),
             new ClosureButton("ルール、ガイドライン", null, function () use ($p): void {
                 $p->getServer()->dispatchCommand($p, "exe-p wp-view category 103");
-            })
+            }),
+            new ClosureButton("お知らせ", null, function () use ($p): void {
+                $p->getServer()->dispatchCommand($p, "exe-p wp-view");
+            }),
         );
         $p->sendForm($form);
     }

@@ -18,6 +18,7 @@ use pocketmine\math\Vector3;
 use pocketmine\player\Player;
 use pocketmine\Server;
 use pocketmine\world\Position;
+use ree_jp\coral_reef\CoralReefPlugin;
 use ree_jp\coral_reef\land\LandStore;
 use ree_jp\coral_reef\money\MoneyCache;
 use ree_jp\coral_reef\money\MoneyService;
@@ -168,5 +169,10 @@ class AccountService
             $p->setAllowFlight(false);
             $p->sendPopup("このワールドでは飛行することはできません");
         }
+    }
+
+    static function autoSaveWarpName(): string
+    {
+        return "[auto-save]" . CoralReefPlugin::$serverID . "";
     }
 }
