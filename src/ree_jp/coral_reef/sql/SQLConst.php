@@ -32,9 +32,11 @@ interface SQLConst
 
     const TICKETS_NORMAL = "normal_tickets";
     const TICKETS_CHRISTMAS_2021 = "christmas_2021_tickets";
+    const TICKETS_SUMMER_2022 = "summer_2022_tickets";
 
     const LOG_QUEST = "quest";
     const LOG_BONUS = "bonus";
     const LOG_GATYA = "gatya";
     const LOG_GATYA_CHRISTMAS_2021 = "gatya_christmas_2021";
+    const LOG_GATYA_SUMMER_2022 = "gatya_summer_2022";
 }

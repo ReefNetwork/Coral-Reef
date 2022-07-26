@@ -24,7 +24,8 @@ use ree_jp\coral_reef\sql\SQLConst;
 
 class GatyaHistoryForm
 {
-    const GATYA_LIST = [SQLConst::LOG_GATYA => "ノーマルガチャ", SQLConst::LOG_GATYA_CHRISTMAS_2021 => "クリスマスガチャ2021"];
+    const GATYA_LIST = [SQLConst::LOG_GATYA => "ノーマルガチャ", SQLConst::LOG_GATYA_CHRISTMAS_2021 => "クリスマスガチャ2021",
+        SQLConst::LOG_GATYA_SUMMER_2022 => "サマーガチャ2022"];
 
     static function sendForm(Player $p, SQLRepository $repo): void
     {

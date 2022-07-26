@@ -17,7 +17,7 @@ use bbo51dog\bboform\form\ClosureCustomForm;
 use bbo51dog\bboform\form\ModalForm;
 use bbo51dog\bboform\form\SimpleForm;
 use pocketmine\player\Player;
-use ree_jp\coral_reef\gatya\event\Christmas2021;
+use ree_jp\coral_reef\gatya\event\Summer2022;
 use ree_jp\coral_reef\gatya\NormalGatya;
 use ree_jp\coral_reef\sql\mysql\SQLRepository;
 use ree_jp\coral_reef\sql\SQLConst;
@@ -29,14 +29,14 @@ class GatyaForm
         $repo->getAllSubtypeValue($p->getXuid(), SQLConst::TYPE_TICKETS, function (array $rows) use ($repo, $p) {
             if (!$p->isOnline()) return;
             $normal = 0;
-            $christmas = 0;
+            $summer = 0;
             foreach ($rows as $row) {
                 if ($row['subtype'] === SQLConst::TICKETS_NORMAL) $normal = $row['value'];
-                if ($row['subtype'] === SQLConst::TICKETS_CHRISTMAS_2021) $christmas = $row['value'];
+                if ($row['subtype'] === SQLConst::TICKETS_SUMMER_2022) $summer = $row['value'];
             }
             $form = (new SimpleForm())
                 ->setTitle("Menu -> Gatya")
-                ->setText("ノーマルガチャチケット: $normal 個\nクリスマスガチャチケット: $christmas 個")
+                ->setText("ノーマルガチャチケット: $normal 個\nサマーガチャチケット: $summer 個")
                 ->addElements(
                     new ClosureButton(
                         "ノーマルガチャ", null,
@@ -52,13 +52,13 @@ class GatyaForm
                     ),
                     new ClosureButton(
                         "クリスマスガチャ", null,
-                        function (Player $p) use ($repo, $christmas) {
-                            self::sendGatyaNumberChoices($repo, $p, SQLConst::TICKETS_CHRISTMAS_2021, $christmas);
+                        function (Player $p) use ($repo, $summer) {
+                            self::sendGatyaNumberChoices($repo, $p, SQLConst::TICKETS_SUMMER_2022, $summer);
                         }
                     ),
                     new ClosureButton(
                         "ガチャ履歴", null,
-                        function (Player $p) use ($repo, $christmas) {
+                        function (Player $p) use ($repo, $summer) {
                             GatyaHistoryForm::sendForm($p, $repo);
                         }
                     ),
@@ -72,7 +72,7 @@ class GatyaForm
         });
     }
 
-    private static function sendGatyaNumberChoices(SQLRepository $repo, Player $p, string $ticketType, int $tickets)
+    private static function sendGatyaNumberChoices(SQLRepository $repo, Player $p, string $ticketType, int $tickets): void
     {
         $min = 1;
         if ($tickets < 1) $min = 0;
@@ -87,7 +87,7 @@ class GatyaForm
     static function replaceTicketName(string $text): string
     {
         $text = str_replace(SQLConst::TICKETS_NORMAL, "ノーマルガチャチケット", $text);
-        return str_replace(SQLConst::TICKETS_CHRISTMAS_2021, "クリスマスガチャチケット", $text);
+        return str_replace(SQLConst::TICKETS_SUMMER_2022, "サマーガチャチケット", $text);
     }
 
     private static function sendGatyaConfirmForm(SQLRepository $repo, Player $p, string $ticketType, int $num, int $tickets): void
@@ -107,8 +107,8 @@ class GatyaForm
                                 NormalGatya::gatya($repo, $p, $num);
                                 break;
 
-                            case SQLConst::TICKETS_CHRISTMAS_2021:
-                                Christmas2021::gatya($repo, $p, $num);
+                            case SQLConst::TICKETS_SUMMER_2022:
+                                Summer2022::gatya($repo, $p, $num);
                                 break;
 
                             default:
@@ -126,7 +126,7 @@ class GatyaForm
                 }
             )
         );
-        $form->setTitle("NormalGatya -> Confirm")->setText(self::replaceTicketName($ticketType) .
+        $form->setTitle("Gatya -> Confirm")->setText(self::replaceTicketName($ticketType) .
             "を$num 個消費してガチャを回しますか？\n$tickets -> $after");
         $p->sendForm($form);
     }
