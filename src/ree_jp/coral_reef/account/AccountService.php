@@ -63,7 +63,7 @@ class AccountService
             $store->setValue($xuid, 'transfer_server', 0);
         } else {
             $account = $store->getUser($xuid);
-            if (!is_null($account)) {
+            if (!is_null($account) && $account->loaded) {
                 Await::g2c($account->save($pool, $p));
             }
         }

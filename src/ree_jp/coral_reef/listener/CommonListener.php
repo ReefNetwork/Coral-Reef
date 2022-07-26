@@ -59,6 +59,10 @@ class CommonListener implements Listener
             $p->setImmobile(false);
             $accountStore->setValue($p->getXuid(), "wait_action", 0);
             yield from $this->warpAutoSavePoint($this->pool, $p);
+
+            if (!$p->isConnected()) return;
+
+            $accountStore->getUser($p->getXuid())->loaded = true;
             $p->sendMessage("データを読み込みました");
         });
     }

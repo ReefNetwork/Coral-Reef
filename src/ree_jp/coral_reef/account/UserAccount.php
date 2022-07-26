@@ -46,6 +46,8 @@ class UserAccount
     public int $necessaryExperience;
     public ?BreakSkill $skill;
 
+    public bool $loaded = false;
+
     function __construct(string $xuid, string $name, int $experience, ?string $skill)
     {
         $this->xuid = $xuid;
