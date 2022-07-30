@@ -25,6 +25,9 @@ class DailyDigQuest extends DailyQuest
     const SHORT_DETAILS = "整地しよう!(毎日)";
     const EXPLANATION = "スキルを一定回数使用して整地をしよう。";
 
+    const BONUS_TICKET = SQLConst::TICKETS_NORMAL;
+    const BONUS_TICKET_NAME = "ノーマルガチャチケット";
+
     function __construct(SQLRepository $repo, string $xuid, ?string $value)
     {
         parent::__construct($repo, $xuid, $value);
@@ -49,11 +52,11 @@ class DailyDigQuest extends DailyQuest
                         QuestListener::unsubscribeQuest($this->xuid, QuestListener::USE_SKILL, $this);
                     case 100:
                         QuestListener::callSubscribedQuest($this->xuid, QuestListener::CLEAR_QUEST, $this);
-                        $this->repo->addLog($this->xuid, SQLConst::LOG_QUEST, self::ID, $this->value,
+                        $this->repo->addLog($this->xuid, SQLConst::LOG_QUEST, static::ID, $this->value,
                             SQLConst::NOW_TIME, null, null);
-                        GatyaManager::addTicket($this->repo, $this->xuid, SQLConst::TICKETS_NORMAL, 1);
+                        GatyaManager::addTicket($this->repo, $this->xuid, static::BONUS_TICKET, 1);
                         $p = AccountService::getPlayerByXuid($this->xuid);
-                        if (!is_null($p)) $p->sendMessage("デイリー整地ボーナスとしてガチャチケットを受け取りました");
+                        if (!is_null($p)) $p->sendMessage("デイリー整地ボーナスとして" . static::BONUS_TICKET_NAME . "を受け取りました");
                         break;
                 }
                 break;
@@ -74,7 +77,7 @@ class DailyDigQuest extends DailyQuest
         if ($this->isComplete()) {
             return "完了済み";
         } else {
-            return "ガチャチケット×1枚";
+            return static::BONUS_TICKET_NAME . "×1枚";
         }
     }
 }
