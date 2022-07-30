@@ -23,7 +23,7 @@ jobs:
         with:
           destination_branch: "master"
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          pr_title: "New feature ${GITHUB_REF##*/}"
+          pr_title: ":sparkles: ${GITHUB_REF##*/}"
 
       - name: Merge pull request
         run: |

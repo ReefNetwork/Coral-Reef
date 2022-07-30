@@ -58,7 +58,6 @@ class CommonListener implements Listener
             // データ読み込めたら動けるように
             $p->setImmobile(false);
             $accountStore->setValue($p->getXuid(), "wait_action", 0);
-            yield from $this->warpAutoSavePoint($this->pool, $p);
 
             if (!$p->isConnected()) return;
 
@@ -130,6 +129,7 @@ class CommonListener implements Listener
         if ($accountStore->hasValue($xuid, "wait_action")) {
             $p->sendMessage("データを確認しています...");
         }
+        Await::g2c($this->warpAutoSavePoint($this->pool, $p));
         AccountService::userJoin($repo, $accountStore, $p);
         $sessionStore->createSession($xuid, CoralReefPlugin::$serverID);
 
