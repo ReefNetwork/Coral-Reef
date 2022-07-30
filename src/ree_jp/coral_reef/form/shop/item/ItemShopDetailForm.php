@@ -69,6 +69,10 @@ class ItemShopDetailForm
                 $p->sendMessage("0以下は指定できません");
                 return;
             }
+            if ($amount > 6400) {
+                $p->sendMessage("一度に6400個以上購入できません");
+                return;
+            }
 
             $p->sendForm((new ModalForm(new ClosureButton(ShopService::replaceOrderType($shop->orderType) . "する", null,
                 function (Player $p) use ($isDirectSell, $amount, $isDirectStorage, $store, $repo, $shop): void {
