@@ -36,7 +36,7 @@ class Summer2022
             $limit = false;
             while ($resultLog = array_shift($rows)) {
                 $count++;
-                if ($limit && $count >= 200) {
+                if ($count >= 200) {
                     $limit = true;
                 }
                 if ($resultLog["subtype"] === "reef_rare") {
