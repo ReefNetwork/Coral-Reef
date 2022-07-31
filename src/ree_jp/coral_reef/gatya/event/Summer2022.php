@@ -54,7 +54,7 @@ class Summer2022
             $firstRand = mt_rand(1, 1000);
 
             switch (true) {
-                case ($firstRand <= 5) || ($isFirst && ($firstRand <= 10)): // 0.5% (まだ1回も引いてない人は1%)
+                case $limit || ($firstRand <= 5) || ($isFirst && ($firstRand <= 10)): // 0.5% (まだ1回も引いてない人は1%)
                     switch (mt_rand(1, 10)) {
                         case 1:
                         case 2:
