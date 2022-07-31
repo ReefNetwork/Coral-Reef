@@ -16,6 +16,7 @@ use JetBrains\PhpStorm\Pure;
 use pocketmine\block\Block;
 use pocketmine\player\Player;
 use pocketmine\scheduler\ClosureTask;
+use pocketmine\utils\TextFormat;
 use pocketmine\world\sound\XpLevelUpSound;
 use ree_jp\coral_reef\account\AccountStore;
 use ree_jp\coral_reef\account\SettingManager;
@@ -41,7 +42,8 @@ class SkillManager
             'first' => new BreakSkill('アングリア', $skill, 0, 1, 0, 0, 1, "1×2"),
             'second' => new BreakSkill('アポ', $skill, 0, 1, 0, 1, 3, "1×2×2"),
             'third' => new BreakSkill('パランカー', $skill, 0, 1, 2, 0, 5, "3×2"),
-            'fourth' => new BreakSkill('パー', $skill, 0, 2, 2, 0, 8, "3×3"),
+            'fourth' => new BreakSkill('パー', $skill, 0, 2, 2, 0, 0, TextFormat::YELLOW . "初心者" .
+                TextFormat::RED . "応援§キャンペーン中"),
             'fifth' => new BreakSkill('ベリーズバリア', $skill, 10, 2, 2, 1, 10, "3×3×2"),
             'sixth' => new BreakSkill('ベナレスショールス', $skill, 15, 2, 2, 2, 13, "3×3×3"),
             "seventh" => new BreakSkill("トライアングル", $skill, 10, 4, 4, 0, 15, "5×5"),
@@ -89,8 +91,8 @@ class SkillManager
             $cool_time -= self::$reduceCoolTime[$xuid];
         }
 
-        if (!$store->hasValue($xuid, "christmas_ticket_cool_down")) {
-            $store->setValue($xuid, "christmas_ticket_cool_down", 20 * 10);
+        if (!$store->hasValue($xuid, "event_ticket_cool_down")) {
+            $store->setValue($xuid, "event_ticket_cool_down", 20 * 10);
             if (mt_rand(1, 33) === 1) {
                 GatyaManager::addTicket($repo, $xuid, SQLConst::TICKETS_SUMMER_2022, 1);
                 $p->sendMessage("§bサマー§rガチャチケットを入手しました");
