@@ -54,7 +54,7 @@ class MenuForm
                 ->addElements(
                     new ClosureButton(
                         TextFormat::BLUE . "サマー§rイベント詳細は§bこちら", null, function () use ($p): void {
-                        Server::getInstance()->dispatchCommand($p, "wp-view post summer-event-2022");
+                        Server::getInstance()->dispatchCommand($p, "exe-p wp-view post summer-event-2022");
                     }),
                     new ClosureButton(
                         "ストレージ \n§7StackStorageを開きます", null,
