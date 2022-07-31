@@ -80,11 +80,13 @@ class GatyaManager
                                             $p->getInventory()->addItem($item);
                                         } else {
                                             // なければギフトに送信
-                                            GiftService::addGift($repo, $p->getXuid(), new GiftData('0', 'ノーマルガチャ',
+                                            GiftService::addGift($repo, $p->getXuid(), new GiftData('0', 'ガチャ',
                                                 time() + (7 * 24 * 60 * 60), [$item]),
                                                 function () use ($p) {
-                                                    $p->sendMessage('ガチャの景品がインベントリに入れるスペースがなかったためプレゼントに送信しました');
+                                                    if (!$p->isConnected()) return;
+                                                    $p->sendMessage('ガチャの景品がインベントリに入れるスペースがなかったためギフトに送信しました');
                                                 }, function () use ($item, $p) { // ギフト出来なければ落とす
+                                                    if (!$p->isConnected()) return;
                                                     $p->dropItem($item);
                                                     $p->sendMessage('ガチャの景品を地面にドロップしました');
                                                 });

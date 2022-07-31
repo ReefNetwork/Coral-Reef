@@ -77,7 +77,7 @@ class GiftForm
         }
         $form = (new SimpleForm())
             ->setTitle("Menu -> Gift")
-            ->setText("受け取れるプレゼント一覧です")
+            ->setText("受け取れるギフト一覧です")
             ->addElements(...$buttons)
             ->addElement($allReceiveButton);
         $p->sendForm($form);
