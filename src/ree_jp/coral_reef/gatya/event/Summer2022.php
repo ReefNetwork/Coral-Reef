@@ -32,7 +32,13 @@ class Summer2022
         $repo->getLog($xuid, SQLConst::LOG_GATYA_SUMMER_2022, function (array $rows) use ($repo, $number, $p, $xuid) {
             $isFirst = true;
 
+            $count = 1;
+            $limit = false;
             while ($resultLog = array_shift($rows)) {
+                $count++;
+                if ($limit && $count >= 200) {
+                    $limit = true;
+                }
                 if ($resultLog["subtype"] === "reef_rare") {
                     $isFirst = false;
                     break;
