@@ -45,13 +45,13 @@ class GatyaForm
                         }
                     ),
                     new ClosureButton(
-                        "ノーマルガチャ 10連続", null,
+                        "ノーマルガチャ 10連", null,
                         function (Player $p) use ($repo, $normal) {
                             self::sendGatyaConfirmForm($repo, $p, SQLConst::TICKETS_NORMAL, 10, $normal);
                         }
                     ),
                     new ClosureButton(
-                        "クリスマスガチャ", null,
+                        "§bサマー§rガチャ", null,
                         function (Player $p) use ($repo, $summer) {
                             self::sendGatyaNumberChoices($repo, $p, SQLConst::TICKETS_SUMMER_2022, $summer);
                         }
