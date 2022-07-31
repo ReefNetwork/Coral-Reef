@@ -38,7 +38,7 @@ class MysqlWarpRepo implements WarpRepository
         $result = yield from Await::promise(
             fn($resolve, $reject) => $this->pool->getConnection()->executeSelect("coral_reef.warp.get", ["xuid" => intval($xuid), "server" => $server],
                 $resolve, $reject));
-        if (!$result) return null;
+        if (!$result) return [];
 
         return $this->setWarpPointModels($result);
     }
