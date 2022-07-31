@@ -24,24 +24,27 @@ class DailyLoginQuest extends DailyQuest
     const SHORT_DETAILS = "毎日サーバーにログインして報酬を受け取ろう";
     const EXPLANATION = "サーバーにログインすると報酬が受け取れます。毎日受け取れるので忘れずに受け取りましょう。";
 
+    const BONUS_TICKET = SQLConst::TICKETS_NORMAL;
+    const BONUS_TICKET_NAME = "ノーマルガチャチケット";
+
     function __construct(SQLRepository $repo, string $xuid, ?string $value)
     {
         parent::__construct($repo, $xuid, $value);
         if ($this->value !== "true") {
             $this->value = "true";
             QuestListener::callSubscribedQuest($this->xuid, QuestListener::CLEAR_QUEST, $this);
-            $this->repo->addLog($this->xuid, SQLConst::LOG_QUEST, self::ID, SQLConst::COMPLETE,
+            $this->repo->addLog($this->xuid, SQLConst::LOG_QUEST, static::ID, SQLConst::COMPLETE,
                 SQLConst::NOW_TIME, null, null);
-            GatyaManager::addTicket($this->repo, $this->xuid, SQLConst::TICKETS_NORMAL, 1);
+            GatyaManager::addTicket($this->repo, $this->xuid, static::BONUS_TICKET, 1);
             foreach (Server::getInstance()->getOnlinePlayers() as $p) {
-                if ($p->getXuid() === $xuid) $p->sendMessage("ログインボーナスでノーマルガチャチケット×1枚を受け取りました");
+                if ($p->getXuid() === $xuid) $p->sendMessage("ログインボーナスで" . static::BONUS_TICKET_NAME . "×1枚を受け取りました");
             }
         }
     }
 
     function getRewardDetails(): string
     {
-        return "明日ログインするとノーマルガチャチケットが1つ受け取れます";
+        return "明日ログインすると" . static::BONUS_TICKET_NAME . "が1つ受け取れます";
     }
 
     function isComplete(): bool

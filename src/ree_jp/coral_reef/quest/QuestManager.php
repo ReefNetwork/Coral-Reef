@@ -15,6 +15,8 @@ use Closure;
 use ree_jp\coral_reef\account\AccountStore;
 use ree_jp\coral_reef\quest\data\DailyDigQuest;
 use ree_jp\coral_reef\quest\data\DailyLoginQuest;
+use ree_jp\coral_reef\quest\data\event\summer_2022\Summer2022DailyDig;
+use ree_jp\coral_reef\quest\data\event\summer_2022\Summer2022DailyLogin;
 use ree_jp\coral_reef\quest\data\LevelUpQuest;
 use ree_jp\coral_reef\quest\data\QuestData;
 use ree_jp\coral_reef\quest\data\TutorialQuest;
@@ -35,17 +37,25 @@ class QuestManager
                 self::$quests[$xuid][] = self::getQuest($repo, $store, $xuid, $row['subtype'], $row['value']);
             }
 
-            self::registerQuest($repo, $xuid, TutorialQuest::ID, null);
-            self::registerQuest($repo, $xuid, LevelUpQuest::ID, null, $store);
-            self::registerQuest($repo, $xuid, DailyDigQuest::ID, null);
-            self::registerQuest($repo, $xuid, DailyLoginQuest::ID, null);
-            self::registerQuest($repo, $xuid, WeeklyDigQuest::ID, null);
-            self::registerQuest($repo, $xuid, WeeklyAchieveQuest::ID, null);
+            self::addUserQuest($repo, $xuid, TutorialQuest::ID, null);
+            self::addUserQuest($repo, $xuid, LevelUpQuest::ID, null, $store);
+            self::addUserQuest($repo, $xuid, DailyDigQuest::ID, null);
+            self::addUserQuest($repo, $xuid, DailyLoginQuest::ID, null);
+            self::addUserQuest($repo, $xuid, WeeklyDigQuest::ID, null);
+            self::addUserQuest($repo, $xuid, WeeklyAchieveQuest::ID, null);
+
+            // 期間限定
+            self::addUserQuest($repo, $xuid, Summer2022DailyLogin::ID, null);
+            self::addUserQuest($repo, $xuid, Summer2022DailyDig::ID, null);
+
             if ($func instanceof Closure) $func($rows);
         });
     }
 
-    static function registerQuest(SQLRepository $repo, string $xuid, string $questID, ?string $value, ?AccountStore $store = null): void // クエストがなかったら与える
+    /**
+     * クエストがユーザーに追加されているか確認し、されていなかったら追加する
+     */
+    static function addUserQuest(SQLRepository $repo, string $xuid, string $questID, ?string $value, ?AccountStore $store = null): void // クエストがなかったら与える
     {
         foreach (QuestManager::getUserQuests($xuid) as $alreadyQuest) {
             if ($questID === $alreadyQuest::ID) return;
@@ -62,6 +72,11 @@ class QuestManager
             DailyLoginQuest::ID => new DailyLoginQuest($repo, $xuid, $value),
             WeeklyDigQuest::ID => new WeeklyDigQuest($repo, $xuid, $value),
             WeeklyAchieveQuest::ID => new WeeklyAchieveQuest($repo, $xuid, $value),
+
+            // 期間限定
+            Summer2022DailyLogin::ID => new Summer2022DailyLogin($repo, $xuid, $value),
+            Summer2022DailyDig::ID => new Summer2022DailyDig($repo, $xuid, $value),
+
             default => null,
         };
     }

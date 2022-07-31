@@ -58,11 +58,6 @@ class CommonListener implements Listener
             // データ読み込めたら動けるように
             $p->setImmobile(false);
             $accountStore->setValue($p->getXuid(), "wait_action", 0);
-
-            if (!$p->isConnected()) return;
-
-            $accountStore->getUser($p->getXuid())->loaded = true;
-            $p->sendMessage("データを読み込みました");
         });
     }
 
@@ -129,12 +124,19 @@ class CommonListener implements Listener
         if ($accountStore->hasValue($xuid, "wait_action")) {
             $p->sendMessage("データを確認しています...");
         }
-        Await::g2c($this->warpAutoSavePoint($this->pool, $p));
+        Await::f2c(function () use ($accountStore, $p): Generator {
+            yield from $this->warpAutoSavePoint($this->pool, $p);
+
+            if (!$p->isConnected()) return;
+
+            $accountStore->getUser($p->getXuid())->loaded = true;
+            $p->sendMessage("データを読み込みました");
+        });
         AccountService::userJoin($repo, $accountStore, $p);
         $sessionStore->createSession($xuid, CoralReefPlugin::$serverID);
 
         $ev->setJoinMessage(""); // プロキシ側で参加メッセージを流す
-        $p->sendTitle(TextFormat::GREEN . "Reef " . TextFormat::YELLOW . "Server");
+        $p->sendTitle(TextFormat::GREEN . "Reef " . TextFormat::YELLOW . "Server", TextFormat::BLUE . "サマー" . TextFormat::RESET . "イベント開催中!!!");
         if (!$p->getInventory()->contains(VanillaItems::STICK())) {
             $p->getInventory()->addItem(VanillaItems::STICK()->setCustomName("メニューを開く"));
         }
