@@ -20,11 +20,13 @@ use pocketmine\world\sound\XpLevelUpSound;
 use ree_jp\coral_reef\account\AccountStore;
 use ree_jp\coral_reef\account\SettingManager;
 use ree_jp\coral_reef\CoralReefPlugin;
+use ree_jp\coral_reef\gatya\GatyaManager;
 use ree_jp\coral_reef\land\LandStore;
 use ree_jp\coral_reef\quest\QuestListener;
 use ree_jp\coral_reef\session\SessionData;
 use ree_jp\coral_reef\sql\mysql\SQLRepository;
 use ree_jp\coral_reef\sql\SettingConst;
+use ree_jp\coral_reef\sql\SQLConst;
 
 class SkillManager
 {
@@ -86,6 +88,15 @@ class SkillManager
         if (isset(self::$reduceCoolTime[$xuid])) { // クールタイム減らすのを反映
             $cool_time -= self::$reduceCoolTime[$xuid];
         }
+
+        if (!$store->hasValue($xuid, "christmas_ticket_cool_down")) {
+            $store->setValue($xuid, "christmas_ticket_cool_down", 20 * 10);
+            if (mt_rand(1, 33) === 1) {
+                GatyaManager::addTicket($repo, $xuid, SQLConst::TICKETS_SUMMER_2022, 1);
+                $p->sendMessage("§bサマー§rガチャチケットを入手しました");
+            }
+        }
+
         if ($cool_time > 0) { // クールタイムが0以上のときクールタイムの処理をする
             $store->setValue($xuid, "skill_cool_time");
             CoralReefPlugin::$plugin->getScheduler()->scheduleDelayedTask(new ClosureTask(function () use ($store, $xuid, $p): void {
