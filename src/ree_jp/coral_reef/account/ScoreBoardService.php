@@ -64,7 +64,7 @@ class ScoreBoardService
             self::setScore($pk, 4, "§e採掘速度アップ! : " . (ServerUpdateTask::$haste_effect + 2) . "倍");
         }
 
-        self::setScore($pk, 7, TextFormat::BLUE . "Summer" . self::color[mt_rand(0, 17)] . "Event");
+        self::setScore($pk, 7, TextFormat::BLUE . "Summer §" . self::color[mt_rand(0, 17)] . "Event");
 
         self::setScore($pk, 8, TextFormat::DARK_GRAY . $p->getDisplayName());
         self::setScore($pk, 9, TextFormat::DARK_GRAY . date("Y/m/d H:i"));
