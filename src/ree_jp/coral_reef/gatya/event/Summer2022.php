@@ -54,7 +54,7 @@ class Summer2022
             $firstRand = mt_rand(1, 1000);
 
             switch (true) {
-                case $limit || ($firstRand <= 5) || ($isFirst && ($firstRand <= 10)): // 0.5% (まだ1回も引いてない人は1%)
+                case $limit || ($firstRand <= 10) || ($isFirst && ($firstRand <= 20)): // 1% (まだ1回も引いてない人は2%0)
                     switch (mt_rand(1, 10)) {
                         case 1:
                         case 2:
@@ -78,15 +78,12 @@ class Summer2022
                             $p->sendMessage("エラーが発生しました");
                             return;
                     }
-                    $percent = match ($isFirst) {
-                        true => "1",
-                        false => "0.5"
-                    };
+                    $percent = $isFirst ? "2" : "1";
                     GatyaManager::gatyaProcess($repo, SQLConst::LOG_GATYA_SUMMER_2022, $p, SQLConst::TICKETS_SUMMER_2022, 1, $item,
                         "reef_rare", TextFormat::GREEN . "REEFレア" . TextFormat::DARK_GRAY . "[$percent %]" . TextFormat::RESET, true, $func);
                     break;
 
-                case $firstRand <= (5 + 150):// 15%
+                case $firstRand <= (10 + 150):// 15%
                     switch (mt_rand(1, 2)) {
                         case 1:
                             $item = SuperItems::getItem($xuid, SuperItems::PICKAXE);
@@ -102,7 +99,7 @@ class Summer2022
                         "super_rare", TextFormat::BLUE . "スーパーレア" . TextFormat::DARK_GRAY . "[15%]" . TextFormat::RESET, false, $func);
                     break;
 
-                case $firstRand <= (155 + 345):// 34.5%
+                case $firstRand <= (160 + 350):// 35%
                     switch (mt_rand(1, 2)) {
                         case 1:
                             $item = RareItems::getItem($xuid, RareItems::PICKAXE);
@@ -115,7 +112,7 @@ class Summer2022
                             return;
                     }
                     GatyaManager::gatyaProcess($repo, SQLConst::LOG_GATYA_SUMMER_2022, $p, SQLConst::TICKETS_SUMMER_2022, 1, $item,
-                        "rare", TextFormat::AQUA . "レア" . TextFormat::DARK_GRAY . "[34.5%]" . TextFormat::RESET, false, $func);
+                        "rare", TextFormat::AQUA . "レア" . TextFormat::DARK_GRAY . "[35%]" . TextFormat::RESET, false, $func);
                     break;
 
                 default:
