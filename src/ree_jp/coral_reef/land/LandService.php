@@ -142,7 +142,7 @@ class LandService
     static function addLand(RepositoryPool $pool, StoreHouse $store, LandData $land, ?Player $p): void
     {
         /** @var LandRepository */
-        $repo = $pool->get(SQLRepository::class);
+        $repo = $pool->get(LandRepository::class);
         /** @var LandStore */
         $landStore = $store->get(LandStore::class);
 
