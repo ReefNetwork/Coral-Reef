@@ -18,6 +18,10 @@ use pocketmine\entity\effect\VanillaEffects;
 use pocketmine\item\Item;
 use pocketmine\lang\Translatable;
 use pocketmine\player\Player;
+use ree_jp\coral_reef\account\AccountStore;
+use ree_jp\coral_reef\gatya\items\ReefItems;
+use ree_jp\coral_reef\gatya\items\SpecialItemService;
+use ree_jp\coral_reef\StoreHouse;
 
 class PlayerData
 {
@@ -35,6 +39,30 @@ class PlayerData
     public function __construct(public string $xuid, public array $inv, public array $armorInv, public array $offHandInv,
                                 public array  $enderInv, public array $effects, public int $health, public float $hunger, public int $xp)
     {
+    }
+
+    public function renewItems(StoreHouse $store): void
+    {
+        /** @var AccountStore */
+        $accountStore = $store->get(AccountStore::class);
+        foreach ($this->inv as $key => $item) {
+            $this->inv[$key] = $this->renew($item, $accountStore);
+        }
+        foreach ($this->armorInv as $key => $item) {
+            $this->armorInv[$key] = $this->renew($item, $accountStore);
+        }
+        foreach ($this->enderInv as $key => $item) {
+            $this->enderInv[$key] = $this->renew($item, $accountStore);
+        }
+    }
+
+    private function renew(Item $item, AccountStore $store): Item
+    {
+        $nbt = $item->getNamedTag();
+        $renewed = SpecialItemService::getRenewItem($this->xuid, $nbt->getString(ReefItems::REEF_SP_ITEM, "unknown"), $item->getMeta(),
+            $store);
+        if ($renewed != null) return $renewed;
+        return $item;
     }
 
     static function create(Player $p): self
