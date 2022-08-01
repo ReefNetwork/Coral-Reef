@@ -36,6 +36,7 @@ class MysqlLandRepo implements LandRepository
         $result = yield from Await::promise(
             fn($resolve, $reject) => $this->pool->getConnection()->executeInsert("coral_reef.land.get",
                 ["server" => $server], $resolve, $reject));
+        var_dump($result);
         if (!$result) return [];
 
         return $this->setLandModels($result);
