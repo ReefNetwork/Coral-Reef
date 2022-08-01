@@ -132,6 +132,8 @@ class LandForm
 
     static function sendLandCreateForm(RepositoryPool $pool, StoreHouse $store, Player $p, string $x1 = '', string $z1 = '', string $x2 = '', string $z2 = ''): void
     {
+        $p->sendMessage("現在一時的に土地保護が無効になっています");
+        return;
         $landNameInput = new Input('土地の名前', '土地1', '');
         $x1Input = new Input('x座標1', '1', $x1);
         $z1Input = new Input('z座標1', '1', $z1);
