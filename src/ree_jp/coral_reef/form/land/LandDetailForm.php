@@ -40,7 +40,7 @@ class LandDetailForm
             if (!$p->isOnline()) return;
 
             if ($session instanceof SessionData) {
-                $logoutIntervalDay = $session->joinTime;
+                $logoutIntervalDay = floor((time() - strtotime($session->joinTime)) / (60 * 60 * 24)) . "日前";
             } else {
                 $logoutIntervalDay = "不明";
             }
