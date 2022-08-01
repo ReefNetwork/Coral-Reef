@@ -28,10 +28,10 @@ class SpecialItemService
             => RareItems::getItem($xuid, $item, $durable),
 
             Christmas2021ReefItems::PICKAXE, Christmas2021ReefItems::SHOVEL, Christmas2021ReefItems::AXE, Christmas2021ReefItems::HOE
-            => Christmas2021ReefItems::getItem($xuid, $item, $durable),
+            => self::setOwner(Christmas2021ReefItems::getItem($xuid, $item, $durable), $store),
 
             Summer2022ReefItems::PICKAXE, Summer2022ReefItems::SHOVEL, Summer2022ReefItems::AXE, Summer2022ReefItems::HOE
-            => Summer2022ReefItems::getItem($xuid, $item, $durable),
+            => self::setOwner(Summer2022ReefItems::getItem($xuid, $item, $durable), $store),
 
             default => null,
         };
