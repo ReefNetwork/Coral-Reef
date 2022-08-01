@@ -33,7 +33,7 @@ class LandDetailForm
     {
         Await::f2c(function () use ($pool, $store, $land, $p): Generator {
             /** @var SessionRepository */
-            $repo = $pool->get(SQLRepository::class);
+            $repo = $pool->get(SessionRepository::class);
             /** @var AccountStore */
             $accountStore = $store->get(AccountStore::class);
 
