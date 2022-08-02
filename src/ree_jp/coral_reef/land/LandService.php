@@ -147,7 +147,6 @@ class LandService
         $landStore = $store->get(LandStore::class);
 
         Await::g2c($repo->setLand($land, CoralReefPlugin::$serverID), function () use ($landStore, $p, $land) {
-            if (!isset($store->lands[$land->level])) $landStore->lands[$land->level] = [];
             $landStore->lands[$land->level][] = $land;
 
             if ($p instanceof Player && $p->isOnline()) {
