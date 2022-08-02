@@ -54,19 +54,40 @@ class LandStore implements Store
                 $landRepo = $pool->get(LandRepository::class);
 
                 /** @var LandData[] $lands */
-                $lands = yield from $landRepo->getLands(CoralReefPlugin::$serverID);
+                $lands = yield from $landRepo->getLands("seichi_1");
+                /** @var LandData[] $lands */
+                $lands2 = yield from $landRepo->getLands("us_seichi_1");
                 if (count($lands) <= 1) throw new RuntimeException("土地保護が読み込めませんでした!!!!!!!!!!!!!!!!!!!!");
-                foreach ($lands as $land) {
-                    $this->lands[$land->level][] = $land;
+                if (count($lands2) <= 1) throw new RuntimeException("土地保護(2)が読み込めませんでした!!!!!!!!!!!!!!!!!!!!");
 
-                    foreach ($landKeys as $key) {
-                        if (($key["xuid"] == $land->xuid) && ($key["subtype"] === CoralReefPlugin::$serverID . ":" . $land->name) && !is_null($key["value"])) {
-                            foreach (explode(":", $key["value"]) as $member) {
-                                $land->addMember($member);
-                            }
-                        }
+                /** @var LandRepository $repo */
+                $repo = $pool->get(LandRepository::class);
+
+                $i = 1;
+                var_dump("---start 1---");
+                foreach ($lands as $land) {
+                    if (empty(LandService::getDuplicateLand($this, $land->level, $land->aabb))) {
+                        $this->lands[$land->level][] = $land;
+                    } else {
+                        var_dump("delete $land->name($land->xuid)[$i]");
+                        yield from $repo->deleteLand($land);
                     }
+                    $i++;
                 }
+                $this->lands = [];
+                $i = 1;
+                var_dump("---start 2---");
+                foreach ($lands2 as $land) {
+                    if (empty(LandService::getDuplicateLand($this, $land->level, $land->aabb))) {
+                        $this->lands[$land->level][] = $land;
+                    } else {
+                        var_dump("delete $land->name($land->xuid)[$i]");
+                        yield from $repo->deleteLand($land);
+                    }
+                    $i++;
+                }
+
+                var_dump("end");
             });
         }, function (SqlError $error) {
             CoralReefPlugin::$plugin->criticalError("土地キー情報を取得中に" . $error->getErrorMessage());
