@@ -65,7 +65,7 @@ class LandService
 
     static function canCreateLand(StoreHouse $store, LandData $checkLand): ?LandData
     {
-        /** @var LandStore */
+        /** @var LandStore $landStore */
         $landStore = $store->get(LandStore::class);
 
         foreach ($landStore->lands as $level => $lands) {
@@ -113,7 +113,7 @@ class LandService
 
     static function addShareMember(RepositoryPool $pool, LandData $land, ?Player $p, string $xuid): void
     {
-        /** @var SQLRepository */
+        /** @var SQLRepository $sqlRepo */
         $sqlRepo = $pool->get(SQLRepository::class);
 
         if (!$land->isMember($xuid)) {
@@ -128,7 +128,7 @@ class LandService
 
     static function deleteShareMember(RepositoryPool $pool, LandData $land, ?Player $p, string $xuid): void
     {
-        /** @var SQLRepository */
+        /** @var SQLRepository $sqlRepo */
         $sqlRepo = $pool->get(SQLRepository::class);
 
         $land->deleteMember($xuid);
@@ -141,11 +141,9 @@ class LandService
 
     static function addLand(RepositoryPool $pool, StoreHouse $store, LandData $land, ?Player $p): void
     {
-        $p->sendMessage("一時的に機能制限をしています");
-        return;
-        /** @var LandRepository */
+        /** @var LandRepository $repo */
         $repo = $pool->get(LandRepository::class);
-        /** @var LandStore */
+        /** @var LandStore $landStore */
         $landStore = $store->get(LandStore::class);
 
         Await::g2c($repo->setLand($land, CoralReefPlugin::$serverID), function () use ($landStore, $p, $land) {
@@ -160,11 +158,9 @@ class LandService
 
     static function deleteLand(RepositoryPool $pool, StoreHouse $store, LandData $land, ?Player $p): void
     {
-        $p->sendMessage("一時的に機能制限をしています");
-        return;
-        /** @var LandRepository */
+        /** @var LandRepository $repo */
         $repo = $pool->get(LandRepository::class);
-        /** @var LandStore */
+        /** @var LandStore $landStore */
         $landStore = $store->get(LandStore::class);
 
         Await::g2c($repo->deleteLand($land));

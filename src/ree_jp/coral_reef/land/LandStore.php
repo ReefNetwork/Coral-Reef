@@ -20,6 +20,7 @@ use ree_jp\coral_reef\sql\repo\LandRepository;
 use ree_jp\coral_reef\sql\RepositoryPool;
 use ree_jp\coral_reef\sql\SQLConst;
 use ree_jp\coral_reef\Store;
+use RuntimeException;
 use SOFe\AwaitGenerator\Await;
 
 class LandStore implements Store
@@ -41,7 +42,7 @@ class LandStore implements Store
 
     public function __construct(RepositoryPool $pool)
     {
-        /** @var SQLRepository */
+        /** @var SQLRepository $sqlRepo */
         $sqlRepo = $pool->get(SQLRepository::class);
 
         // LandKey(土地保護を共有してる人をメモってるやつ)を確認
@@ -49,11 +50,12 @@ class LandStore implements Store
 
 
             Await::f2c(function () use ($landKeys, $pool): Generator {
-                /** @var LandRepository */
+                /** @var LandRepository $landRepo */
                 $landRepo = $pool->get(LandRepository::class);
 
-                /** @var LandData[] */
+                /** @var LandData[] $lands */
                 $lands = yield from $landRepo->getLands(CoralReefPlugin::$serverID);
+                if (count($lands) <= 1) throw new RuntimeException("土地保護が読み込めませんでした!!!!!!!!!!!!!!!!!!!!");
                 foreach ($lands as $land) {
                     $this->lands[$land->level][] = $land;
 
