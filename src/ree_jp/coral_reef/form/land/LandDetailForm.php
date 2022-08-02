@@ -21,7 +21,6 @@ use ree_jp\coral_reef\account\AccountStore;
 use ree_jp\coral_reef\land\LandData;
 use ree_jp\coral_reef\land\LandService;
 use ree_jp\coral_reef\session\SessionData;
-use ree_jp\coral_reef\sql\mysql\SQLRepository;
 use ree_jp\coral_reef\sql\repo\SessionRepository;
 use ree_jp\coral_reef\sql\RepositoryPool;
 use ree_jp\coral_reef\StoreHouse;
@@ -33,7 +32,7 @@ class LandDetailForm
     {
         Await::f2c(function () use ($pool, $store, $land, $p): Generator {
             /** @var SessionRepository */
-            $repo = $pool->get(SQLRepository::class);
+            $repo = $pool->get(SessionRepository::class);
             /** @var AccountStore */
             $accountStore = $store->get(AccountStore::class);
 
@@ -41,7 +40,7 @@ class LandDetailForm
             if (!$p->isOnline()) return;
 
             if ($session instanceof SessionData) {
-                $logoutIntervalDay = $session->joinTime;
+                $logoutIntervalDay = floor((time() - strtotime($session->joinTime)) / (60 * 60 * 24)) . "日前";
             } else {
                 $logoutIntervalDay = "不明";
             }
@@ -114,7 +113,7 @@ class LandDetailForm
 
         Await::f2c(function () use ($land, $store, $p, $pool): Generator {
             /** @var SessionRepository */
-            $repo = $pool->get(SQLRepository::class);
+            $repo = $pool->get(SessionRepository::class);
             /** @var SessionData */
             $session = yield from $repo->getRecentSession($p->getXuid());
             if (!$p->isOnline()) return;

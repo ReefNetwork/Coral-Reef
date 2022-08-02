@@ -59,11 +59,11 @@ class BonusCodeForm
                     GatyaManager::addTicket($repo, $p->getXuid(), SQLConst::TICKETS_NORMAL, 10);
                 });
                 break;
-            case "tree200lv":
+            case "summer2022":
                 self::useCode($repo, $p, $code, function () use ($repo, $p): void {
-                    $p->sendMessage(TextFormat::DARK_PURPLE . "PlayingTreeさんおめでとうございます!!!");
-                    $p->sendMessage(TextFormat::AQUA . "ガチャチケットを" . TextFormat::RED . "10枚" . TextFormat::AQUA . "受け取りました");
-                    GatyaManager::addTicket($repo, $p->getXuid(), SQLConst::TICKETS_NORMAL, 10);
+                    $p->sendMessage(TextFormat::BLUE . "メンテナンスご協力ありがとうございました");
+                    $p->sendMessage(TextFormat::BLUE . "サマー§rガチャチケットを" . TextFormat::RED . "3枚" . TextFormat::RESET . "受け取りました");
+                    GatyaManager::addTicket($repo, $p->getXuid(), SQLConst::TICKETS_SUMMER_2022, 3);
                 });
                 break;
             default:

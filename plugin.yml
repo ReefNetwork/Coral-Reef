@@ -3,7 +3,7 @@ main: ree_jp\coral_reef\CoralReefPlugin
 api: 4.0.0
 author: Ree-jp
 website: https://reef.ree-jp.net/
-version: 1.4.0
+version: 1.4.6
 depend:
   - ReefEdge
   - BboForm

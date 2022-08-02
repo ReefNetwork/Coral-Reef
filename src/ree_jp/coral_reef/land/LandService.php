@@ -141,6 +141,8 @@ class LandService
 
     static function addLand(RepositoryPool $pool, StoreHouse $store, LandData $land, ?Player $p): void
     {
+        $p->sendMessage("一時的に機能制限をしています");
+        return;
         /** @var LandRepository */
         $repo = $pool->get(LandRepository::class);
         /** @var LandStore */
@@ -158,6 +160,8 @@ class LandService
 
     static function deleteLand(RepositoryPool $pool, StoreHouse $store, LandData $land, ?Player $p): void
     {
+        $p->sendMessage("一時的に機能制限をしています");
+        return;
         /** @var LandRepository */
         $repo = $pool->get(LandRepository::class);
         /** @var LandStore */
