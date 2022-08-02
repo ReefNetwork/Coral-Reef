@@ -41,19 +41,32 @@ class LandStore implements Store
 
     public function __construct(RepositoryPool $pool)
     {
-        /** @var SQLRepository */
+        /** @var SQLRepository $sqlRepo */
         $sqlRepo = $pool->get(SQLRepository::class);
 
         // LandKey(土地保護を共有してる人をメモってるやつ)を確認
         $sqlRepo->getAllUserSubtypeValue(SQLConst::TYPE_LAND_KEY, function (array $landKeys) use ($pool): void {
-
-
             Await::f2c(function () use ($landKeys, $pool): Generator {
-                /** @var LandRepository */
+                /** @var LandRepository $landRepo */
                 $landRepo = $pool->get(LandRepository::class);
 
-                /** @var LandData[] */
+                var_dump("loading lands...");
+
+                /** @var LandData[] $lands */
                 $lands = yield from $landRepo->getLands(CoralReefPlugin::$serverID);
+
+                var_dump("loaded lands " . count($lands));
+                sleep(3);
+                var_dump("show lands name");
+                $string = "";
+                foreach ($lands as $land) {
+                    $string .= $land->name . "($land->xuid)|";
+                }
+                var_dump($string);
+                sleep(3);
+                var_dump("show lands data");
+                var_dump($lands);
+
                 foreach ($lands as $land) {
                     $this->lands[$land->level][] = $land;
 
