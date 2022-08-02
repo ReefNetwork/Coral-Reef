@@ -66,6 +66,13 @@ class BonusCodeForm
                     GatyaManager::addTicket($repo, $p->getXuid(), SQLConst::TICKETS_SUMMER_2022, 3);
                 });
                 break;
+            case "summer2022hoe":
+                self::useCode($repo, $p, $code, function () use ($repo, $p): void {
+                    $p->sendMessage(TextFormat::BLUE . "申し訳ございませんでした");
+                    $p->sendMessage(TextFormat::BLUE . "サマー§rガチャチケットを" . TextFormat::RED . "3枚" . TextFormat::RESET . "受け取りました");
+                    GatyaManager::addTicket($repo, $p->getXuid(), SQLConst::TICKETS_SUMMER_2022, 3);
+                });
+                break;
             default:
                 $p->sendMessage("そのコードは存在しません");
         }
