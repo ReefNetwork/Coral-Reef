@@ -50,22 +50,8 @@ class LandStore implements Store
                 /** @var LandRepository $landRepo */
                 $landRepo = $pool->get(LandRepository::class);
 
-                var_dump("loading lands...");
-
                 /** @var LandData[] $lands */
                 $lands = yield from $landRepo->getLands(CoralReefPlugin::$serverID);
-
-                var_dump("loaded lands " . count($lands));
-                sleep(3);
-                var_dump("show lands name");
-                $string = "";
-                foreach ($lands as $land) {
-                    $string .= $land->name . "($land->xuid)|";
-                }
-                var_dump($string);
-                sleep(3);
-                var_dump("show lands data");
-                var_dump($lands);
 
                 foreach ($lands as $land) {
                     $this->lands[$land->level][] = $land;

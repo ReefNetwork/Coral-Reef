@@ -141,16 +141,18 @@ class LandService
 
     static function addLand(RepositoryPool $pool, StoreHouse $store, LandData $land, ?Player $p): void
     {
-        $p->sendMessage("一時的に機能制限をしています");
-        return;
         /** @var LandRepository */
         $repo = $pool->get(LandRepository::class);
         /** @var LandStore */
         $landStore = $store->get(LandStore::class);
 
         Await::g2c($repo->setLand($land, CoralReefPlugin::$serverID), function () use ($landStore, $p, $land) {
-            if (!isset($store->lands[$land->level])) $landStore->lands[$land->level] = [];
+
+            var_dump("before" . count($landStore->lands[$land->level]));
+
             $landStore->lands[$land->level][] = $land;
+
+            var_dump("after" . count($landStore->lands[$land->level]));
 
             if ($p instanceof Player && $p->isOnline()) {
                 $p->sendMessage($land->name . 'を作成しました');
@@ -160,8 +162,6 @@ class LandService
 
     static function deleteLand(RepositoryPool $pool, StoreHouse $store, LandData $land, ?Player $p): void
     {
-        $p->sendMessage("一時的に機能制限をしています");
-        return;
         /** @var LandRepository */
         $repo = $pool->get(LandRepository::class);
         /** @var LandStore */
