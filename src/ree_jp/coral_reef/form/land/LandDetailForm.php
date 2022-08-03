@@ -31,16 +31,16 @@ class LandDetailForm
     static function sendForm(RepositoryPool $pool, StoreHouse $store, LandData $land, Player $p): void
     {
         Await::f2c(function () use ($pool, $store, $land, $p): Generator {
-            /** @var SessionRepository */
+            /** @var SessionRepository $repo */
             $repo = $pool->get(SessionRepository::class);
-            /** @var AccountStore */
+            /** @var AccountStore $accountStore */
             $accountStore = $store->get(AccountStore::class);
 
             $session = yield from $repo->getRecentSession($land->xuid);
             if (!$p->isOnline()) return;
 
             if ($session instanceof SessionData) {
-                $logoutIntervalDay = floor((time() - strtotime($session->joinTime)) / (60 * 60 * 24)) . "日前";
+                $logoutIntervalDay = floor((time() - $session->joinTime) / (60 * 60 * 24)) . "日前";
             } else {
                 $logoutIntervalDay = "不明";
             }
@@ -102,7 +102,7 @@ class LandDetailForm
 
     private static function sendLandTakeForm(RepositoryPool $pool, StoreHouse $store, Player $p, LandData $land): void
     {
-        /** @var AccountStore */
+        /** @var AccountStore $accountStore */
         $accountStore = $store->get(AccountStore::class);
 
         $user = $accountStore->getUser($p->getXuid());
@@ -112,9 +112,9 @@ class LandDetailForm
         }
 
         Await::f2c(function () use ($land, $store, $p, $pool): Generator {
-            /** @var SessionRepository */
+            /** @var SessionRepository $repo */
             $repo = $pool->get(SessionRepository::class);
-            /** @var SessionData */
+            /** @var SessionData $session */
             $session = yield from $repo->getRecentSession($p->getXuid());
             if (!$p->isOnline()) return;
 
