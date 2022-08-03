@@ -27,7 +27,7 @@ class Summer2022ReefItems extends ReefItems
     const PICKAXE = "reef_seichi_2022summer_pickaxe";
     const SHOVEL = "reef_seichi_2022summer_shovel";
     const AXE = "reef_seichi_2022summer_axe";
-    const HOE = "reef_seichi_2022summer_axe";
+    const HOE = "reef_seichi_2022summer_hoe";
 
     static function registerItems(): void
     {
