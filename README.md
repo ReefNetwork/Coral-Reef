@@ -5,16 +5,24 @@
 [![Stable](https://github.com/ReefNetwork/Coral-Reef/actions/workflows/stable.yml/badge.svg)](https://github.com/ReefNetwork/Coral-Reef/actions/workflows/stable.yml)
 [![Discord](https://img.shields.io/discord/638760361369010177?logo=discord)](https://discord.gg/M4A6cak)
 
-Reef Server Plugin
+Reef Seichi Server Plugin
 
 ## Documents
 
-[GitHub Actions](docs/GitHubActions.md)
+[GitHub Actions](docs/GitHubActions.md)  
+[コミットルール](docs/Commit.md)
 
 ## Config
 
 ```yaml
-server_0: seichi_1 #サーバーの区別ID
+#サーバーの区別ID
+server_0: seichi_1
+
+# サーバーの表示名
+server: "てすと"
+
+# 起動時にsql系のセットアップをするか
+is_sql_init: true
 ```
 
 ## MySQL
