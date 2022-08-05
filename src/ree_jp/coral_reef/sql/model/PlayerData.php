@@ -41,26 +41,26 @@ class PlayerData
     {
     }
 
-    public function renewItems(StoreHouse $store): void
+    public function renewItems(StoreHouse $store, string $xuid): void
     {
-        /** @var AccountStore */
+        /** @var AccountStore $accountStore */
         $accountStore = $store->get(AccountStore::class);
         foreach ($this->inv as $key => $item) {
-            $this->inv[$key] = $this->renew($item, $accountStore);
+            $this->inv[$key] = $this->renew($item, $accountStore, $xuid);
         }
         foreach ($this->armorInv as $key => $item) {
-            $this->armorInv[$key] = $this->renew($item, $accountStore);
+            $this->armorInv[$key] = $this->renew($item, $accountStore, $xuid);
         }
         foreach ($this->enderInv as $key => $item) {
-            $this->enderInv[$key] = $this->renew($item, $accountStore);
+            $this->enderInv[$key] = $this->renew($item, $accountStore, $xuid);
         }
     }
 
-    private function renew(Item $item, AccountStore $store): Item
+    private function renew(Item $item, AccountStore $store, string $xuid): Item
     {
         $nbt = $item->getNamedTag();
-        $renewed = SpecialItemService::getRenewItem($this->xuid, $nbt->getString(ReefItems::REEF_SP_ITEM, "unknown"), $item->getMeta(),
-            $store);
+        $renewed = SpecialItemService::getRenewItem($nbt->getString("owner", $xuid), $nbt->getString(ReefItems::REEF_SP_ITEM, "unknown"),
+            $item->getMeta(), $store);
         if ($renewed != null) return $renewed;
         return $item;
     }

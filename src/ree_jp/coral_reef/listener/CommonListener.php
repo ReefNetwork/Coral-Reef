@@ -84,7 +84,7 @@ class CommonListener implements Listener
         $repo = $pool->get(PlayerRepository::class);
         $data = yield from $repo->getPlayerData($p->getXuid());
         if (!$data instanceof PlayerData) return;
-        $data->renewItems($this->store);
+        $data->renewItems($this->store, $p->getXuid());
         $p->getInventory()->setContents($data->inv);
         $p->getArmorInventory()->setContents($data->armorInv);
         $p->getOffHandInventory()->setContents($data->offHandInv);
