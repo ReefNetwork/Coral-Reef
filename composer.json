@@ -50,15 +50,7 @@
     },
     {
       "type": "git",
-      "url": "https://github.com/Ree-jp-minecraft/MysqlLogger.git"
-    },
-    {
-      "type": "git",
       "url": "https://github.com/Ree-jp-minecraft/StackStrage.git"
-    },
-    {
-      "type": "git",
-      "url": "https://github.com/ReefNetwork/StarGate-Atlantis"
     }
   ]
 }
