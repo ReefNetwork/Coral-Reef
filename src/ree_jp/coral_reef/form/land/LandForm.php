@@ -34,7 +34,7 @@ class LandForm
 {
     static function sendForm(RepositoryPool $pool, StoreHouse $store, Player $p): void
     {
-        /** @var LandStore */
+        /** @var LandStore $landStore */
         $landStore = $store->get(LandStore::class);
 
         $form = (new SimpleForm())
@@ -76,7 +76,7 @@ class LandForm
 
     static function sendLandCreateAssistForm(RepositoryPool $pool, StoreHouse $store, Player $p, Vector3 $vec3): void
     {
-        /** @var LandStore */
+        /** @var LandStore $landStore */
         $landStore = $store->get(LandStore::class);
 
         $xuid = $p->getXuid();
@@ -155,6 +155,11 @@ class LandForm
                     if (mb_strlen($name) <= 0) {
                         $p->sendMessage("名前が短すぎます");
                     } else {
+                        if (!LandService::isNotNameDuplicate($store, $p->getXuid(), $name)) {
+                            $p->sendMessage("同じ名前は使用できません");
+                            return;
+                        }
+
                         $aabb = LandService::getAabb($x1, 0, $z1, $x2, 0, $z2);
                         $land = new LandData($p->getXuid(), $name, $p->getWorld()->getFolderName(), $aabb);
                         $result = LandService::canCreateLand($store, $land);
@@ -171,7 +176,7 @@ class LandForm
                         if (is_null($result)) {
                             LandService::addLand($pool, $store, $land, $p);
                         } else {
-                            /** @var AccountStore */
+                            /** @var AccountStore $accountStore */
                             $accountStore = $store->get(AccountStore::class);
 
                             $name = $accountStore->getUserName($land->xuid);

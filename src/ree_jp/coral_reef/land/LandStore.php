@@ -71,7 +71,11 @@ class LandStore implements Store
         }, function (SqlError $error) {
             CoralReefPlugin::$plugin->criticalError("土地キー情報を取得中に" . $error->getErrorMessage());
         });
+    }
 
+    public function getLands(string $world): array
+    {
+        return $this->lands[$world] ?? [];
     }
 
     public function isParty(string $ownerXuid, string $userXuid): bool
