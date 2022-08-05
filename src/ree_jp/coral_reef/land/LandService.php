@@ -63,18 +63,27 @@ class LandService
         return $myLands;
     }
 
+    static function isNotNameDuplicate(StoreHouse $house, string $xuid, string $name): bool
+    {
+        /** @var LandStore $landStore */
+        $landStore = $house->get(LandStore::class);
+
+        foreach ($landStore->lands as $lands) {
+            foreach ($lands as $land) {
+                if ($land->xuid === $xuid && $land->name === $name) return false;
+            }
+        }
+        return true;
+    }
+
     static function canCreateLand(StoreHouse $store, LandData $checkLand): ?LandData
     {
         /** @var LandStore $landStore */
         $landStore = $store->get(LandStore::class);
 
-        foreach ($landStore->lands as $level => $lands) {
-            if ($level !== $checkLand->level) continue;
-
-            foreach ($lands as $land) {
-                if (self::isDuplicateWithoutY($land->aabb, $checkLand->aabb) && ($land->level === $level)) {
-                    return $land;
-                }
+        foreach ($landStore->getLands($checkLand->level) as $land) {
+            if (self::isDuplicateWithoutY($land->aabb, $checkLand->aabb)) {
+                return $land;
             }
         }
         return null;
