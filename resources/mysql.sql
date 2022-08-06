@@ -281,7 +281,8 @@ WHERE server = :server;
 -- #        :name string
 SELECT *
 FROM LAND
-WHERE server = :server;
+WHERE xuid = :xuid
+  AND name = :name;
 -- #        }
 -- #        { create
 -- #        :xuid int
