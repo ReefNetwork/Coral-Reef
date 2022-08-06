@@ -11,6 +11,7 @@
 
 namespace ree_jp\coral_reef\land;
 
+use Generator;
 use pocketmine\math\AxisAlignedBB;
 use pocketmine\math\Vector3;
 use pocketmine\player\Player;
@@ -150,16 +151,25 @@ class LandService
 
     static function addLand(RepositoryPool $pool, StoreHouse $store, LandData $land, ?Player $p): void
     {
-        /** @var LandRepository $repo */
-        $repo = $pool->get(LandRepository::class);
-        /** @var LandStore $landStore */
-        $landStore = $store->get(LandStore::class);
+        Await::f2c(function () use ($land, $p, $store, $pool): Generator {
+            /** @var LandRepository $repo */
+            $repo = $pool->get(LandRepository::class);
+            /** @var LandStore $landStore */
+            $landStore = $store->get(LandStore::class);
 
-        Await::g2c($repo->setLand($land, CoralReefPlugin::$serverID), function () use ($landStore, $p, $land) {
+            $exists = yield from $repo->isExistLand($land->xuid, $land->name);
+            if ($exists != null) {
+                if ($p instanceof Player && $p->isOnline()) {
+                    $p->sendMessage("同じ名前の土地は作成できません(別のサーバーの土地も同じ名前にすることはできません)");
+                    return;
+                }
+            }
+
+            yield from $repo->setLand($land, CoralReefPlugin::$serverID);
             $landStore->lands[$land->level][] = $land;
 
             if ($p instanceof Player && $p->isOnline()) {
-                $p->sendMessage($land->name . 'を作成しました');
+                $p->sendMessage($land->name . "を作成しました");
             }
         });
     }
@@ -188,7 +198,7 @@ class LandService
     }
 
     static function protect(LandStore $landStore, AccountStore $accountStore, Player $p, Position $pos, ?string $message,
-                            bool      $isTouch = false, bool $isSlidingBrock = false): bool
+                            bool $isTouch = false, bool $isSlidingBrock = false): bool
     {
         if (in_array($p->getWorld()->getFolderName(), self::LOBBY_WORLD) && !(AccountService::isOp($p) && $p->isCreative())) {
             if (is_null($message)) return false;

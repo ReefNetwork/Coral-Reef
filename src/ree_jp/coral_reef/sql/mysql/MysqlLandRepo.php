@@ -66,6 +66,16 @@ class MysqlLandRepo implements LandRepository
                 "name" => $land->name], $resolve, $reject));
     }
 
+    public function isExistLand(string $xuid, string $name): Generator
+    {
+        $result = yield from Await::promise(
+            fn($resolve, $reject) => $this->pool->getConnection()->executeSelect("coral_reef.land.get_once",
+                ["xuid" => intval($xuid), "name" => $name], $resolve, $reject));
+        if (!$result) return null;
+
+        return current($this->setLandModels($result));
+    }
+
     public function close(): void
     {
     }

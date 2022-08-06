@@ -276,6 +276,13 @@ SELECT *
 FROM LAND
 WHERE server = :server;
 -- #        }
+-- #        { get_once
+-- #        :xuid int
+-- #        :name string
+SELECT *
+FROM LAND
+WHERE server = :server;
+-- #        }
 -- #        { create
 -- #        :xuid int
 -- #        :name string
