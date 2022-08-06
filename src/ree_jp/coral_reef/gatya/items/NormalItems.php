@@ -36,32 +36,32 @@ class NormalItems extends ReefItems
         switch (intval($type)) {
             case 1:
                 $item = VanillaItems::IRON_PICKAXE()->setDamage($durable);
-                $item->setCustomName('かたいツルハシ');
+                $item->setCustomName("かたいツルハシ");
                 $item->addEnchantment(new EnchantmentInstance(VanillaEnchantments::UNBREAKING(), 3));
                 break;
             case 2:
                 $item = VanillaItems::IRON_SHOVEL()->setDamage($durable);
-                $item->setCustomName('かたいシャベル');
+                $item->setCustomName("かたいシャベル");
                 $item->addEnchantment(new EnchantmentInstance(VanillaEnchantments::UNBREAKING(), 3));
                 break;
             case 3:
                 $item = VanillaItems::IRON_AXE()->setDamage($durable);
-                $item->setCustomName('かたい斧');
+                $item->setCustomName("かたい斧");
                 $item->addEnchantment(new EnchantmentInstance(VanillaEnchantments::UNBREAKING(), 3));
                 break;
             case 4:
                 $item = VanillaItems::IRON_PICKAXE();
-                $item->setCustomName('はやいツルハシ');
+                $item->setCustomName("はやいツルハシ");
                 $item->addEnchantment(new EnchantmentInstance(VanillaEnchantments::EFFICIENCY(), 2));
                 break;
             case 5:
                 $item = VanillaItems::IRON_SHOVEL()->setDamage($durable);
-                $item->setCustomName('かたいシャベル');
+                $item->setCustomName("はやいシャベル");
                 $item->addEnchantment(new EnchantmentInstance(VanillaEnchantments::EFFICIENCY(), 2));
                 break;
             case 6:
                 $item = VanillaItems::IRON_AXE()->setDamage($durable);
-                $item->setCustomName('はやい斧');
+                $item->setCustomName("はやい斧");
                 $item->addEnchantment(new EnchantmentInstance(VanillaEnchantments::EFFICIENCY(), 2));
                 break;
             case 7:
