@@ -115,7 +115,7 @@ class LandDetailForm
             /** @var SessionRepository $repo */
             $repo = $pool->get(SessionRepository::class);
             /** @var SessionData $session */
-            $session = yield from $repo->getRecentSession($p->getXuid());
+            $session = yield from $repo->getRecentSession($land->xuid);
             if (!$p->isOnline()) return;
 
             if ($session instanceof SessionData) {
@@ -126,7 +126,7 @@ class LandDetailForm
             if ($logoutIntervalDay >= 30) {
                 self::sendLandDeleteConfirmForm($pool, $store, $p, $land, "ランクが30以上かつ、この土地の所有者が30日以上ログインしていないため" .
                     "この土地の所有者に変わって土地保護を削除することができます\n" . TextFormat::RED . "自分でその土地を使わない場合はむやみやたらにこの機能を使用しないでください\n" .
-                    "本当に削除しますか?");
+                    "この機能の不適切な使用が確認された場合、" . TextFormat::RED . "BAN" . TextFormat::RESET . "される可能性があります\n本当に削除しますか?");
             } else {
                 $remainder = 30 - $logoutIntervalDay;
                 $p->sendMessage("この土地の所有者の直近ログインは$logoutIntervalDay 日前です\n土地が奪えるようになるまであと$remainder 日です");
