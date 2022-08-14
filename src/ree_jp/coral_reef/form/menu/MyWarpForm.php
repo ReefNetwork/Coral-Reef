@@ -36,9 +36,9 @@ class MyWarpForm
     static function sendForm(RepositoryPool $pool, Player $p): void
     {
         Await::f2c(function () use ($p, $pool): Generator {
-            /** @var WarpRepository */
+            /** @var WarpRepository $repo */
             $repo = $pool->get(WarpRepository::class);
-            /** @var WarpPoint[] */
+            /** @var WarpPoint[] $warps */
             $warps = yield from $repo->getWarps($p->getXuid(), CoralReefPlugin::$serverID);
             $form = (new SimpleForm())
                 ->setTitle("Menu -> MyWarp")
@@ -73,7 +73,7 @@ class MyWarpForm
      */
     static function sendMyWarpEditForm(RepositoryPool $pool, Player $p, array $warpPoints): void
     {
-        /** @var WarpRepository */
+        /** @var WarpRepository $repo */
         $repo = $pool->get(WarpRepository::class);
         $form = (new SimpleForm())
             ->setTitle("MyWarp -> Edit")
@@ -130,15 +130,23 @@ class MyWarpForm
                 } else if (str_starts_with($nameInput->getValue(), "[auto-save]")) {
                     $p->sendMessage("使えない文字が含まれています");
                 } else {
-                    /** @var WarpRepository */
-                    $repo = $pool->get(WarpRepository::class);
-                    Await::g2c($repo->setWarp(new WarpPoint($p->getXuid(), $nameInput->getValue(), CoralReefPlugin::$serverID,
-                        new Position($p->getPosition()->getFloorX(), $p->getPosition()->getFloorY(),
-                            $p->getPosition()->getFloorZ(), $p->getWorld()))),
-                        function () use ($p): void {
-                            $p->sendMessage("ワープ地点を作成しました");
+
+
+                    Await::f2c(function () use ($pool, $nameInput, $p): Generator {
+                        /** @var WarpRepository $repo */
+                        $repo = $pool->get(WarpRepository::class);
+
+                        $exists = yield from $repo->isExistWarp($p->getXuid(), $nameInput->getValue());
+                        if ($exists != null) {
+                            $p->sendMessage("同じ名前のワープ地点は作成できません(別のサーバーのワープ地点も同じ名前にすることはできません)");
+                            return;
                         }
-                    );
+
+                        yield from $repo->setWarp(new WarpPoint($p->getXuid(), $nameInput->getValue(), CoralReefPlugin::$serverID,
+                            new Position($p->getPosition()->getFloorX(), $p->getPosition()->getFloorY(),
+                                $p->getPosition()->getFloorZ(), $p->getWorld())));
+                        $p->sendMessage("ワープ地点を作成しました");
+                    });
                     QuestListener::callSubscribedQuest($p->getXuid(), QuestListener::CREATE_WARP_POINT, null);
                 }
             }

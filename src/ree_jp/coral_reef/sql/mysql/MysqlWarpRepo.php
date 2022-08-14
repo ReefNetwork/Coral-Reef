@@ -59,6 +59,16 @@ class MysqlWarpRepo implements WarpRepository
                 "name" => $warp->warpName, "server" => $warp->server], $resolve, $reject));
     }
 
+    public function isExistWarp(string $xuid, string $name): Generator
+    {
+        $result = yield from Await::promise(
+            fn($resolve, $reject) => $this->pool->getConnection()->executeSelect("coral_reef.warp.get_once",
+                ["xuid" => intval($xuid), "name" => $name], $resolve, $reject));
+        if (!$result) return null;
+
+        return current($this->setWarpPointModels($result));
+    }
+
     private function setWarpPointModels(array $data): array
     {
         $warps = [];

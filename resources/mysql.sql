@@ -243,6 +243,14 @@ FROM WARP
 WHERE xuid = :xuid
   AND server = :server;
 -- #        }
+-- #        { get_once
+-- #        :xuid int
+-- #        :name string
+SELECT *
+FROM LAND
+WHERE xuid = :xuid
+  AND name = :name;
+-- #        }
 -- #        { create
 -- #        :xuid int
 -- #        :name string
