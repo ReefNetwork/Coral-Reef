@@ -33,7 +33,7 @@ class MysqlUserRepo implements UserRepository
 
     /**
      * @param string $xuid
-     * @return Generator UserAccount | false
+     * @return Generator UserAccount | null
      */
     public function getUserData(string $xuid): Generator
     {
@@ -41,6 +41,18 @@ class MysqlUserRepo implements UserRepository
             fn($resolve, $reject) => $this->pool->getConnection()->executeSelect("coral_reef.user.get", ["xuid" => intval($xuid)], $resolve, $reject));
         if (!$result) return null;
         return current($this->setUserDataModels($result));
+    }
+
+    /**
+     * @param string $xuid
+     * @return Generator LiteUserModel | null
+     */
+    public function getLittleUserData(string $xuid): Generator
+    {
+        $result = yield from Await::promise(
+            fn($resolve, $reject) => $this->pool->getConnection()->executeSelect("coral_reef.user.get", ["xuid" => intval($xuid)], $resolve, $reject));
+        if (!$result) return null;
+        return current($this->setLiteUserDataModels($result));
     }
 
     /**

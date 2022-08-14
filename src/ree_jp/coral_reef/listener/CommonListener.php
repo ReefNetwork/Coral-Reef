@@ -49,7 +49,7 @@ class CommonListener implements Listener
         $await = [$this->loadUser($p), $this->loadPlayerData($this->pool, $p)];
 
         Await::f2c(function () use ($p, $await): Generator {
-            /** @var AccountStore */
+            /** @var AccountStore $accountStore */
             $accountStore = $this->store->get(AccountStore::class);
 
             yield from Await::all($await);
@@ -63,12 +63,13 @@ class CommonListener implements Listener
 
     private function loadUser(Player $p): Generator
     {
-        /** @var UserRepository */
+        /** @var UserRepository $repo */
         $repo = $this->pool->get(UserRepository::class);
-        /** @var AccountStore */
+        /** @var AccountStore $accountStore */
         $accountStore = $this->store->get(AccountStore::class);
 
         $xuid = $p->getXuid();
+        $accountStore->updateUserName($xuid, $p->getName());
         $user = yield from $repo->getUserData($p->getXuid());
         if ($user instanceof UserAccount) {
             $accountStore->users[$xuid] = $user;
@@ -80,7 +81,7 @@ class CommonListener implements Listener
 
     private function loadPlayerData(RepositoryPool $pool, Player $p): Generator
     {
-        /** @var PlayerRepository */
+        /** @var PlayerRepository $repo */
         $repo = $pool->get(PlayerRepository::class);
         $data = yield from $repo->getPlayerData($p->getXuid());
         if (!$data instanceof PlayerData) return;
@@ -100,9 +101,9 @@ class CommonListener implements Listener
 
     private function warpAutoSavePoint(RepositoryPool $pool, Player $p): Generator
     {
-        /** @var WarpRepository */
+        /** @var WarpRepository $repo */
         $repo = $pool->get(WarpRepository::class);
-        /** @var WarpPoint[] */
+        /** @var WarpPoint[] $warps */
         $warps = yield from $repo->getWarps($p->getXuid(), CoralReefPlugin::$serverID);
         foreach ($warps as $warp) {
             if ($warp->warpName != AccountService::autoSaveWarpName()) continue;
@@ -112,11 +113,11 @@ class CommonListener implements Listener
 
     public function onJoin(PlayerJoinEvent $ev): void
     {
-        /** @var SQLRepository */
+        /** @var SQLRepository $repo */
         $repo = $this->pool->get(SQLRepository::class);
-        /** @var AccountStore */
+        /** @var AccountStore $accountStore */
         $accountStore = $this->store->get(AccountStore::class);
-        /** @var SessionStore */
+        /** @var SessionStore $sessionStore */
         $sessionStore = $this->store->get(SessionStore::class);
 
         $p = $ev->getPlayer();
@@ -146,9 +147,9 @@ class CommonListener implements Listener
     public function onQuit(PlayerQuitEvent $ev): void
     {
         $p = $ev->getPlayer();
-        /** @var AccountStore */
+        /** @var AccountStore $accountStore */
         $accountStore = $this->store->get(AccountStore::class);
-        /** @var SessionStore */
+        /** @var SessionStore $sessionStore */
         $sessionStore = $this->store->get(SessionStore::class);
 
         AccountService::userQuit($this->pool, $accountStore, $p);

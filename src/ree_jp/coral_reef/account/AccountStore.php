@@ -87,14 +87,19 @@ class AccountStore implements Store
 
     public function updateUserNameList(RepositoryPool $pool): Generator
     {
-        /** @var UserRepository */
+        /** @var UserRepository $repo */
         $repo = $pool->get(UserRepository::class);
-        /** @var LiteUserModel[] */
+        /** @var LiteUserModel[] $users */
         $users = yield from $repo->getAllUserData();
         $list = [];
         foreach ($users as $user) {
             $list[$user->xuid] = strtolower($user->name);
         }
         $this->xuid = $list;
+    }
+
+    public function updateUserName(string $xuid, string $name): void
+    {
+        $this->xuid[$xuid] = strtolower($name);
     }
 }
