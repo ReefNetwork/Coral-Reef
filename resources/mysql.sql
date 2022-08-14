@@ -247,7 +247,7 @@ WHERE xuid = :xuid
 -- #        :xuid int
 -- #        :name string
 SELECT *
-FROM LAND
+FROM WARP
 WHERE xuid = :xuid
   AND name = :name;
 -- #        }
