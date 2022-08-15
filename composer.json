@@ -21,7 +21,8 @@
     "sof3/libasynql": "4.0.*",
     "sof3/await-generator": "3.4.*",
     "ree_jp_minecraft/invmenu": "4.3.*",
-    "ree_jp/stackstorage": "dev-master"
+    "ree_jp/stackstorage": "dev-master",
+    "tedo0627/redstonecircuit": "dev-feature/commandblock_taget_selecter"
   },
   "repositories": [
     {
@@ -51,6 +52,10 @@
     {
       "type": "git",
       "url": "https://github.com/Ree-jp-minecraft/StackStrage.git"
+    },
+    {
+      "type": "git",
+      "url": "https://github.com/ReefNetwork/RedstoneCircuit.git"
     }
   ]
 }

@@ -35,6 +35,7 @@ use ree_jp\coral_reef\gatya\items\ReefItems;
 use ree_jp\coral_reef\item\CustomItemService;
 use ree_jp\coral_reef\land\LandStore;
 use ree_jp\coral_reef\listener\CommonListener;
+use ree_jp\coral_reef\listener\RedstoneListener;
 use ree_jp\coral_reef\money\MoneyCache;
 use ree_jp\coral_reef\proxy\SocketHandler;
 use ree_jp\coral_reef\quest\QuestListener;
@@ -104,7 +105,7 @@ class CoralReefPlugin extends PluginBase
         $this->registerRecipe();
         $this->loadWorlds();
 
-        /** @var AccountStore */
+        /** @var AccountStore $accountStore */
         $accountStore = $this->store->get(AccountStore::class);
 
         SocketHandler::register(ReefEdgePlugin::$socketHandler, $this->pool, $this->store);
@@ -134,27 +135,26 @@ class CoralReefPlugin extends PluginBase
 
     private function registerListeners(): void
     {
-        /** @var AccountStore */
+        /** @var AccountStore $accountStore */
         $accountStore = $this->store->get(AccountStore::class);
-        /** @var LandStore */
+        /** @var LandStore $landStore */
         $landStore = $this->store->get(LandStore::class);
-        /** @var ShopStore */
+        /** @var ShopStore $shopStore */
         $shopStore = $this->store->get(ShopStore::class);
-        /** @var SessionStore */
+        /** @var SessionStore $sessionStore */
         $sessionStore = $this->store->get(SessionStore::class);
 
         $this->getServer()->getPluginManager()->registerEvents(new EventListener($this->pool, $this->store, $accountStore, $landStore,
             $shopStore, $sessionStore), $this);
         $this->getServer()->getPluginManager()->registerEvents(new QuestListener(), $this); // クエスト用
         $this->getServer()->getPluginManager()->registerEvents(new CommonListener($this->pool, $this->store), $this);
+        $this->getServer()->getPluginManager()->registerEvents(new RedstoneListener($this->store), $this);
     }
 
     private function registerCommands(): void
     {
-        /** @var AccountStore */
+        /** @var AccountStore $accountStore */
         $accountStore = $this->store->get(AccountStore::class);
-        /** @var LandStore */
-        $landStore = $this->store->get(LandStore::class);
 
         $this->getServer()->getCommandMap()->registerAll("reef", [
             new MenuCommand($this, $this->pool, $accountStore),

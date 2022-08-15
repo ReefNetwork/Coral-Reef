@@ -15,6 +15,7 @@ namespace ree_jp\coral_reef\account;
 use Exception;
 use Generator;
 use pocketmine\player\Player;
+use pocketmine\scheduler\ClosureTask;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat;
 use pocketmine\world\Position;
@@ -122,7 +123,13 @@ class UserAccount
         }
         $this->level = array_key_last(Experiment::LEVEL_EXPERIMENT);
         $this->necessaryExperience = -999;
-        $this->updateLevelTag();
+        CoralReefPlugin::$plugin->getScheduler()->scheduleDelayedTask(new ClosureTask(function (): void {
+            try {
+                $this->updateLevelTag();
+            } catch (Exception $ex) {
+                Server::getInstance()->getLogger()->logException($ex);
+            }
+        }), 20);
     }
 
     private function updateLevelTag(): void
