@@ -35,6 +35,7 @@ use ree_jp\coral_reef\gatya\items\ReefItems;
 use ree_jp\coral_reef\item\CustomItemService;
 use ree_jp\coral_reef\land\LandStore;
 use ree_jp\coral_reef\listener\CommonListener;
+use ree_jp\coral_reef\listener\RedstoneListener;
 use ree_jp\coral_reef\money\MoneyCache;
 use ree_jp\coral_reef\proxy\SocketHandler;
 use ree_jp\coral_reef\quest\QuestListener;
@@ -147,6 +148,7 @@ class CoralReefPlugin extends PluginBase
             $shopStore, $sessionStore), $this);
         $this->getServer()->getPluginManager()->registerEvents(new QuestListener(), $this); // クエスト用
         $this->getServer()->getPluginManager()->registerEvents(new CommonListener($this->pool, $this->store), $this);
+        $this->getServer()->getPluginManager()->registerEvents(new RedstoneListener($this->store), $this);
     }
 
     private function registerCommands(): void
