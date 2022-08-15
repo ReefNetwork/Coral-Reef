@@ -17,6 +17,7 @@ use ree_jp\coral_reef\land\LandService;
 use ree_jp\coral_reef\land\LandStore;
 use ree_jp\coral_reef\StoreHouse;
 use tedo0627\redstonecircuit\event\BlockPistonExtendEvent;
+use tedo0627\redstonecircuit\event\BlockPistonRetractEvent;
 
 class RedstoneListener implements Listener
 {
@@ -26,20 +27,39 @@ class RedstoneListener implements Listener
 
     public function onPushPiston(BlockPistonExtendEvent $ev): void
     {
+        $this->pistonProtect($ev);
+    }
+
+    public function onPullPiston(BlockPistonRetractEvent $ev): void
+    {
+        $this->pistonProtect($ev);
+    }
+
+    private function pistonProtect(BlockPistonExtendEvent|BlockPistonRetractEvent $ev): void
+    {
         /** @var LandStore $landStore */
         $landStore = $this->store->get(LandStore::class);
 
-        $piston = $ev->getPiston()->getPosition();
-        $pistonLand = LandService::getLand($landStore, $piston);
+        $piston = $ev->getPiston();
+        $face = $piston->getPistonArmFace();
+        $pistonLand = LandService::getLand($landStore, $piston->getPosition());
 
         foreach ($ev->getMoveBlocks() as $target) {
             if (!$this->check($pistonLand, LandService::getLand($landStore, $target->getPosition()))) {
                 $ev->cancel();
                 return;
             }
+            if (!$this->check($pistonLand, LandService::getLand($landStore, $target->getSide($face)->getPosition()))) {
+                $ev->cancel();
+                return;
+            }
         }
         foreach ($ev->getBreakBlocks() as $target) {
             if (!$this->check($pistonLand, LandService::getLand($landStore, $target->getPosition()))) {
+                $ev->cancel();
+                return;
+            }
+            if (!$this->check($pistonLand, LandService::getLand($landStore, $target->getSide($face)->getPosition()))) {
                 $ev->cancel();
                 return;
             }
