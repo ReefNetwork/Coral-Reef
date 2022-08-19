@@ -8,6 +8,7 @@ depend:
   - ReefEdge
   - BboForm
   - StackStorage
+  - CustomItemLoader
 permissions:
   coral_reef.command.menu:
     default: true
