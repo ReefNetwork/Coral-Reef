@@ -45,8 +45,8 @@ class QuestManager
             self::addUserQuest($repo, $xuid, WeeklyAchieveQuest::ID, null);
 
             // 期間限定
-            self::addUserQuest($repo, $xuid, Summer2022DailyLogin::ID, null);
-            self::addUserQuest($repo, $xuid, Summer2022DailyDig::ID, null);
+//            self::addUserQuest($repo, $xuid, Summer2022DailyLogin::ID, null);
+//            self::addUserQuest($repo, $xuid, Summer2022DailyDig::ID, null);
 
             if ($func instanceof Closure) $func($rows);
         });

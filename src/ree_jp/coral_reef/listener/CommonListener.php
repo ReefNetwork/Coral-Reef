@@ -138,7 +138,7 @@ class CommonListener implements Listener
         $sessionStore->createSession($xuid, CoralReefPlugin::$serverID);
 
         $ev->setJoinMessage(""); // プロキシ側で参加メッセージを流す
-        $p->sendTitle(TextFormat::GREEN . "Reef " . TextFormat::YELLOW . "Server", TextFormat::BLUE . "サマー" . TextFormat::RESET . "イベント開催中!!!");
+        $p->sendTitle(TextFormat::GREEN . "Reef " . TextFormat::YELLOW . "Server");
         if (!$p->getInventory()->contains(VanillaItems::STICK())) {
             $p->getInventory()->addItem(VanillaItems::STICK()->setCustomName("メニューを開く"));
         }
