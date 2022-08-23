@@ -15,8 +15,6 @@ use Closure;
 use ree_jp\coral_reef\account\AccountStore;
 use ree_jp\coral_reef\quest\data\DailyDigQuest;
 use ree_jp\coral_reef\quest\data\DailyLoginQuest;
-use ree_jp\coral_reef\quest\data\event\summer_2022\Summer2022DailyDig;
-use ree_jp\coral_reef\quest\data\event\summer_2022\Summer2022DailyLogin;
 use ree_jp\coral_reef\quest\data\LevelUpQuest;
 use ree_jp\coral_reef\quest\data\QuestData;
 use ree_jp\coral_reef\quest\data\TutorialQuest;
@@ -74,8 +72,8 @@ class QuestManager
             WeeklyAchieveQuest::ID => new WeeklyAchieveQuest($repo, $xuid, $value),
 
             // 期間限定
-            Summer2022DailyLogin::ID => new Summer2022DailyLogin($repo, $xuid, $value),
-            Summer2022DailyDig::ID => new Summer2022DailyDig($repo, $xuid, $value),
+//            Summer2022DailyLogin::ID => new Summer2022DailyLogin($repo, $xuid, $value),
+//            Summer2022DailyDig::ID => new Summer2022DailyDig($repo, $xuid, $value),
 
             default => null,
         };
