@@ -56,7 +56,7 @@ class QuestManager
     static function addUserQuest(SQLRepository $repo, string $xuid, string $questID, ?string $value, ?AccountStore $store = null): void // クエストがなかったら与える
     {
         foreach (QuestManager::getUserQuests($xuid) as $alreadyQuest) {
-            if ($questID === $alreadyQuest::ID) return;
+            if (!$alreadyQuest instanceof QuestData || $questID === $alreadyQuest::ID) return;
         }
         self::$quests[$xuid][] = self::getQuest($repo, $store, $xuid, $questID, $value);
     }
