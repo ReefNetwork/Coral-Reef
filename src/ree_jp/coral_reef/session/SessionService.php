@@ -72,6 +72,7 @@ class SessionService
 
             $message = "---" . round((time() - $measureTime) / 60, 1) . "分の整地ランキング---(" . CoralReefPlugin::$serverDisplay . "サーバー)---\n";
             $now = 1;
+            ksort($list);
             foreach ($list as $count => $names) {
                 if ($now > 5) break;
                 $number = 0;
