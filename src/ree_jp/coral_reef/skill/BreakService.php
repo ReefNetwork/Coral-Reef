@@ -67,7 +67,7 @@ class BreakService
                 }
                 if (!$isMyLand && in_array($p->getWorld()->getFolderName(), LandService::NEED_LAND_PROTECT)) {
                     $popupMessage = "このワールドは土地保護が必要です";
-                    return;
+                    continue;
                 }
                 foreach ($highCheck as $bl) {
                     self::silentBreak($p->getWorld(), $bl, $hand, $p);
