@@ -14,7 +14,6 @@ namespace ree_jp\coral_reef\land;
 use pocketmine\math\AxisAlignedBB;
 use pocketmine\math\Vector3;
 use pocketmine\world\Position;
-use ree_jp\coral_reef\CoralReefPlugin;
 
 class LandData
 {
@@ -53,11 +52,7 @@ class LandData
     {
         if (!$this->isMember($xuid)) {
             $this->members[] = $xuid;
-            CoralReefPlugin::$plugin->getLogger()->debug("土地保護共有追加しました[$this->name]($xuid)");
-        } else {
-            CoralReefPlugin::$plugin->getLogger()->error("土地保護共有追加に失敗しました[$this->name]($xuid)");
         }
-        var_dump($this->members);
     }
 
     public function deleteMember(string $xuid): void
