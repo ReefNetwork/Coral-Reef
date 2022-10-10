@@ -92,7 +92,7 @@ class LandShareForm
                     if ($member === $p->getXuid()) {
                         $p->sendMessage("メンバーに自分を追加することはできません");
                     } else {
-                        self::sendPartyAddConfirmForm($pool, $store, $land, $p, $memberNameInput->getValue(), $member);
+                        self::sendMemberAddConfirmForm($pool, $store, $land, $p, $memberNameInput->getValue(), $member);
                     }
                 } else {
                     $p->sendMessage($memberNameInput->getValue() . "さんは見つかりませんでした");
@@ -104,7 +104,7 @@ class LandShareForm
         $p->sendForm($form);
     }
 
-    private static function sendPartyAddConfirmForm(RepositoryPool $pool, StoreHouse $store, LandData $land, Player $p, string $name, string $xuid): void
+    private static function sendMemberAddConfirmForm(RepositoryPool $pool, StoreHouse $store, LandData $land, Player $p, string $name, string $xuid): void
     {
         $form = new ModalForm(
             new ClosureButton(
@@ -122,7 +122,7 @@ class LandShareForm
                 }
             )
         );
-        $form->setTitle("PartyAdd -> Confirm")->setText($name . "さんをパーティーに追加しますか?");
+        $form->setTitle("ShareAdd -> Confirm")->setText($name . "さんをメンバーに追加しますか?");
         $p->sendForm($form);
     }
 }
