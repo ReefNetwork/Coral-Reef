@@ -57,6 +57,7 @@ class LandData
 
     public function deleteMember(string $xuid): void
     {
-        array_splice($this->members, $xuid);
+        $this->members = array_diff($this->members, [$xuid]);
+        $this->members = array_values($this->members);
     }
 }
