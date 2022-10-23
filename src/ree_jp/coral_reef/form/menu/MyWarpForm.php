@@ -125,8 +125,10 @@ class MyWarpForm
         $nameInput = new Input('作成したいワープ地点の名前を入力してください', '新しいワープ地点');
         $form = new ClosureCustomForm(
             function (Player $p) use ($pool, $nameInput) {
-                if (mb_strlen($nameInput->getValue()) < 1) {
+                if (mb_strlen($nameInput->getValue()) <= 0) {
                     $p->sendMessage("ワープ地点の名前が短すぎます");
+                } else if (mb_strlen($nameInput->getValue()) >= 100) {
+                    $p->sendMessage("ワープ地点の名前が長すぎます");
                 } else if (str_starts_with($nameInput->getValue(), "[auto-save]")) {
                     $p->sendMessage("使えない文字が含まれています");
                 } else {

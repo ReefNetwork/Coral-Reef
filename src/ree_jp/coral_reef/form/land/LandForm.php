@@ -154,6 +154,8 @@ class LandForm
                     $name = $landNameInput->getValue();
                     if (mb_strlen($name) <= 0) {
                         $p->sendMessage("名前が短すぎます");
+                    } else if (mb_strlen($name) >= 100) {
+                        $p->sendMessage("名前が長すぎます");
                     } else {
                         if (!LandService::isNotNameDuplicate($store, $p->getXuid(), $name)) {
                             $p->sendMessage("同じ名前は使用できません");
