@@ -25,9 +25,9 @@ class MysqlUserRepo implements UserRepository
     {
         if ($isInit) {
             // サーバーアカウントを作成(初期スポーンの保護などに使う)
+            $pool->getConnection()->executeGeneric("coral_reef.init.tables.user");
             Await::g2c($this->setUserData(new UserAccount("0",
                 TextFormat::GREEN . "Reef " . TextFormat::YELLOW . "Server" . TextFormat::RESET, 0, null)));
-            $pool->getConnection()->executeGeneric("coral_reef.init.tables.user");
         }
     }
 
