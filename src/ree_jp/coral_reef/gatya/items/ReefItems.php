@@ -19,6 +19,8 @@ use pocketmine\item\VanillaItems;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\utils\TextFormat;
 use ree_jp\coral_reef\gatya\items\event\Christmas2021ReefItems;
+use ree_jp\coral_reef\gatya\items\event\HalloweenNightItems;
+use ree_jp\coral_reef\gatya\items\event\HalloweenPartyItems;
 use ree_jp\coral_reef\gatya\items\event\Summer2022ReefItems;
 use ree_jp\coral_reef\skill\TreeBreakService;
 
@@ -160,5 +162,7 @@ class ReefItems
 
         Christmas2021ReefItems::registerItems();
         Summer2022ReefItems::registerItems();
+        HalloweenNightItems::registerItems();
+        HalloweenPartyItems::registerItems();
     }
 }
