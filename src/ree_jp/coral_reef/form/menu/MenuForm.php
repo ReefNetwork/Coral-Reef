@@ -37,7 +37,7 @@ class MenuForm
         if ($store->hasValue($xuid, 'form_cool_time')) return;
         $store->setValue($xuid, 'form_cool_time', 10);
 
-        /** @var SQLRepository */
+        /** @var $sqlRepo SQLRepository */
         $sqlRepo = $pool->get(SQLRepository::class);
 
         MoneyService::getMoney($sqlRepo, $xuid, function (int $money) use ($pool, $store, $sqlRepo, $xuid, $p) {

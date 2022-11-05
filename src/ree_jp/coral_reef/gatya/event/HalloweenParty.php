@@ -6,33 +6,32 @@
  * CC    C oo  oo rr     aa  aaa lll RR  RR  eeeee  eeeee  ff
  *  CCCCC   oooo  rr      aaa aa lll RR   RR  eeeee  eeeee ff
  *
- * Copyright (c) 2021. Ree-jp(https://ree-jp.net)
+ * Copyright (c) 2022. Ree-jp(https://ree-jp.net)
  */
 
-namespace ree_jp\coral_reef\gatya;
+namespace ree_jp\coral_reef\gatya\event;
 
 use pocketmine\player\Player;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat;
 use poggit\libasynql\SqlError;
-use ree_jp\coral_reef\gatya\items\event\HalloweenNightItems;
+use ree_jp\coral_reef\gatya\GatyaManager;
 use ree_jp\coral_reef\gatya\items\event\HalloweenPartyItems;
 use ree_jp\coral_reef\gatya\items\NormalItems;
 use ree_jp\coral_reef\gatya\items\RareItems;
-use ree_jp\coral_reef\gatya\items\ReefItems;
 use ree_jp\coral_reef\gatya\items\SuperItems;
 use ree_jp\coral_reef\gatya\items\UltimateItems;
 use ree_jp\coral_reef\sql\mysql\SQLRepository;
 use ree_jp\coral_reef\sql\SQLConst;
 
-class NormalGatya
+class HalloweenParty
 {
     /** @noinspection DuplicatedCode */
     static function gatya(SQLRepository $repo, Player $p, int $number = 1): void
     {
         if ($number <= 0) return;
         $xuid = $p->getXuid();
-        $repo->getLog($xuid, SQLConst::LOG_GATYA, function (array $rows) use ($repo, $number, $p, $xuid) {
+        $repo->getLog($xuid, SQLConst::LOG_GATYA_HALLOWEEN_PARTY, function (array $rows) use ($repo, $number, $p, $xuid) {
             $firstRand = mt_rand(1, 1000);
             $isLimit = true;
             for ($i = 1; $i < 100; $i++) { // 99回のガチャ履歴を調べてReefRareを引いてなかったら確定
@@ -50,42 +49,17 @@ class NormalGatya
 
             switch (true) {
                 case ($firstRand <= 5) || $isLimit:// 0.5% or 天井
-                    if (mt_rand(1, 10) < 5) { // 40%の確率でTool
-                        $item = match (mt_rand(1, 10)) {
-                            1, 2, 3 => match (mt_rand(1, 3)) {
-                                1 => ReefItems::getItem($xuid, ReefItems::PICKAXE),
-                                2 => HalloweenNightItems::getItem($xuid, HalloweenNightItems::PICKAXE),
-                                3 => HalloweenPartyItems::getItem($xuid, HalloweenPartyItems::PICKAXE),
-                            },
+                    $item = match (mt_rand(1, 10)) {
+                        1, 2, 3 => HalloweenPartyItems::getItem($xuid, HalloweenPartyItems::PICKAXE),
 
-                            4, 5, 6 => match (mt_rand(1, 3)) {
-                                1 => ReefItems::getItem($xuid, ReefItems::SHOVEL),
-                                2 => HalloweenNightItems::getItem($xuid, HalloweenNightItems::SHOVEL),
-                                3 => HalloweenPartyItems::getItem($xuid, HalloweenPartyItems::SHOVEL),
-                            },
+                        4, 5, 6 => HalloweenPartyItems::getItem($xuid, HalloweenPartyItems::SHOVEL),
 
-                            7, 8, 9 => match (mt_rand(1, 3)) {
-                                1 => ReefItems::getItem($xuid, ReefItems::AXE),
-                                2 => HalloweenNightItems::getItem($xuid, HalloweenNightItems::AXE),
-                                3 => HalloweenPartyItems::getItem($xuid, HalloweenPartyItems::AXE),
-                            },
+                        7, 8, 9 => HalloweenPartyItems::getItem($xuid, HalloweenPartyItems::AXE),
 
-                            10 => match (mt_rand(1, 3)) {
-                                1 => ReefItems::getItem($xuid, ReefItems::HOE),
-                                2 => HalloweenNightItems::getItem($xuid, HalloweenNightItems::HOE),
-                                3 => HalloweenPartyItems::getItem($xuid, HalloweenPartyItems::HOE),
-                            },
-                        };
-                    } else { // 60%の確率で防具
-                        $item = match (mt_rand(1, 4)) {
-                            1 => ReefItems::getItem($xuid, ReefItems::HELMET),
-                            2 => ReefItems::getItem($xuid, ReefItems::CHEST_PLATE),
-                            3 => ReefItems::getItem($xuid, ReefItems::LEGGINGS),
-                            4 => ReefItems::getItem($xuid, ReefItems::BOOTS),
-                        };
-                    }
-                    GatyaManager::gatyaProcess($repo, SQLConst::LOG_GATYA, $p, SQLConst::TICKETS_NORMAL, 1, $item, 'reef_rare',
-                        TextFormat::GREEN . 'REEFレア' . TextFormat::DARK_GRAY . '[0.5%]' . TextFormat::RESET, true, $func);
+                        10 => HalloweenPartyItems::getItem($xuid, HalloweenPartyItems::HOE),
+                    };
+                    GatyaManager::gatyaProcess($repo, SQLConst::LOG_GATYA_HALLOWEEN_PARTY, $p, SQLConst::TICKETS_NORMAL, 1, $item, 'reef_rare',
+                        TextFormat::GOLD . "Halloween" . TextFormat::DARK_GREEN . "Party" . TextFormat::DARK_GRAY . '[0.5%]' . TextFormat::RESET, true, $func);
                     break;
 
                 case $firstRand <= (5 + 25):// 2.5%
@@ -103,7 +77,7 @@ class NormalGatya
                             $p->sendMessage('エラーが発生しました');
                             return;
                     }
-                    GatyaManager::gatyaProcess($repo, SQLConst::LOG_GATYA, $p, SQLConst::TICKETS_NORMAL, 1, $item, 'ultimate_rare',
+                    GatyaManager::gatyaProcess($repo, SQLConst::LOG_GATYA_HALLOWEEN_PARTY, $p, SQLConst::TICKETS_NORMAL, 1, $item, 'ultimate_rare',
                         TextFormat::GOLD . 'ウルトラレア' . TextFormat::DARK_GRAY . '[2.5%]' . TextFormat::RESET, false, $func);
                     break;
 
@@ -119,7 +93,7 @@ class NormalGatya
                             $p->sendMessage('エラーが発生しました');
                             return;
                     }
-                    GatyaManager::gatyaProcess($repo, SQLConst::LOG_GATYA, $p, SQLConst::TICKETS_NORMAL, 1, $item, 'super_rare',
+                    GatyaManager::gatyaProcess($repo, SQLConst::LOG_GATYA_HALLOWEEN_PARTY, $p, SQLConst::TICKETS_NORMAL, 1, $item, 'super_rare',
                         TextFormat::BLUE . 'スーパーレア' . TextFormat::DARK_GRAY . '[10%]' . TextFormat::RESET, false, $func);
                     break;
 
@@ -135,13 +109,13 @@ class NormalGatya
                             $p->sendMessage('エラーが発生しました');
                             return;
                     }
-                    GatyaManager::gatyaProcess($repo, SQLConst::LOG_GATYA, $p, SQLConst::TICKETS_NORMAL, 1, $item, 'rare',
+                    GatyaManager::gatyaProcess($repo, SQLConst::LOG_GATYA_HALLOWEEN_PARTY, $p, SQLConst::TICKETS_NORMAL, 1, $item, 'rare',
                         TextFormat::AQUA . 'レア' . TextFormat::DARK_GRAY . '[30%]' . TextFormat::RESET, false, $func);
                     break;
 
                 default:// 残り
                     $item = NormalItems::getItemInt($xuid, mt_rand(1, 7));
-                    GatyaManager::gatyaProcess($repo, SQLConst::LOG_GATYA, $p, SQLConst::TICKETS_NORMAL, 1, $item, 'normal',
+                    GatyaManager::gatyaProcess($repo, SQLConst::LOG_GATYA_HALLOWEEN_PARTY, $p, SQLConst::TICKETS_NORMAL, 1, $item, 'normal',
                         TextFormat::DARK_GRAY . 'ノーマル' . TextFormat::RESET, false, $func);
                     break;
             }

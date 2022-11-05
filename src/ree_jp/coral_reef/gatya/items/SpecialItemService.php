@@ -5,6 +5,8 @@ namespace ree_jp\coral_reef\gatya\items;
 use pocketmine\item\Item;
 use ree_jp\coral_reef\account\AccountStore;
 use ree_jp\coral_reef\gatya\items\event\Christmas2021ReefItems;
+use ree_jp\coral_reef\gatya\items\event\HalloweenNightItems;
+use ree_jp\coral_reef\gatya\items\event\HalloweenPartyItems;
 use ree_jp\coral_reef\gatya\items\event\Summer2022ReefItems;
 
 class SpecialItemService
@@ -32,6 +34,12 @@ class SpecialItemService
 
             Summer2022ReefItems::PICKAXE, Summer2022ReefItems::SHOVEL, Summer2022ReefItems::AXE, Summer2022ReefItems::HOE
             => self::setOwner(Summer2022ReefItems::getItem($xuid, $item, $durable), $store),
+
+            HalloweenNightItems::PICKAXE, HalloweenNightItems::SHOVEL, HalloweenNightItems::AXE, HalloweenNightItems::HOE
+            => self::setOwner(HalloweenNightItems::getItem($xuid, $item, $durable), $store),
+
+            HalloweenPartyItems::PICKAXE, HalloweenPartyItems::SHOVEL, HalloweenPartyItems::AXE, HalloweenPartyItems::HOE
+            => self::setOwner(HalloweenPartyItems::getItem($xuid, $item, $durable), $store),
 
             default => null,
         };
