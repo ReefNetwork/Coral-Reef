@@ -52,25 +52,11 @@ class BonusCodeForm
                     GatyaManager::addTicket($repo, $p->getXuid(), SQLConst::TICKETS_NORMAL, 1);
                 });
                 break;
-            case "discord-1000":
+            case "anke-to1":
                 self::useCode($repo, $p, $code, function () use ($repo, $p): void {
-                    $p->sendMessage(TextFormat::DARK_PURPLE . "Discordサーバーに入って頂きありがとうございます");
-                    $p->sendMessage(TextFormat::AQUA . "ガチャチケットを" . TextFormat::RED . "10枚" . TextFormat::AQUA . "受け取りました");
-                    GatyaManager::addTicket($repo, $p->getXuid(), SQLConst::TICKETS_NORMAL, 10);
-                });
-                break;
-            case "summer2022":
-                self::useCode($repo, $p, $code, function () use ($repo, $p): void {
-                    $p->sendMessage(TextFormat::BLUE . "メンテナンスご協力ありがとうございました");
-                    $p->sendMessage(TextFormat::BLUE . "サマー§rガチャチケットを" . TextFormat::RED . "3枚" . TextFormat::RESET . "受け取りました");
-                    GatyaManager::addTicket($repo, $p->getXuid(), SQLConst::TICKETS_SUMMER_2022, 3);
-                });
-                break;
-            case "summer2022hoe":
-                self::useCode($repo, $p, $code, function () use ($repo, $p): void {
-                    $p->sendMessage(TextFormat::BLUE . "申し訳ございませんでした");
-                    $p->sendMessage(TextFormat::BLUE . "サマー§rガチャチケットを" . TextFormat::RED . "3枚" . TextFormat::RESET . "受け取りました");
-                    GatyaManager::addTicket($repo, $p->getXuid(), SQLConst::TICKETS_SUMMER_2022, 3);
+                    $p->sendMessage(TextFormat::DARK_PURPLE . "アンケート回答ありがとうございました");
+                    $p->sendMessage(TextFormat::AQUA . "ガチャチケットを" . TextFormat::RED . "3枚" . TextFormat::AQUA . "受け取りました");
+                    GatyaManager::addTicket($repo, $p->getXuid(), SQLConst::TICKETS_NORMAL, 3);
                 });
                 break;
             default:
