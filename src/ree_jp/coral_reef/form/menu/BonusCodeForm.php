@@ -59,6 +59,12 @@ class BonusCodeForm
                     GatyaManager::addTicket($repo, $p->getXuid(), SQLConst::TICKETS_NORMAL, 3);
                 });
                 break;
+            case "gatyatike-lost":
+                self::useCode($repo, $p, $code, function () use ($repo, $p): void {
+                    $p->sendMessage(TextFormat::AQUA . "ガチャチケットを" . TextFormat::RED . "3枚" . TextFormat::AQUA . "受け取りました");
+                    GatyaManager::addTicket($repo, $p->getXuid(), SQLConst::TICKETS_NORMAL, 3);
+                });
+                break;
             default:
                 $p->sendMessage("そのコードは存在しません");
         }

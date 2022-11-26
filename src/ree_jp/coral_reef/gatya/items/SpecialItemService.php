@@ -11,35 +11,35 @@ use ree_jp\coral_reef\gatya\items\event\Summer2022ReefItems;
 
 class SpecialItemService
 {
-    static function getRenewItem(string $xuid, string $item, int $durable, ?AccountStore $store): ?Item
+    static function getRenewItem(string $xuid, string $item, int $durable, int $count, ?AccountStore $store): ?Item
     {
         return match ($item) {
             ConvertItems::NORMAL_TICKETS_FRAGMENT
-            => ConvertItems::getItem($xuid, $item, $durable),
+            => ConvertItems::getItem($xuid, $item, $durable)->setCount($count),
 
             ReefItems::PICKAXE, ReefItems::SHOVEL, ReefItems::AXE, ReefItems::HOE, ReefItems::HELMET, ReefItems::CHEST_PLATE, ReefItems::LEGGINGS, ReefItems::BOOTS
-            => self::setOwner(ReefItems::getItem($xuid, $item, $durable), $store),
+            => self::setOwner(ReefItems::getItem($xuid, $item, $durable), $store)->setCount($count),
 
             UltimateItems::PICKAXE, UltimateItems::SHOVEL, UltimateItems::AXE
-            => UltimateItems::getItem($xuid, $item, $durable),
+            => UltimateItems::getItem($xuid, $item, $durable)->setCount($count),
 
             SuperItems::PICKAXE, SuperItems::SHOVEL
-            => SuperItems::getItem($xuid, $item, $durable),
+            => SuperItems::getItem($xuid, $item, $durable)->setCount($count),
 
             RareItems::PICKAXE, RareItems::SHOVEL
-            => RareItems::getItem($xuid, $item, $durable),
+            => RareItems::getItem($xuid, $item, $durable)->setCount($count),
 
             Christmas2021ReefItems::PICKAXE, Christmas2021ReefItems::SHOVEL, Christmas2021ReefItems::AXE, Christmas2021ReefItems::HOE
-            => self::setOwner(Christmas2021ReefItems::getItem($xuid, $item, $durable), $store),
+            => self::setOwner(Christmas2021ReefItems::getItem($xuid, $item, $durable), $store)->setCount($count),
 
             Summer2022ReefItems::PICKAXE, Summer2022ReefItems::SHOVEL, Summer2022ReefItems::AXE, Summer2022ReefItems::HOE
-            => self::setOwner(Summer2022ReefItems::getItem($xuid, $item, $durable), $store),
+            => self::setOwner(Summer2022ReefItems::getItem($xuid, $item, $durable), $store)->setCount($count),
 
             HalloweenNightItems::PICKAXE, HalloweenNightItems::SHOVEL, HalloweenNightItems::AXE, HalloweenNightItems::HOE
-            => self::setOwner(HalloweenNightItems::getItem($xuid, $item, $durable), $store),
+            => self::setOwner(HalloweenNightItems::getItem($xuid, $item, $durable), $store)->setCount($count),
 
             HalloweenPartyItems::PICKAXE, HalloweenPartyItems::SHOVEL, HalloweenPartyItems::AXE, HalloweenPartyItems::HOE
-            => self::setOwner(HalloweenPartyItems::getItem($xuid, $item, $durable), $store),
+            => self::setOwner(HalloweenPartyItems::getItem($xuid, $item, $durable), $store)->setCount($count),
 
             default => null,
         };

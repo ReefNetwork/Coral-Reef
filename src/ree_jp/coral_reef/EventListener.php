@@ -143,7 +143,7 @@ class EventListener implements Listener
             $p->sendMessage(TextFormat::GREEN . "ショップを破壊しました");
         }
 
-        /** @var SQLRepository */
+        /** @var SQLRepository $sqlRepo */
         $sqlRepo = $this->pool->get(SQLRepository::class);
 
         try {
@@ -266,7 +266,7 @@ class EventListener implements Listener
         $p = $ev->getPlayer();
         $item = $ev->getItem();
         $xuid = $p->getXuid();
-        /** @var SQLRepository */
+        /** @var SQLRepository $sqlRepo */
         $sqlRepo = $this->pool->get(SQLRepository::class);
         if ($this->accountStore->hasValue($xuid, 'wait_action')) {
             $ev->cancel();
@@ -384,7 +384,7 @@ class EventListener implements Listener
             $nbt = $item->getNamedTag();
             $xuid = $nbt->getString("owner", $p->getXuid());
 
-            $renewItem = SpecialItemService::getRenewItem($xuid, $nbt->getString(ReefItems::REEF_SP_ITEM, "unknown"), $item->getMeta(),
+            $renewItem = SpecialItemService::getRenewItem($xuid, $nbt->getString(ReefItems::REEF_SP_ITEM, "unknown"), $item->getMeta(), $item->getCount(),
                 $this->accountStore);
             if (!is_null($renewItem) && !$item->equals($renewItem)) {
                 $p->getInventory()->setItem($slot, $renewItem->setCount($item->getCount()));

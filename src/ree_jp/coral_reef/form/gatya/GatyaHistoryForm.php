@@ -56,7 +56,7 @@ class GatyaHistoryForm
                     if ($lastReef === 0) $lastReef = $historyCount;
                 }
 
-                $item = SpecialItemService::getRenewItem($p->getXuid(), $row["value"], 0, null);
+                $item = SpecialItemService::getRenewItem($p->getXuid(), $row["value"], 0, 1, null);
                 $history[] = "$historyCount |レア度 [$rare] : アイテム名 [" . $item?->getCustomName() . TextFormat::RESET . "]" .
                     TextFormat::DARK_GRAY . "(" . $row["time"] . ")" . TextFormat::RESET;
                 $historyCount--;

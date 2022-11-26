@@ -60,7 +60,7 @@ class PlayerData
     {
         $nbt = $item->getNamedTag();
         $renewed = SpecialItemService::getRenewItem($nbt->getString("owner", $xuid), $nbt->getString(ReefItems::REEF_SP_ITEM, "unknown"),
-            $item->getMeta(), $store);
+            $item->getMeta(), $item->getCount(), $store);
         if ($renewed != null) return $renewed;
         return $item;
     }

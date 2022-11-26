@@ -50,7 +50,7 @@ class ReefConsoleCommand extends Command implements PluginOwned
                         $sender->sendMessage("引数が間違ってる");
                         return;
                     }
-                    /** @var SQLRepository */
+                    /** @var SQLRepository $repo */
                     $repo = $this->pool->get(SQLRepository::class);
                     $repo->setValue(0, SQLConst::TYPE_ENV, $args[0], $args[1], null);
                     $sender->sendMessage("反映には最大1分かかります");
@@ -60,9 +60,9 @@ class ReefConsoleCommand extends Command implements PluginOwned
                         $sender->sendMessage("引数が間違ってる");
                         return;
                     }
-                    /** @var AccountStore */
+                    /** @var AccountStore $accountStore */
                     $accountStore = $this->store->get(AccountStore::class);
-                    $item = SpecialItemService::getRenewItem($args[1], $args[2], $args[3], $accountStore);
+                    $item = SpecialItemService::getRenewItem($args[1], $args[2], $args[3], 1, $accountStore);
                     if ($sender instanceof Player && $item instanceof Item) {
                         $sender->getInventory()->addItem($item);
                     }
