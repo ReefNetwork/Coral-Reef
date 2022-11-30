@@ -11,13 +11,13 @@
 
 namespace ree_jp\coral_reef\form\gatya;
 
+use bbo51dog\bboform\element\ButtonImage;
 use bbo51dog\bboform\element\ClosureButton;
 use bbo51dog\bboform\element\Slider;
 use bbo51dog\bboform\form\ClosureCustomForm;
 use bbo51dog\bboform\form\ModalForm;
 use bbo51dog\bboform\form\SimpleForm;
 use pocketmine\player\Player;
-use pocketmine\utils\TextFormat;
 use ree_jp\coral_reef\gatya\event\HalloweenNight;
 use ree_jp\coral_reef\gatya\event\HalloweenParty;
 use ree_jp\coral_reef\gatya\NormalGatya;
@@ -34,45 +34,65 @@ class GatyaForm
             foreach ($rows as $row) {
                 if ($row['subtype'] === SQLConst::TICKETS_NORMAL) $normal = $row['value'];
             }
+            $gatya_image = "textures/gatya_image";
             $form = (new SimpleForm())
-                ->setTitle("Menu -> Gatya")
+                ->setTitle("[dynamic_seichi_gatya]$gatya_image")
                 ->setText("ノーマルガチャチケット: $normal 個")
                 ->addElements(
-                    new ClosureButton(
-                        TextFormat::GOLD . "Halloween" . TextFormat::DARK_PURPLE . "Night" . TextFormat::RESET . "ガチャ", null,
-                        function (Player $p) use ($repo, $normal) {
-                            self::sendGatyaNumberChoices($repo, $p, SQLConst::LOG_GATYA_HALLOWEEN_NIGHT, $normal);
-                        }
-                    ),
-                    new ClosureButton(
-                        TextFormat::GOLD . "Halloween" . TextFormat::DARK_GREEN . "Party" . TextFormat::RESET . "ガチャ", null,
-                        function (Player $p) use ($repo, $normal) {
-                            self::sendGatyaNumberChoices($repo, $p, SQLConst::LOG_GATYA_HALLOWEEN_PARTY, $normal);
-                        }
-                    ),
-                    new ClosureButton(
-                        "ノーマルガチャ", null,
-                        function (Player $p) use ($repo, $normal) {
-                            self::sendGatyaNumberChoices($repo, $p, SQLConst::LOG_GATYA, $normal);
-                        }
-                    ),
-                    new ClosureButton(
-                        "ノーマルガチャ 10連", null,
-                        function (Player $p) use ($repo, $normal) {
-                            self::sendGatyaConfirmForm($repo, $p, SQLConst::LOG_GATYA, 10, $normal);
-                        }
-                    ),
-                    new ClosureButton(
-                        "ガチャ履歴", null,
-                        function (Player $p) use ($repo) {
-                            GatyaHistoryForm::sendForm($p, $repo);
-                        }
-                    ),
-                    new ClosureButton("ガチャ詳細", null,
-                        function (Player $p) {
-                            $p->getServer()->dispatchCommand($p, "exe-p wp-view category 110");
-                        }
-                    ),
+                    new ClosureButton("[gatya_close]", null, function (): void {
+                    }),
+                    new ClosureButton("[gatya_info]詳細", null, function () use ($p) {
+                        $p->getServer()->dispatchCommand($p, "exe-p wp-view category 110");
+                    }),
+                    new ClosureButton("[gatya_info]履歴", null, function () use ($p, $repo) {
+                        GatyaHistoryForm::sendForm($p, $repo);
+                    }),
+                    new ClosureButton("[gatya_select]", new ButtonImage(ButtonImage::TYPE_PATH, "textures/gatya_image_2"), function (): void {
+                    }),
+                    new ClosureButton("[gatya_select]", new ButtonImage(ButtonImage::TYPE_PATH, "textures/gatya_image_2"), function (): void {
+                    }),
+                    new ClosureButton("[gatya_run]ガチャを引く", null, function () use ($p, $repo, $normal): void {
+                        self::sendGatyaNumberChoices($repo, $p, SQLConst::LOG_GATYA, $normal);
+                    }),
+                    new ClosureButton("[gatya_run]10回引く", null, function () use ($p, $repo, $normal): void {
+                        self::sendGatyaConfirmForm($repo, $p, SQLConst::LOG_GATYA, 10, $normal);
+                    }),
+
+//                    new ClosureButton(
+//                        TextFormat::GOLD . "Halloween" . TextFormat::DARK_PURPLE . "Night" . TextFormat::RESET . "ガチャ", null,
+//                        function (Player $p) use ($repo, $normal) {
+//                            self::sendGatyaNumberChoices($repo, $p, SQLConst::LOG_GATYA_HALLOWEEN_NIGHT, $normal);
+//                        }
+//                    ),
+//                    new ClosureButton(
+//                        TextFormat::GOLD . "Halloween" . TextFormat::DARK_GREEN . "Party" . TextFormat::RESET . "ガチャ", null,
+//                        function (Player $p) use ($repo, $normal) {
+//                            self::sendGatyaNumberChoices($repo, $p, SQLConst::LOG_GATYA_HALLOWEEN_PARTY, $normal);
+//                        }
+//                    ),
+//                    new ClosureButton(
+//                        "ノーマルガチャ", null,
+//                        function (Player $p) use ($repo, $normal) {
+//                            self::sendGatyaNumberChoices($repo, $p, SQLConst::LOG_GATYA, $normal);
+//                        }
+//                    ),
+//                    new ClosureButton(
+//                        "ノーマルガチャ 10連", null,
+//                        function (Player $p) use ($repo, $normal) {
+//                            self::sendGatyaConfirmForm($repo, $p, SQLConst::LOG_GATYA, 10, $normal);
+//                        }
+//                    ),
+//                    new ClosureButton(
+//                        "ガチャ履歴", null,
+//                        function (Player $p) use ($repo) {
+//                            GatyaHistoryForm::sendForm($p, $repo);
+//                        }
+//                    ),
+//                    new ClosureButton("ガチャ詳細", null,
+//                        function (Player $p) {
+//                            $p->getServer()->dispatchCommand($p, "exe-p wp-view category 110");
+//                        }
+//                    ),
                 );
             $p->sendForm($form);
         });
