@@ -37,7 +37,7 @@ class GatyaForm
             $gatya_image = "textures/gatya_image";
             $form = (new SimpleForm())
                 ->setTitle("[dynamic_seichi_gatya]$gatya_image")
-                ->setText("ノーマルガチャチケット: $normal 個")
+                ->setText($gatya_image)
                 ->addElements(
                     new ClosureButton("[gatya_close]", null, function (): void {
                     }),
@@ -51,11 +51,11 @@ class GatyaForm
                     }),
                     new ClosureButton("[gatya_select]", new ButtonImage(ButtonImage::TYPE_PATH, "textures/gatya_image_2"), function (): void {
                     }),
-                    new ClosureButton("[gatya_run]ガチャを引く", null, function () use ($p, $repo, $normal): void {
-                        self::sendGatyaNumberChoices($repo, $p, SQLConst::LOG_GATYA, $normal);
-                    }),
                     new ClosureButton("[gatya_run]10回引く", null, function () use ($p, $repo, $normal): void {
                         self::sendGatyaConfirmForm($repo, $p, SQLConst::LOG_GATYA, 10, $normal);
+                    }),
+                    new ClosureButton("[gatya_run]ガチャを引く", null, function () use ($p, $repo, $normal): void {
+                        self::sendGatyaNumberChoices($repo, $p, SQLConst::LOG_GATYA, $normal);
                     }),
 
 //                    new ClosureButton(
