@@ -19,7 +19,7 @@ runs:
     - run: php -d phar.readonly=0 libasynql.phar ./build/CoralReef.phar "ree_jp\\coral_reef\\libs\\"
       shell: bash
 
-    - run: wget https://poggit.pmmp.io/r/154019/InvMenu.phar -O InvMenu.phar
+    - run: wget https://poggit.pmmp.io/r/186359/InvMenu.phar -O InvMenu.phar
       shell: bash
     - run: php -d phar.readonly=0 InvMenu.phar ./build/CoralReef.phar "ree_jp\\coral_reef\\libs\\"
       shell: bash
