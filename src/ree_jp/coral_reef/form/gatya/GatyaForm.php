@@ -20,79 +20,50 @@ use bbo51dog\bboform\form\SimpleForm;
 use pocketmine\player\Player;
 use ree_jp\coral_reef\gatya\event\HalloweenNight;
 use ree_jp\coral_reef\gatya\event\HalloweenParty;
+use ree_jp\coral_reef\gatya\GatyaConst;
 use ree_jp\coral_reef\gatya\NormalGatya;
 use ree_jp\coral_reef\sql\mysql\SQLRepository;
 use ree_jp\coral_reef\sql\SQLConst;
 
 class GatyaForm
 {
-    static function sendForm(SQLRepository $repo, Player $p): void
+    const NOW_GATYA = [SQLConst::LOG_GATYA, SQLConst::LOG_GATYA_CHRISTMAS_2021];
+
+    static function sendForm(SQLRepository $repo, Player $p, string $gatyaType = SQLConst::LOG_GATYA): void
     {
-        $repo->getAllSubtypeValue($p->getXuid(), SQLConst::TYPE_TICKETS, function (array $rows) use ($repo, $p) {
+        $repo->getAllSubtypeValue($p->getXuid(), SQLConst::TYPE_TICKETS, function (array $rows) use ($gatyaType, $repo, $p) {
             if (!$p->isOnline()) return;
             $normal = 0;
             foreach ($rows as $row) {
                 if ($row['subtype'] === SQLConst::TICKETS_NORMAL) $normal = $row['value'];
             }
-            $gatya_image = "textures/gatya_image";
+            $gatya_image = GatyaConst::GATYA[$gatyaType]["image"];
             $form = (new SimpleForm())
                 ->setTitle("[dynamic_seichi_gatya]$gatya_image")
                 ->setText("ノーマルガチャチケット: $normal 個")
                 ->addElements(
                     new ClosureButton("[gatya_close]", null, function (): void {
                     }),
-                    new ClosureButton("[gatya_info]詳細", null, function () use ($p) {
-                        $p->getServer()->dispatchCommand($p, "exe-p wp-view category 110");
+                    new ClosureButton("[gatya_info]詳細", null, function () use ($gatyaType, $p) {
+                        $p->getServer()->dispatchCommand($p, "exe-p wp-view slug " . GatyaConst::GATYA[$gatyaType]["details"]);
                     }),
                     new ClosureButton("[gatya_info]履歴", null, function () use ($p, $repo) {
                         GatyaHistoryForm::sendForm($p, $repo);
-                    }),
-                    new ClosureButton("[gatya_select]", new ButtonImage(ButtonImage::TYPE_PATH, "textures/gatya_image_2"), function (): void {
-                    }),
-                    new ClosureButton("[gatya_select]", new ButtonImage(ButtonImage::TYPE_PATH, "textures/gatya_image_2"), function (): void {
                     }),
                     new ClosureButton("[gatya_run]ガチャを引く", null, function () use ($p, $repo, $normal): void {
                         self::sendGatyaNumberChoices($repo, $p, SQLConst::LOG_GATYA, $normal);
                     }),
                     new ClosureButton("[gatya_run]ガチャを10回引く", null, function () use ($p, $repo, $normal): void {
                         self::sendGatyaConfirmForm($repo, $p, SQLConst::LOG_GATYA, 10, $normal);
-                    }),
-//                    new ClosureButton(
-//                        TextFormat::GOLD . "Halloween" . TextFormat::DARK_PURPLE . "Night" . TextFormat::RESET . "ガチャ", null,
-//                        function (Player $p) use ($repo, $normal) {
-//                            self::sendGatyaNumberChoices($repo, $p, SQLConst::LOG_GATYA_HALLOWEEN_NIGHT, $normal);
-//                        }
-//                    ),
-//                    new ClosureButton(
-//                        TextFormat::GOLD . "Halloween" . TextFormat::DARK_GREEN . "Party" . TextFormat::RESET . "ガチャ", null,
-//                        function (Player $p) use ($repo, $normal) {
-//                            self::sendGatyaNumberChoices($repo, $p, SQLConst::LOG_GATYA_HALLOWEEN_PARTY, $normal);
-//                        }
-//                    ),
-//                    new ClosureButton(
-//                        "ノーマルガチャ", null,
-//                        function (Player $p) use ($repo, $normal) {
-//                            self::sendGatyaNumberChoices($repo, $p, SQLConst::LOG_GATYA, $normal);
-//                        }
-//                    ),
-//                    new ClosureButton(
-//                        "ノーマルガチャ 10連", null,
-//                        function (Player $p) use ($repo, $normal) {
-//                            self::sendGatyaConfirmForm($repo, $p, SQLConst::LOG_GATYA, 10, $normal);
-//                        }
-//                    ),
-//                    new ClosureButton(
-//                        "ガチャ履歴", null,
-//                        function (Player $p) use ($repo) {
-//                            GatyaHistoryForm::sendForm($p, $repo);
-//                        }
-//                    ),
-//                    new ClosureButton("ガチャ詳細", null,
-//                        function (Player $p) {
-//                            $p->getServer()->dispatchCommand($p, "exe-p wp-view category 110");
-//                        }
-//                    ),
+                    })
                 );
+            foreach (self::NOW_GATYA as $gatya) {
+                $form->addElement(new ClosureButton("[gatya_select]", new ButtonImage(ButtonImage::TYPE_URL, GatyaConst::GATYA[$gatya]["sub_image"]),
+                    function () use ($repo, $p, $gatya): void {
+                        self::sendForm($repo, $p, $gatya);
+                    }
+                ));
+            }
             $p->sendForm($form);
         });
     }
@@ -102,7 +73,7 @@ class GatyaForm
         $min = 1;
         if ($tickets < 1) $min = 0;
         $max = 50;
-        if ($tickets < 50) $max = $tickets;
+        if ($tickets < $max) $max = $tickets;
         $amount = new Slider(self::replaceGatyaName($gatyaType) . "を引く回数を選択してください", $min, $max, $min);
         $form = new ClosureCustomForm(function (Player $p) use ($repo, $tickets, $gatyaType, $amount): void {
             self::sendGatyaConfirmForm($repo, $p, $gatyaType, $amount->getValue(), $tickets);
