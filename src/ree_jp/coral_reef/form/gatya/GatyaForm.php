@@ -45,7 +45,7 @@ class GatyaForm
                     new ClosureButton("[gatya_close]", null, function (): void {
                     }),
                     new ClosureButton("[gatya_info]詳細", null, function () use ($gatyaType, $p) {
-                        $p->getServer()->dispatchCommand($p, "exe-p wp-view slug " . GatyaConst::GATYA[$gatyaType]["details"]);
+                        $p->getServer()->dispatchCommand($p, "exe-p wp-view post " . GatyaConst::GATYA[$gatyaType]["details"]);
                     }),
                     new ClosureButton("[gatya_info]履歴", null, function () use ($p, $repo) {
                         GatyaHistoryForm::sendForm($p, $repo);

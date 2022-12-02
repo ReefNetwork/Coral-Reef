@@ -25,7 +25,7 @@ class GatyaConst
             "ticket" => SQLConst::TICKETS_NORMAL
         ],
         SQLConst::LOG_GATYA_CHRISTMAS_2021 => [
-            "name" => "クリスマスガチャ2021", "image" => "", "sub_image" => "", "details" => "reefserver-christmas2021",
+            "name" => "クリスマスガチャ2021", "image" => "textures/gatya_image", "sub_image" => "textures/gatya_image_2", "details" => "reefserver-christmas2021",
             "ticket" => SQLConst::TICKETS_CHRISTMAS_2021
         ],
         SQLConst::LOG_GATYA_SUMMER_2022 => [
