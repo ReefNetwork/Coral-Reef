@@ -58,7 +58,7 @@ class GatyaForm
                     })
                 );
             foreach (self::NOW_GATYA as $gatya) {
-                $form->addElement(new ClosureButton("[gatya_select]", new ButtonImage(ButtonImage::TYPE_URL, GatyaConst::GATYA[$gatya]["sub_image"]),
+                $form->addElement(new ClosureButton("[gatya_select]", new ButtonImage(ButtonImage::TYPE_PATH, GatyaConst::GATYA[$gatya]["sub_image"]),
                     function () use ($repo, $p, $gatya): void {
                         self::sendForm($repo, $p, $gatya);
                     }

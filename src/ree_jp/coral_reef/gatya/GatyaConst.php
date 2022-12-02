@@ -19,8 +19,8 @@ class GatyaConst
     const GATYA = [
         SQLConst::LOG_GATYA => [
             "name" => "ノーマルガチャ",
-            "image" => "https://pbs.twimg.com/media/FgXkQtHakAA4LFT?format=jpg&name=medium",
-            "sub_image" => "https://pbs.twimg.com/media/FgXkRVSagAAU_xm?format=jpg&name=medium",
+            "image" => "textures/gatya_image",
+            "sub_image" => "textures/gatya_image_2",
             "details" => "norma-gacha",
             "ticket" => SQLConst::TICKETS_NORMAL
         ],
