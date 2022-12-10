@@ -20,7 +20,7 @@ class GatyaService
         SQLConst::LOG_GATYA => [
             "name" => "ノーマルガチャ",
             "image" => "textures/gatya_image",
-            "pik_up_image" => ["textures/items/reef_pickaxe", "textures/items/reef_axe", "textures/items/reef_shovel", "textures/items/reef_hoe"],
+            "pik_up_image" => ["textures/items/diamond_pickaxe"],
             "details" => "norma-gacha",
             "ticket" => SQLConst::TICKETS_NORMAL
         ],
