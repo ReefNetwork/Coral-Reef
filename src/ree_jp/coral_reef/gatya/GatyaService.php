@@ -25,7 +25,7 @@ class GatyaService
             "ticket" => SQLConst::TICKETS_NORMAL
         ],
         SQLConst::LOG_GATYA_CHRISTMAS_2021 => [
-            "name" => "クリスマスガチャ2021", "image" => "textures/gatya_image",
+            "name" => "クリスマスガチャ2021", "image" => "",
             "pik_up_image" => ["textures/items/reef_pickaxe", "textures/items/reef_axe", "textures/items/reef_shovel", "textures/items/reef_hoe"],
             "details" => "reefserver-christmas2021",
             "ticket" => SQLConst::TICKETS_CHRISTMAS_2021
@@ -38,12 +38,13 @@ class GatyaService
             "ticket" => SQLConst::TICKETS_SUMMER_2022
         ],
         SQLConst::LOG_GATYA_HALLOWEEN_NIGHT => ["name" => TextFormat::GOLD . "Halloween" . TextFormat::DARK_PURPLE . "Night" . TextFormat::RESET . "ガチャ",
-            "image" => "", "pik_up_image" => ["textures/items/halloween_night_pickaxe", "textures/items/halloween_night_axe", "textures/items/halloween_night_shovel",
-                "textures/items/halloween_night_hoe"],
-            "details" => "halloween-pickup-gacha-2022", "ticket" => SQLConst::TICKETS_NORMAL],
+            "image" => "textures/gatya_image", "pik_up_image" => ["textures/items/halloween_night_pickaxe", "textures/items/halloween_night_axe",
+                "textures/items/halloween_night_shovel", "textures/items/halloween_night_hoe"],
+            "details" => "halloween-pickup-gacha-2022", "ticket" => SQLConst::TICKETS_NORMAL
+        ],
         SQLConst::LOG_GATYA_HALLOWEEN_PARTY => ["name" => TextFormat::GOLD . "Halloween" . TextFormat::DARK_GREEN . "Party" . TextFormat::RESET . "ガチャ",
-            "image" => "", "pik_up_image" => ["textures/items/halloween_party_pickaxe", "textures/items/halloween_party_axe", "textures/items/halloween_party_shovel",
-                "textures/items/halloween_party_hoe"],
+            "image" => "textures/gatya_image", "pik_up_image" => ["textures/items/halloween_party_pickaxe", "textures/items/halloween_party_axe",
+                "textures/items/halloween_party_shovel", "textures/items/halloween_party_hoe"],
             "details" => "halloween-pickup-gacha-2022", "ticket" => SQLConst::TICKETS_NORMAL
         ],
     ];

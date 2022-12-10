@@ -27,7 +27,7 @@ use ree_jp\coral_reef\sql\SQLConst;
 
 class GatyaForm
 {
-    const NOW_GATYA = [SQLConst::LOG_GATYA, SQLConst::LOG_GATYA_CHRISTMAS_2021];
+    const NOW_GATYA = [SQLConst::LOG_GATYA, SQLConst::LOG_GATYA_HALLOWEEN_NIGHT, SQLConst::LOG_GATYA_HALLOWEEN_PARTY];
 
     static function sendForm(SQLRepository $repo, Player $p, string $gatyaType = SQLConst::LOG_GATYA): void
     {
