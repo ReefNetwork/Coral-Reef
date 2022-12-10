@@ -20,30 +20,30 @@ class GatyaService
         SQLConst::LOG_GATYA => [
             "name" => "ノーマルガチャ",
             "image" => "textures/gatya_image",
-            "pik_up_image" => ["textures/items/diamond_pickaxe"],
+            "pick_up_image" => ["textures/items/reef_pickaxe", "textures/items/reef_axe", "textures/items/reef_shovel", "textures/items/reef_hoe"],
             "details" => "norma-gacha",
             "ticket" => SQLConst::TICKETS_NORMAL
         ],
         SQLConst::LOG_GATYA_CHRISTMAS_2021 => [
             "name" => "クリスマスガチャ2021", "image" => "",
-            "pik_up_image" => ["textures/items/reef_pickaxe", "textures/items/reef_axe", "textures/items/reef_shovel", "textures/items/reef_hoe"],
+            "pick_up_image" => ["textures/items/reef_pickaxe", "textures/items/reef_axe", "textures/items/reef_shovel", "textures/items/reef_hoe"],
             "details" => "reefserver-christmas2021",
             "ticket" => SQLConst::TICKETS_CHRISTMAS_2021
         ],
         SQLConst::LOG_GATYA_SUMMER_2022 => [
             "name" => "サマーガチャ2022", "image" => "",
-            "pik_up_image" => ["textures/items/reef_seichi_2022summer_pickaxe", "textures/items/reef_seichi_2022summer_axe",
+            "pick_up_image" => ["textures/items/reef_seichi_2022summer_pickaxe", "textures/items/reef_seichi_2022summer_axe",
                 "textures/items/reef_seichi_2022summer_shovel", "textures/items/reef_seichi_2022summer_hoe"],
             "details" => "summer-event-only-gacha-2022",
             "ticket" => SQLConst::TICKETS_SUMMER_2022
         ],
         SQLConst::LOG_GATYA_HALLOWEEN_NIGHT => ["name" => TextFormat::GOLD . "Halloween" . TextFormat::DARK_PURPLE . "Night" . TextFormat::RESET . "ガチャ",
-            "image" => "textures/gatya_image", "pik_up_image" => ["textures/items/halloween_night_pickaxe", "textures/items/halloween_night_axe",
+            "image" => "textures/gatya_image", "pick_up_image" => ["textures/items/halloween_night_pickaxe", "textures/items/halloween_night_axe",
                 "textures/items/halloween_night_shovel", "textures/items/halloween_night_hoe"],
             "details" => "halloween-pickup-gacha-2022", "ticket" => SQLConst::TICKETS_NORMAL
         ],
         SQLConst::LOG_GATYA_HALLOWEEN_PARTY => ["name" => TextFormat::GOLD . "Halloween" . TextFormat::DARK_GREEN . "Party" . TextFormat::RESET . "ガチャ",
-            "image" => "textures/gatya_image", "pik_up_image" => ["textures/items/halloween_party_pickaxe", "textures/items/halloween_party_axe",
+            "image" => "textures/gatya_image", "pick_up_image" => ["textures/items/halloween_party_pickaxe", "textures/items/halloween_party_axe",
                 "textures/items/halloween_party_shovel", "textures/items/halloween_party_hoe"],
             "details" => "halloween-pickup-gacha-2022", "ticket" => SQLConst::TICKETS_NORMAL
         ],

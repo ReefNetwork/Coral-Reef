@@ -58,7 +58,8 @@ class GatyaForm
                     })
                 );
             foreach (self::NOW_GATYA as $gatya) {
-                $form->addElement(new ClosureButton("[gatya_select]", new ButtonImage(ButtonImage::TYPE_PATH, array_rand(GatyaService::GATYA[$gatya]["pik_up_image"])),
+                var_dump(array_rand(GatyaService::GATYA[$gatya]["pick_up_image"]));
+                $form->addElement(new ClosureButton("[gatya_select]", new ButtonImage(ButtonImage::TYPE_PATH, "textures/items/reef_pickaxe"),
                     function () use ($repo, $p, $gatya): void {
                         self::sendForm($repo, $p, $gatya);
                     }
