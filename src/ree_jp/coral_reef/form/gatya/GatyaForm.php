@@ -20,7 +20,7 @@ use bbo51dog\bboform\form\SimpleForm;
 use pocketmine\player\Player;
 use ree_jp\coral_reef\gatya\event\HalloweenNight;
 use ree_jp\coral_reef\gatya\event\HalloweenParty;
-use ree_jp\coral_reef\gatya\GatyaConst;
+use ree_jp\coral_reef\gatya\GatyaService;
 use ree_jp\coral_reef\gatya\NormalGatya;
 use ree_jp\coral_reef\sql\mysql\SQLRepository;
 use ree_jp\coral_reef\sql\SQLConst;
@@ -33,32 +33,32 @@ class GatyaForm
     {
         $repo->getAllSubtypeValue($p->getXuid(), SQLConst::TYPE_TICKETS, function (array $rows) use ($gatyaType, $repo, $p) {
             if (!$p->isOnline()) return;
-            $normal = 0;
+            $ticketCount = 0;
             foreach ($rows as $row) {
-                if ($row['subtype'] === SQLConst::TICKETS_NORMAL) $normal = $row['value'];
+                if ($row['subtype'] === GatyaService::GATYA[$gatyaType]["ticket"]) $ticketCount = $row['value'];
             }
-            $gatya_image = GatyaConst::GATYA[$gatyaType]["image"];
+            $gatya_image = GatyaService::GATYA[$gatyaType]["image"];
             $form = (new SimpleForm())
                 ->setTitle("[dynamic_seichi_gatya]$gatya_image")
-                ->setText("ノーマルガチャチケット: $normal 個")
+                ->setText(GatyaService::ticketName(GatyaService::GATYA[$gatyaType]["ticket"]) . ": $ticketCount 個")
                 ->addElements(
                     new ClosureButton("[gatya_close]", null, function (): void {
                     }),
                     new ClosureButton("[gatya_info]詳細", null, function () use ($gatyaType, $p) {
-                        $p->getServer()->dispatchCommand($p, "exe-p wp-view post " . GatyaConst::GATYA[$gatyaType]["details"]);
+                        $p->getServer()->dispatchCommand($p, "exe-p wp-view post " . GatyaService::GATYA[$gatyaType]["details"]);
                     }),
                     new ClosureButton("[gatya_info]履歴", null, function () use ($p, $repo) {
                         GatyaHistoryForm::sendForm($p, $repo);
                     }),
-                    new ClosureButton("[gatya_run]ガチャを引く", null, function () use ($p, $repo, $normal): void {
-                        self::sendGatyaNumberChoices($repo, $p, SQLConst::LOG_GATYA, $normal);
+                    new ClosureButton("[gatya_run]ガチャを引く", null, function () use ($gatyaType, $p, $repo, $ticketCount): void {
+                        self::sendGatyaNumberChoices($repo, $p, $gatyaType, $ticketCount);
                     }),
-                    new ClosureButton("[gatya_run]ガチャを10回引く", null, function () use ($p, $repo, $normal): void {
-                        self::sendGatyaConfirmForm($repo, $p, SQLConst::LOG_GATYA, 10, $normal);
+                    new ClosureButton("[gatya_run]ガチャを10回引く", null, function () use ($gatyaType, $p, $repo, $ticketCount): void {
+                        self::sendGatyaConfirmForm($repo, $p, $gatyaType, 10, $ticketCount);
                     })
                 );
             foreach (self::NOW_GATYA as $gatya) {
-                $form->addElement(new ClosureButton("[gatya_select]", new ButtonImage(ButtonImage::TYPE_PATH, GatyaConst::GATYA[$gatya]["sub_image"]),
+                $form->addElement(new ClosureButton("[gatya_select]", new ButtonImage(ButtonImage::TYPE_PATH, array_rand(GatyaService::GATYA[$gatya]["pik_up_image"])),
                     function () use ($repo, $p, $gatya): void {
                         self::sendForm($repo, $p, $gatya);
                     }
@@ -74,18 +74,12 @@ class GatyaForm
         if ($tickets < 1) $min = 0;
         $max = 50;
         if ($tickets < $max) $max = $tickets;
-        $amount = new Slider(self::replaceGatyaName($gatyaType) . "を引く回数を選択してください", $min, $max, $min);
+        $amount = new Slider(GatyaService::GATYA[$gatyaType]["name"] . "を引く回数を選択してください", $min, $max, $min);
         $form = new ClosureCustomForm(function (Player $p) use ($repo, $tickets, $gatyaType, $amount): void {
             self::sendGatyaConfirmForm($repo, $p, $gatyaType, $amount->getValue(), $tickets);
         });
         $form->setTitle("Gatya")->addElements($amount);
         $p->sendForm($form);
-    }
-
-    static function replaceGatyaName(string $text): string
-    {
-        if (isset(GatyaHistoryForm::GATYA_LIST[$text])) return GatyaHistoryForm::GATYA_LIST[$text];
-        return $text;
     }
 
     private static function sendGatyaConfirmForm(SQLRepository $repo, Player $p, string $gatyaType, int $num, int $tickets): void
@@ -128,7 +122,7 @@ class GatyaForm
                 }
             )
         );
-        $form->setTitle("Gatya -> Confirm")->setText(self::replaceGatyaName($gatyaType) .
+        $form->setTitle("Gatya -> Confirm")->setText(GatyaService::GATYA[$gatyaType]["name"] .
             "を$num 個消費してガチャを回しますか？\n$tickets -> $after");
         $p->sendForm($form);
     }
