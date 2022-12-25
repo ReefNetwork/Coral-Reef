@@ -33,7 +33,6 @@ class QuestManager
     {
         $repo->getAllSubtypeValue($xuid, SQLConst::TYPE_QUEST, function (array $rows) use ($store, $repo, $func, $xuid) {
             if (isset(self::$quests[$xuid])) unset(self::$quests[$xuid]);
-            var_dump($rows);
             foreach ($rows as $row) {
                 $quest = self::getQuest($repo, $store, $xuid, $row['subtype'], $row['value']);
                 if ($quest != null) self::$quests[$xuid][] = $quest;
@@ -60,7 +59,6 @@ class QuestManager
     static function addUserQuest(SQLRepository $repo, string $xuid, string $questID, ?string $value, ?AccountStore $store = null): void // クエストがなかったら与える
     {
         foreach (QuestManager::getUserQuests($xuid) as $alreadyQuest) {
-            if (!$alreadyQuest instanceof QuestData) var_dump("aaaa");
             if (!$alreadyQuest instanceof QuestData || $questID === $alreadyQuest::ID) {
                 return;
             }
