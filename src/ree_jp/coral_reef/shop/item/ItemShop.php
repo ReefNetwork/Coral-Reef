@@ -58,7 +58,7 @@ class ItemShop extends Shop
     public function getItems(): ?array
     {
         $i = 0;
-        while ($i < 5) {
+        while ($i < 8) {
             $i++;
             $nowPos = $this->pos->subtract(0, $i, 0);
             $item = $this->pos->getWorld()->getBlock($nowPos);
