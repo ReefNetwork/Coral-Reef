@@ -16,7 +16,7 @@ use ree_jp\coral_reef\sql\SQLConst;
 
 class Christmas2022DailyDig extends DailyDigQuest
 {
-    const ID = "christmas_2022_dig";
+    const ID = "christmas_2022_daily_dig";
     const NAME = "2022冬限定!整地(毎日)";
 
     const BONUS_TICKET = SQLConst::TICKETS_CHRISTMAS_2022;

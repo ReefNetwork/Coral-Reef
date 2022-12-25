@@ -26,6 +26,8 @@ class QuestListener implements Listener
      */
 
     const BREAK = "break";
+
+    const BREAK_WITH_SKILL = "break_with_skill";
     const TRANSFER = "transfer";
 
     const LEVEL_UP = "level_up";
