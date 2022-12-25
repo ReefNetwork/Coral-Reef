@@ -33,6 +33,7 @@ class QuestManager
     {
         $repo->getAllSubtypeValue($xuid, SQLConst::TYPE_QUEST, function (array $rows) use ($store, $repo, $func, $xuid) {
             if (isset(self::$quests[$xuid])) unset(self::$quests[$xuid]);
+            var_dump($rows);
             foreach ($rows as $row) {
                 self::$quests[$xuid][] = self::getQuest($repo, $store, $xuid, $row['subtype'], $row['value']);
             }
