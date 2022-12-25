@@ -27,14 +27,15 @@ use ree_jp\coral_reef\sql\SQLConst;
 
 class QuestManager
 {
-    static array $quests = [];
+    private static array $quests = [];
 
     static function updateQuests(SQLRepository $repo, AccountStore $store, string $xuid, ?Closure $func = null): void
     {
         $repo->getAllSubtypeValue($xuid, SQLConst::TYPE_QUEST, function (array $rows) use ($store, $repo, $func, $xuid) {
             if (isset(self::$quests[$xuid])) unset(self::$quests[$xuid]);
             foreach ($rows as $row) {
-                self::$quests[$xuid][] = self::getQuest($repo, $store, $xuid, $row['subtype'], $row['value']);
+                $quest = self::getQuest($repo, $store, $xuid, $row['subtype'], $row['value']);
+                if ($quest != null) self::$quests[$xuid][] = $quest;
             }
 
             self::addUserQuest($repo, $xuid, TutorialQuest::ID, null);
@@ -58,7 +59,9 @@ class QuestManager
     static function addUserQuest(SQLRepository $repo, string $xuid, string $questID, ?string $value, ?AccountStore $store = null): void // クエストがなかったら与える
     {
         foreach (QuestManager::getUserQuests($xuid) as $alreadyQuest) {
-            if (!$alreadyQuest instanceof QuestData || $questID === $alreadyQuest::ID) return;
+            if (!$alreadyQuest instanceof QuestData || $questID === $alreadyQuest::ID) {
+                return;
+            }
         }
         self::$quests[$xuid][] = self::getQuest($repo, $store, $xuid, $questID, $value);
     }
