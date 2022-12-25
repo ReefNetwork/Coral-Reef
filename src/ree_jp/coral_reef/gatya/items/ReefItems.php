@@ -15,12 +15,14 @@ use pocketmine\inventory\CreativeInventory;
 use pocketmine\item\enchantment\EnchantmentInstance;
 use pocketmine\item\enchantment\VanillaEnchantments;
 use pocketmine\item\Item;
+use pocketmine\item\ItemFactory;
 use pocketmine\item\VanillaItems;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\utils\TextFormat;
 use ree_jp\coral_reef\gatya\items\event\Christmas2021ReefItems;
 use ree_jp\coral_reef\gatya\items\event\HalloweenNightItems;
 use ree_jp\coral_reef\gatya\items\event\HalloweenPartyItems;
+use ree_jp\coral_reef\gatya\items\event\SnowCandyItem;
 use ree_jp\coral_reef\gatya\items\event\Summer2022ReefItems;
 use ree_jp\coral_reef\skill\TreeBreakService;
 
@@ -42,7 +44,7 @@ class ReefItems
     {
         switch ($type) {
             case self::PICKAXE:
-                $item = VanillaItems::DIAMOND_PICKAXE();
+                $item = ItemFactory::getInstance()->get(CustomItemIDs::REEF_PICKAXE);
                 $nbt = $item->getNamedTag();
                 $nbt->setString(self::REEF_SP_ITEM, self::PICKAXE);
                 $item->setNamedTag($nbt);
@@ -51,7 +53,7 @@ class ReefItems
                 $item->addEnchantment(new EnchantmentInstance(VanillaEnchantments::SILK_TOUCH(), 10));
                 break;
             case self::SHOVEL:
-                $item = VanillaItems::DIAMOND_SHOVEL();
+                $item = ItemFactory::getInstance()->get(CustomItemIDs::REEF_SHOVEL);
                 $nbt = $item->getNamedTag();
                 $nbt->setString(self::REEF_SP_ITEM, self::SHOVEL);
                 $item->setNamedTag($nbt);
@@ -60,7 +62,7 @@ class ReefItems
                 $item->addEnchantment(new EnchantmentInstance(VanillaEnchantments::SILK_TOUCH(), 10));
                 break;
             case self::AXE:
-                $item = VanillaItems::DIAMOND_AXE();
+                $item = ItemFactory::getInstance()->get(CustomItemIDs::REEF_AXE);
                 $nbt = $item->getNamedTag();
                 $nbt->setString(self::REEF_SP_ITEM, self::AXE);
                 $nbt->setByte(TreeBreakService::TREE_CUT, 1);
@@ -71,7 +73,7 @@ class ReefItems
                 $item->setLore(["スキル発動時:木を一括破壊します"]);
                 break;
             case self::HOE:
-                $item = VanillaItems::DIAMOND_HOE();
+                $item = ItemFactory::getInstance()->get(CustomItemIDs::REEF_HOE);
                 $nbt = $item->getNamedTag();
                 $nbt->setString(self::REEF_SP_ITEM, self::HOE);
                 $item->setNamedTag($nbt);
@@ -164,5 +166,6 @@ class ReefItems
         Summer2022ReefItems::registerItems();
         HalloweenNightItems::registerItems();
         HalloweenPartyItems::registerItems();
+        SnowCandyItem::registerItems();
     }
 }

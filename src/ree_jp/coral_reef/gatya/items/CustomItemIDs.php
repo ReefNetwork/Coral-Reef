@@ -13,6 +13,11 @@ namespace ree_jp\coral_reef\gatya\items;
 
 interface CustomItemIDs
 {
+    const REEF_PICKAXE = 5001;
+    const REEF_SHOVEL = 5002;
+    const REEF_AXE = 5003;
+    const REEF_HOE = 5004;
+
     const SUMMER_2022_SHOVEL = 6001;
     const SUMMER_2022_PICKAXE = 6002;
     const SUMMER_2022_AXE = 6003;
@@ -27,4 +32,9 @@ interface CustomItemIDs
     const HALLOWEEN_PARTY_SHOVEL = 6022;
     const HALLOWEEN_PARTY_AXE = 6023;
     const HALLOWEEN_PARTY_HOE = 6024;
+
+    const SNOW_CANDY_PICKAXE = 6031;
+    const SNOW_CANDY_SHOVEL = 6032;
+    const SNOW_CANDY_AXE = 6033;
+    const SNOW_CANDY_HOE = 6034;
 }

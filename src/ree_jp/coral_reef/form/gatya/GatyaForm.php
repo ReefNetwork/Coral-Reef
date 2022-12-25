@@ -18,8 +18,7 @@ use bbo51dog\bboform\form\ClosureCustomForm;
 use bbo51dog\bboform\form\ModalForm;
 use bbo51dog\bboform\form\SimpleForm;
 use pocketmine\player\Player;
-use ree_jp\coral_reef\gatya\event\HalloweenNight;
-use ree_jp\coral_reef\gatya\event\HalloweenParty;
+use ree_jp\coral_reef\gatya\event\SnowCandy;
 use ree_jp\coral_reef\gatya\GatyaService;
 use ree_jp\coral_reef\gatya\NormalGatya;
 use ree_jp\coral_reef\sql\mysql\SQLRepository;
@@ -27,7 +26,7 @@ use ree_jp\coral_reef\sql\SQLConst;
 
 class GatyaForm
 {
-    const NOW_GATYA = [SQLConst::LOG_GATYA, SQLConst::LOG_GATYA_HALLOWEEN_NIGHT, SQLConst::LOG_GATYA_HALLOWEEN_PARTY];
+    const NOW_GATYA = [SQLConst::LOG_GATYA, SQLConst::LOG_GATYA_SNOW_CANDY];
 
     static function sendForm(SQLRepository $repo, Player $p, string $gatyaType = SQLConst::LOG_GATYA): void
     {
@@ -96,12 +95,8 @@ class GatyaForm
                 function (Player $p) use ($repo, $gatyaType, $num, $tickets) {
                     if ($tickets >= $num) {
                         switch ($gatyaType) {
-                            case SQLConst::LOG_GATYA_HALLOWEEN_NIGHT:
-                                HalloweenNight::gatya($repo, $p, $num);
-                                break;
-
-                            case SQLConst::LOG_GATYA_HALLOWEEN_PARTY:
-                                HalloweenParty::gatya($repo, $p, $num);
+                            case SQLConst::LOG_GATYA_SNOW_CANDY:
+                                SnowCandy::gatya($repo, $p, $num);
                                 break;
 
                             case SQLConst::LOG_GATYA:
