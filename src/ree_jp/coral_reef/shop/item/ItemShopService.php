@@ -68,9 +68,9 @@ class ItemShopService
             }, null);
             return;
         }
-        /** @var Item[] */
+        /** @var Item[] $removeInv */
         $removeInv = [];
-        /** @var Item[] */
+        /** @var Item[] $removeStorage */
         $removeStorage = [];
         foreach ($shop->getItems() as $item) {
             $item = $item->setCount($item->getCount() * $count);

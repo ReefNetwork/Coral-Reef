@@ -89,6 +89,8 @@ class CoralReefPlugin extends PluginBase
         if (!InvMenuHandler::isRegistered()) {
             InvMenuHandler::register($this);
         }
+        $this->loadWorlds();
+
         date_default_timezone_set('Asia/Tokyo');
         $this->store = new StoreHouse();
         $this->store->register(new AccountStore(), AccountStore::class);
@@ -103,7 +105,6 @@ class CoralReefPlugin extends PluginBase
         $this->registerListeners();
         $this->registerSchedules();
         $this->registerRecipe();
-        $this->loadWorlds();
 
         /** @var AccountStore $accountStore */
         $accountStore = $this->store->get(AccountStore::class);
