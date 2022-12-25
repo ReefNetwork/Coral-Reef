@@ -52,17 +52,10 @@ class BonusCodeForm
                     GatyaManager::addTicket($repo, $p->getXuid(), SQLConst::TICKETS_NORMAL, 1);
                 });
                 break;
-            case "anke-to1":
+            case "momizi-lost":
                 self::useCode($repo, $p, $code, function () use ($repo, $p): void {
-                    $p->sendMessage(TextFormat::DARK_PURPLE . "アンケート回答ありがとうございました");
-                    $p->sendMessage(TextFormat::AQUA . "ガチャチケットを" . TextFormat::RED . "3枚" . TextFormat::AQUA . "受け取りました");
-                    GatyaManager::addTicket($repo, $p->getXuid(), SQLConst::TICKETS_NORMAL, 3);
-                });
-                break;
-            case "gatyatike-lost":
-                self::useCode($repo, $p, $code, function () use ($repo, $p): void {
-                    $p->sendMessage(TextFormat::AQUA . "ガチャチケットを" . TextFormat::RED . "3枚" . TextFormat::AQUA . "受け取りました");
-                    GatyaManager::addTicket($repo, $p->getXuid(), SQLConst::TICKETS_NORMAL, 3);
+                    $p->sendMessage(TextFormat::RED . "クリスマス" . TextFormat::RESET . "ガチャチケットを" . TextFormat::RED . "10枚" . TextFormat::AQUA . "受け取りました");
+                    GatyaManager::addTicket($repo, $p->getXuid(), SQLConst::TICKETS_CHRISTMAS_2022, 10);
                 });
                 break;
             default:
