@@ -27,7 +27,7 @@ use ree_jp\coral_reef\sql\SQLConst;
 
 class QuestManager
 {
-    static array $quests = [];
+    private static array $quests = [];
 
     static function updateQuests(SQLRepository $repo, AccountStore $store, string $xuid, ?Closure $func = null): void
     {
@@ -35,7 +35,8 @@ class QuestManager
             if (isset(self::$quests[$xuid])) unset(self::$quests[$xuid]);
             var_dump($rows);
             foreach ($rows as $row) {
-                self::$quests[$xuid][] = self::getQuest($repo, $store, $xuid, $row['subtype'], $row['value']);
+                $quest = self::getQuest($repo, $store, $xuid, $row['subtype'], $row['value']);
+                if ($quest != null) self::$quests[$xuid][] = $quest;
             }
 
             self::addUserQuest($repo, $xuid, TutorialQuest::ID, null);
