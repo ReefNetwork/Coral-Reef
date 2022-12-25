@@ -23,7 +23,7 @@ class BetweenRanking
 
     public function __construct(private RepositoryPool $pool, private StoreHouse $store)
     {
-        /** @var SessionStore */
+        /** @var SessionStore $sessionStore */
         $sessionStore = $store->get(SessionStore::class);
         $this->beforeStore = clone $sessionStore;
         $this->measureTime = time();
@@ -31,7 +31,7 @@ class BetweenRanking
 
     public function showRanking(): void
     {
-        /** @var SessionStore */
+        /** @var SessionStore $newSessionStore */
         $newSessionStore = $this->store->get(SessionStore::class);
         SessionService::sendBetweenRanking($this->pool, $this->beforeStore, $newSessionStore, $this->measureTime);
         $this->beforeStore = clone $newSessionStore;

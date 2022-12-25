@@ -41,6 +41,7 @@ class BreakService
     static function breakBlockBySkill(SQLRepository $repo, LandStore $landStore, SessionData $session, Player $p, UserAccount $user, AxisAlignedBB $aabb,
                                       Vector3       $origin): void
     {
+        $xuid = $p->getXuid();
         $lands = LandService::getDuplicateLand($landStore, $p->getWorld()->getFolderName(), $aabb);
         $hand = $p->getInventory()->getItemInHand();
         $isNoFreeze = SettingManager::isEnableOption($p->getXuid(), SettingConst::NO_FREEZE_WATER);
@@ -80,6 +81,7 @@ class BreakService
                     }
                     if ($bl->getBreakInfo()->getHardness() < 0 || $origin->equals($bl->getPosition())) continue;
                     $session->breakBlock();
+//                    QuestListener::callSubscribedQuest($xuid, QuestListener::BREAK_WITH_SKILL, 1);
                     $user->addXp($p, ServerUpdateTask::$exp_buff);
                     MoneyService::addMoney($repo, $p->getXuid(), 1);
 
