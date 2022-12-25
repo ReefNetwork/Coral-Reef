@@ -61,7 +61,6 @@ class QuestManager
         foreach (QuestManager::getUserQuests($xuid) as $alreadyQuest) {
             if (!$alreadyQuest instanceof QuestData) var_dump("aaaa");
             if (!$alreadyQuest instanceof QuestData || $questID === $alreadyQuest::ID) {
-                var_dump($alreadyQuest);
                 return;
             }
         }
