@@ -54,7 +54,7 @@ class GatyaService
         ],
     ];
     const TICKETS = [SQLConst::TICKETS_NORMAL => "ノーマルガチャチケット", SQLConst::TICKETS_CHRISTMAS_2021 => "クリスマスガチャチケット2021",
-        SQLConst::TICKETS_SUMMER_2022 => "サマーガチャチケット2022", SQLConst::LOG_GATYA_SNOW_CANDY => "クリスマスガチャチケット2022"];
+        SQLConst::TICKETS_SUMMER_2022 => "サマーガチャチケット2022", SQLConst::TICKETS_CHRISTMAS_2022 => "クリスマスガチャチケット2022"];
 
     static function ticketName(string $ticket): string
     {
