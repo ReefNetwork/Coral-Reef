@@ -36,7 +36,7 @@ class WorldTeleportForm
                     if (CoralReefPlugin::$plugin->isMain) {
                         AccountService::teleport($p, "shop");
                     } else {
-                        $p->sendMessage("ショップは整地サーバー1のみです");
+                        $p->sendMessage("ショップはさくらサーバーのみです");
                     }
                 }),
                 new ClosureButton("整地ワールド1", null, function (Player $p) {
