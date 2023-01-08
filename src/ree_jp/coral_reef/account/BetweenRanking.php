@@ -15,6 +15,9 @@ use ree_jp\coral_reef\session\SessionService;
 use ree_jp\coral_reef\session\SessionStore;
 use ree_jp\coral_reef\sql\RepositoryPool;
 use ree_jp\coral_reef\StoreHouse;
+use ree_jp\reef_edge\ReefEdgePlugin;
+use ree_jp\reef_edge\socket\SocketService;
+use SOFe\AwaitGenerator\AwaitException;
 
 class BetweenRanking
 {
@@ -33,7 +36,11 @@ class BetweenRanking
     {
         /** @var SessionStore $newSessionStore */
         $newSessionStore = $this->store->get(SessionStore::class);
-        SessionService::sendBetweenRanking($this->pool, $this->beforeStore, $newSessionStore, $this->measureTime);
+        try {
+            SessionService::sendBetweenRanking($this->pool, $this->beforeStore, $newSessionStore, $this->measureTime);
+        } catch (AwaitException $ex) {
+            SocketService::sendBroadcastMessage(ReefEdgePlugin::$socketClient, "ランキング表示中にエラーが発生しました" . $ex->getMessage());
+        }
         $this->beforeStore = clone $newSessionStore;
         $this->measureTime = time();
     }

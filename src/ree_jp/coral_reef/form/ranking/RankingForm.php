@@ -20,7 +20,10 @@ use ree_jp\coral_reef\form\PageViewForm;
 use ree_jp\coral_reef\sql\model\LiteUserModel;
 use ree_jp\coral_reef\sql\repo\UserRepository;
 use ree_jp\coral_reef\sql\RepositoryPool;
+use ree_jp\reef_edge\ReefEdgePlugin;
+use ree_jp\reef_edge\socket\SocketService;
 use SOFe\AwaitGenerator\Await;
+use SOFe\AwaitGenerator\AwaitException;
 
 class RankingForm
 {
@@ -37,12 +40,21 @@ class RankingForm
             ),
             new ClosureButton("毎日採掘量ランキング", null,
                 function () use ($store, $p, $pool): void {
-                    DigRankingForm::sendDailyDigForm($pool, $store, $p);
+                    try {
+                        DigRankingForm::sendDailyDigForm($pool, $store, $p);
+                    } catch (AwaitException $ex) {
+                        SocketService::sendBroadcastMessage(ReefEdgePlugin::$socketClient, "毎日ランキング表示中にエラーが発生しました" . $ex->getMessage());
+                    }
                 }
             ),
             new ClosureButton("週間採掘量ランキング", null,
                 function () use ($store, $p, $pool): void {
-                    DigRankingForm::sendWeeklyDigForm($pool, $store, $p);
+                    try {
+                        DigRankingForm::sendWeeklyDigForm($pool, $store, $p);
+                    } catch (AwaitException $ex) {
+                        SocketService::sendBroadcastMessage(ReefEdgePlugin::$socketClient, "週間ランキング表示中にエラーが発生しました" . $ex->getMessage());
+                    }
+
                 }
             )
         );
@@ -53,9 +65,9 @@ class RankingForm
     static function sendAllExperienceForm(RepositoryPool $pool, Player $p): void
     {
         Await::f2c(function () use ($p, $pool): Generator {
-            /** @var UserRepository */
+            /** @var $repo UserRepository */
             $repo = $pool->get(UserRepository::class);
-            /** @var LiteUserModel[] */
+            /** @var $userModels LiteUserModel[] */
             $userModels = yield from $repo->getAllUserData();
 
             if (!$p->isOnline()) return;

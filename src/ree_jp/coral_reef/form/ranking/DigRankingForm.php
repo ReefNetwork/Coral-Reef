@@ -27,10 +27,10 @@ class DigRankingForm
     {
         Await::f2c(function () use ($pool, $p, $store): Generator {
             $lastTime = self::getLatestTime();
-            /** @var SessionRepository */
+            /** @var $repo SessionRepository */
             $repo = $pool->get(SessionRepository::class);
 
-            /** @var BlockStatisticsModel[] */
+            /** @var $statistics BlockStatisticsModel[] */
             $statistics = yield from $repo->getAllCountWithJoin(strtotime("-1 day", $lastTime), $lastTime);
 
             self::sendCountForm($store, $p, $statistics, "Ranking -> DailyDig");
@@ -76,10 +76,10 @@ class DigRankingForm
     {
         Await::f2c(function () use ($pool, $p, $store): Generator {
             $lastTime = self::getLatestTime();
-            /** @var SessionRepository */
+            /** @var $repo SessionRepository */
             $repo = $pool->get(SessionRepository::class);
 
-            /** @var BlockStatisticsModel[] */
+            /** @var $statistics BlockStatisticsModel[] */
             $statistics = yield from $repo->getAllCountWithJoin(strtotime("-1 week", $lastTime), $lastTime);
 
             self::sendCountForm($store, $p, $statistics, "Ranking -> WeeklyDig");
