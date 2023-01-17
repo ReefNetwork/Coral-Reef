@@ -16,6 +16,7 @@ use ree_jp\coral_reef\land\LandData;
 use ree_jp\coral_reef\land\LandService;
 use ree_jp\coral_reef\land\LandStore;
 use ree_jp\coral_reef\StoreHouse;
+use ree_jp\reef_stone\event\BlockRedstoneWirelessSignalUpdate;
 use tedo0627\redstonecircuit\event\BlockPistonExtendEvent;
 use tedo0627\redstonecircuit\event\BlockPistonRetractEvent;
 
@@ -23,6 +24,18 @@ class RedstoneListener implements Listener
 {
     public function __construct(private StoreHouse $store)
     {
+    }
+
+    public function onWireless(BlockRedstoneWirelessSignalUpdate $ev): void
+    {
+        /** @var LandStore $landStore */
+        $landStore = $this->store->get(LandStore::class);
+        $from = $ev->getBlock();
+        $target = $ev->getTarget();
+
+        if (!$this->check(LandService::getLand($landStore, $from->getPosition()), LandService::getLand($landStore, $target->getPosition()))) {
+            $ev->cancel();
+        }
     }
 
     public function onPushPiston(BlockPistonExtendEvent $ev): void
@@ -66,12 +79,12 @@ class RedstoneListener implements Listener
         }
     }
 
-    private function check(?LandData $pistonLand, ?LandData $targetLand): bool
+    private function check(?LandData $fromLand, ?LandData $targetLand): bool
     {
-        if ($pistonLand === null || $targetLand === null) {
-            return ($pistonLand === null && $targetLand === null);
+        if ($fromLand === null || $targetLand === null) {
+            return ($fromLand === null && $targetLand === null);
         }
 
-        return ($pistonLand->xuid === $targetLand->xuid && $pistonLand->name === $targetLand->name);
+        return ($fromLand->xuid === $targetLand->xuid && $fromLand->name === $targetLand->name);
     }
 }
