@@ -11,6 +11,7 @@
 
 namespace ree_jp\coral_reef\session;
 
+use Exception;
 use Generator;
 use pocketmine\Server;
 use ree_jp\coral_reef\CoralReefPlugin;
@@ -41,45 +42,49 @@ class SessionService
 
             $list = [];
 
-            foreach (Server::getInstance()->getOnlinePlayers() as $p) {
-                $beforeSession = $beforeStore?->getSessionData($p->getXuid());
-                $afterSession = $afterStore->getSessionData($p->getXuid());
+            try {
 
-                $isBeforeUse = false;
-                $lastLoginTime = $measureTime;
 
-                if ($beforeSession instanceof SessionData) {
-                    if ($beforeSession->joinTime === $afterSession->joinTime) {
-                        $list[$afterSession->breakCount - $beforeSession->breakCount][] = $p->getName();
+                foreach (Server::getInstance()->getOnlinePlayers() as $p) {
+                    $beforeSession = $beforeStore?->getSessionData($p->getXuid());
+                    $afterSession = $afterStore->getSessionData($p->getXuid());
+                    if (!$afterSession instanceof SessionData) break;
+
+                    $isBeforeUse = false;
+                    $lastLoginTime = $measureTime;
+
+                    if ($beforeSession instanceof SessionData) {
+                        if ($beforeSession->joinTime === $afterSession->joinTime) {
+                            $list[$afterSession->breakCount - $beforeSession->breakCount][] = $p->getName();
+                            continue;
+                        }
+
+                        $isBeforeUse = true;
+                        $lastLoginTime = $beforeSession->joinTime;
+                    }
+                    $session = yield from $repo->getCountWithJoin($p->getXuid(), $lastLoginTime, time());
+                    if (!$session instanceof BlockStatisticsModel) {
+                        $list[$afterSession->breakCount][] = $p->getName();
                         continue;
                     }
 
-                    $isBeforeUse = true;
-                    $lastLoginTime = $beforeSession->joinTime;
+                    if ($isBeforeUse) {
+                        $list[$afterSession->breakCount + $session->breakCount - $beforeSession->breakCount][] = $p->getName();
+                    } else {
+                        $list[$afterSession->breakCount + $session->breakCount][] = $p->getName();
+                    }
                 }
-                $session = yield from $repo->getCountWithJoin($p->getXuid(), $lastLoginTime, time());
-                if (!$session instanceof BlockStatisticsModel) {
-                    $list[$afterSession->breakCount][] = $p->getName();
-                    continue;
-                }
-
-                if ($isBeforeUse) {
-                    $list[$afterSession->breakCount + $session->breakCount - $beforeSession->breakCount][] = $p->getName();
-                } else {
-                    $list[$afterSession->breakCount + $session->breakCount][] = $p->getName();
-                }
-            }
 
 //            /** @var SQLRepository $sqlRepo */
 //            $sqlRepo = $pool->get(SQLRepository::class);
 
-            $message = "---" . round((time() - $measureTime) / 60, 1) . "分の整地ランキング---(" . CoralReefPlugin::$serverDisplay . "サーバー)---\n";
-            $now = 1;
-            krsort($list);
-            foreach ($list as $count => $names) {
-                if ($now > 5) break;
-                $number = 0;
-                foreach ($names as $name) {
+                $message = "---" . round((time() - $measureTime) / 60, 1) . "分の整地ランキング---(" . CoralReefPlugin::$serverDisplay . "サーバー)---\n";
+                $now = 1;
+                krsort($list);
+                foreach ($list as $count => $names) {
+                    if ($now > 5) break;
+                    $number = 0;
+                    foreach ($names as $name) {
 //                    $getTicket = 6 - $now;
 //                    $p = Server::getInstance()->getPlayerExact($name);
 //                    if (is_null($p)) {
@@ -89,13 +94,16 @@ class SessionService
 //                        $p->sendMessage("ランキング報酬として§cクリスマス§rガチャチケットを$getTicket 枚受け取りました");
 //                    }
 
-                    $message .= "$now 位 $name さん($count)\n";
-                    $number++;
+                        $message .= "$now 位 $name さん($count)\n";
+                        $number++;
+                    }
+                    $now += $number;
                 }
-                $now += $number;
+                $message .= "--------------";
+                SocketService::sendBroadcastMessage(ReefEdgePlugin::$socketClient, $message);
+            } catch (Exception $ex) {
+                SocketService::sendBroadcastMessage(ReefEdgePlugin::$socketClient, "ランキングを読み込み中にエラーが発生しました");
             }
-            $message .= "--------------";
-            SocketService::sendBroadcastMessage(ReefEdgePlugin::$socketClient, $message);
         });
     }
 }
