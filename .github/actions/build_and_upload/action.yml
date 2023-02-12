@@ -14,17 +14,17 @@ runs:
     - run: php -d phar.readonly=0 ./build/make-phar.php ${{ inputs.build_info }}
       shell: bash
 
-    - run: wget https://poggit.pmmp.io/r/152920/libasynql.phar -O libasynql.phar
+    - run: wget https://cloud.ree-jp.net/s/qJTiJ8xZTDPa3xC/download -O libasynql.phar
       shell: bash
     - run: php -d phar.readonly=0 libasynql.phar ./build/CoralReef.phar "ree_jp\\coral_reef\\libs\\"
       shell: bash
 
-    - run: wget https://poggit.pmmp.io/r/186359/InvMenu.phar -O InvMenu.phar
+    - run: wget https://cloud.ree-jp.net/s/mks8DgDiLH29eTj/download -O InvMenu.phar
       shell: bash
     - run: php -d phar.readonly=0 InvMenu.phar ./build/CoralReef.phar "ree_jp\\coral_reef\\libs\\"
       shell: bash
 
-    - run: wget https://poggit.pmmp.io/r/167785/await-generator.phar -O await-generator.phar
+    - run: wget https://cloud.ree-jp.net/s/TSQtqd7nS4r7q8W/download -O await-generator.phar
       shell: bash
     - run: php -d phar.readonly=0 await-generator.phar ./build/CoralReef.phar "ree_jp\\coral_reef\\libs\\"
       shell: bash
