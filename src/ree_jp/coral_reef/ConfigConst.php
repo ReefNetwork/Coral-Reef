@@ -17,4 +17,6 @@ class ConfigConst
     const SERVER_NAME = "server_0";
     const SERVER = "server";
     const IS_SQL_INIT = "is_sql_init";
+
+    const IS_TEMP = "is_temp";
 }

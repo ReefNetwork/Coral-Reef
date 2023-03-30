@@ -19,6 +19,7 @@ use pocketmine\event\player\PlayerLoginEvent;
 use pocketmine\event\player\PlayerQuitEvent;
 use pocketmine\item\VanillaItems;
 use pocketmine\player\Player;
+use pocketmine\Server;
 use pocketmine\utils\TextFormat;
 use ree_jp\coral_reef\account\AccountService;
 use ree_jp\coral_reef\account\AccountStore;
@@ -141,6 +142,10 @@ class CommonListener implements Listener
         $p->sendTitle(TextFormat::GREEN . "Reef " . TextFormat::YELLOW . "Server");
         if (!$p->getInventory()->contains(VanillaItems::STICK())) {
             $p->getInventory()->addItem(VanillaItems::STICK()->setCustomName("メニューを開く"));
+        }
+
+        if (CoralReefPlugin::$isTemp) {
+            Server::getInstance()->dispatchCommand($p, "exe-p wp-view post about-the-suspense-server");
         }
     }
 
