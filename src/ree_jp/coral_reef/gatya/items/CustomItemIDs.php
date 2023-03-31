@@ -17,6 +17,7 @@ interface CustomItemIDs
     const REEF_SHOVEL = 5002;
     const REEF_AXE = 5003;
     const REEF_HOE = 5004;
+    const REEF_SWORD = 5005;
 
     const SUMMER_2022_SHOVEL = 6001;
     const SUMMER_2022_PICKAXE = 6002;

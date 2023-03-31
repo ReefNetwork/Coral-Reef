@@ -43,4 +43,5 @@ interface SQLConst
     const LOG_GATYA_HALLOWEEN_NIGHT = "gatya_halloween_night";
     const LOG_GATYA_HALLOWEEN_PARTY = "gatya_halloween_party";
     const LOG_GATYA_SNOW_CANDY = "gatya_snow_candy";
+    const LOG_GATYA_APRIL_2023 = "gatya_april_2023";
 }

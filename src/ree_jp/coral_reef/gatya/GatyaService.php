@@ -52,6 +52,10 @@ class GatyaService
                 "textures/items/snow_candy_shovel", "textures/items/snow_candy_hoe"],
             "details" => "snowcandy-gacha", "ticket" => SQLConst::TICKETS_CHRISTMAS_2022
         ],
+        SQLConst::LOG_GATYA_APRIL_2023 => ["name" => TextFormat::GREEN . "Reef" . TextFormat::GOLD . "Sword" . TextFormat::RESET . "ガチャ",
+            "image" => "textures/ui/gatya/reef_sword_gatya", "pick_up_image" => ["textures/items/reef_sword"],
+            "details" => "reef-sword-gacha", "ticket" => SQLConst::TICKETS_NORMAL
+        ]
     ];
     const TICKETS = [SQLConst::TICKETS_NORMAL => "ノーマルガチャチケット", SQLConst::TICKETS_CHRISTMAS_2021 => "クリスマスガチャチケット2021",
         SQLConst::TICKETS_SUMMER_2022 => "サマーガチャチケット2022", SQLConst::TICKETS_CHRISTMAS_2022 => "クリスマスガチャチケット2022"];

@@ -18,7 +18,8 @@ class SpecialItemService
             ConvertItems::NORMAL_TICKETS_FRAGMENT
             => ConvertItems::getItem($xuid, $item, $durable)->setCount($count),
 
-            ReefItems::PICKAXE, ReefItems::SHOVEL, ReefItems::AXE, ReefItems::HOE, ReefItems::HELMET, ReefItems::CHEST_PLATE, ReefItems::LEGGINGS, ReefItems::BOOTS
+            ReefItems::PICKAXE, ReefItems::SHOVEL, ReefItems::AXE, ReefItems::HOE, ReefItems::SWORD,
+            ReefItems::HELMET, ReefItems::CHEST_PLATE, ReefItems::LEGGINGS, ReefItems::BOOTS
             => self::setOwner(ReefItems::getItem($xuid, $item, $durable), $store)->setCount($count),
 
             UltimateItems::PICKAXE, UltimateItems::SHOVEL, UltimateItems::AXE

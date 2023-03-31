@@ -34,6 +34,7 @@ class ReefItems
     const PICKAXE = "reef_pickaxe";
     const SHOVEL = "reef_shovel";
     const AXE = "reef_axe";
+    const SWORD = "reef_sword";
     const HOE = "reef_hoe";
     const HELMET = "reef_helmet";
     const CHEST_PLATE = "reef_chest_plate";
@@ -80,6 +81,13 @@ class ReefItems
                 $item->setCustomName(TextFormat::GREEN . 'Reef' . TextFormat::GOLD . 'Hoe');
                 $item->addEnchantment(new EnchantmentInstance(VanillaEnchantments::EFFICIENCY(), 10));
                 $item->addEnchantment(new EnchantmentInstance(VanillaEnchantments::SILK_TOUCH(), 10));
+                break;
+            case self::SWORD:
+                $item = ItemFactory::getInstance()->get(CustomItemIDs::REEF_SWORD);
+                $nbt = $item->getNamedTag();
+                $nbt->setString(self::REEF_SP_ITEM, self::SWORD);
+                $item->setNamedTag($nbt);
+                $item->setCustomName(TextFormat::GREEN . 'Reef' . TextFormat::GOLD . 'Sword');
                 break;
             case self::HELMET:
                 $item = VanillaItems::DIAMOND_HELMET();
@@ -147,7 +155,7 @@ class ReefItems
 
     static function registerItems(): void
     {
-        foreach ([self::PICKAXE, self::SHOVEL, self::AXE, self::HOE, self::HELMET, self::CHEST_PLATE, self::LEGGINGS, self::BOOTS] as $key) {
+        foreach ([self::PICKAXE, self::SHOVEL, self::AXE, self::HOE, self::SWORD, self::HELMET, self::CHEST_PLATE, self::LEGGINGS, self::BOOTS] as $key) {
             CreativeInventory::getInstance()->add(self::getItem(0, $key));
         }
     }
