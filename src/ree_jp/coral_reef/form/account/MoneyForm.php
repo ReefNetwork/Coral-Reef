@@ -16,6 +16,7 @@ use bbo51dog\bboform\element\Input;
 use bbo51dog\bboform\form\ClosureCustomForm;
 use bbo51dog\bboform\form\ModalForm;
 use pocketmine\player\Player;
+use ree_jp\coral_reef\account\AccountService;
 use ree_jp\coral_reef\account\AccountStore;
 use ree_jp\coral_reef\money\MoneyService;
 use ree_jp\coral_reef\sql\mysql\SQLRepository;
@@ -64,6 +65,9 @@ class MoneyForm
                 MoneyService::reduceMoney($sqlRepo, $p->getXuid(), $amount);
                 MoneyService::addMoney($sqlRepo, $targetXuid, $amount);
                 $p->sendMessage("送金しました");
+
+                $target = AccountService::getPlayerByXuid($targetXuid);
+                if ($target instanceof Player) $target->sendMessage($p->getName() . "さんから§6${amount}円§r送金されました");
             });
         }), new ClosureButton("戻る", null, function () use ($p, $house, $pool, $targetName): void {
             self::sendForm($p, $house, $pool, $targetName);
