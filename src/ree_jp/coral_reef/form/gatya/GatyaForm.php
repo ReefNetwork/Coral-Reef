@@ -18,7 +18,6 @@ use bbo51dog\bboform\form\ClosureCustomForm;
 use bbo51dog\bboform\form\ModalForm;
 use bbo51dog\bboform\form\SimpleForm;
 use pocketmine\player\Player;
-use ree_jp\coral_reef\gatya\event\April2023;
 use ree_jp\coral_reef\gatya\GatyaService;
 use ree_jp\coral_reef\gatya\NormalGatya;
 use ree_jp\coral_reef\sql\mysql\SQLRepository;
@@ -26,7 +25,7 @@ use ree_jp\coral_reef\sql\SQLConst;
 
 class GatyaForm
 {
-    const NOW_GATYA = [SQLConst::LOG_GATYA_APRIL_2023, SQLConst::LOG_GATYA];
+    const NOW_GATYA = [SQLConst::LOG_GATYA];
 
     static function sendForm(SQLRepository $repo, Player $p, string $gatyaType = SQLConst::LOG_GATYA): void
     {
@@ -95,10 +94,6 @@ class GatyaForm
                 function (Player $p) use ($repo, $gatyaType, $num, $tickets) {
                     if ($tickets >= $num) {
                         switch ($gatyaType) {
-                            case SQLConst::LOG_GATYA_APRIL_2023:
-                                April2023::gatya($repo, $p, $num);
-                                break;
-
                             case SQLConst::LOG_GATYA:
                                 NormalGatya::gatya($repo, $p, $num);
                                 break;
