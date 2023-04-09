@@ -63,13 +63,13 @@ class UserAccount
 
     function save(RepositoryPool $pool, Player $p): Generator
     {
-        /** @var SQLRepository */
+        /** @var SQLRepository $sqlRepo */
         $sqlRepo = $pool->get(SQLRepository::class);
-        /** @var PlayerRepository */
+        /** @var PlayerRepository $playerRepo */
         $playerRepo = $pool->get(PlayerRepository::class);
-        /** @var UserRepository */
+        /** @var UserRepository $userRepo */
         $userRepo = $pool->get(UserRepository::class);
-        /** @var WarpRepository */
+        /** @var WarpRepository $warpRepo */
         $warpRepo = $pool->get(WarpRepository::class);
 
         $await = [];

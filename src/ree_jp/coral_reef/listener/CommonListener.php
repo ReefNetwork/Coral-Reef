@@ -73,6 +73,10 @@ class CommonListener implements Listener
         $accountStore->updateUserName($xuid, $p->getName());
         $user = yield from $repo->getUserData($p->getXuid());
         if ($user instanceof UserAccount) {
+            if ($user->name != $p->getName()) {
+                $p->sendMessage("§b名前を$user->name から{$p->getName()} に更新しました");
+                $user->name = $p->getName();
+            }
             $accountStore->users[$xuid] = $user;
         } else {
             $accountStore->users[$xuid] = new UserAccount($xuid, $p->getName(), 0, null);
