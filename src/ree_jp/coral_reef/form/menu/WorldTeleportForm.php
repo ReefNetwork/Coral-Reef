@@ -15,11 +15,15 @@ use bbo51dog\bboform\element\ClosureButton;
 use bbo51dog\bboform\element\Dropdown;
 use bbo51dog\bboform\element\Input;
 use bbo51dog\bboform\form\ClosureCustomForm;
+use bbo51dog\bboform\form\ModalForm;
 use bbo51dog\bboform\form\SimpleForm;
 use pocketmine\math\Vector3;
 use pocketmine\player\Player;
+use pocketmine\Server;
 use ree_jp\coral_reef\account\AccountService;
+use ree_jp\coral_reef\account\SettingManager;
 use ree_jp\coral_reef\CoralReefPlugin;
+use ree_jp\coral_reef\sql\SettingConst;
 
 class WorldTeleportForm
 {
@@ -45,8 +49,11 @@ class WorldTeleportForm
                 new ClosureButton("整地ワールド2", null, function (Player $p) {
                     AccountService::teleport($p, "main_2");
                 }),
-                new ClosureButton("テレポート", null, function (Player $p) {
+                new ClosureButton("座標でテレポート", null, function (Player $p) {
                     self::sendTeleportForm($p);
+                }),
+                new ClosureButton("プレイヤーにテレポート", null, function (Player $p) {
+                    self::sendPlayerTeleportForm($p);
                 }),
                 new ClosureButton("よくある質問", null, function (Player $p) {
                     if (CoralReefPlugin::$plugin->isMain) {
@@ -86,5 +93,47 @@ class WorldTeleportForm
         $form->setTitle("Menu -> Teleport");
         $form->addElements($worldSelect, $x, $y, $z);
         $p->sendForm($form);
+    }
+
+    static function sendPlayerTeleportForm(Player $p): void
+    {
+        $form = (new SimpleForm())->setTitle("Menu -> Teleport")->setText("テレポートしたいプレイヤーを選択してください\n" .
+            "テレポート先のプレイヤーにテレポートを承諾してもらう必要があります");
+        foreach (Server::getInstance()->getOnlinePlayers() as $target) {
+            $form->addElement(new ClosureButton($target->getName(), null, function () use ($p, $target): void {
+                if (!$target->isOnline()) {
+                    $p->sendMessage("プレイヤーが見つかりませんでした");
+                    return;
+                }
+                if (SettingManager::isEnableOption($target->getXuid(), SettingConst::DENNY_PLAYER_TELEPORT)) {
+                    $p->sendMessage($target->getName() . "さんはプレイヤーからのテレポートの受け入れを無効にしているため、申請出来ませんでした");
+                    return;
+                }
+
+                self::sendPlayerTeleportAllowForm($p, $target);
+                $p->sendMessage("テレポートをリクエストしました");
+            }));
+        }
+        $p->sendForm($form);
+    }
+
+    static function sendPlayerTeleportAllowForm(Player $p, Player $target): void
+    {
+        $form = (new ModalForm(new ClosureButton("§a承諾§rする", null, function () use ($p, $target): void {
+            if (!$p->isOnline()) {
+                $target->sendMessage("テレポートリクエストを承諾出来ませんでした");
+                return;
+            }
+            $p->sendMessage($target->getName() . "さんへのテレポートが§§a承諾§rされました");
+            $target->sendMessage("テレポートリクエストを§a承諾§rしました");
+            $p->teleport($target->getPosition());
+        }), new ClosureButton("§4拒否§rする", null, function () use ($p, $target): void {
+            if ($p->isOnline()) {
+                $p->sendMessage($target->getName() . "さんへのテレポートが§4拒否§rされました");
+            }
+            $target->sendMessage("テレポートリクエストを§4拒否§rしました");
+        })))->setTitle("Teleport Request")->setText($p->getName() . "さんからこの場所へテレポートのリクエストが来ました\n" .
+            "※嫌がらせ行為をされている際は、設定からテレポートを常に拒否することができます");
+        $target->sendForm($form);
     }
 }

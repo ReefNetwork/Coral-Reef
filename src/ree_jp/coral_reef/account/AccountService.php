@@ -51,6 +51,7 @@ class AccountService
         SettingManager::updateOption($repo, $p, SettingConst::BREAK_UNDER_GROUND);
         SettingManager::updateOption($repo, $p, SettingConst::ALLOW_COOL_TIME_DIG);
         SettingManager::updateOption($repo, $p, SettingConst::OFF_COOL_TIME_SOUND);
+        SettingManager::updateOption($repo, $p, SettingConst::DENNY_PLAYER_TELEPORT);
 
         self::updateFly($p, $p->getWorld()->getFolderName());
     }

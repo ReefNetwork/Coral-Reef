@@ -68,6 +68,18 @@ class SettingForm
                     }
                 ),
                 new ClosureButton(
+                    "プレイヤーからのテレポート", null,
+                    function (Player $p) use ($repo) {
+                        self::sendBoolForm($repo, $p, 'プレイヤーからのテレポートを常に§4拒否§rするようにしますか?', 'しない / 常に§4拒否§rする',
+                            SettingConst::DENNY_PLAYER_TELEPORT,
+                            function () use ($repo, $p) {
+                                $p->sendMessage('設定を保存しました');
+                                SettingManager::updateOption($repo, $p, SettingConst::DENNY_PLAYER_TELEPORT);
+                            }
+                        );
+                    }
+                ),
+                new ClosureButton(
                     "ヒントを表示する", null,
                     function (Player $p) use ($repo) {
                         self::sendBoolForm($repo, $p, 'ヒントを表示しますか?', '表示する / しない', SettingConst::HIDE_SERVER_TIP,
