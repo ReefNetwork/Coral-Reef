@@ -124,7 +124,7 @@ class WorldTeleportForm
                 $target->sendMessage("テレポートリクエストを承諾出来ませんでした");
                 return;
             }
-            $p->sendMessage($target->getName() . "さんへのテレポートが§§a承諾§rされました");
+            $p->sendMessage($target->getName() . "さんへのテレポートが§a承諾§rされました");
             $target->sendMessage("テレポートリクエストを§a承諾§rしました");
             $p->teleport($target->getPosition());
         }), new ClosureButton("§4拒否§rする", null, function () use ($p, $target): void {
