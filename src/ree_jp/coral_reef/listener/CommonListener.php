@@ -112,7 +112,9 @@ class CommonListener implements Listener
         $warps = yield from $repo->getWarps($p->getXuid(), CoralReefPlugin::$serverID);
         foreach ($warps as $warp) {
             if ($warp->warpName != AccountService::autoSaveWarpName()) continue;
-            AccountService::teleport($p, $warp->pos->getWorld()->getFolderName(), $warp->pos);
+            if ($warp->pos->getWorld()->getFolderName() != "shop") {
+                AccountService::teleport($p, $warp->pos->getWorld()->getFolderName(), $warp->pos);
+            }
         }
     }
 
