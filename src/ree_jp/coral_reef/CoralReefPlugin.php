@@ -31,6 +31,8 @@ use ree_jp\coral_reef\command\ReefCommand;
 use ree_jp\coral_reef\command\ReefConsoleCommand;
 use ree_jp\coral_reef\command\ReefFormCommand;
 use ree_jp\coral_reef\command\TrashCommand;
+use ree_jp\coral_reef\command\AcceptCommand;
+use ree_jp\coral_reef\command\RejectCommand;
 use ree_jp\coral_reef\gatya\items\ReefItems;
 use ree_jp\coral_reef\item\CustomItemService;
 use ree_jp\coral_reef\land\LandStore;
@@ -167,6 +169,8 @@ class CoralReefPlugin extends PluginBase
             new ReefAdminCommand($this, $this->pool, $this->store),
             new ReefConsoleCommand($this, $this->pool, $this->store),
             new ReefFormCommand($this, $this->pool, $this->store),
+            new AcceptCommand($this, $this->store),
+            new RejectCommand($this, $this->store),
         ]);
     }
 
