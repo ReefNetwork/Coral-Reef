@@ -22,7 +22,7 @@ use pocketmine\Server;
 class AcceptCommand extends Command implements PluginOwned
 {
 
-    public function __construct(private Plugin $owner)
+    public function __construct(private Plugin $owner, private AccountStore $store)
     {
         parent::__construct("reject", "プレイヤーからのテレポートを拒否します", null, ["rej"]);
         //$this->setPermission("coral_reef.command.menu"); 権限はymlも変えないとだからとりあえず消す
@@ -51,10 +51,10 @@ class AcceptCommand extends Command implements PluginOwned
         });
         foreach ($names as $string) {
             if (strpos($string, $args[0]) !== false) {
-                if (EventListener->accountStore->getValue($sender->getXuid(), ($p->getXuid(). "to" .$sender->getXuid()))) {
+                if ($this->store->getValue($sender->getXuid(), ($p->getXuid(). "to" .$sender->getXuid()))) {
                     $p->sendMessage($sender->getName() . "さんへのテレポートが§4拒否§rされました");
                     $sender->sendMessage("テレポートリクエストを§4拒否§rしました");
-                    EventListener->accountStore->setValue($sender->getXuid(), ($p->getXuid(). "to" .$sender->getXuid()), 0);
+                    $this->store->setValue($sender->getXuid(), ($p->getXuid(). "to" .$sender->getXuid()), 0);
                 } else
                     $sender->sendMessage($p->getName() ."さんからは申請が来ていません");
                 return;
