@@ -51,12 +51,13 @@ class AcceptCommand extends Command implements PluginOwned
         });
         foreach ($names as $string) {
             if (strpos($string, $args[0]) !== false) {
-                if ($accountStore->getValue($sender->getXuid(), ($p->getXuid(). "to" .$sender->getXuid()))) {
+                if (EventListener->accountStore->getValue($sender->getXuid(), ($p->getXuid(). "to" .$sender->getXuid()))) {
                     $p->sendMessage($sender->getName() . "さんへのテレポートが§4拒否§rされました");
                     $sender->sendMessage("テレポートリクエストを§4拒否§rしました");
-                    $p->teleport($sender->getPosition());
+                    EventListener->accountStore->setValue($sender->getXuid(), ($p->getXuid(). "to" .$sender->getXuid()), 0);
                 } else
                     $sender->sendMessage($p->getName() ."さんからは申請が来ていません");
+                return;
             }
         }
         
