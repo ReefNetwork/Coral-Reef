@@ -59,6 +59,7 @@ class AcceptCommand extends Command implements PluginOwned
                     $p->teleport($sender->getPosition());
                 } else
                     $sender->sendMessage($p->getName() ."さんからは申請が来ていません");
+                return;
             }
         }
         
