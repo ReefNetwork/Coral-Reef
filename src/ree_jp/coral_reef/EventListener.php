@@ -66,7 +66,7 @@ use Throwable;
 
 class EventListener implements Listener
 {
-    public function __construct(private RepositoryPool $pool, private StoreHouse $store, public AccountStore $accountStore, private LandStore $landStore,
+    public function __construct(private RepositoryPool $pool, private StoreHouse $store, private AccountStore $accountStore, private LandStore $landStore,
                                 private ShopStore      $shopStore, private SessionStore $sessionStore)
     {
     }
