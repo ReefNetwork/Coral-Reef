@@ -24,7 +24,6 @@ use ree_jp\coral_reef\account\AccountService;
 use ree_jp\coral_reef\account\SettingManager;
 use ree_jp\coral_reef\CoralReefPlugin;
 use ree_jp\coral_reef\sql\SettingConst;
-use ree_jp\coral_reef\EventListener;
 
 class WorldTeleportForm
 {
@@ -111,11 +110,11 @@ class WorldTeleportForm
                     return;
                 }
                 
-                if (EventListener->accountStore->getValue($target->getXuid(), ($p->getXuid(). "to" .$target->getXuid()))) 
+                if (CoralReefPlugin->store->getValue($target->getXuid(), ($p->getXuid(). "to" .$target->getXuid()))) 
                     $p->sendMessage("すでにリクエストを送信しています");
                 else {
                     $target->sendMessage("§a".$p->getName() . 'さんからこの場所へテレポートのリクエストが来ました。3分以内に "/acc '.$p->getName().'"で承認します');
-                    EventListener->accountStore->setValue($target->getXuid(), ($p->getXuid(). "to" .$target->getXuid()), 20*60*3);
+                    CoralReefPlugin->store->setValue($target->getXuid(), ($p->getXuid(). "to" .$target->getXuid()), 20*60*3);
                     self::sendPlayerTeleportAllowForm($p, $target);
                     $p->sendMessage("テレポートをリクエストしました");
                 }
