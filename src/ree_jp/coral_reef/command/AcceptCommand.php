@@ -18,6 +18,7 @@ use pocketmine\plugin\Plugin;
 use pocketmine\plugin\PluginOwned;
 use pocketmine\utils\TextFormat;
 use pocketmine\Server;
+use ree_jp\coral_reef\EventListener;
 
 class AcceptCommand extends Command implements PluginOwned
 {
@@ -51,9 +52,10 @@ class AcceptCommand extends Command implements PluginOwned
         });
         foreach ($names as $string) {
             if (strpos($string, $args[0]) !== false) {
-                if ($accountStore->getValue($sender->getXuid(), ($p->getXuid(). "to" .$sender->getXuid()))) {
+                if (EventListener->accountStore->getValue($sender->getXuid(), ($p->getXuid(). "to" .$sender->getXuid()))) {
                     $p->sendMessage($sender->getName() . "さんへのテレポートが§a承諾§rされました");
                     $sender->sendMessage("テレポートリクエストを§a承諾§rしました");
+                    EventListener->accountStore->setValue($sender->getXuid(), ($p->getXuid(). "to" .$sender->getXuid()), 0);
                     $p->teleport($sender->getPosition());
                 } else
                     $sender->sendMessage($p->getName() ."さんからは申請が来ていません");
