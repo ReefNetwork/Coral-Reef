@@ -18,12 +18,11 @@ use pocketmine\plugin\Plugin;
 use pocketmine\plugin\PluginOwned;
 use pocketmine\utils\TextFormat;
 use pocketmine\Server;
-use ree_jp\coral_reef\EventListener;
 
 class AcceptCommand extends Command implements PluginOwned
 {
 
-    public function __construct(private Plugin $owner)
+    public function __construct(private Plugin $owner, private AccountStore $store)
     {
         parent::__construct("accept", "プレイヤーからのテレポートを承諾します", null, ["acc"]);
         //$this->setPermission("coral_reef.command.menu"); 権限はymlも変えないとだからとりあえず消す
@@ -52,10 +51,10 @@ class AcceptCommand extends Command implements PluginOwned
         });
         foreach ($names as $string) {
             if (strpos($string, $args[0]) !== false) {
-                if (EventListener->accountStore->getValue($sender->getXuid(), ($p->getXuid(). "to" .$sender->getXuid()))) {
+                if ($this->store->getValue($sender->getXuid(), ($p->getXuid(). "to" .$sender->getXuid()))) {
                     $p->sendMessage($sender->getName() . "さんへのテレポートが§a承諾§rされました");
                     $sender->sendMessage("テレポートリクエストを§a承諾§rしました");
-                    EventListener->accountStore->setValue($sender->getXuid(), ($p->getXuid(). "to" .$sender->getXuid()), 0);
+                    $this->store->setValue($sender->getXuid(), ($p->getXuid(). "to" .$sender->getXuid()), 0);
                     $p->teleport($sender->getPosition());
                 } else
                     $sender->sendMessage($p->getName() ."さんからは申請が来ていません");
