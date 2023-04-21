@@ -24,15 +24,15 @@ use pocketmine\world\generator\normal\Normal;
 use pocketmine\world\WorldCreationOptions;
 use ree_jp\coral_reef\account\AccountStore;
 use ree_jp\coral_reef\account\ScoreBoardService;
+use ree_jp\coral_reef\command\AcceptCommand;
 use ree_jp\coral_reef\command\BlockLogCommand;
 use ree_jp\coral_reef\command\MenuCommand;
 use ree_jp\coral_reef\command\ReefAdminCommand;
 use ree_jp\coral_reef\command\ReefCommand;
 use ree_jp\coral_reef\command\ReefConsoleCommand;
 use ree_jp\coral_reef\command\ReefFormCommand;
-use ree_jp\coral_reef\command\TrashCommand;
-use ree_jp\coral_reef\command\AcceptCommand;
 use ree_jp\coral_reef\command\RejectCommand;
+use ree_jp\coral_reef\command\TrashCommand;
 use ree_jp\coral_reef\gatya\items\ReefItems;
 use ree_jp\coral_reef\item\CustomItemService;
 use ree_jp\coral_reef\land\LandStore;
@@ -97,6 +97,7 @@ class CoralReefPlugin extends PluginBase
 
         date_default_timezone_set('Asia/Tokyo');
         $this->store = new StoreHouse();
+        StoreHouse::$instance = $this->store;
         $this->store->register(new AccountStore(), AccountStore::class);
         $this->store->register(new ShopStore($this->getDataFolder()), ShopStore::class);
         $this->store->register(new SessionStore(), SessionStore::class);

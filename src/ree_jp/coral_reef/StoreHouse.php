@@ -18,6 +18,8 @@ class StoreHouse
     /** @var Store[] */
     private array $stores = [];
 
+    static StoreHouse $instance;
+
     /**
      * @param string $identity
      * @return Store

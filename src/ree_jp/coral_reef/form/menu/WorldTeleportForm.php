@@ -21,9 +21,11 @@ use pocketmine\math\Vector3;
 use pocketmine\player\Player;
 use pocketmine\Server;
 use ree_jp\coral_reef\account\AccountService;
+use ree_jp\coral_reef\account\AccountStore;
 use ree_jp\coral_reef\account\SettingManager;
 use ree_jp\coral_reef\CoralReefPlugin;
 use ree_jp\coral_reef\sql\SettingConst;
+use ree_jp\coral_reef\StoreHouse;
 
 class WorldTeleportForm
 {
@@ -109,12 +111,14 @@ class WorldTeleportForm
                     $p->sendMessage($target->getName() . "さんはプレイヤーからのテレポートの受け入れを無効にしているため、申請出来ませんでした");
                     return;
                 }
-                
-                if (CoralReefPlugin->store->getValue($target->getXuid(), ($p->getXuid(). "to" .$target->getXuid()))) 
+                /** @var AccountStore $store */
+                $store = StoreHouse::$instance->get(AccountStore::class);
+
+                if ($store->getValue($target->getXuid(), ($p->getXuid() . "to" . $target->getXuid())))
                     $p->sendMessage("すでにリクエストを送信しています");
                 else {
-                    $target->sendMessage("§a".$p->getName() . 'さんからこの場所へテレポートのリクエストが来ました。3分以内に "/acc '.$p->getName().'"で承認します');
-                    CoralReefPlugin->store->setValue($target->getXuid(), ($p->getXuid(). "to" .$target->getXuid()), 20*60*3);
+                    $target->sendMessage("§a" . $p->getName() . 'さんからこの場所へテレポートのリクエストが来ました。3分以内に "/acc ' . $p->getName() . '"で承認します');
+                    $store->setValue($target->getXuid(), ($p->getXuid() . "to" . $target->getXuid()), 20 * 60 * 3);
                     self::sendPlayerTeleportAllowForm($p, $target);
                     $p->sendMessage("テレポートをリクエストしました");
                 }

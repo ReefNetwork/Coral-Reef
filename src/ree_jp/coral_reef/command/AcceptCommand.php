@@ -16,13 +16,14 @@ use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
 use pocketmine\plugin\Plugin;
 use pocketmine\plugin\PluginOwned;
-use pocketmine\utils\TextFormat;
 use pocketmine\Server;
+use ree_jp\coral_reef\account\AccountStore;
+use ree_jp\coral_reef\StoreHouse;
 
 class AcceptCommand extends Command implements PluginOwned
 {
 
-    public function __construct(private Plugin $owner, private AccountStore $store)
+    public function __construct(private Plugin $owner, private StoreHouse $store)
     {
         parent::__construct("accept", "プレイヤーからのテレポートを承諾します", null, ["acc"]);
         //$this->setPermission("coral_reef.command.menu"); 権限はymlも変えないとだからとりあえず消す
@@ -36,32 +37,27 @@ class AcceptCommand extends Command implements PluginOwned
             return;
         }
 
-        if(!isset($args[0])) {
+        if (!isset($args[0])) {
             $sender->sendMessage("Usage: /acc <name>");
             return;
         }
-        
-        $names = array();
-        foreach(Server::getInstance()->getOnlinePlayers() as $player) {
-            array_push($names, $player->getName());
-        }
 
-        usort($names, function ($a, $b) {
-            return strlen($a) - strlen($b);
-        });
-        foreach ($names as $string) {
-            if (strpos($string, $args[0]) !== false) {
-                if ($this->store->getValue($sender->getXuid(), ($p->getXuid(). "to" .$sender->getXuid()))) {
-                    $p->sendMessage($sender->getName() . "さんへのテレポートが§a承諾§rされました");
+        /** @var AccountStore $accountStore */
+        $accountStore = $this->store->get(AccountStore::class);
+
+        foreach (Server::getInstance()->getOnlinePlayers() as $target) {
+            if (str_contains(mb_strtolower($target->getName()), mb_strtolower($args[0]))) {
+                $key = $target->getXuid() . "to" . $sender->getXuid();
+                if ($accountStore->getValue($sender->getXuid(), $key)) {
+                    $target->sendMessage($sender->getName() . "さんへのテレポートが§a承諾§rされました");
                     $sender->sendMessage("テレポートリクエストを§a承諾§rしました");
-                    $this->store->setValue($sender->getXuid(), ($p->getXuid(). "to" .$sender->getXuid()), 0);
-                    $p->teleport($sender->getPosition());
-                } else
-                    $sender->sendMessage($p->getName() ."さんからは申請が来ていません");
+                    $accountStore->setValue($sender->getXuid(), $key, 0);
+                    $target->teleport($sender->getPosition());
+                } else $sender->sendMessage($target->getName() . "さんからは申請が来ていません");
                 return;
             }
         }
-        
+
         $sender->sendMessage("該当するプレイヤーはいませんでした");
     }
 
@@ -69,5 +65,5 @@ class AcceptCommand extends Command implements PluginOwned
     {
         return $this->owner;
     }
-  
+
 }
