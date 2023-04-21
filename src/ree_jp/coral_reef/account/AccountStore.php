@@ -53,6 +53,7 @@ class AccountStore implements Store
 
     public function getValue(string $xuid, string $value)
     {
+        var_dump($this->values);
         $key = $xuid . ':' . $value;
         return $this->values[$key] ?? null;
     }
