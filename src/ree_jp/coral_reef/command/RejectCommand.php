@@ -48,7 +48,7 @@ class RejectCommand extends Command implements PluginOwned
         foreach (Server::getInstance()->getOnlinePlayers() as $target) {
             if (str_contains(mb_strtolower($target->getName()), mb_strtolower($args[0]))) {
                 $key = $target->getXuid() . "to" . $sender->getXuid();
-                if ($accountStore->getValue($sender->getXuid(), $key)) {
+                if ($accountStore->hasValue($sender->getXuid(), $key)) {
                     $target->sendMessage($sender->getName() . "さんへのテレポートが§4拒否§rされました");
                     $sender->sendMessage("テレポートリクエストを§4拒否§rしました");
                     $accountStore->setValue($sender->getXuid(), $key, 0);
