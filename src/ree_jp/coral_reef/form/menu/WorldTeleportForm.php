@@ -114,7 +114,7 @@ class WorldTeleportForm
                 /** @var AccountStore $store */
                 $store = StoreHouse::$instance->get(AccountStore::class);
 
-                if ($store->getValue($target->getXuid(), ($p->getXuid() . "to" . $target->getXuid())))
+                if ($store->hasValue($target->getXuid(), ($p->getXuid() . "to" . $target->getXuid())))
                     $p->sendMessage("すでにリクエストを送信しています");
                 else {
                     $target->sendMessage("§a" . $p->getName() . 'さんからこの場所へテレポートのリクエストが来ました。3分以内に "/acc ' . $p->getName() . '"で承認します');
