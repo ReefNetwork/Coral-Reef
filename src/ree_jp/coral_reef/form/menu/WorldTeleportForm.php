@@ -21,9 +21,11 @@ use pocketmine\math\Vector3;
 use pocketmine\player\Player;
 use pocketmine\Server;
 use ree_jp\coral_reef\account\AccountService;
+use ree_jp\coral_reef\account\AccountStore;
 use ree_jp\coral_reef\account\SettingManager;
 use ree_jp\coral_reef\CoralReefPlugin;
 use ree_jp\coral_reef\sql\SettingConst;
+use ree_jp\coral_reef\StoreHouse;
 
 class WorldTeleportForm
 {
@@ -109,9 +111,17 @@ class WorldTeleportForm
                     $p->sendMessage($target->getName() . "さんはプレイヤーからのテレポートの受け入れを無効にしているため、申請出来ませんでした");
                     return;
                 }
+                /** @var AccountStore $store */
+                $store = StoreHouse::$instance->get(AccountStore::class);
 
-                self::sendPlayerTeleportAllowForm($p, $target);
-                $p->sendMessage("テレポートをリクエストしました");
+                if ($store->hasValue($target->getXuid(), ($p->getXuid() . "to" . $target->getXuid())))
+                    $p->sendMessage("すでにリクエストを送信しています");
+                else {
+                    $target->sendMessage("§a" . $p->getName() . 'さんからこの場所へテレポートのリクエストが来ました。3分以内に "/acc ' . $p->getName() . '"で承認します');
+                    $store->setValue($target->getXuid(), ($p->getXuid() . "to" . $target->getXuid()), 20 * 60 * 3);
+                    self::sendPlayerTeleportAllowForm($p, $target);
+                    $p->sendMessage("テレポートをリクエストしました");
+                }
             }));
         }
         $p->sendForm($form);
@@ -133,7 +143,8 @@ class WorldTeleportForm
             }
             $target->sendMessage("テレポートリクエストを§4拒否§rしました");
         })))->setTitle("Teleport Request")->setText($p->getName() . "さんからこの場所へテレポートのリクエストが来ました\n" .
-            "※嫌がらせ行為をされている際は、設定からテレポートを常に拒否することができます");
+            "※嫌がらせ行為をされている際は、設定からテレポートを常に拒否することができます\n" .
+            "/acc <name> で承諾  /rej <name> で拒否 することもできます");
         $target->sendForm($form);
     }
 }
