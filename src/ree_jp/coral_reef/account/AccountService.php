@@ -30,7 +30,9 @@ use ree_jp\coral_reef\skill\TreeBreakService;
 use ree_jp\coral_reef\sql\mysql\SQLRepository;
 use ree_jp\coral_reef\sql\RepositoryPool;
 use ree_jp\coral_reef\sql\SettingConst;
+use ree_jp\coral_reef\StoreHouse;
 use ree_jp\coral_reef\task\ServerUpdateTask;
+use skymin\bossbar\BossBarAPI;
 use SOFe\AwaitGenerator\Await;
 
 class AccountService
@@ -54,6 +56,8 @@ class AccountService
         SettingManager::updateOption($repo, $p, SettingConst::DENNY_PLAYER_TELEPORT);
 
         self::updateFly($p, $p->getWorld()->getFolderName());
+
+        BossBarAPI::getInstance()->sendBossBar($p, "読み込み中...", $p->getId());
     }
 
     static function userQuit(RepositoryPool $pool, AccountStore $store, Player $p): void
@@ -68,7 +72,7 @@ class AccountService
                 Await::g2c($account->save($pool, $p));
             }
         }
-        /** @var SQLRepository */
+        /** @var $sqlRepo SQLRepository */
         $sqlRepo = $pool->get(SQLRepository::class);
         MoneyCache::purge($sqlRepo, $xuid);
 
@@ -172,8 +176,26 @@ class AccountService
         }
     }
 
+    static function updateBossBar(Player $p): void
+    {
+        /** @var $accountStore AccountStore */
+        $accountStore = StoreHouse::$instance->get(AccountStore::class);
+        $user = $accountStore->getUser($p->getXuid());
+        if (is_null($user)) return;
+
+        if (isset(Experiment::LEVEL_EXPERIMENT[$user->level])) {
+            $oldLevelExp = Experiment::LEVEL_EXPERIMENT[$user->level];
+            $percent = round(($user->experience + $user->necessaryExperience - $oldLevelExp) / ($user->experience - $oldLevelExp), 5);
+            BossBarAPI::getInstance()->setTitle($p, "レベルアップまで $user->necessaryExperience 経験値", $p->getId());
+            BossBarAPI::getInstance()->setPercent($p, $percent, $p->getId());
+        } else {
+            BossBarAPI::getInstance()->setTitle($p, "レベル上限", $p->getId());
+            BossBarAPI::getInstance()->setPercent($p, 1, $p->getId());
+        }
+    }
+
     static function autoSaveWarpName(): string
     {
-        return "[auto-save]" . CoralReefPlugin::$serverID . "";
+        return "[auto-save]" . CoralReefPlugin::$serverID;
     }
 }

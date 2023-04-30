@@ -21,6 +21,7 @@
     "sof3/libasynql": "4.0.*",
     "sof3/await-generator": "3.4.*",
     "ree_jp_minecraft/invmenu": "4.4.*",
+    "sky-min/bossbarapi": "1.6.0",
     "ree_jp/stackstorage": "dev-master",
     "tedo0627/redstone_circuit": "dev-feature/commandblock_taget_selecter",
     "ree_jp/reef_stone": "dev-master"
@@ -61,6 +62,10 @@
     {
       "type": "git",
       "url": "https://github.com/ReefNetwork/ReefStone.git"
+    },
+    {
+      "type": "git",
+      "url": "https://github.com/Ree-jp-minecraft/bossbarapi"
     }
   ]
 }
