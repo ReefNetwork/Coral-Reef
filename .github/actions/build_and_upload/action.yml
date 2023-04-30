@@ -29,6 +29,11 @@ runs:
     - run: php -d phar.readonly=0 await-generator.phar ./build/CoralReef.phar "ree_jp\\coral_reef\\libs\\"
       shell: bash
 
+    - run: wget https://cloud.ree-jp.net/s/AF8X3Gb3b8YBMpn/download -O bossbarapi.phar
+      shell: bash
+    - run: php -d phar.readonly=0 bossbarapi.phar ./build/CoralReef.phar "ree_jp\\coral_reef\\libs\\"
+      shell: bash
+
     - name: upload
       uses: actions/upload-artifact@v2
       with:
