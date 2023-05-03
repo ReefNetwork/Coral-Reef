@@ -22,6 +22,7 @@ use pocketmine\Server;
 use pocketmine\world\generator\Flat;
 use pocketmine\world\generator\normal\Normal;
 use pocketmine\world\WorldCreationOptions;
+use ree_jp\coral_reef\account\AccountService;
 use ree_jp\coral_reef\account\AccountStore;
 use ree_jp\coral_reef\account\ScoreBoardService;
 use ree_jp\coral_reef\command\AcceptCommand;
@@ -60,6 +61,7 @@ use ree_jp\coral_reef\task\EffectTask;
 use ree_jp\coral_reef\task\SendServerTipTask;
 use ree_jp\coral_reef\task\ServerUpdateTask;
 use ree_jp\reef_edge\ReefEdgePlugin;
+use skymin\bossbar\BossBarHandler;
 use SOFe\AwaitGenerator\Await;
 
 class CoralReefPlugin extends PluginBase
@@ -122,6 +124,7 @@ class CoralReefPlugin extends PluginBase
         Await::g2c($accountStore->updateUserNameList($this->pool));
         ReefItems::registerAll();
         CustomItemService::registerAll();
+        BossBarHandler::autoDeleteData($this);
         $this->pluginInformation();
     }
 
@@ -182,7 +185,10 @@ class CoralReefPlugin extends PluginBase
         $this->getScheduler()->scheduleRepeatingTask(new EffectTask(), 200);
         $this->getScheduler()->scheduleRepeatingTask(new ServerUpdateTask($this->sqlRepo), 200);
         $this->getScheduler()->scheduleRepeatingTask(new ClosureTask(function (): void {
-            foreach (Server::getInstance()->getOnlinePlayers() as $p) ScoreBoardService::sendScoreBoard($this->store, $p);
+            foreach (Server::getInstance()->getOnlinePlayers() as $p) {
+                ScoreBoardService::sendScoreBoard($this->store, $p);
+                AccountService::updateBossBar($p);
+            }
         }), 15);
         $this->getScheduler()->scheduleRepeatingTask(new ClosureTask(function (): void {
             MoneyCache::purgeAll($this->sqlRepo);

@@ -52,10 +52,6 @@ class ScoreBoardService
         $skillName = is_null($user->skill) ? "なし" : $user->skill->name;
         self::setScore($pk, 1, "スキル : " . $skillName);
 
-        $nextExp = $user->necessaryExperience;
-        if ($user->level === array_key_last(Experiment::LEVEL_EXPERIMENT)) $nextExp = "レベル上限";
-        self::setScore($pk, 2, "次のレベルまで : " . $nextExp . "経験値");
-
         if (ServerUpdateTask::$exp_buff > 1) {
             self::setScore($pk, 3, "§e経験値ボーナス! : " . ServerUpdateTask::$exp_buff . "倍");
         }
