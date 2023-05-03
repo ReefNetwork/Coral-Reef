@@ -376,6 +376,13 @@ class EventListener implements Listener
         if ($isWorldChange) {
             AccountService::updateFly($p, $ev->getTo()->world->getFolderName());
             unset($this->landStore->pos[$p->getXuid()]);
+
+            if (SettingManager::isEnableOption($p->getXuid(), SettingConst::SHOP_2CHUNK)) {
+                if ($toLevelName == "shop") {
+                    $p->sendMessage("ショップ負荷軽減(テスト機能)が§a有効§rになっています");
+                    $p->setViewDistance(2);
+                } else $p->setViewDistance(Server::getInstance()->getViewDistance());
+            }
         }
     }
 

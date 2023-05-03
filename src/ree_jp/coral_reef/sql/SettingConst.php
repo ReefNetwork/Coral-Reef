@@ -21,5 +21,6 @@ class SettingConst
     const ALLOW_COOL_TIME_DIG = 'allowCoolTimeDig';
     const OFF_COOL_TIME_SOUND = "off_cool_time_sound_off";
     const DENNY_PLAYER_TELEPORT = "deny_player_teleport";
+    const SHOP_2CHUNK = "shop_2chunk";
     const NICK_NAME = 'nickName';
 }

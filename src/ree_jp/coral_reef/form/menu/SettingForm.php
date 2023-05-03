@@ -35,6 +35,18 @@ class SettingForm
             ->setText("変更したい設定を選択してください")
             ->addElements(
                 new ClosureButton(
+                    "ショップ負荷軽減(テスト機能)", null,
+                    function (Player $p) use ($repo) {
+                        self::sendBoolForm($repo, $p, 'ショップの負荷軽減のためにショップの表示範囲を制限しますか?\nショップワールドに入るとエラー落ちする場合、改善する可能性があります',
+                            'しない / 制限する', SettingConst::SHOP_2CHUNK,
+                            function () use ($repo, $p) {
+                                $p->sendMessage('設定を保存しました');
+                                SettingManager::updateOption($repo, $p, SettingConst::SHOP_2CHUNK);
+                            }
+                        );
+                    }
+                ),
+                new ClosureButton(
                     "座標の表示", null,
                     function (Player $p) use ($repo) {
                         self::sendBoolForm($repo, $p, "座標を表示しますか?", "表示 / 隠す",
