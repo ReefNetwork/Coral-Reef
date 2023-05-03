@@ -14,6 +14,7 @@ jobs:
     if: "contains(github.event.head_commit.message, '[feature]') || contains(github.event.head_commit.message, '[fix]')"
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      REF: ${{github.ref_name}}
     steps:
       - uses: actions/checkout@v2
 
@@ -23,7 +24,7 @@ jobs:
         with:
           destination_branch: "master"
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          pr_title: ":sparkles: ${GITHUB_REF##*/}"
+          pr_title: ":sparkles: ${REF##*/}"
 
       - name: Merge pull request
         run: |
