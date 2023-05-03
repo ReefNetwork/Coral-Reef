@@ -15,9 +15,12 @@ namespace ree_jp\coral_reef\account;
 use Exception;
 use pocketmine\block\Block;
 use pocketmine\math\Vector3;
+use pocketmine\network\mcpe\protocol\types\DeviceOS;
 use pocketmine\player\Player;
+use pocketmine\scheduler\ClosureTask;
 use pocketmine\Server;
 use pocketmine\world\Position;
+use poggit\libasynql\SqlError;
 use ree_jp\coral_reef\CoralReefPlugin;
 use ree_jp\coral_reef\land\LandStore;
 use ree_jp\coral_reef\money\MoneyCache;
@@ -30,6 +33,7 @@ use ree_jp\coral_reef\skill\TreeBreakService;
 use ree_jp\coral_reef\sql\mysql\SQLRepository;
 use ree_jp\coral_reef\sql\RepositoryPool;
 use ree_jp\coral_reef\sql\SettingConst;
+use ree_jp\coral_reef\sql\SQLConst;
 use ree_jp\coral_reef\StoreHouse;
 use ree_jp\coral_reef\task\ServerUpdateTask;
 use skymin\bossbar\BossBarAPI;
@@ -59,6 +63,22 @@ class AccountService
         self::updateFly($p, $p->getWorld()->getFolderName());
 
         BossBarAPI::getInstance()->sendBossBar($p, "読み込み中...", $p->getId());
+
+        CoralReefPlugin::$plugin->getScheduler()->scheduleDelayedTask(new ClosureTask(function () use ($repo, $p): void {
+            if (!$p->isOnline()) return;
+            if (!SettingManager::isEnableOption($p->getXuid(), SettingConst::SHOP_2CHUNK)) {
+                if (isset($p->getPlayerInfo()->getExtraData()["DeviceOS"]) && $p->getPlayerInfo()->getExtraData()["DeviceOS"] == DeviceOS::NINTENDO) {
+                    $p->sendMessage("端末をNintendo Switchと認識しました\n負荷軽減を自動的に有効します");
+                    $repo->setValue($p->getXuid(), SQLConst::TYPE_SETTINGS, SettingConst::SHOP_2CHUNK, "true", function () use ($p, $repo): void {
+                        SettingManager::updateOption($repo, $p, SettingConst::SHOP_2CHUNK);
+                    },
+                        function (SqlError $error) use ($p) {
+                            $p->sendMessage('エラーが発生しました');
+                            Server::getInstance()->getLogger()->critical("[SettingSave Switch Auto shop_2chunk]" . $error->getMessage());
+                        });
+                }
+            }
+        }), 20);
     }
 
     static function userQuit(RepositoryPool $pool, AccountStore $store, Player $p): void

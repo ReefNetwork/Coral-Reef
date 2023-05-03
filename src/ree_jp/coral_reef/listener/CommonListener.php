@@ -112,7 +112,9 @@ class CommonListener implements Listener
         $warps = yield from $repo->getWarps($p->getXuid(), CoralReefPlugin::$serverID);
         foreach ($warps as $warp) {
             if ($warp->warpName != AccountService::autoSaveWarpName()) continue;
-            if ($warp->pos->getWorld()->getFolderName() != "shop") {
+            if ($warp->pos->getWorld()->getFolderName() == "shop") {
+                Server::getInstance()->dispatchCommand($p, "exe-p wp-view post when-the-shopper-world-is-heavier");
+            } else {
                 AccountService::teleport($p, $warp->pos->getWorld()->getFolderName(), $warp->pos);
             }
         }

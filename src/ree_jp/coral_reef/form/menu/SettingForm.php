@@ -37,7 +37,8 @@ class SettingForm
                 new ClosureButton(
                     "ショップ負荷軽減(テスト機能)", null,
                     function (Player $p) use ($repo) {
-                        self::sendBoolForm($repo, $p, 'ショップの負荷軽減のためにショップの表示範囲を制限しますか?\nショップワールドに入るとエラー落ちする場合、改善する可能性があります',
+                        self::sendBoolForm($repo, $p, "ショップの負荷軽減のためにショップの表示範囲を制限しますか?\nショップワールドに入るとエラー落ちする場合、改善する可能性があります" .
+                            "\n\n※スイッチでログインしている場合は自動的にこの機能が有効になります無効にしても再ログイン時に自動で有効になります",
                             'しない / 制限する', SettingConst::SHOP_2CHUNK,
                             function () use ($repo, $p) {
                                 $p->sendMessage('設定を保存しました');

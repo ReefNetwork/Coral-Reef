@@ -381,7 +381,12 @@ class EventListener implements Listener
                 if ($toLevelName == "shop") {
                     $p->sendMessage("ショップ負荷軽減(テスト機能)が§a有効§rになっています");
                     $p->setViewDistance(2);
-                } else $p->setViewDistance(Server::getInstance()->getViewDistance());
+                } else if ($p->getViewDistance() == 2) {
+                    CoralReefPlugin::$plugin->getScheduler()->scheduleDelayedTask(new ClosureTask(function () use ($p): void {
+                        if (!$p->isOnline()) return;
+                        $p->setViewDistance(Server::getInstance()->getViewDistance());
+                    }), 10);
+                }
             }
         }
     }
