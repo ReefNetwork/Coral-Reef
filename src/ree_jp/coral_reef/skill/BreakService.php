@@ -82,10 +82,11 @@ class BreakService
                     if ($bl->getBreakInfo()->getHardness() < 0 || $origin->equals($bl->getPosition())) continue;
                     $session->breakBlock();
 //                    QuestListener::callSubscribedQuest($xuid, QuestListener::BREAK_WITH_SKILL, 1);
-                    $user->addXp($p, ServerUpdateTask::$exp_buff);
-                    MoneyService::addMoney($repo, $p->getXuid(), 1);
 
-                    self::silentBreak($p->getWorld(), $bl, $hand, $p);
+                    if (self::silentBreak($p->getWorld(), $bl, $hand, $p)) {
+                        $user->addXp($p, ServerUpdateTask::$exp_buff);
+                        MoneyService::addMoney($repo, $p->getXuid(), 1);
+                    }
                 }
             }
         }
@@ -157,14 +158,19 @@ class BreakService
     }
 
     /** @noinspection DuplicatedCode */
-    static function silentBreak(World $world, Block $bl, Item $item = null, Player $p = null): void
+    static function silentBreak(World $world, Block $bl, Item $item = null, Player $p = null): bool
     {
+        if ($bl->getId() === VanillaBlocks::SHULKER_BOX()->getId() || $bl->getId() === VanillaBlocks::DYED_SHULKER_BOX()->getId()) {
+            $p?->sendMessage("シェルカーボックスは一括破壊することは出来ません");
+            return false;
+        }
+
         $vector = $bl->getPosition()->floor();
 
         $chunkX = $vector->getFloorX() >> Chunk::COORD_BIT_SIZE;
         $chunkZ = $vector->getFloorZ() >> Chunk::COORD_BIT_SIZE;
         if (!$world->isChunkLoaded($chunkX, $chunkZ) || $world->isChunkLocked($chunkX, $chunkZ)) {
-            return;
+            return false;
         }
 
         $affectedBlocks = $bl->getAffectedBlocks();
@@ -185,11 +191,11 @@ class BreakService
 
         if ($p !== null) {
             if ($bl instanceof Air || ($p->isSurvival() && !$bl->getBreakInfo()->isBreakable()) || $p->isSpectator()) {
-                return;
+                return false;
             }
 
         } elseif (!$bl->getBreakInfo()->isBreakable()) {
-            return;
+            return false;
         }
 
         foreach ($affectedBlocks as $t) {
@@ -208,5 +214,6 @@ class BreakService
         if ($xp > 0) {
             $p->getXpManager()->addXp($xp);
         }
+        return true;
     }
 }

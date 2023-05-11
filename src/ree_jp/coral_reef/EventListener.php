@@ -17,6 +17,7 @@ use Exception;
 use pocketmine\block\BlockLegacyIds;
 use pocketmine\block\Flowable;
 use pocketmine\block\Liquid;
+use pocketmine\block\VanillaBlocks;
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\block\BlockBurnEvent;
 use pocketmine\event\block\BlockPlaceEvent;
@@ -158,10 +159,14 @@ class EventListener implements Listener
             Server::getInstance()->getLogger()->error('[blockBroke]' . $p->getName() . 'の処理中に' . $e->getMessage());
         }
         try {
+            $drops = [];
             foreach ($ev->getDrops() as $dropItem) {
-                StackStorageAPI::$instance->add($p->getXuid(), $dropItem);
+                if ($dropItem->getId() === VanillaBlocks::SHULKER_BOX()->getId() || $dropItem->getId() === VanillaBlocks::DYED_SHULKER_BOX()->getId()) {
+                    $p->sendMessage("シェルカーボックスを一括破壊することは出来ません");
+                    $drops[] = $dropItem;
+                } else StackStorageAPI::$instance->add($p->getXuid(), $dropItem);
             }
-            $ev->setDrops([]);
+            $ev->setDrops($drops);
         } catch (Throwable) { // StackStorageAPIが見つからなかった場合
             $p->sendMessage(TextFormat::RED . 'ストレージにアクセスできませんでした');
         }
