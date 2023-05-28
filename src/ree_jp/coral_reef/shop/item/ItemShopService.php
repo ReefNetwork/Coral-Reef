@@ -62,6 +62,11 @@ class ItemShopService
 
     static function sell(SQLRepository $repo, ShopStore $store, ItemShop $shop, Player $p, int $count, bool $isDirectSell, ?array $storage = null): void
     {
+        if ($isDirectSell) {
+            $p->sendMessage("現在「ストレージ内のアイテムも売る」機能は§c使えません");
+            return;
+        }
+
         if ($isDirectSell && $storage == null) {
             StackStorageAPI::$instance->getAllItems($p->getXuid(), function (array $storageItems) use ($count, $p, $shop, $repo, $store): void {
                 self::sell($repo, $store, $shop, $p, $count, true, $storageItems);
