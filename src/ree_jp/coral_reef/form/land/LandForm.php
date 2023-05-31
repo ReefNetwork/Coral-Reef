@@ -181,7 +181,7 @@ class LandForm
                             /** @var AccountStore $accountStore */
                             $accountStore = $store->get(AccountStore::class);
 
-                            $name = $accountStore->getUserName($land->xuid);
+                            $name = $accountStore->getUserName($result->xuid);
                             $p->sendMessage("指定した土地の一部が$name さんの$result->name とかぶっていたため土地を作成することが出来ませんでした");
                         }
                     }
