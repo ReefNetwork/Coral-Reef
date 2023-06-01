@@ -113,8 +113,8 @@ class GatyaForm
                 }
             )
         );
-        $form->setTitle("Gatya -> Confirm")->setText(GatyaService::GATYA[$gatyaType]["name"] .
-            "を$num 個消費してガチャを回しますか？\n$tickets -> $after");
+        $form->setTitle("Gatya -> Confirm")->setText("同時にガチャを引く行為は§c禁止§rです\n連続でガチャを引きたい場合は必ず全部引き終えてからガチャを引くようにお願いします\n"
+            . GatyaService::GATYA[$gatyaType]["name"] . "を$num 個消費してガチャを回しますか？\n$tickets -> $after");
         $p->sendForm($form);
     }
 }

@@ -47,30 +47,32 @@ class GatyaManager
 
     // チケットの枚数が足りるか確認してチケットを減らしてログに記録してアイテムを送る
     static function gatyaProcess(SQLRepository $repo, string $gatyaLog, Player $p, string $subtype, int $need, Item $item, string $rare, string $stringRare, bool $isBroadcast,
-                                 ?Closure      $func): void
+                                 ?Closure      $func, string $broadMessage = null): void
     {
         if (array_key_exists($p->getXuid(), self::$isProcessing)) {
             $p->sendMessage("ガチャを同時に実行することはできません");
             return;
         }
+        if ($broadMessage == null) {
+            $broadMessage = $p->getDisplayName() . "さんが" . TextFormat::GREEN . "REEFレア" . TextFormat::RESET . "を引きました";
+        }
         self::$isProcessing[$p->getXuid()] = true;
         // ガチャチケットが足りるか確認
         $repo->getValue($p->getXuid(), SQLConst::TYPE_TICKETS, $subtype,
-            function (array $rows) use ($repo, $gatyaLog, $stringRare, $func, $isBroadcast, $item, $rare, $subtype, $p, $need) {
+            function (array $rows) use ($broadMessage, $repo, $gatyaLog, $stringRare, $func, $isBroadcast, $item, $rare, $subtype, $p, $need) {
                 foreach ($rows as $row) {
                     if (isset($row['value']) && intval($row['value']) >= $need) {
                         // ログに追加
                         $repo->addLog($p->getXuid(), $gatyaLog, $rare,
                             $item->getNamedTag()->getString(ReefItems::REEF_SP_ITEM, 'unknown'), SQLConst::NOW_TIME,
-                            function () use ($repo, $stringRare, $func, $rare, $isBroadcast, $item, $need, $row, $subtype, $p) {
+                            function () use ($broadMessage, $repo, $stringRare, $func, $rare, $isBroadcast, $item, $need, $row, $subtype, $p) {
                                 // ガチャチケットを減らす
                                 $repo->setValue($p->getXuid(), SQLConst::TYPE_TICKETS, $subtype, $row['value'] - $need,
-                                    function () use ($repo, $stringRare, $func, $isBroadcast, $item, $p) {
+                                    function () use ($broadMessage, $repo, $stringRare, $func, $isBroadcast, $item, $p) {
                                         if ($p->isOnline()) {
                                             $p->sendMessage('ガチャを引きました(レア度: ' . TextFormat::GREEN . $stringRare . TextFormat::RESET . ')');
                                             if ($isBroadcast) {
                                                 // 一定のレア度以上は$isBroadcastをtrueにしてガチャを引いたことを全体に表示させる
-                                                $broadMessage = $p->getDisplayName() . 'さんが' . TextFormat::GREEN . 'REEFレア' . TextFormat::RESET . 'を引きました';
                                                 SocketService::sendBroadcastMessage(ReefEdgePlugin::$socketClient, $broadMessage);
                                             }
                                         }

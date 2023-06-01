@@ -84,8 +84,10 @@ class NormalGatya
                             4 => ReefItems::getItem($xuid, ReefItems::BOOTS),
                         };
                     }
+                    $broadMessage = $isLimit ? $p->getDisplayName() . "さんが" . TextFormat::GREEN . "REEFレア" . TextFormat::RESET . "を引きました(天井)"
+                        : $p->getDisplayName() . "さんが" . TextFormat::GREEN . "REEFレア" . TextFormat::RESET . "を引きました";
                     GatyaManager::gatyaProcess($repo, SQLConst::LOG_GATYA, $p, SQLConst::TICKETS_NORMAL, 1, $item, 'reef_rare',
-                        TextFormat::GREEN . 'REEFレア' . TextFormat::DARK_GRAY . '[0.5%]' . TextFormat::RESET, true, $func);
+                        TextFormat::GREEN . 'REEFレア' . TextFormat::DARK_GRAY . '[0.5%]' . TextFormat::RESET, true, $func, $broadMessage);
                     break;
 
                 case $firstRand <= (5 + 25):// 2.5%
