@@ -75,7 +75,7 @@ class SteamPunk
 
                     $broadMessage = $isLimit ? $p->getDisplayName() . "さんが" . TextFormat::GRAY . "Steam" . TextFormat::WHITE . "Punk" . TextFormat::GREEN . "REEFレア" . TextFormat::RESET . "を引きました(天井)"
                         : $p->getDisplayName() . "さんが" . TextFormat::GREEN . "REEFレア" . TextFormat::RESET . "を引きました";
-                    GatyaManager::gatyaProcess($repo, SQLConst::LOG_GATYA, $p, SQLConst::TICKETS_NORMAL, 1, $item, 'reef_rare',
+                    GatyaManager::gatyaProcess($repo, SQLConst::LOG_GATYA_STEAM_PUNK, $p, SQLConst::TICKETS_NORMAL, 1, $item, 'reef_rare',
                         TextFormat::GRAY . "Steam" . TextFormat::WHITE . "Punk" . TextFormat::GREEN . 'REEFレア' . TextFormat::DARK_GRAY . '[0.5%]' . TextFormat::RESET,
                         true, $func, $broadMessage);
                     break;
@@ -95,7 +95,7 @@ class SteamPunk
                             $p->sendMessage('エラーが発生しました');
                             return;
                     }
-                    GatyaManager::gatyaProcess($repo, SQLConst::LOG_GATYA, $p, SQLConst::TICKETS_NORMAL, 1, $item, 'ultimate_rare',
+                    GatyaManager::gatyaProcess($repo, SQLConst::LOG_GATYA_STEAM_PUNK, $p, SQLConst::TICKETS_NORMAL, 1, $item, 'ultimate_rare',
                         TextFormat::GOLD . 'ウルトラレア' . TextFormat::DARK_GRAY . '[2.5%]' . TextFormat::RESET, false, $func);
                     break;
 
@@ -111,7 +111,7 @@ class SteamPunk
                             $p->sendMessage('エラーが発生しました');
                             return;
                     }
-                    GatyaManager::gatyaProcess($repo, SQLConst::LOG_GATYA, $p, SQLConst::TICKETS_NORMAL, 1, $item, 'super_rare',
+                    GatyaManager::gatyaProcess($repo, SQLConst::LOG_GATYA_STEAM_PUNK, $p, SQLConst::TICKETS_NORMAL, 1, $item, 'super_rare',
                         TextFormat::BLUE . 'スーパーレア' . TextFormat::DARK_GRAY . '[10%]' . TextFormat::RESET, false, $func);
                     break;
 
@@ -127,13 +127,13 @@ class SteamPunk
                             $p->sendMessage('エラーが発生しました');
                             return;
                     }
-                    GatyaManager::gatyaProcess($repo, SQLConst::LOG_GATYA, $p, SQLConst::TICKETS_NORMAL, 1, $item, 'rare',
+                    GatyaManager::gatyaProcess($repo, SQLConst::LOG_GATYA_STEAM_PUNK, $p, SQLConst::TICKETS_NORMAL, 1, $item, 'rare',
                         TextFormat::AQUA . 'レア' . TextFormat::DARK_GRAY . '[30%]' . TextFormat::RESET, false, $func);
                     break;
 
                 default:// 残り
                     $item = NormalItems::getItemInt($xuid, mt_rand(1, 7));
-                    GatyaManager::gatyaProcess($repo, SQLConst::LOG_GATYA, $p, SQLConst::TICKETS_NORMAL, 1, $item, 'normal',
+                    GatyaManager::gatyaProcess($repo, SQLConst::LOG_GATYA_STEAM_PUNK, $p, SQLConst::TICKETS_NORMAL, 1, $item, 'normal',
                         TextFormat::DARK_GRAY . 'ノーマル' . TextFormat::RESET, false, $func);
                     break;
             }
