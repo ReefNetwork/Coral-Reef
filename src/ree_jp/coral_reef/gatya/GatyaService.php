@@ -55,6 +55,11 @@ class GatyaService
         SQLConst::LOG_GATYA_APRIL_2023 => ["name" => TextFormat::GREEN . "Reef" . TextFormat::GOLD . "Sword" . TextFormat::RESET . "ガチャ",
             "image" => "textures/ui/gatya/reef_sword_gatya", "pick_up_image" => ["textures/items/reef_sword"],
             "details" => "reef-sword-gacha", "ticket" => SQLConst::TICKETS_NORMAL
+        ],
+        SQLConst::LOG_GATYA_STEAM_PUNK => ["name" => TextFormat::GRAY . "Steam" . TextFormat::WHITE . "Punk" . TextFormat::RESET . "ガチャ",
+            "image" => "textures/ui/gatya/steam_punk_gatya", "pick_up_image" => ["textures/items/steam_punk/pickaxe", "textures/items/steam_punk/axe",
+                "textures/items/steam_punk/shovel", "textures/items/steam_punk/hoe"],
+            "details" => "steampunk-gacha", "ticket" => SQLConst::TICKETS_NORMAL
         ]
     ];
     const TICKETS = [SQLConst::TICKETS_NORMAL => "ノーマルガチャチケット", SQLConst::TICKETS_CHRISTMAS_2021 => "クリスマスガチャチケット2021",

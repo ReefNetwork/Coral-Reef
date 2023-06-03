@@ -8,6 +8,7 @@ use ree_jp\coral_reef\gatya\items\event\Christmas2021ReefItems;
 use ree_jp\coral_reef\gatya\items\event\HalloweenNightItems;
 use ree_jp\coral_reef\gatya\items\event\HalloweenPartyItems;
 use ree_jp\coral_reef\gatya\items\event\SnowCandyItem;
+use ree_jp\coral_reef\gatya\items\event\SteamPunkItems;
 use ree_jp\coral_reef\gatya\items\event\Summer2022ReefItems;
 
 class SpecialItemService
@@ -43,8 +44,11 @@ class SpecialItemService
             HalloweenPartyItems::PICKAXE, HalloweenPartyItems::SHOVEL, HalloweenPartyItems::AXE, HalloweenPartyItems::HOE
             => self::setOwner(HalloweenPartyItems::getItem($xuid, $item, $durable), $store)->setCount($count),
 
-            SnowCandyItem::PICKAXE, SnowCandyItem::SHOVEL, SnowCandyItem::AXE, SNOWCandyItem::HOE,
+            SnowCandyItem::PICKAXE, SnowCandyItem::SHOVEL, SnowCandyItem::AXE, SnowCandyItem::HOE,
             => self::setOwner(SnowCandyItem::getItem($xuid, $item, $durable), $store)->setCount($count),
+
+            SteamPunkItems::PICKAXE, SteamPunkItems::SHOVEL, SteamPunkItems::AXE, SteamPunkItems::HOE,
+            => self::setOwner(SteamPunkItems::getItem($xuid, $item, $durable), $store)->setCount($count),
 
             default => null,
         };

@@ -29,7 +29,7 @@ class GatyaHistoryForm
             TextFormat::GOLD . "Halloween" . TextFormat::DARK_PURPLE . "Night" . TextFormat::RESET . "ガチャ", SQLConst::LOG_GATYA_HALLOWEEN_PARTY =>
             TextFormat::GOLD . "Halloween" . TextFormat::DARK_GREEN . "Party" . TextFormat::RESET . "ガチャ",
         SQLConst::LOG_GATYA_SNOW_CANDY => TextFormat::WHITE . "Snow" . TextFormat::RED . "Candy" . TextFormat::RESET . "ガチャ",
-        SQLConst::LOG_GATYA_APRIL_2023 => TextFormat::GREEN . "Reef" . TextFormat::GOLD . "Sword" . TextFormat::RESET . "ガチャ"];
+        SQLConst::LOG_GATYA_STEAM_PUNK => TextFormat::GRAY . "Steam" . TextFormat::WHITE . "Punk" . TextFormat::RESET . "ガチャ",];
 
     static function sendForm(Player $p, SQLRepository $repo): void
     {

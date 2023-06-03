@@ -38,4 +38,9 @@ interface CustomItemIDs
     const SNOW_CANDY_SHOVEL = 6032;
     const SNOW_CANDY_AXE = 6033;
     const SNOW_CANDY_HOE = 6034;
+
+    const STEAM_PUNK_PICKAXE = 6041;
+    const STEAM_PUNK_SHOVEL = 6042;
+    const STEAM_PUNK_AXE = 6043;
+    const STEAM_PUNK_HOE = 6044;
 }
