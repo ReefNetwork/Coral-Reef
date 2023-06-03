@@ -50,7 +50,9 @@ class GatyaManager
                                  ?Closure      $func, string $broadMessage = null): void
     {
         if (array_key_exists($p->getXuid(), self::$isProcessing)) {
-            $p->sendMessage("ガチャを同時に実行することはできません");
+            if ($p->isOnline()) {
+                $p->sendMessage("ガチャを同時に実行することはできません");
+            }
             return;
         }
         if ($broadMessage == null) {
@@ -96,7 +98,7 @@ class GatyaManager
 
                                         unset(self::$isProcessing[$p->getXuid()]);
                                         QuestListener::callSubscribedQuest($p->getXuid(), QuestListener::GATYA, $item);
-                                        if (!is_null($func)) $func();
+                                        if (!is_null($func) && $p->isOnline()) $func();
                                     }, function (SqlError $error) use ($p) {
                                         $p->sendMessage('エラーが発生しました');
                                         unset(self::$isProcessing[$p->getXuid()]);
