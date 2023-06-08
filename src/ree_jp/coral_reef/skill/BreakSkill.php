@@ -101,7 +101,7 @@ class BreakSkill
     private function exactFloorY(Player $p): int
     {
         $stupidY = $p->getPosition()->getY();
-        return round($stupidY + 0.5, 1);
+        return intval(round($stupidY + 0.5, 1));
     }
 
     /**
