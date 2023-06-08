@@ -20,7 +20,11 @@ abstract class DailyQuest extends QuestData
     function __construct(SQLRepository $repo, string $xuid, ?string $value, ?int $limit = null)
     {
         if (is_null($limit)) $limit = $this->getDeadTime();
-        $array = json_decode($value, true);
+        if (is_null($value)) {
+            $array = [];
+        } else {
+            $array = json_decode($value, true);
+        }
 
         if (!is_null($array) && $array["limit"] === $limit) {
             $this->limit = $array["limit"];
