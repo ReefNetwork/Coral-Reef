@@ -26,7 +26,7 @@ abstract class DailyQuest extends QuestData
             $array = json_decode($value, true);
         }
 
-        if (!is_null($array) && $array["limit"] === $limit) {
+        if (isset($array["limit"]) && $array["limit"] === $limit) {
             $this->limit = $array["limit"];
             parent::__construct($repo, $xuid, $array["value"]);
         } else {
