@@ -70,10 +70,10 @@ class MoneyForm
 
                 $target = AccountService::getPlayerByXuid($targetXuid);
                 if ($target instanceof Player) $target->sendMessage($p->getName() . "さんから§6${amount}円§r送金されました");
-                ReefEdgePlugin::$socketClient->send(new SocketData("discord-message", ["discord-message" => $p->getName() . "=>" . $target->getName() . ":" . number_format($amount),
+                ReefEdgePlugin::$socketClient->send(new SocketData("discord-message", ["message" => $p->getName() . "=>" . $target->getName() . ":" . number_format($amount),
                     "channelID" => "1118893132025708604"]));
                 if ($amount >= 10000000) {
-                    ReefEdgePlugin::$socketClient->send(new SocketData("discord-message", ["discord-message" => $p->getName() . "=>" . $target->getName() . ":" . number_format($amount),
+                    ReefEdgePlugin::$socketClient->send(new SocketData("discord-message", ["message" => $p->getName() . "=>" . $target->getName() . ":" . number_format($amount),
                         "channelID" => "1081257724202983444"]));
                 }
             });
