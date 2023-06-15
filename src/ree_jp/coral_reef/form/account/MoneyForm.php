@@ -22,6 +22,8 @@ use ree_jp\coral_reef\money\MoneyService;
 use ree_jp\coral_reef\sql\mysql\SQLRepository;
 use ree_jp\coral_reef\sql\RepositoryPool;
 use ree_jp\coral_reef\StoreHouse;
+use ree_jp\reef_edge\ReefEdgePlugin;
+use ree_jp\reef_edge\socket\SocketData;
 
 class MoneyForm
 {
@@ -68,6 +70,12 @@ class MoneyForm
 
                 $target = AccountService::getPlayerByXuid($targetXuid);
                 if ($target instanceof Player) $target->sendMessage($p->getName() . "さんから§6${amount}円§r送金されました");
+                ReefEdgePlugin::$socketClient->send(new SocketData("execute-proxy", ["discord-message" => $p->getName() . "=>" . $target->getName() . ":" . number_format($amount),
+                    "channelID" => "1118893132025708604"]));
+                if ($amount >= 10000000) {
+                    ReefEdgePlugin::$socketClient->send(new SocketData("execute-proxy", ["discord-message" => $p->getName() . "=>" . $target->getName() . ":" . number_format($amount),
+                        "channelID" => "1081257724202983444"]));
+                }
             });
         }), new ClosureButton("戻る", null, function () use ($p, $house, $pool, $targetName): void {
             self::sendForm($p, $house, $pool, $targetName);
