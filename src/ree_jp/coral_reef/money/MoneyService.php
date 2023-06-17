@@ -47,4 +47,20 @@ class MoneyService
             }
         }
     }
+
+    static function moneyFormat(int $money): string
+    {
+        $digits = ["", "万", "億", "兆", "京"];
+        $result = "";
+        $counter = 0;
+        while ($money > 0) {
+            $part = $money % 10000;
+            if ($part) {
+                $result = $part . $digits[$counter] . $result;
+            }
+            $money = floor($money / 10000);
+            $counter++;
+        }
+        return $result;
+    }
 }

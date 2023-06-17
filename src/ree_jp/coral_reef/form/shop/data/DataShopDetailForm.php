@@ -19,6 +19,7 @@ use bbo51dog\bboform\form\ClosureCustomForm;
 use bbo51dog\bboform\form\ModalForm;
 use pocketmine\player\Player;
 use pocketmine\utils\TextFormat;
+use ree_jp\coral_reef\money\MoneyService;
 use ree_jp\coral_reef\shop\data\DataShop;
 use ree_jp\coral_reef\shop\data\DataShopService;
 use ree_jp\coral_reef\shop\ShopService;
@@ -48,7 +49,7 @@ class DataShopDetailForm
         $itemString = "\n\nデータ\n{$shop->showName}「{$shop->data->value}」× 1 (メタ情報:{$shop->data->type}.{$shop->data->subtype})";
         $isSlide = !$p->isSneaking();
 
-        $text = "金額\n" . $shop->payment["type"] . number_format($shop->payment["amount"]) . TextFormat::RESET;
+        $text = "金額\n" . $shop->payment["type"] . MoneyService::moneyFormat($shop->payment["amount"]) . TextFormat::RESET;
         $maxAmount = 64;
 
         if ($shop->haveLimit > 0) {
@@ -97,7 +98,7 @@ class DataShopDetailForm
                 }), new ClosureButton("戻る", null, function (Player $p) use ($count, $store, $repo, $shop): void {
                 self::sendDetailForm($repo, $store, $p, $shop, $count);
             })))->setTitle("ItemShop -> Confirm")->setText("本当にこのデータを" . ShopService::replaceOrderType($shop->orderType) . "しますか?\n" .
-                ShopService::replacePaymentType("金額\n" . $shop->payment["type"] . number_format($shop->payment["amount"] * $amount))));
+                ShopService::replacePaymentType("金額\n" . $shop->payment["type"] . MoneyService::moneyFormat($shop->payment["amount"] * $amount))));
 
         }))->setTitle("ItemShop")->addElement(new Label(ShopService::replacePaymentType($text) . $itemString));
 

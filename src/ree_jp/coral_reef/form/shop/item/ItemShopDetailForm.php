@@ -5,7 +5,7 @@
  * CC      oo  oo rrr  r  aa aaa lll RRRRRR  ee   e ee   e ffff
  * CC    C oo  oo rr     aa  aaa lll RR  RR  eeeee  eeeee  ff
  *  CCCCC   oooo  rr      aaa aa lll RR   RR  eeeee  eeeee ff
- *  
+ *
  * Copyright (c) 2021-2022. Ree-jp(https://ree-jp.net)
  */
 
@@ -20,6 +20,7 @@ use bbo51dog\bboform\form\ClosureCustomForm;
 use bbo51dog\bboform\form\ModalForm;
 use pocketmine\player\Player;
 use pocketmine\utils\TextFormat;
+use ree_jp\coral_reef\money\MoneyService;
 use ree_jp\coral_reef\shop\item\ItemShop;
 use ree_jp\coral_reef\shop\item\ItemShopService;
 use ree_jp\coral_reef\shop\ShopService;
@@ -41,7 +42,7 @@ class ItemShopDetailForm
             $itemString .= $item->getName() . TextFormat::RESET . " × " . $item->getCount() . "\n";
         }
 
-        $text = "金額\n" . $shop->payment["type"] . number_format($shop->payment["amount"]) . TextFormat::RESET;
+        $text = "金額\n" . $shop->payment["type"] . MoneyService::moneyFormat($shop->payment["amount"]) . TextFormat::RESET;
         $maxAmount = 64;
 
         if ($shop->dayLimit > 0) {
@@ -89,7 +90,7 @@ class ItemShopDetailForm
                 }), new ClosureButton("戻る", null, function (Player $p) use ($store, $repo, $shop): void {
                 self::sendForm($repo, $store, $p, $shop);
             })))->setTitle("ItemShop -> Confirm")->setText("本当にこのアイテムを" . ShopService::replaceOrderType($shop->orderType) . "しますか?\n" .
-                ShopService::replacePaymentType("金額\n" . $shop->payment["type"] . number_format($shop->payment["amount"] * $amount))));
+                ShopService::replacePaymentType("金額\n" . $shop->payment["type"] . MoneyService::moneyFormat($shop->payment["amount"] * $amount))));
 
         }))->setTitle("ItemShop")->addElement(new Label(ShopService::replacePaymentType($text) . $itemString));
 

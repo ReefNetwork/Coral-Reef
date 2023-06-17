@@ -50,7 +50,7 @@ class MenuForm
 
             $form = (new SimpleForm())
                 ->setTitle(TextFormat::GREEN . "Reef" . TextFormat::WHITE . " Menu")
-                ->setText("§7現在のレベル §8: §f$level \n§7レベルアップまで §8: §f$necessaryExperience §7経験値\n§7経験値 §8: §f$exp\n§7所持金 §8: §f$money")
+                ->setText("§7現在のレベル §8: §f$level \n§7レベルアップまで §8: §f$necessaryExperience §7経験値\n§7経験値 §8: §f$exp\n§7所持金 §8: §f" . MoneyService::moneyFormat($money))
                 ->addElements(
                     new ClosureButton(
                         "ストレージ \n§7StackStorageを開きます", null,
