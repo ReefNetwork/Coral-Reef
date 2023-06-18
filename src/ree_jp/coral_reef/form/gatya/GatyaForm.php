@@ -18,7 +18,6 @@ use bbo51dog\bboform\form\ClosureCustomForm;
 use bbo51dog\bboform\form\ModalForm;
 use bbo51dog\bboform\form\SimpleForm;
 use pocketmine\player\Player;
-use ree_jp\coral_reef\gatya\event\SteamPunk;
 use ree_jp\coral_reef\gatya\GatyaService;
 use ree_jp\coral_reef\gatya\NormalGatya;
 use ree_jp\coral_reef\sql\mysql\SQLRepository;
@@ -26,7 +25,7 @@ use ree_jp\coral_reef\sql\SQLConst;
 
 class GatyaForm
 {
-    const NOW_GATYA = [SQLConst::LOG_GATYA_STEAM_PUNK, SQLConst::LOG_GATYA];
+    const NOW_GATYA = [SQLConst::LOG_GATYA];
 
     static function sendForm(SQLRepository $repo, Player $p, string $gatyaType = null): void
     {
@@ -100,10 +99,6 @@ class GatyaForm
                         switch ($gatyaType) {
                             case SQLConst::LOG_GATYA:
                                 NormalGatya::gatya($repo, $p, $num);
-                                break;
-
-                            case SQLConst::LOG_GATYA_STEAM_PUNK:
-                                SteamPunk::gatya($repo, $p, $num);
                                 break;
 
                             default:
