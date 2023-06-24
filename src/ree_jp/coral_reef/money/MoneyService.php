@@ -48,8 +48,9 @@ class MoneyService
         }
     }
 
-    static function moneyFormat(int $money): string
+    static function moneyFormat(float $money): string
     {
+        $money = intval($money);
         $digits = ["", "万", "億", "兆", "京"];
         $result = "";
         $counter = 0;
