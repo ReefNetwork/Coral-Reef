@@ -351,7 +351,6 @@ class EventListener implements Listener
         if (LandService::protect($this->landStore, $this->accountStore, $p, $ev->getBlock()->getPosition(), null, true)) {
             $ev->cancel();
         }
-        $p->sendMessage($item->getName());
     }
 
 
