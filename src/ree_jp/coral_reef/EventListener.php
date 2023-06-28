@@ -299,7 +299,7 @@ class EventListener implements Listener
                 break;
 
             case ItemIds::COMPASS:
-                if ($this->accountStore->hasValue($xuid, "form_cool_time")) return;
+                if ($this->accountStore->hasValue($xuid, "form_cool_time")) break;
                 $this->accountStore->setValue($xuid, "form_cool_time", 10);
                 $pos = $ev->getBlock()->getPosition();
                 Server::getInstance()->dispatchCommand($p, "block-log {$pos->getFloorX()} {$pos->getFloorY()} {$pos->getFloorZ()}");
@@ -307,11 +307,11 @@ class EventListener implements Listener
 
             case ItemIds::CLOCK:
                 if ($p->isSneaking()) {
-                    if ($this->accountStore->hasValue($xuid, 'particle_cool_time')) return;
+                    if ($this->accountStore->hasValue($xuid, 'particle_cool_time')) break;
                     $this->accountStore->setValue($xuid, 'particle_cool_time', 20);
                     LandService::checkSpace($this->landStore, $p);
                 } else {
-                    if ($this->accountStore->hasValue($xuid, 'form_cool_time')) return;
+                    if ($this->accountStore->hasValue($xuid, 'form_cool_time')) break;
                     $this->accountStore->setValue($xuid, 'form_cool_time', 10);
                     LandForm::sendLandCreateAssistForm($this->pool, $this->store, $p, $ev->getBlock()->getPosition());
                 }
@@ -334,7 +334,7 @@ class EventListener implements Listener
         switch ($ev->getBlock()->getId()) {
             case BlockLegacyIds::SIGN_POST:
             case BlockLegacyIds::WALL_SIGN:
-                if ($this->accountStore->hasValue($xuid, 'form_cool_time')) return;
+                if ($this->accountStore->hasValue($xuid, 'form_cool_time')) break;
                 $this->accountStore->setValue($xuid, 'form_cool_time', 10);
                 ShopService::showShop($sqlRepo, $p, $this->shopStore, $ev->getBlock()->getPosition());
                 break;
