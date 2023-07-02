@@ -53,6 +53,7 @@ jobs:
 
       - uses: ./.github/actions/build_and_upload
         with:
+          compose_auth: '{"github-oauth": {"github.com": "${{ secrets.GH_ACCESS_TOKEN }}"} }'
           build_info: ${{ github.run_number }}-stable
           upload_name: CoralReef
 
