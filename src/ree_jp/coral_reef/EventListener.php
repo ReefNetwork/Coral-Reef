@@ -14,7 +14,7 @@ namespace ree_jp\coral_reef;
 
 
 use Exception;
-use pocketmine\block\BlockLegacyIds;
+use pocketmine\block\BaseSign;
 use pocketmine\block\Flowable;
 use pocketmine\block\Liquid;
 use pocketmine\block\VanillaBlocks;
@@ -38,7 +38,7 @@ use pocketmine\event\player\PlayerInteractEvent;
 use pocketmine\event\player\PlayerItemConsumeEvent;
 use pocketmine\event\player\PlayerItemUseEvent;
 use pocketmine\inventory\ArmorInventory;
-use pocketmine\item\ItemIds;
+use pocketmine\item\VanillaItems;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\player\Player;
 use pocketmine\scheduler\ClosureTask;
@@ -73,7 +73,7 @@ class EventListener implements Listener
     }
 
 
-    public function onDamage(EntityDamageEvent $ev)
+    public function onDamage(EntityDamageEvent $ev): void
     {
         $p = $ev->getEntity();
         if (!$p instanceof Player) return;
@@ -161,7 +161,7 @@ class EventListener implements Listener
         try {
             $drops = [];
             foreach ($ev->getDrops() as $dropItem) {
-                if ($dropItem->getId() === VanillaBlocks::SHULKER_BOX()->getId() || $dropItem->getId() === VanillaBlocks::DYED_SHULKER_BOX()->getId()) {
+                if ($dropItem->getTypeId() === VanillaBlocks::SHULKER_BOX()->getTypeId() || $dropItem->getTypeId() === VanillaBlocks::DYED_SHULKER_BOX()->getTypeId()) {
                     $p->sendMessage("シェルカーボックスを一括破壊することは出来ません");
                     $drops[] = $dropItem;
                 } else StackStorageAPI::$instance->add($p->getXuid(), $dropItem);
@@ -183,9 +183,11 @@ class EventListener implements Listener
             return;
         }
 
-        if (LandService::protect($this->landStore, $this->accountStore, $p, $ev->getBlock()->getPosition(),
-            "このワールドでブロックを設置することはできません", false, true)) {
-            $ev->cancel();
+        foreach ($ev->getTransaction()->getBlocks() as $bl) {
+            if (LandService::protect($this->landStore, $this->accountStore, $p, $bl->getPosition(),
+                "このワールドでブロックを設置することはできません", false, true)) {
+                $ev->cancel();
+            }
         }
     }
 
@@ -197,24 +199,24 @@ class EventListener implements Listener
         $this->sessionStore->getSessionData($ev->getPlayer()->getXuid())->placeBlock();
     }
 
-    public function onSpread(BlockSpreadEvent $ev)
+    public function onSpread(BlockSpreadEvent $ev): void
     {
         if ($ev->getSource() instanceof Liquid || in_array($ev->getSource()->getPosition()->getWorld()->getFolderName(), LandService::LOBBY_WORLD)) {
             $ev->cancel();
         }
     }
 
-    public function onBucketFill(PlayerBucketFillEvent $ev)
+    public function onBucketFill(PlayerBucketFillEvent $ev): void
     {
         $this->onBucket($ev);
     }
 
-    public function onBucketEmpty(PlayerBucketEmptyEvent $ev)
+    public function onBucketEmpty(PlayerBucketEmptyEvent $ev): void
     {
         $this->onBucket($ev);
     }
 
-    private function onBucket(PlayerBucketEvent $ev)
+    private function onBucket(PlayerBucketEvent $ev): void
     {
         $p = $ev->getPlayer();
         if ($this->accountStore->hasValue($p, "wait_action")) {
@@ -228,10 +230,12 @@ class EventListener implements Listener
         }
     }
 
-    public function onUpdate(BlockUpdateEvent $ev)
+    public function onUpdate(BlockUpdateEvent $ev): void
     {
-        $blId = $ev->getBlock()->getId();
-        if (($blId === BlockLegacyIds::FLOWING_WATER) || ($blId === BlockLegacyIds::WATER)) {
+        $blId = $ev->getBlock()->getTypeId();
+        if (
+//            ($blId === BlockLegacyIds::FLOWING_WATER) ||
+        ($blId === VanillaBlocks::WATER()->getTypeId())) {
             $ev->cancel();
         }
     }
@@ -245,22 +249,18 @@ class EventListener implements Listener
             return;
         }
 
-        switch ($ev->getItem()->getId()) {
-            /** @noinspection PhpMissingBreakStatementInspection */
-            case ItemIds::BUCKET:
-                if ($ev->getItem()->getMeta() !== 10) {
-                    break;
-                }
-            case ItemIds::FLINT_STEEL:
+        switch ($ev->getItem()->getTypeId()) {
+            case VanillaItems::LAVA_BUCKET()->getTypeId():
+            case VanillaItems::FLINT_AND_STEEL()->getTypeId():
                 $ev->cancel();
                 $p->kick(TextFormat::DARK_RED . "このアイテムは使用出来ません");
                 break;
 
-            case ItemIds::STICK:
+            case VanillaItems::STICK()->getTypeId():
                 Server::getInstance()->dispatchCommand($p, "menu");
                 break;
 
-            case ItemIds::DYE:
+            case VanillaItems::DYE()->getTypeId():
                 $nbt = $ev->getItem()->getNamedTag();
                 if ($nbt->getCompoundTag("herbicide_scale") instanceof CompoundTag) {
                     if ($this->accountStore->hasValue($xuid, 'form_cool_time')) break;
@@ -288,24 +288,13 @@ class EventListener implements Listener
         }
 
         switch ($item->getId()) {
-            /** @noinspection PhpMissingBreakStatementInspection */
-            case ItemIds::BUCKET:
-                if ($item->getMeta() !== 10) {
-                    break;
-                }
-            case ItemIds::FLINT_STEEL:
+            case VanillaItems::LAVA_BUCKET()->getTypeId():
+            case VanillaItems::FLINT_AND_STEEL()->getTypeId():
                 $ev->cancel();
                 $p->kick(TextFormat::DARK_RED . "このアイテムは使用出来ません");
                 break;
 
-            case ItemIds::COMPASS:
-                if ($this->accountStore->hasValue($xuid, "form_cool_time")) return;
-                $this->accountStore->setValue($xuid, "form_cool_time", 10);
-                $pos = $ev->getBlock()->getPosition();
-                Server::getInstance()->dispatchCommand($p, "block-log {$pos->getFloorX()} {$pos->getFloorY()} {$pos->getFloorZ()}");
-                break;
-
-            case ItemIds::CLOCK:
+            case VanillaItems::CLOCK():
                 if ($p->isSneaking()) {
                     if ($this->accountStore->hasValue($xuid, 'particle_cool_time')) return;
                     $this->accountStore->setValue($xuid, 'particle_cool_time', 20);
@@ -317,11 +306,11 @@ class EventListener implements Listener
                 }
                 break;
 
-            case ItemIds::STICK:
+            case VanillaItems::STICK()->getTypeId():
                 Server::getInstance()->dispatchCommand($p, "menu");
                 break;
 
-            case ItemIds::DYE:
+            case VanillaItems::DYE()->getTypeId():
                 $nbt = $item->getNamedTag();
                 if ($nbt->getCompoundTag("herbicide_scale") instanceof CompoundTag) {
                     if ($this->accountStore->hasValue($xuid, 'form_cool_time')) break;
@@ -331,16 +320,13 @@ class EventListener implements Listener
                 break;
         }
 
-        switch ($ev->getBlock()->getId()) {
-            case BlockLegacyIds::SIGN_POST:
-            case BlockLegacyIds::WALL_SIGN:
-                if ($this->accountStore->hasValue($xuid, 'form_cool_time')) return;
-                $this->accountStore->setValue($xuid, 'form_cool_time', 10);
-                ShopService::showShop($sqlRepo, $p, $this->shopStore, $ev->getBlock()->getPosition());
-                break;
+        if ($ev->getBlock() instanceof BaseSign) {
+            if ($this->accountStore->hasValue($xuid, 'form_cool_time')) return;
+            $this->accountStore->setValue($xuid, 'form_cool_time', 10);
+            ShopService::showShop($sqlRepo, $p, $this->shopStore, $ev->getBlock()->getPosition());
         }
-        if (in_array($ev->getBlock()->getId(),
-            [BlockLegacyIds::GRASS, BlockLegacyIds::DIRT, BlockLegacyIds::FRAME_BLOCK, BlockLegacyIds::CHEST, BlockLegacyIds::LECTERN])) {
+        if (in_array($ev->getBlock()->getTypeId(),
+            [VanillaBlocks::GRASS()->getTypeId(), VanillaBlocks::DIRT()->getTypeId(), VanillaBlocks::ITEM_FRAME()->getTypeId(), VanillaBlocks::CHEST()->getTypeId(), VanillaBlocks::LECTERN()->getTypeId()])) {
             if (LandService::protect($this->landStore, $this->accountStore, $p, $ev->getBlock()->getPosition(),
                 "このワールドでこのブロックに変更を加えることはできません")) {
                 $ev->cancel();

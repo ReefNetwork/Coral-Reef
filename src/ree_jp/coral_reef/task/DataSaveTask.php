@@ -99,7 +99,7 @@ class DataSaveTask extends Task
 
     private function dataSave(): void
     {
-        /** @var AccountStore */
+        /** @var AccountStore $accountStore */
         $accountStore = $this->store->get(AccountStore::class);
         foreach (Server::getInstance()->getOnlinePlayers() as $p) {
             $user = $accountStore->getUser($p->getXuid());

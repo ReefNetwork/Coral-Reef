@@ -28,14 +28,14 @@ abstract class ClickItem extends Item
         return false;
     }
 
-    public function onInteractBlock(Player $player, Block $blockReplace, Block $blockClicked, int $face, Vector3 $clickVector): ItemUseResult
+    public function onInteractBlock(Player $player, Block $blockReplace, Block $blockClicked, int $face, Vector3 $clickVector, array &$returnedItems): ItemUseResult
     {
         return static::onActive($player, $this);
     }
 
     abstract static function onActive(Player $p, ClickItem $item): ItemUseResult;
 
-    public function onClickAir(Player $player, Vector3 $directionVector): ItemUseResult
+    public function onClickAir(Player $player, Vector3 $directionVector, array &$returnedItems): ItemUseResult
     {
         return static::onActive($player, $this);
     }

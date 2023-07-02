@@ -38,7 +38,7 @@ class ReefConsoleCommand extends Command implements PluginOwned
         $this->betweenRanking = new BetweenRanking($pool, $store);
     }
 
-    public function execute(CommandSender $sender, string $commandLabel, array $args)
+    public function execute(CommandSender $sender, string $commandLabel, array $args): void
     {
         if (!$this->testPermission($sender)) return;
         if (isset($args[0])) {

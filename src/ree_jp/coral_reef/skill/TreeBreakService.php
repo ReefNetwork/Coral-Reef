@@ -12,7 +12,8 @@
 namespace ree_jp\coral_reef\skill;
 
 use pocketmine\block\Block;
-use pocketmine\block\BlockLegacyIds;
+use pocketmine\block\Leaves;
+use pocketmine\block\Wood;
 use pocketmine\item\Item;
 use pocketmine\math\Facing;
 use pocketmine\math\Vector3;
@@ -40,8 +41,8 @@ class TreeBreakService
             $count++;
             BreakService::silentBreak($p->getWorld(), $bl, $item, $p);
 
-            if ($count > 80) {
-                // 80以上は一括破壊できないように
+            if ($count > 300) {
+                // 300以上は一括破壊できないように
                 return;
             }
 
@@ -56,6 +57,8 @@ class TreeBreakService
 
     static function isTree(Block $bl): bool
     {
-        return in_array($bl->getId(), [BlockLegacyIds::LEAVES, BlockLegacyIds::LEAVES2, BlockLegacyIds::LOG, BlockLegacyIds::LOG2]);
+        if ($bl instanceof Leaves) return true;
+        if ($bl instanceof Wood) return true;
+        return false;
     }
 }

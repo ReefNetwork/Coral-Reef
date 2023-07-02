@@ -27,7 +27,7 @@ class ReefFormCommand extends Command implements PluginOwned
         parent::__construct("reef-form", "reef form command");
     }
 
-    public function execute(CommandSender $sender, string $commandLabel, array $args)
+    public function execute(CommandSender $sender, string $commandLabel, array $args): void
     {
         if (!$sender instanceof Player || !isset($args[0])) {
             $sender->sendMessage("コマンドが間違っています");

@@ -29,7 +29,7 @@ class TrashCommand extends Command implements PluginOwned
         $this->setPermission("coral_reef.command.trash");
     }
 
-    public function execute(CommandSender $sender, string $commandLabel, array $args)
+    public function execute(CommandSender $sender, string $commandLabel, array $args): void
     {
         if (!$this->testPermission($sender)) return;
         if (!$sender instanceof Player) {

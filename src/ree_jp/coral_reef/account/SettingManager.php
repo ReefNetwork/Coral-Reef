@@ -56,7 +56,7 @@ class SettingManager
 
     static function isEnableOption(string $xuid, string $key): bool
     {
-        if (isset(self::$settingCache[$xuid]) && isset(self::$settingCache[$xuid][$key])) {
+        if (isset(self::$settingCache[$xuid][$key])) {
             return self::$settingCache[$xuid][$key];
         }
         return false;

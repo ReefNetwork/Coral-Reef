@@ -16,6 +16,7 @@ use JetBrains\PhpStorm\ArrayShape;
 use pocketmine\item\Item;
 use ree_jp\coral_reef\sql\mysql\SQLRepository;
 use ree_jp\coral_reef\sql\SQLConst;
+use ree_jp\stackstorage\api\ItemService;
 
 class GiftData
 {
@@ -39,7 +40,7 @@ class GiftData
                 $checkItem = $item;
                 $item = json_encode($item);
             } else {
-                $checkItem = Item::jsonDeserialize(json_decode($item, true));
+                $checkItem = ItemService::jsonToItem($item);
             }
             foreach ($this->items as $key => $jsonItem) {
                 $storeItem = Item::jsonDeserialize(json_decode($jsonItem, true));

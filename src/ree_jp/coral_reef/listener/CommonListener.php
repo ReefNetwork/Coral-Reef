@@ -57,7 +57,7 @@ class CommonListener implements Listener
             if (!$p->isConnected()) return;
 
             // データ読み込めたら動けるように
-            $p->setImmobile(false);
+            $p->setNoClientPredictions(false);
             $accountStore->setValue($p->getXuid(), "wait_action", 0);
         });
     }

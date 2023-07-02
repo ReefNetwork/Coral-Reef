@@ -36,7 +36,6 @@ use ree_jp\coral_reef\sql\SettingConst;
 use ree_jp\coral_reef\sql\SQLConst;
 use ree_jp\coral_reef\StoreHouse;
 use ree_jp\coral_reef\task\ServerUpdateTask;
-use skymin\bossbar\BossBarAPI;
 use SOFe\AwaitGenerator\Await;
 
 class AccountService
@@ -99,6 +98,7 @@ class AccountService
 
         // フライを無効にする
         self::updateFly($p, $p->getWorld()->getFolderName(), false);
+        BossBarAPI::getInstance()->deleteData($p);
     }
 
     /**

@@ -24,7 +24,7 @@ class ProxyService
     static function transferServerWithSave(RepositoryPool $pool, AccountStore $store, Player $p, string $server): void
     {
         $store->setValue($p->getXuid(), "wait_action");
-        $p->setImmobile();
+        $p->setNoClientPredictions();
         $p->sendMessage("サーバー移動の準備中です...");
 
         $user = $store->getUser($p->getXuid());
@@ -45,7 +45,7 @@ class ProxyService
                 $xuid = $p->getXuid();
                 $store->setValue($xuid, "transfer_server", 0);
                 $store->setValue($xuid, "wait_action", 0);
-                $p->setImmobile(false);
+                $p->setNoClientPredictions(false);
                 $p->sendMessage("サーバーを移動出来ませんでした");
             }
         ), 20 * 3);

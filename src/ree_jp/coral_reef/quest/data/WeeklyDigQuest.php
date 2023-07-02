@@ -60,11 +60,10 @@ class WeeklyDigQuest extends WeeklyQuest
 
     function getProgress(): string
     {
-        switch (true) {
-            case intval($this->value) < 10000:
-                return "スキルを1万回発動させよう (" . $this->value . "/10000)";
-        }
-        return "完了";
+        return match (true) {
+            intval($this->value) < 10000 => "スキルを1万回発動させよう (" . $this->value . "/10000)",
+            default => "完了",
+        };
     }
 
     #[Pure] function getRewardDetails(): string

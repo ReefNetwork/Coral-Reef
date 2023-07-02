@@ -12,9 +12,10 @@
 namespace ree_jp\coral_reef;
 
 use muqsit\invmenu\InvMenuHandler;
+use pocketmine\block\Block;
+use pocketmine\block\VanillaBlocks;
 use pocketmine\crafting\ShapedRecipe;
-use pocketmine\item\ItemFactory;
-use pocketmine\item\ItemIds;
+use pocketmine\item\Item;
 use pocketmine\item\VanillaItems;
 use pocketmine\plugin\PluginBase;
 use pocketmine\scheduler\ClosureTask;
@@ -61,8 +62,8 @@ use ree_jp\coral_reef\task\EffectTask;
 use ree_jp\coral_reef\task\SendServerTipTask;
 use ree_jp\coral_reef\task\ServerUpdateTask;
 use ree_jp\reef_edge\ReefEdgePlugin;
-use skymin\bossbar\BossBarHandler;
 use SOFe\AwaitGenerator\Await;
+use function Sentry\init;
 
 class CoralReefPlugin extends PluginBase
 {
@@ -86,6 +87,8 @@ class CoralReefPlugin extends PluginBase
 
     public function onEnable(): void
     {
+        init(['dsn' => 'https://772a7ddfbb0c46daaa7dabc84aeb0a47@o4505456948543488.ingest.sentry.io/4505456951296000']);
+
         self::$serverID = $this->getConfig()->get(ConfigConst::SERVER_NAME);
         self::$serverDisplay = $this->getConfig()->get(ConfigConst::SERVER);
         self::$isTemp = $this->getConfig()->get(ConfigConst::IS_TEMP, false);
@@ -124,7 +127,6 @@ class CoralReefPlugin extends PluginBase
         Await::g2c($accountStore->updateUserNameList($this->pool));
         ReefItems::registerAll();
         CustomItemService::registerAll();
-        BossBarHandler::autoDeleteData($this);
         $this->pluginInformation();
     }
 
@@ -197,13 +199,18 @@ class CoralReefPlugin extends PluginBase
 
     private function registerRecipe(): void
     {
-        foreach ([ItemIds::COAL_ORE => VanillaItems::COAL(), ItemIds::IRON_ORE => VanillaItems::IRON_INGOT(), ItemIds::GOLD_ORE => VanillaItems::GOLD_INGOT(),
-                     ItemIds::DIAMOND_ORE => VanillaItems::DIAMOND(), ItemIds::EMERALD_ORE => VanillaItems::EMERALD()] as $oreID => $result) {
-            $ore = ItemFactory::getInstance()->get($oreID);
-            $result->setCount(8);
-            $this->getServer()->getCraftingManager()->registerShapedRecipe(new ShapedRecipe(["AAA", "ABA", "AAA"], ["A" => $ore, "B" => VanillaItems::COAL()], [$result]));
-            $this->getServer()->getCraftingManager()->registerShapedRecipe(new ShapedRecipe(["AAA", "ABA", "AAA"], ["A" => $ore, "B" => VanillaItems::CHARCOAL()], [$result]));
-        }
+        $this->oreRecipe(VanillaBlocks::COAL_ORE(), VanillaItems::COAL());
+        $this->oreRecipe(VanillaBlocks::IRON_ORE(), VanillaItems::IRON_INGOT());
+        $this->oreRecipe(VanillaBlocks::GOLD_ORE(), VanillaItems::GOLD_INGOT());
+        $this->oreRecipe(VanillaBlocks::DIAMOND_ORE(), VanillaItems::DIAMOND());
+        $this->oreRecipe(VanillaBlocks::EMERALD_ORE(), VanillaItems::EMERALD());
+    }
+
+    private function oreRecipe(Block $ore, Item $result): void
+    {
+        $result->setCount(8);
+        $this->getServer()->getCraftingManager()->registerShapedRecipe(new ShapedRecipe(["AAA", "ABA", "AAA"], ["A" => $ore, "B" => VanillaItems::COAL()], [$result]));
+        $this->getServer()->getCraftingManager()->registerShapedRecipe(new ShapedRecipe(["AAA", "ABA", "AAA"], ["A" => $ore, "B" => VanillaItems::CHARCOAL()], [$result]));
     }
 
     private function loadWorlds(): void

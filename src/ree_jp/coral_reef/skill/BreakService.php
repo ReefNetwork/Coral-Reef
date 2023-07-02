@@ -13,13 +13,11 @@ namespace ree_jp\coral_reef\skill;
 
 use pocketmine\block\Air;
 use pocketmine\block\Block;
-use pocketmine\block\BlockFactory;
-use pocketmine\block\BlockLegacyIds;
 use pocketmine\block\Flowable;
 use pocketmine\block\Liquid;
+use pocketmine\block\utils\DyeColor;
 use pocketmine\block\VanillaBlocks;
 use pocketmine\item\Item;
-use pocketmine\item\ItemFactory;
 use pocketmine\math\AxisAlignedBB;
 use pocketmine\math\Vector3;
 use pocketmine\player\Player;
@@ -41,7 +39,6 @@ class BreakService
     static function breakBlockBySkill(SQLRepository $repo, LandStore $landStore, SessionData $session, Player $p, UserAccount $user, AxisAlignedBB $aabb,
                                       Vector3       $origin): void
     {
-        $xuid = $p->getXuid();
         $lands = LandService::getDuplicateLand($landStore, $p->getWorld()->getFolderName(), $aabb);
         $hand = $p->getInventory()->getItemInHand();
         $isNoFreeze = SettingManager::isEnableOption($p->getXuid(), SettingConst::NO_FREEZE_WATER);
@@ -114,7 +111,9 @@ class BreakService
         $nbt = $hand->getNamedTag();
         $id = $nbt->getInt("frozen_block", 0);
         if ($id === 0) {
-            return BlockFactory::getInstance()->get(BlockLegacyIds::STAINED_GLASS, 3);
+            $aquaGlass = VanillaBlocks::STAINED_GLASS();
+            $aquaGlass->setColor(DyeColor::LIGHT_BLUE());
+            return $aquaGlass;
         } else {
             return BlockFactory::getInstance()->get($id, 0);
         }
@@ -151,8 +150,8 @@ class BreakService
 
     private static function changeWater(World $world, Vector3 $vec3, Block $replaceBlock): void // 水を水色のガラスに変える
     {
-        $checkId = $world->getBlock($vec3)->getId();
-        if (($checkId === BlockLegacyIds::WATER) || ($checkId === BlockLegacyIds::FLOWING_WATER)) { // 水を水色のガラスに変える
+        $checkId = $world->getBlock($vec3)->getTypeId();
+        if ($checkId === VanillaBlocks::WATER()->getTypeId()) { // 水を水色のガラスに変える
             $world->setBlock($vec3, $replaceBlock, false);
         }
     }
@@ -160,7 +159,7 @@ class BreakService
     /** @noinspection DuplicatedCode */
     static function silentBreak(World $world, Block $bl, Item $item = null, Player $p = null): bool
     {
-        if ($bl->getId() === VanillaBlocks::SHULKER_BOX()->getId() || $bl->getId() === VanillaBlocks::DYED_SHULKER_BOX()->getId()) {
+        if ($bl->getTypeId() === VanillaBlocks::SHULKER_BOX()->getTypeId() || $bl->getTypeId() === VanillaBlocks::DYED_SHULKER_BOX()->getTypeId()) {
             $p?->sendMessage("シェルカーボックスは一括破壊することは出来ません");
             return false;
         }
@@ -176,7 +175,7 @@ class BreakService
         $affectedBlocks = $bl->getAffectedBlocks();
 
         if ($item === null) {
-            $item = ItemFactory::air();
+            $item = VanillaBlocks::air();
         }
 
         $drops = [];
@@ -206,7 +205,8 @@ class BreakService
             $world->setBlock($t->getPosition(), VanillaBlocks::AIR(), false);
         }
 
-        $item->onDestroyBlock($bl);
+        $a = [];
+        $item->onDestroyBlock($bl, $a);
 
         foreach ($drops as $dropItem) {
             StackStorageAPI::$instance->add($p->getXuid(), $dropItem);

@@ -92,7 +92,7 @@ class QuestListener implements Listener
 
     static function unsubscribeQuest(string $xuid, string $type, QuestData $quest): void
     {
-        if (isset(self::$subscribeQuest[$type]) && isset(self::$subscribeQuest[$type][$xuid])) {
+        if (isset(self::$subscribeQuest[$type][$xuid])) {
             foreach (self::$subscribeQuest[$type][$xuid] as $key => $subscribedQuest) {
                 if ($quest::ID === $subscribedQuest::ID) unset(self::$subscribeQuest[$type][$xuid][$key]);
             }
@@ -112,7 +112,7 @@ class QuestListener implements Listener
 
     static private function getSubscribedQuest(string $xuid, string $type): array
     {
-        if (isset(self::$subscribeQuest[$type]) && isset(self::$subscribeQuest[$type][$xuid])) {
+        if (isset(self::$subscribeQuest[$type][$xuid])) {
             return self::$subscribeQuest[$type][$xuid];
         }
         return [];

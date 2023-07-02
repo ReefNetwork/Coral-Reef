@@ -46,7 +46,7 @@ class SessionData
 
     public function quit(RepositoryPool $pool): void
     {
-        /** @var SessionRepository */
+        /** @var SessionRepository $repo */
         $repo = $pool->get(SessionRepository::class);
 
         $this->quitTime = time();

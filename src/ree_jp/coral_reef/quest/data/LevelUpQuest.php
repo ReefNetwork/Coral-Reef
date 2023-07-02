@@ -89,7 +89,7 @@ class LevelUpQuest extends QuestData
                     GatyaManager::addTicket($this->repo, $this->xuid, SQLConst::TICKETS_NORMAL, $this->getGiveTicket($questLevel));
                     break;
             }
-            $p = Server::getInstance()->getPlayerByPrefix($user->name);
+            $p = Server::getInstance()->getPlayerExact($user->name);
             if ($p instanceof Player) {
                 $p->sendMessage("レベルアップ報酬として" . $this->getRewardDetails($questLevel) .
                     "を受け取りました");
@@ -115,20 +115,14 @@ class LevelUpQuest extends QuestData
     function getRewardDetails(?int $level = null): string
     {
         if (is_null($level)) $level = intval($this->value) + 1;
-        switch ($level) {
-            case 1:
-                return "ガチャ券×10枚と鉄のツルハシ(耐久3)×1個";
-            case 2:
-                return "ガチャ券×2枚とりんご×8個";
-            case 3:
-                return "ガチャ券×2枚とりんご×16個";
-            case 4:
-                return "ガチャ券×2枚とりんご×32個";
-            case 5:
-                return "ガチャ券×5枚と鉄のツルハシ(耐久3)×3個";
-            default:
-                return "ガチャ券×" . $this->getGiveTicket($level) . "枚";
-        }
+        return match ($level) {
+            1 => "ガチャ券×10枚と鉄のツルハシ(耐久3)×1個",
+            2 => "ガチャ券×2枚とりんご×8個",
+            3 => "ガチャ券×2枚とりんご×16個",
+            4 => "ガチャ券×2枚とりんご×32個",
+            5 => "ガチャ券×5枚と鉄のツルハシ(耐久3)×3個",
+            default => "ガチャ券×" . $this->getGiveTicket($level) . "枚",
+        };
     }
 
     private function getGiveTicket(int $level): int

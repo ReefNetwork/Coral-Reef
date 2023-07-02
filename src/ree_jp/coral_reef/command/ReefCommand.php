@@ -14,7 +14,6 @@ namespace ree_jp\coral_reef\command;
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
 use pocketmine\item\Durable;
-use pocketmine\item\ItemIds;
 use pocketmine\item\VanillaItems;
 use pocketmine\player\Player;
 use pocketmine\plugin\Plugin;
@@ -30,7 +29,7 @@ class ReefCommand extends Command implements PluginOwned
         $this->setUsage("Reef Command");
     }
 
-    public function execute(CommandSender $sender, string $commandLabel, array $args)
+    public function execute(CommandSender $sender, string $commandLabel, array $args): void
     {
         if (!$sender instanceof Player) {
             $sender->sendMessage('このコマンドはプレイヤー専用です');

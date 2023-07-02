@@ -26,7 +26,7 @@ class SocketHandler
 
     static function register(\ree_jp\reef_edge\socket\SocketHandler $handler, RepositoryPool $pool, StoreHouse $store): void
     {
-        /** @var AccountStore */
+        /** @var AccountStore $accountStore */
         $accountStore = $store->get(AccountStore::class);
 
 

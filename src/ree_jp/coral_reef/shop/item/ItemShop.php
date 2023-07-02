@@ -12,8 +12,8 @@
 namespace ree_jp\coral_reef\shop\item;
 
 use JetBrains\PhpStorm\ArrayShape;
-use pocketmine\block\BlockLegacyIds;
 use pocketmine\block\tile\Chest;
+use pocketmine\block\VanillaBlocks;
 use pocketmine\item\Item;
 use pocketmine\Server;
 use pocketmine\world\Position;
@@ -62,7 +62,7 @@ class ItemShop extends Shop
             $i++;
             $nowPos = $this->pos->subtract(0, $i, 0);
             $item = $this->pos->getWorld()->getBlock($nowPos);
-            if ($item->getId() !== BlockLegacyIds::CHEST) continue;
+            if ($item->getTypeId() !== VanillaBlocks::CHEST()->getTypeId()) continue;
 
             $tile = $this->pos->getWorld()->getTile($nowPos);
             if (!$tile instanceof Chest) continue;

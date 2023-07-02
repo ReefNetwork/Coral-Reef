@@ -11,6 +11,9 @@ inputs:
 runs:
   using: "composite"
   steps:
+    - run: composer install --no-dev
+      shell: bash
+
     - run: php -d phar.readonly=0 ./build/make-phar.php ${{ inputs.build_info }}
       shell: bash
 
@@ -27,11 +30,6 @@ runs:
     - run: wget https://cloud.ree-jp.net/s/TSQtqd7nS4r7q8W/download -O await-generator.phar
       shell: bash
     - run: php -d phar.readonly=0 await-generator.phar ./build/CoralReef.phar "ree_jp\\coral_reef\\libs\\"
-      shell: bash
-
-    - run: wget https://cloud.ree-jp.net/s/AF8X3Gb3b8YBMpn/download -O bossbarapi.phar
-      shell: bash
-    - run: php -d phar.readonly=0 bossbarapi.phar ./build/CoralReef.phar "ree_jp\\coral_reef\\libs\\"
       shell: bash
 
     - name: upload
