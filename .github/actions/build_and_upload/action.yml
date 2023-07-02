@@ -13,6 +13,8 @@ runs:
   steps:
     - run: composer install --no-dev
       shell: bash
+      env:
+        COMPOSER_AUTH: '{"github-oauth": {"github.com": "${{secrets.GH_ACCESS_TOKEN}}"} }'
 
     - run: php -d phar.readonly=0 ./build/make-phar.php ${{ inputs.build_info }}
       shell: bash
