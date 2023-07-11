@@ -14,15 +14,32 @@ namespace ree_jp\coral_reef\proxy;
 use pocketmine\network\mcpe\protocol\TransferPacket;
 use pocketmine\player\Player;
 use pocketmine\scheduler\ClosureTask;
+use pocketmine\world\Position;
 use ree_jp\coral_reef\account\AccountStore;
+use ree_jp\coral_reef\account\KVConst;
 use ree_jp\coral_reef\CoralReefPlugin;
 use ree_jp\coral_reef\sql\RepositoryPool;
+use ree_jp\coral_reef\StoreHouse;
 use SOFe\AwaitGenerator\Await;
 
 class ProxyService
 {
-    static function transferServerWithSave(RepositoryPool $pool, AccountStore $store, Player $p, string $server): void
+    static function teleportReserve(Player $p): bool
     {
+        /** @var AccountStore $store */
+        $store = StoreHouse::$instance->get(AccountStore::class);
+        $pos = $store->getValue($p->getXuid(), KVConst::TELEPORT_RESERVE);
+        if ($pos instanceof Position) {
+            $p->teleport($pos);
+            return true;
+        }
+        return false;
+    }
+
+    static function transferServerWithSave(RepositoryPool $pool, Player $p, string $server): void
+    {
+        /** @var AccountStore $store */
+        $store = StoreHouse::$instance->get(AccountStore::class);
         $store->setValue($p->getXuid(), "wait_action");
         $p->setImmobile();
         $p->sendMessage("サーバー移動の準備中です...");

@@ -13,9 +13,11 @@ namespace ree_jp\coral_reef\proxy;
 
 use pocketmine\player\Player;
 use pocketmine\Server;
+use pocketmine\world\Position;
 use Ramsey\Uuid\Uuid;
 use ree_jp\coral_reef\account\AccountStore;
 use ree_jp\coral_reef\account\BetweenRanking;
+use ree_jp\coral_reef\account\KVConst;
 use ree_jp\coral_reef\session\SessionService;
 use ree_jp\coral_reef\sql\RepositoryPool;
 use ree_jp\coral_reef\StoreHouse;
@@ -26,14 +28,29 @@ class SocketHandler
 
     static function register(\ree_jp\reef_edge\socket\SocketHandler $handler, RepositoryPool $pool, StoreHouse $store): void
     {
-        /** @var AccountStore */
+        /** @var AccountStore $accountStore */
         $accountStore = $store->get(AccountStore::class);
 
 
-        $handler->registerHandler("transfer-request", function (array $data) use ($accountStore, $pool): void {
+        $handler->registerHandler("transfer-request", function (array $data) use ($pool): void {
             $p = Server::getInstance()->getPlayerByUUID(Uuid::fromString($data["player"]));
             if ($p instanceof Player) {
-                ProxyService::transferServerWithSave($pool, $accountStore, $p, $data["server"]);
+                ProxyService::transferServerWithSave($pool, $p, $data["server"]);
+            }
+        });
+
+        $handler->registerHandler("server-to-server", function (array $data): void {
+            if (isset($data["data"])) {
+                $content = $data["data"];
+                if (isset($content["xuid"]) && isset($content["world"]) && isset($content["x"]) && isset($content["y"]) && isset($content["z"])) {
+                    $world = Server::getInstance()->getWorldManager()->getWorldByName($content["world"]);
+                    if ($world == null) return;
+
+                    $pos = new Position($content["x"], $content["y"], $content["z"], $world);
+                    /** @var AccountStore $store */
+                    $store = StoreHouse::$instance->get(AccountStore::class);
+                    $store->setValue($content["xuid"], KVConst::TELEPORT_RESERVE, 20 * 60 * 5, $pos);
+                }
             }
         });
 

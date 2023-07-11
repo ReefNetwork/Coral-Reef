@@ -25,6 +25,7 @@ use ree_jp\coral_reef\account\AccountService;
 use ree_jp\coral_reef\account\AccountStore;
 use ree_jp\coral_reef\account\UserAccount;
 use ree_jp\coral_reef\CoralReefPlugin;
+use ree_jp\coral_reef\proxy\ProxyService;
 use ree_jp\coral_reef\session\SessionStore;
 use ree_jp\coral_reef\sql\model\PlayerData;
 use ree_jp\coral_reef\sql\model\WarpPoint;
@@ -115,7 +116,7 @@ class CommonListener implements Listener
             if ($warp->pos->getWorld()->getFolderName() == "shop") {
                 Server::getInstance()->dispatchCommand($p, "exe-p wp-view post when-the-shopper-world-is-heavier");
             } else {
-                AccountService::teleport($p, $warp->pos->getWorld()->getFolderName(), $warp->pos);
+                $p->teleport($warp->pos);
             }
         }
     }
@@ -136,10 +137,10 @@ class CommonListener implements Listener
             $p->sendMessage("データを確認しています...");
         }
         Await::f2c(function () use ($accountStore, $p): Generator {
-            yield from $this->warpAutoSavePoint($this->pool, $p);
-
+            if (!ProxyService::teleportReserve($p)) {
+                yield from $this->warpAutoSavePoint($this->pool, $p);
+            }
             if (!$p->isConnected()) return;
-
             $accountStore->getUser($p->getXuid())->loaded = true;
             $p->sendMessage("データを読み込みました");
         });

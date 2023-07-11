@@ -24,8 +24,11 @@ use ree_jp\coral_reef\account\AccountService;
 use ree_jp\coral_reef\account\AccountStore;
 use ree_jp\coral_reef\account\SettingManager;
 use ree_jp\coral_reef\CoralReefPlugin;
+use ree_jp\coral_reef\proxy\ProxyService;
 use ree_jp\coral_reef\sql\SettingConst;
 use ree_jp\coral_reef\StoreHouse;
+use ree_jp\reef_edge\ReefEdgePlugin;
+use ree_jp\reef_edge\socket\SocketData;
 
 class WorldTeleportForm
 {
@@ -42,7 +45,10 @@ class WorldTeleportForm
                     if (CoralReefPlugin::$plugin->isMain) {
                         AccountService::teleport($p, "shop");
                     } else {
-                        $p->sendMessage("ショップはさくらサーバーのみです");
+                        $p->sendMessage("ショップに移動します....");
+                        ReefEdgePlugin::$socketClient->send(new SocketData("server-to-server", ["server" => "さくらサーバー", "data" =>
+                            ["type" => "teleport-reserve", "world" => "shop", "x" => 256, "y" => 60, "z" => 256]]));
+                        ProxyService::transferServerWithSave(CoralReefPlugin::$plugin->pool, $p, "さくらサーバー");
                     }
                 }),
                 new ClosureButton("整地ワールド1", null, function (Player $p) {
