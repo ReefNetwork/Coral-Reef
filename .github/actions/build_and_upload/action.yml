@@ -19,7 +19,7 @@ runs:
     - run: php -d phar.readonly=0 libasynql.phar ./build/CoralReef.phar "ree_jp\\coral_reef\\libs\\"
       shell: bash
 
-    - run: wget https://cloud.ree-jp.net/s/mks8DgDiLH29eTj/download -O InvMenu.phar
+    - run: wget https://cloud.ree-jp.net/s/pSjYPZqdTNYbCoz/download -O InvMenu.phar
       shell: bash
     - run: php -d phar.readonly=0 InvMenu.phar ./build/CoralReef.phar "ree_jp\\coral_reef\\libs\\"
       shell: bash
