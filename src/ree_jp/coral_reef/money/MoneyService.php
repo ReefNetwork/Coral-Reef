@@ -62,6 +62,7 @@ class MoneyService
             $money = floor($money / 10000);
             $counter++;
         }
+        if ($result == "") $result = "0";
         return $result;
     }
 }
