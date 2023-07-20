@@ -47,7 +47,7 @@ class WorldTeleportForm
                     } else {
                         $p->sendMessage("ショップに移動します....");
                         ReefEdgePlugin::$socketClient->send(new SocketData("server-to-server", ["server" => "さくらサーバー", "data" =>
-                            ["type" => "teleport-reserve", "world" => "shop", "x" => 256, "y" => 60, "z" => 256]]));
+                            ["type" => "teleport-reserve", "xuid" => $p->getXuid(), "world" => "shop", "x" => 256, "y" => 60, "z" => 256]]));
                         ProxyService::transferServerWithSave(CoralReefPlugin::$plugin->pool, $p, "さくらサーバー");
                     }
                 }),
