@@ -186,7 +186,7 @@ class CoralReefPlugin extends PluginBase
         $this->getScheduler()->scheduleRepeatingTask(new ServerUpdateTask($this->sqlRepo), 200);
         $this->getScheduler()->scheduleRepeatingTask(new ClosureTask(function (): void {
             foreach (Server::getInstance()->getOnlinePlayers() as $p) {
-                ScoreBoardService::sendScoreBoard($this->store, $p);
+                ScoreBoardService::sendScoreBoard($p);
                 AccountService::updateBossBar($p);
             }
         }), 15);
