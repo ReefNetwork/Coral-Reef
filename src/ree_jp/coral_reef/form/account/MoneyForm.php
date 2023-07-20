@@ -59,6 +59,8 @@ class MoneyForm
             /** @var $sqlRepo SQLRepository */
             $sqlRepo = $pool->get(SQLRepository::class);
             MoneyService::getMoney($sqlRepo, $p->getXuid(), function (int $money) use ($targetXuid, $sqlRepo, $p, $amount): void {
+                if (!$p->isOnline()) return;
+
                 if ($amount > $money) {
                     $p->sendMessage("お金が足りません");
                     return;
