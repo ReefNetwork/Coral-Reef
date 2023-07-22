@@ -17,8 +17,11 @@ use bbo51dog\bboform\form\ClosureCustomForm;
 use Closure;
 use pocketmine\player\Player;
 use pocketmine\utils\TextFormat;
+use ree_jp\coral_reef\CoralReefPlugin;
 use ree_jp\coral_reef\gatya\GatyaManager;
+use ree_jp\coral_reef\sql\model\LogData;
 use ree_jp\coral_reef\sql\mysql\SQLRepository;
+use ree_jp\coral_reef\sql\repo\LogRepository;
 use ree_jp\coral_reef\sql\SQLConst;
 
 class BonusCodeForm
@@ -72,7 +75,9 @@ class BonusCodeForm
                 return;
             }
             $repo->setValue($p->getXuid(), SQLConst::TYPE_BONUS, $code, SQLConst::COMPLETE, function () use ($repo, $func, $code, $p): void {
-                $repo->addLog($p->getXuid(), SQLConst::LOG_BONUS, $code, SQLConst::COMPLETE, SQLConst::NOW_TIME, null, null);
+                /** @var LogRepository $repo */
+                $repo = CoralReefPlugin::$plugin->pool->get(LogRepository::class);
+                $repo->addLog(LogData::create($p->getXuid(), SQLConst::LOG_BONUS, $code, SQLConst::COMPLETE));
                 $func();
             });
         }, function () use ($p): void {

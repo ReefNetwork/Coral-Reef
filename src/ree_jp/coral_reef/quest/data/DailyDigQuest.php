@@ -13,9 +13,12 @@ namespace ree_jp\coral_reef\quest\data;
 
 use JetBrains\PhpStorm\Pure;
 use ree_jp\coral_reef\account\AccountService;
+use ree_jp\coral_reef\CoralReefPlugin;
 use ree_jp\coral_reef\gatya\GatyaManager;
 use ree_jp\coral_reef\quest\QuestListener;
+use ree_jp\coral_reef\sql\model\LogData;
 use ree_jp\coral_reef\sql\mysql\SQLRepository;
+use ree_jp\coral_reef\sql\repo\LogRepository;
 use ree_jp\coral_reef\sql\SQLConst;
 
 class DailyDigQuest extends DailyQuest
@@ -52,8 +55,10 @@ class DailyDigQuest extends DailyQuest
                         QuestListener::unsubscribeQuest($this->xuid, QuestListener::USE_SKILL, $this);
                     case 100:
                         QuestListener::callSubscribedQuest($this->xuid, QuestListener::CLEAR_QUEST, $this);
-                        $this->repo->addLog($this->xuid, SQLConst::LOG_QUEST, static::ID, $this->value,
-                            SQLConst::NOW_TIME, null, null);
+
+                        /** @var LogRepository $repo */
+                        $repo = CoralReefPlugin::$plugin->pool->get(LogRepository::class);
+                        $repo->addLog(LogData::create($this->xuid, SQLConst::LOG_QUEST, static::ID, $this->value));
                         GatyaManager::addTicket($this->repo, $this->xuid, static::BONUS_TICKET, 1);
                         $p = AccountService::getPlayerByXuid($this->xuid);
                         if (!is_null($p)) $p->sendMessage("デイリー整地ボーナスとして" . static::BONUS_TICKET_NAME . "を受け取りました");

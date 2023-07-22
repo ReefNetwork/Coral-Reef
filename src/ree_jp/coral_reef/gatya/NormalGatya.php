@@ -11,10 +11,9 @@
 
 namespace ree_jp\coral_reef\gatya;
 
+use Generator;
 use pocketmine\player\Player;
-use pocketmine\Server;
 use pocketmine\utils\TextFormat;
-use poggit\libasynql\SqlError;
 use ree_jp\coral_reef\gatya\items\event\HalloweenNightItems;
 use ree_jp\coral_reef\gatya\items\event\HalloweenPartyItems;
 use ree_jp\coral_reef\gatya\items\NormalItems;
@@ -22,134 +21,133 @@ use ree_jp\coral_reef\gatya\items\RareItems;
 use ree_jp\coral_reef\gatya\items\ReefItems;
 use ree_jp\coral_reef\gatya\items\SuperItems;
 use ree_jp\coral_reef\gatya\items\UltimateItems;
-use ree_jp\coral_reef\sql\mysql\SQLRepository;
 use ree_jp\coral_reef\sql\SQLConst;
+use SOFe\AwaitGenerator\Await;
 
 class NormalGatya
 {
-    /** @noinspection DuplicatedCode */
-    static function gatya(SQLRepository $repo, Player $p, int $number = 1): void
+    const GATYA_LOG = SQLConst::LOG_GATYA;
+    const PROBABILITY = [
+        self::REEF_RARE => 5, // 0.5%
+        self::ULTIMATE_RARE => 25, // 2.5%
+        self::SUPER_RARE => 100, // 10%
+        self::RARE => 300, // 30%
+        self::NORMAL => 570 // 100 - (0.5+2.5+10+30) = 57%
+    ];
+
+    const REEF_RARE = "reef_rare";
+    const ULTIMATE_RARE = "ultimate_rare";
+    const SUPER_RARE = "super_rare";
+    const RARE = "rare";
+    const NORMAL = "normal";
+
+    static function gatya(Player $p, int $number = 1): void
     {
-        if ($number <= 0) return;
-        $xuid = $p->getXuid();
-        $repo->getLog($xuid, SQLConst::LOG_GATYA, function (array $rows) use ($repo, $number, $p, $xuid) {
-            $firstRand = mt_rand(1, 1000);
-            $isLimit = true;
-            for ($i = 1; $i < 100; $i++) { // 99回のガチャ履歴を調べてReefRareを引いてなかったら確定
-                $resultLog = array_shift($rows);
-                if (is_null($resultLog) || ($resultLog['subtype'] === 'reef_rare')) {
-                    $isLimit = false;
+        Await::f2c(function () use ($number, $p): Generator {
+            $xuid = $p->getXuid();
+            $lastReef = yield from GatyaService::getLastReef($p->getXuid(), self::GATYA_LOG);
+            $results = [];
+
+            $gatyaCount = 0;
+            while ($gatyaCount >= $number) {
+                $gatyaCount++;
+                $lastReef++;
+
+                $result = self::getGatyaResult($xuid, $lastReef);
+                if ($result->rare === self::REEF_RARE) {
+                    $lastReef = 0;
+                }
+                $results[] = $result;
+            }
+
+        });
+    }
+
+    private static function getGatyaResult(string $xuid, int $lastReef): GatyaResult
+    {
+        $rarity = null;
+        $percent = "";
+        if ($lastReef >= 100) {
+            $rarity = self::REEF_RARE;
+            $percent = "天井";
+        } else {
+            $result_number = mt_rand(1, array_sum(self::PROBABILITY));// 1~100
+            $total_number = 0;
+            foreach (self::PROBABILITY as $rare => $probability) {
+                $total_number += $probability;
+                if ($result_number <= $total_number) {
+                    $rarity = $rare;
+                    $percent = ($probability / array_sum(self::PROBABILITY)) * 100;
                     break;
                 }
             }
-            if ($number > 1) { // ガチャの処理が終了後に実行するClosure
-                $func = function () use ($repo, $number, $p) {
-                    self::gatya($repo, $p, --$number);
+        }
+        $percent = TextFormat::DARK_GRAY . "[" . $percent . "]" . TextFormat::RESET;
+
+        switch ($rarity) {
+            case self::REEF_RARE:
+                if (mt_rand(1, 10) < 5) { // 40%の確率でTool
+                    $item = match (mt_rand(1, 10)) {
+                        1, 2, 3 => match (mt_rand(1, 3)) {
+                            1 => ReefItems::getItem($xuid, ReefItems::PICKAXE),
+                            2 => HalloweenNightItems::getItem($xuid, HalloweenNightItems::PICKAXE),
+                            3 => HalloweenPartyItems::getItem($xuid, HalloweenPartyItems::PICKAXE),
+                        },
+
+                        4, 5, 6 => match (mt_rand(1, 3)) {
+                            1 => ReefItems::getItem($xuid, ReefItems::SHOVEL),
+                            2 => HalloweenNightItems::getItem($xuid, HalloweenNightItems::SHOVEL),
+                            3 => HalloweenPartyItems::getItem($xuid, HalloweenPartyItems::SHOVEL),
+                        },
+
+                        7, 8, 9 => match (mt_rand(1, 3)) {
+                            1 => ReefItems::getItem($xuid, ReefItems::AXE),
+                            2 => HalloweenNightItems::getItem($xuid, HalloweenNightItems::AXE),
+                            3 => HalloweenPartyItems::getItem($xuid, HalloweenPartyItems::AXE),
+                        },
+
+                        10 => match (mt_rand(1, 3)) {
+                            1 => ReefItems::getItem($xuid, ReefItems::HOE),
+                            2 => HalloweenNightItems::getItem($xuid, HalloweenNightItems::HOE),
+                            3 => HalloweenPartyItems::getItem($xuid, HalloweenPartyItems::HOE),
+                        },
+                    };
+                } else { // 60%の確率で防具
+                    $item = match (mt_rand(1, 4)) {
+                        1 => ReefItems::getItem($xuid, ReefItems::HELMET),
+                        2 => ReefItems::getItem($xuid, ReefItems::CHEST_PLATE),
+                        3 => ReefItems::getItem($xuid, ReefItems::LEGGINGS),
+                        4 => ReefItems::getItem($xuid, ReefItems::BOOTS),
+                    };
+                }
+                $broadMessage = "さんが" . TextFormat::GREEN . "REEFレア" . TextFormat::RESET . "を引きました" . $percent;
+                return new GatyaResult($xuid, self::GATYA_LOG, $rarity, TextFormat::GREEN . "REEFレア" . $percent, $item, $broadMessage);
+
+            case self::ULTIMATE_RARE:// 2.5%
+                $item = match (mt_rand(1, 3)) {
+                    1 => UltimateItems::getItem($xuid, UltimateItems::PICKAXE),
+                    2 => UltimateItems::getItem($xuid, UltimateItems::AXE),
+                    3 => UltimateItems::getItem($xuid, UltimateItems::SHOVEL),
                 };
-            } else $func = null;
+                return new GatyaResult($xuid, self::GATYA_LOG, $rarity, TextFormat::GOLD . "ウルトラレア" . $percent, $item);
 
-            switch (true) {
-                case ($firstRand <= 5) || $isLimit:// 0.5% or 天井
-                    if (mt_rand(1, 10) < 5) { // 40%の確率でTool
-                        $item = match (mt_rand(1, 10)) {
-                            1, 2, 3 => match (mt_rand(1, 3)) {
-                                1 => ReefItems::getItem($xuid, ReefItems::PICKAXE),
-                                2 => HalloweenNightItems::getItem($xuid, HalloweenNightItems::PICKAXE),
-                                3 => HalloweenPartyItems::getItem($xuid, HalloweenPartyItems::PICKAXE),
-                            },
+            case self::SUPER_RARE:// 10%
+                $item = match (mt_rand(1, 2)) {
+                    1 => SuperItems::getItem($xuid, SuperItems::PICKAXE),
+                    2 => SuperItems::getItem($xuid, SuperItems::SHOVEL),
+                };
+                return new GatyaResult($xuid, self::GATYA_LOG, $rarity, TextFormat::BLUE . "スーパーレア" . $percent, $item);
 
-                            4, 5, 6 => match (mt_rand(1, 3)) {
-                                1 => ReefItems::getItem($xuid, ReefItems::SHOVEL),
-                                2 => HalloweenNightItems::getItem($xuid, HalloweenNightItems::SHOVEL),
-                                3 => HalloweenPartyItems::getItem($xuid, HalloweenPartyItems::SHOVEL),
-                            },
+            case self::RARE:// 30%
+                $item = match (mt_rand(1, 2)) {
+                    1 => RareItems::getItem($xuid, RareItems::PICKAXE),
+                    2 => RareItems::getItem($xuid, RareItems::SHOVEL),
+                };
+                return new GatyaResult($xuid, self::GATYA_LOG, $rarity, TextFormat::AQUA . "レア" . $percent, $item);
 
-                            7, 8, 9 => match (mt_rand(1, 3)) {
-                                1 => ReefItems::getItem($xuid, ReefItems::AXE),
-                                2 => HalloweenNightItems::getItem($xuid, HalloweenNightItems::AXE),
-                                3 => HalloweenPartyItems::getItem($xuid, HalloweenPartyItems::AXE),
-                            },
-
-                            10 => match (mt_rand(1, 3)) {
-                                1 => ReefItems::getItem($xuid, ReefItems::HOE),
-                                2 => HalloweenNightItems::getItem($xuid, HalloweenNightItems::HOE),
-                                3 => HalloweenPartyItems::getItem($xuid, HalloweenPartyItems::HOE),
-                            },
-                        };
-                    } else { // 60%の確率で防具
-                        $item = match (mt_rand(1, 4)) {
-                            1 => ReefItems::getItem($xuid, ReefItems::HELMET),
-                            2 => ReefItems::getItem($xuid, ReefItems::CHEST_PLATE),
-                            3 => ReefItems::getItem($xuid, ReefItems::LEGGINGS),
-                            4 => ReefItems::getItem($xuid, ReefItems::BOOTS),
-                        };
-                    }
-                    $broadMessage = $isLimit ? $p->getDisplayName() . "さんが" . TextFormat::GREEN . "REEFレア" . TextFormat::RESET . "を引きました(天井)"
-                        : $p->getDisplayName() . "さんが" . TextFormat::GREEN . "REEFレア" . TextFormat::RESET . "を引きました";
-                    GatyaManager::gatyaProcess($repo, SQLConst::LOG_GATYA, $p, SQLConst::TICKETS_NORMAL, 1, $item, 'reef_rare',
-                        TextFormat::GREEN . 'REEFレア' . TextFormat::DARK_GRAY . '[0.5%]' . TextFormat::RESET, true, $func, $broadMessage);
-                    break;
-
-                case $firstRand <= (5 + 25):// 2.5%
-                    switch (mt_rand(1, 3)) {
-                        case 1:
-                            $item = UltimateItems::getItem($xuid, UltimateItems::PICKAXE);
-                            break;
-                        case 2:
-                            $item = UltimateItems::getItem($xuid, UltimateItems::AXE);
-                            break;
-                        case 3:
-                            $item = UltimateItems::getItem($xuid, UltimateItems::SHOVEL);
-                            break;
-                        default:
-                            $p->sendMessage('エラーが発生しました');
-                            return;
-                    }
-                    GatyaManager::gatyaProcess($repo, SQLConst::LOG_GATYA, $p, SQLConst::TICKETS_NORMAL, 1, $item, 'ultimate_rare',
-                        TextFormat::GOLD . 'ウルトラレア' . TextFormat::DARK_GRAY . '[2.5%]' . TextFormat::RESET, false, $func);
-                    break;
-
-                case $firstRand <= (30 + 100):// 10%
-                    switch (mt_rand(1, 2)) {
-                        case 1:
-                            $item = SuperItems::getItem($xuid, SuperItems::PICKAXE);
-                            break;
-                        case 2:
-                            $item = SuperItems::getItem($xuid, SuperItems::SHOVEL);
-                            break;
-                        default:
-                            $p->sendMessage('エラーが発生しました');
-                            return;
-                    }
-                    GatyaManager::gatyaProcess($repo, SQLConst::LOG_GATYA, $p, SQLConst::TICKETS_NORMAL, 1, $item, 'super_rare',
-                        TextFormat::BLUE . 'スーパーレア' . TextFormat::DARK_GRAY . '[10%]' . TextFormat::RESET, false, $func);
-                    break;
-
-                case $firstRand <= (130 + 300):// 30%
-                    switch (mt_rand(1, 2)) {
-                        case 1:
-                            $item = RareItems::getItem($xuid, RareItems::PICKAXE);
-                            break;
-                        case 2:
-                            $item = RareItems::getItem($xuid, RareItems::SHOVEL);
-                            break;
-                        default:
-                            $p->sendMessage('エラーが発生しました');
-                            return;
-                    }
-                    GatyaManager::gatyaProcess($repo, SQLConst::LOG_GATYA, $p, SQLConst::TICKETS_NORMAL, 1, $item, 'rare',
-                        TextFormat::AQUA . 'レア' . TextFormat::DARK_GRAY . '[30%]' . TextFormat::RESET, false, $func);
-                    break;
-
-                default:// 残り
-                    $item = NormalItems::getItemInt($xuid, mt_rand(1, 7));
-                    GatyaManager::gatyaProcess($repo, SQLConst::LOG_GATYA, $p, SQLConst::TICKETS_NORMAL, 1, $item, 'normal',
-                        TextFormat::DARK_GRAY . 'ノーマル' . TextFormat::RESET, false, $func);
-                    break;
-            }
-        }, function (SqlError $error) use ($p) {
-            $p->sendMessage('エラーが発生しました');
-            Server::getInstance()->getLogger()->error('[GatyaCheckLimit] ' . $p->getName() . 'さんの処理中に' . $error->getErrorMessage());
-        });
+            default:// 残り
+                $item = NormalItems::getItemInt($xuid, mt_rand(1, 7));
+                return new GatyaResult($xuid, self::GATYA_LOG, $rarity, TextFormat::DARK_GRAY . "ノーマル" . $percent, $item);
+        }
     }
 }
