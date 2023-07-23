@@ -98,7 +98,7 @@ class GatyaForm
                     if ($tickets >= $num) {
                         switch ($gatyaType) {
                             case SQLConst::LOG_GATYA:
-                                NormalGatya::gatya($repo, $p, $num);
+                                NormalGatya::gatya($p, $num);
                                 break;
 
                             default:

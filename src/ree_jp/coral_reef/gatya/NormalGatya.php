@@ -27,6 +27,7 @@ use SOFe\AwaitGenerator\Await;
 class NormalGatya
 {
     const GATYA_LOG = SQLConst::LOG_GATYA;
+    const TICKET_TYPE = SQLConst::TICKETS_NORMAL;
     const PROBABILITY = [
         self::REEF_RARE => 5, // 0.5%
         self::ULTIMATE_RARE => 25, // 2.5%
@@ -59,7 +60,7 @@ class NormalGatya
                 }
                 $results[] = $result;
             }
-
+            GatyaManager::gatyaProcess($p, $results, self::GATYA_LOG, self::TICKET_TYPE);
         });
     }
 
