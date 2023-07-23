@@ -28,6 +28,7 @@ class LogData
         if ($this->small != null) {
             $date .= str_pad($this->small, 3, 0, STR_PAD_LEFT);
         }
+        var_dump($date);
         return $date;
     }
 
@@ -38,6 +39,7 @@ class LogData
         $time = time();
 
         $small = $store->getValue($xuid, KVConst::LOG_SMALL . $time);
+        var_dump($small);
         if ($small != null) {
             $small++;
             $store->setValue($xuid, KVConst::LOG_SMALL . $time, 20, $small);
