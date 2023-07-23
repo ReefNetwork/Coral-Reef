@@ -120,8 +120,8 @@ class NormalGatya
                         4 => ReefItems::getItem($xuid, ReefItems::BOOTS),
                     };
                 }
-                $broadMessage = "さんが" . TextFormat::GREEN . "REEFレア" . TextFormat::RESET . "を引きました" . $percent;
-                return new GatyaResult($xuid, self::GATYA_LOG, $rarity, TextFormat::GREEN . "REEFレア" . $percent, $item, $broadMessage);
+                $broadMessage = TextFormat::GREEN . "REEFレア" . TextFormat::RESET . "を引きました" . $percent;
+                return new GatyaResult($rarity, TextFormat::GREEN . "REEFレア" . $percent, $item, $broadMessage);
 
             case self::ULTIMATE_RARE:// 2.5%
                 $item = match (mt_rand(1, 3)) {
@@ -129,25 +129,25 @@ class NormalGatya
                     2 => UltimateItems::getItem($xuid, UltimateItems::AXE),
                     3 => UltimateItems::getItem($xuid, UltimateItems::SHOVEL),
                 };
-                return new GatyaResult($xuid, self::GATYA_LOG, $rarity, TextFormat::GOLD . "ウルトラレア" . $percent, $item);
+                return new GatyaResult($rarity, TextFormat::GOLD . "ウルトラレア" . $percent, $item);
 
             case self::SUPER_RARE:// 10%
                 $item = match (mt_rand(1, 2)) {
                     1 => SuperItems::getItem($xuid, SuperItems::PICKAXE),
                     2 => SuperItems::getItem($xuid, SuperItems::SHOVEL),
                 };
-                return new GatyaResult($xuid, self::GATYA_LOG, $rarity, TextFormat::BLUE . "スーパーレア" . $percent, $item);
+                return new GatyaResult($rarity, TextFormat::BLUE . "スーパーレア" . $percent, $item);
 
             case self::RARE:// 30%
                 $item = match (mt_rand(1, 2)) {
                     1 => RareItems::getItem($xuid, RareItems::PICKAXE),
                     2 => RareItems::getItem($xuid, RareItems::SHOVEL),
                 };
-                return new GatyaResult($xuid, self::GATYA_LOG, $rarity, TextFormat::AQUA . "レア" . $percent, $item);
+                return new GatyaResult($rarity, TextFormat::AQUA . "レア" . $percent, $item);
 
             default:// 残り
                 $item = NormalItems::getItemInt($xuid, mt_rand(1, 7));
-                return new GatyaResult($xuid, self::GATYA_LOG, $rarity, TextFormat::DARK_GRAY . "ノーマル" . $percent, $item);
+                return new GatyaResult($rarity, TextFormat::DARK_GRAY . "ノーマル" . $percent, $item);
         }
     }
 }

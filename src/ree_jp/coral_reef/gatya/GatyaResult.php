@@ -15,7 +15,7 @@ use pocketmine\item\Item;
 
 class GatyaResult
 {
-    public function __construct(public string $xuid, public string $gatyaType, public string $rare, public string $message, public Item $item, public ?string $broadcastMessage = null)
+    public function __construct(public string $rare, public string $message, public Item $item, public ?string $broadcastMessage = null)
     {
     }
 }
