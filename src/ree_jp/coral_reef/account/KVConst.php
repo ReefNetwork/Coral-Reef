@@ -16,4 +16,5 @@ class KVConst
     const TELEPORT_RESERVE = "teleport-reserve";
     const WAIT_ACTION = "wait_action";
     const GATYA_PROCESSING = "gatya-processing";
+    const LOG_SMALL = "log-small";
 }

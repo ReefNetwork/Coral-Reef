@@ -70,7 +70,7 @@ class GatyaHistoryForm
 
                 $item = SpecialItemService::getRenewItem($p->getXuid(), $log->value, 0, 1, null);
                 $history[] = "$historyCount |レア度 [$rare] : アイテム名 [" . $item?->getCustomName() . TextFormat::RESET . "]" .
-                    TextFormat::DARK_GRAY . "(" . date(SQLConst::DATE_FORMAT, $log->time) . ")" . TextFormat::RESET;
+                    TextFormat::DARK_GRAY . "(" . $log->toDate() . ")" . TextFormat::RESET;
                 $historyCount--;
             }
             PageViewForm::sendForm($p, "GatyaHistory -> $id", "最後に引いたReefToolは" . count($logs) - $lastReef . "回前です",

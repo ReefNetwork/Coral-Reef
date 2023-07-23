@@ -15,7 +15,6 @@ use Generator;
 use ree_jp\coral_reef\sql\model\LogData;
 use ree_jp\coral_reef\sql\repo\LogRepository;
 use ree_jp\coral_reef\sql\RepositoryPool;
-use ree_jp\coral_reef\sql\SQLConst;
 use SOFe\AwaitGenerator\Await;
 
 class MysqlLogRepo implements LogRepository
@@ -31,7 +30,7 @@ class MysqlLogRepo implements LogRepository
     {
         yield from Await::promise(
             fn($resolve, $reject) => $this->pool->getConnection()->executeInsert("coral_reef.log.add", ["xuid" => intval($data->xuid), "type" => $data->type,
-                "subtype" => $data->subtype, "value" => $data->value, "time" => date(SQLConst::DATE_FORMAT, $data->time)], $resolve, $reject));
+                "subtype" => $data->subtype, "value" => $data->value, "time" => $data->toDate()], $resolve, $reject));
     }
 
     /**

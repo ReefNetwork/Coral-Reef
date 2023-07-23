@@ -83,7 +83,7 @@ class NormalGatya
                 }
             }
         }
-        $percent = TextFormat::DARK_GRAY . "[" . $percent . "]" . TextFormat::RESET;
+        $percent = TextFormat::DARK_GRAY . "(" . $percent . "%)" . TextFormat::RESET;
 
         switch ($rarity) {
             case self::REEF_RARE:

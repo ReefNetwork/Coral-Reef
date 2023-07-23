@@ -78,6 +78,7 @@ class GatyaManager
             if ($row && isset($row["value"]) && intval($row["value"]) >= $count) {
                 /** @var LogRepository $logRepo */
                 $logRepo = CoralReefPlugin::$plugin->pool->get(LogRepository::class);
+
                 foreach ($gatyaResults as $result) {
                     Await::f2c(function () use ($sqlRepo, $p, $gatyaLog, $xuid, $result, $logRepo): Generator {
                         $logValue = $result->item->getNamedTag()->getString(ReefItems::REEF_SP_ITEM, "unknown");
