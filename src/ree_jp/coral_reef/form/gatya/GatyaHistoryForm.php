@@ -55,7 +55,7 @@ class GatyaHistoryForm
             if (!$p->isOnline()) return;
 
             /** @var LogData[] $logs */
-            yield from $logs = $repo->getLogNewer($p->getXuid(), $id);
+            $logs = yield from $repo->getLogNewer($p->getXuid(), $id);
             if (!$p->isOnline()) return;
 
             $history = [];
