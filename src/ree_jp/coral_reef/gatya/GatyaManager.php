@@ -81,7 +81,7 @@ class GatyaManager
                 foreach ($gatyaResults as $result) {
                     Await::f2c(function () use ($sqlRepo, $p, $gatyaLog, $xuid, $result, $logRepo): Generator {
                         $logValue = $result->item->getNamedTag()->getString(ReefItems::REEF_SP_ITEM, "unknown");
-                        yield from $logRepo->addLog(LogData::create($xuid, SQLConst::LOG_GATYA, $gatyaLog, $logValue));
+                        yield from $logRepo->addLog(LogData::create($xuid, $gatyaLog, $result->rare, $logValue));
 
                         if ($p->isOnline()) {
                             $p->sendMessage("ガチャを引きました| " . $result->message);
