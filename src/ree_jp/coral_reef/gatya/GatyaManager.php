@@ -58,7 +58,6 @@ class GatyaManager
      */
     static function gatyaProcess(Player $p, array $gatyaResults, string $gatyaLog, string $ticketType): void
     {
-        var_dump(1);
         /** @var AccountStore $store */
         $store = StoreHouse::$instance->get(AccountStore::class);
         if ($store->hasValue($p->getXuid(), KVConst::GATYA_PROCESSING)) {
@@ -66,14 +65,11 @@ class GatyaManager
             return;
         }
         $store->setValue($p->getXuid(), KVConst::GATYA_PROCESSING);
-        var_dump(2);
-
         $count = count($gatyaResults);
         /** @var SQLRepository $sqlRepo */
         $sqlRepo = CoralReefPlugin::$plugin->pool->get(SQLRepository::class);
 
         $sqlRepo->getValue($p->getXuid(), SQLConst::TYPE_TICKETS, $ticketType, function (array $rows) use ($ticketType, $gatyaLog, $gatyaResults, $sqlRepo, $p, $count): void {
-            var_dump(3);
             if (!$p->isOnline()) return;
 
 
@@ -82,14 +78,11 @@ class GatyaManager
             if ($row && isset($row["value"]) && intval($row["value"]) >= $count) {
                 /** @var LogRepository $logRepo */
                 $logRepo = CoralReefPlugin::$plugin->pool->get(LogRepository::class);
-                var_dump(4);
                 foreach ($gatyaResults as $result) {
-                    var_dump("process");
                     Await::f2c(function () use ($sqlRepo, $p, $gatyaLog, $xuid, $result, $logRepo): Generator {
-                        var_dump(5);
                         $logValue = $result->item->getNamedTag()->getString(ReefItems::REEF_SP_ITEM, "unknown");
                         yield from $logRepo->addLog(LogData::create($xuid, SQLConst::LOG_GATYA, $gatyaLog, $logValue));
-                        var_dump(6);
+
                         if ($p->isOnline()) {
                             $p->sendMessage("ガチャを引きました| " . $result->message);
                             if ($result->broadcastMessage != null) {
@@ -113,13 +106,11 @@ class GatyaManager
                         }
                     });
                 }
-                var_dump("comp");
 
                 $sqlRepo->setValue($xuid, SQLConst::TYPE_TICKETS, $ticketType, $row["value"] - $count, function () use ($xuid): void {
                     /** @var AccountStore $store */
                     $store = StoreHouse::$instance->get(AccountStore::class);
                     $store->setValue($xuid, KVConst::GATYA_PROCESSING, 0);
-                    var_dump("all comp");
                 }, function () use ($count, $xuid): void {
                     SocketService::sendBroadcastMessage(ReefEdgePlugin::$socketClient, "[gatya error]" . $xuid . "|" . $count);
                 });

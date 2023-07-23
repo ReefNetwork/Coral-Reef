@@ -50,7 +50,7 @@ class NormalGatya
             $results = [];
 
             $gatyaCount = 0;
-            while ($gatyaCount >= $number) {
+            while ($gatyaCount < $number) {
                 $gatyaCount++;
                 $lastReef++;
 
@@ -60,7 +60,6 @@ class NormalGatya
                 }
                 $results[] = $result;
             }
-            var_dump("a");
             GatyaManager::gatyaProcess($p, $results, self::GATYA_LOG, self::TICKET_TYPE);
         });
     }
