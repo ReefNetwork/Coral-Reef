@@ -46,6 +46,7 @@ class NormalGatya
     {
         Await::f2c(function () use ($number, $p): Generator {
             $xuid = $p->getXuid();
+            var_dump("run");
             $lastReef = yield from GatyaService::getLastReef($p->getXuid(), self::GATYA_LOG);
             $results = [];
 
@@ -60,6 +61,7 @@ class NormalGatya
                 }
                 $results[] = $result;
             }
+            var_dump("a");
             GatyaManager::gatyaProcess($p, $results, self::GATYA_LOG, self::TICKET_TYPE);
         });
     }

@@ -82,6 +82,7 @@ class GatyaService
         $repo = CoralReefPlugin::$plugin->pool->get(LogRepository::class);
         /** @var LogData[] $logs */
         $logs = yield from $repo->getLogNewer($xuid, $type);
+        var_dump($logs);
         for ($i = 0; $i < $limit; $i++) { // 99回のガチャ履歴を調べてReefRareを引いてなかったら確定
             $log = array_shift($logs);
 

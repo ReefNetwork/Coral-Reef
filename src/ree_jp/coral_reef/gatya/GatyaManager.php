@@ -33,7 +33,6 @@ use SOFe\AwaitGenerator\Await;
 
 class GatyaManager
 {
-    static array $isProcessing = [];
 
     static function addTicket(SQLRepository $repo, string $xuid, string $type, int $count, ?Closure $func = null): void
     {

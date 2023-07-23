@@ -13,6 +13,7 @@ namespace ree_jp\coral_reef\form\gatya;
 
 use bbo51dog\bboform\element\ClosureButton;
 use bbo51dog\bboform\form\SimpleForm;
+use Generator;
 use pocketmine\player\Player;
 use pocketmine\utils\TextFormat;
 use ree_jp\coral_reef\CoralReefPlugin;
@@ -50,11 +51,11 @@ class GatyaHistoryForm
     {
         /** @var LogRepository $repo */
         $repo = CoralReefPlugin::$plugin->pool->get(LogRepository::class);
-        Await::f2c(function () use ($id, $p, $repo): void {
+        Await::f2c(function () use ($id, $p, $repo): Generator {
             if (!$p->isOnline()) return;
 
             /** @var LogData[] $logs */
-            $logs = $repo->getLogNewer($p->getXuid(), $id);
+            yield from $logs = $repo->getLogNewer($p->getXuid(), $id);
             if (!$p->isOnline()) return;
 
             $history = [];
