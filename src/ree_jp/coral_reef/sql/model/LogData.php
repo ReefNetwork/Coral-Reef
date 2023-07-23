@@ -26,7 +26,7 @@ class LogData
     {
         $date = date(SQLConst::DATE_FORMAT, $this->time);
         if ($this->small != null) {
-            $date .= str_pad($this->small, 3, 0, STR_PAD_LEFT);
+            $date .= "." . str_pad($this->small, 3, 0, STR_PAD_LEFT);
         }
         return $date;
     }
