@@ -48,8 +48,8 @@ class GatyaForm
                     new ClosureButton("[gatya_info]詳細", null, function () use ($gatyaType, $p) {
                         $p->getServer()->dispatchCommand($p, "exe-p wp-view post " . GatyaService::GATYA[$gatyaType]["details"]);
                     }),
-                    new ClosureButton("[gatya_info]履歴", null, function () use ($p, $repo) {
-                        GatyaHistoryForm::sendForm($p, $repo);
+                    new ClosureButton("[gatya_info]履歴", null, function () use ($p) {
+                        GatyaHistoryForm::sendForm($p);
                     }),
                     new ClosureButton("[gatya_run]ガチャを引く", null, function () use ($gatyaType, $p, $repo, $ticketCount): void {
                         self::sendGatyaNumberChoices($repo, $p, $gatyaType, $ticketCount);
@@ -98,7 +98,7 @@ class GatyaForm
                     if ($tickets >= $num) {
                         switch ($gatyaType) {
                             case SQLConst::LOG_GATYA:
-                                NormalGatya::gatya($repo, $p, $num);
+                                NormalGatya::gatya($p, $num);
                                 break;
 
                             default:
@@ -116,8 +116,7 @@ class GatyaForm
                 }
             )
         );
-        $form->setTitle("Gatya -> Confirm")->setText("同時にガチャを引く行為は§c禁止§rです\n連続でガチャを引きたい場合は必ず全部引き終えてからガチャを引くようにお願いします\n"
-            . GatyaService::GATYA[$gatyaType]["name"] . "を$num 個消費してガチャを回しますか？\n$tickets -> $after");
+        $form->setTitle("Gatya -> Confirm")->setText(GatyaService::GATYA[$gatyaType]["name"] . "を$num 個消費してガチャを回しますか？\n$tickets -> $after");
         $p->sendForm($form);
     }
 }

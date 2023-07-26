@@ -6,15 +6,17 @@
  * CC    C oo  oo rr     aa  aaa lll RR  RR  eeeee  eeeee  ff
  *  CCCCC   oooo  rr      aaa aa lll RR   RR  eeeee  eeeee ff
  *
- * Copyright (c) 2023-2023. Ree-jp(https://ree-jp.net)
+ * Copyright (c) 2023. Ree-jp(https://ree-jp.net)
  */
 
-namespace ree_jp\coral_reef\account;
+namespace ree_jp\coral_reef\sql\repo;
 
-class KVConst
+use Generator;
+use ree_jp\coral_reef\sql\model\LogData;
+
+interface LogRepository extends Repository
 {
-    const TELEPORT_RESERVE = "teleport-reserve";
-    const WAIT_ACTION = "wait_action";
-    const GATYA_PROCESSING = "gatya-processing";
-    const LOG_SMALL = "log-small";
+    public function addLog(LogData $data): Generator;
+
+    public function getLogNewer(string $xuid, string $type): Generator;
 }

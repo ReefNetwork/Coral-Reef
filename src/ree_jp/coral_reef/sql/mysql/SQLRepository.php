@@ -15,7 +15,6 @@ use Closure;
 use ree_jp\coral_reef\money\MoneyCache;
 use ree_jp\coral_reef\sql\repo\Repository;
 use ree_jp\coral_reef\sql\RepositoryPool;
-use ree_jp\coral_reef\sql\SQLConst;
 
 class SQLRepository implements Repository
 {
@@ -78,18 +77,6 @@ class SQLRepository implements Repository
             $func, $failure);
     }
 
-    public function addLog(string $xuid, string $type, ?string $subType, ?string $value, ?string $time, ?Closure $func, ?Closure $failure): void
-    {
-        if ($time === 'now') $time = date(SQLConst::DATE_FORMAT);
-        $this->pool->getConnection()->executeInsert('coral_reef.log.add', ['xuid' => intval($xuid), 'type' => $type, 'subtype' => $subType, 'value' => $value,
-            'time' => $time], $func, $failure);
-    }
-
-    public function getLog(string $xuid, string $type, Closure $func, Closure $failure): void
-    {
-        $this->pool->getConnection()->executeSelect("coral_reef.log.get.type_sort_newest", ["xuid" => intval($xuid), "type" => $type], $func, $failure);
-    }
-
     private function createFunction(): void
     {
         $this->pool->getConnection()->executeGeneric("coral_reef.init.functions.add_value.reset");
@@ -100,6 +87,5 @@ class SQLRepository implements Repository
     {
         $this->pool->getConnection()->executeGeneric('coral_reef.init.tables.money');
         $this->pool->getConnection()->executeGeneric('coral_reef.init.tables.virtual_value');
-        $this->pool->getConnection()->executeGeneric('coral_reef.init.tables.log');
     }
 }

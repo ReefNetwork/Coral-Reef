@@ -11,7 +11,11 @@
 
 namespace ree_jp\coral_reef\gatya;
 
+use Generator;
 use pocketmine\utils\TextFormat;
+use ree_jp\coral_reef\CoralReefPlugin;
+use ree_jp\coral_reef\sql\model\LogData;
+use ree_jp\coral_reef\sql\repo\LogRepository;
 use ree_jp\coral_reef\sql\SQLConst;
 
 class GatyaService
@@ -69,5 +73,22 @@ class GatyaService
     {
         if (isset(self::TICKETS[$ticket])) return self::TICKETS[$ticket];
         return $ticket;
+    }
+
+    // 最後に引いたReefが何回前か
+    static function getLastReef(string $xuid, string $type, int $limit = 100): Generator
+    {
+        /** @var $repo LogRepository */
+        $repo = CoralReefPlugin::$plugin->pool->get(LogRepository::class);
+        /** @var LogData[] $logs */
+        $logs = yield from $repo->getLogNewer($xuid, $type);
+        for ($i = 0; $i < $limit; $i++) { // 99回のガチャ履歴を調べてReefRareを引いてなかったら確定
+            $log = array_shift($logs);
+
+            if (is_null($log) || ($log->subtype === "reef_rare")) {
+                return $i;
+            }
+        }
+        return $limit;
     }
 }

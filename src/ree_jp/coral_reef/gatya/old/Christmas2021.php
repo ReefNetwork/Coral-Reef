@@ -6,10 +6,10 @@
  * CC    C oo  oo rr     aa  aaa lll RR  RR  eeeee  eeeee  ff
  *  CCCCC   oooo  rr      aaa aa lll RR   RR  eeeee  eeeee ff
  *
- * Copyright (c) 2021. Ree-jp(https://ree-jp.net)
+ * Copyright (c) 2021-2023. Ree-jp(https://ree-jp.net)
  */
 
-namespace ree_jp\coral_reef\gatya\event;
+namespace ree_jp\coral_reef\gatya\old;
 
 use pocketmine\item\VanillaItems;
 use pocketmine\player\Player;

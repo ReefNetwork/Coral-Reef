@@ -105,7 +105,7 @@ CREATE TABLE IF NOT EXISTS LOG
     type    VARCHAR(99)     NOT NULL,
     subtype VARCHAR(99),
     value   VARCHAR(99)     NOT NULL,
-    time    DATETIME
+    time DATETIME(3)
 );
 -- #            }
 -- #            { session

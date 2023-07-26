@@ -13,14 +13,16 @@ namespace ree_jp\coral_reef\form\gatya;
 
 use bbo51dog\bboform\element\ClosureButton;
 use bbo51dog\bboform\form\SimpleForm;
+use Generator;
 use pocketmine\player\Player;
-use pocketmine\Server;
 use pocketmine\utils\TextFormat;
-use poggit\libasynql\SqlError;
+use ree_jp\coral_reef\CoralReefPlugin;
 use ree_jp\coral_reef\form\PageViewForm;
 use ree_jp\coral_reef\gatya\items\SpecialItemService;
-use ree_jp\coral_reef\sql\mysql\SQLRepository;
+use ree_jp\coral_reef\sql\model\LogData;
+use ree_jp\coral_reef\sql\repo\LogRepository;
 use ree_jp\coral_reef\sql\SQLConst;
+use SOFe\AwaitGenerator\Await;
 
 class GatyaHistoryForm
 {
@@ -31,44 +33,48 @@ class GatyaHistoryForm
         SQLConst::LOG_GATYA_SNOW_CANDY => TextFormat::WHITE . "Snow" . TextFormat::RED . "Candy" . TextFormat::RESET . "ガチャ",
         SQLConst::LOG_GATYA_STEAM_PUNK => TextFormat::GRAY . "Steam" . TextFormat::WHITE . "Punk" . TextFormat::RESET . "ガチャ",];
 
-    static function sendForm(Player $p, SQLRepository $repo): void
+    static function sendForm(Player $p): void
     {
         $form = new SimpleForm();
         $form->setTitle("Gatya -> History");
         foreach (self::GATYA_LIST as $id => $name) {
             $form->addElement(new ClosureButton($name, null,
-                function (Player $p) use ($id, $repo): void {
-                    self::sendHistoryForm($p, $repo, $id);
+                function (Player $p) use ($id): void {
+                    self::sendHistoryForm($p, $id);
                 }
             ));
         }
         $p->sendForm($form);
     }
 
-    static function sendHistoryForm(Player $p, SQLRepository $repo, string $id): void
+    static function sendHistoryForm(Player $p, string $id): void
     {
-        $repo->getLog($p->getXuid(), $id, function (array $rows) use ($id, $p): void {
+        /** @var LogRepository $repo */
+        $repo = CoralReefPlugin::$plugin->pool->get(LogRepository::class);
+        Await::f2c(function () use ($id, $p, $repo): Generator {
+            if (!$p->isOnline()) return;
+
+            /** @var LogData[] $logs */
+            $logs = yield from $repo->getLogNewer($p->getXuid(), $id);
+            if (!$p->isOnline()) return;
+
             $history = [];
-            $historyCount = count($rows);
+            $historyCount = count($logs);
             $lastReef = 0;
-            foreach ($rows as $row) {
-                $rare = $row["subtype"] ?? "不明";
+            foreach ($logs as $log) {
+                $rare = $log->subtype ?? "不明";
                 if ($rare === "reef_rare") {
                     $rare = TextFormat::GREEN . $rare . TextFormat::RESET;
                     if ($lastReef === 0) $lastReef = $historyCount;
                 }
 
-                $item = SpecialItemService::getRenewItem($p->getXuid(), $row["value"], 0, 1, null);
+                $item = SpecialItemService::getRenewItem($p->getXuid(), $log->value, 0, 1, null);
                 $history[] = "$historyCount |レア度 [$rare] : アイテム名 [" . $item?->getCustomName() . TextFormat::RESET . "]" .
-                    TextFormat::DARK_GRAY . "(" . $row["time"] . ")" . TextFormat::RESET;
+                    TextFormat::DARK_GRAY . "(" . $log->toDate() . ")" . TextFormat::RESET;
                 $historyCount--;
             }
-            PageViewForm::sendForm($p, "GatyaHistory -> $id", "最後に引いたReefToolは" . count($rows) - $lastReef . "回前です",
+            PageViewForm::sendForm($p, "GatyaHistory -> $id", "最後に引いたReefToolは" . count($logs) - $lastReef . "回前です",
                 $history, 100);
-        }, function (SqlError $error) use ($p) {
-            if (!$p->isOnline()) return;
-            $p->sendMessage("エラーが発生しました");
-            Server::getInstance()->getLogger()->error("[GatyaHistory] " . $p->getName() . "さんの処理中に" . $error->getErrorMessage());
         });
     }
 }

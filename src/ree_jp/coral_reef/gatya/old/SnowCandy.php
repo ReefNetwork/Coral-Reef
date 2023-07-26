@@ -5,18 +5,18 @@
  * CC      oo  oo rrr  r  aa aaa lll RRRRRR  ee   e ee   e ffff
  * CC    C oo  oo rr     aa  aaa lll RR  RR  eeeee  eeeee  ff
  *  CCCCC   oooo  rr      aaa aa lll RR   RR  eeeee  eeeee ff
- *  
- * Copyright (c) 2022. Ree-jp(https://ree-jp.net)
+ *
+ * Copyright (c) 2022-2023. Ree-jp(https://ree-jp.net)
  */
 
-namespace ree_jp\coral_reef\gatya\event;
+namespace ree_jp\coral_reef\gatya\old;
 
 use pocketmine\player\Player;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat;
 use poggit\libasynql\SqlError;
 use ree_jp\coral_reef\gatya\GatyaManager;
-use ree_jp\coral_reef\gatya\items\event\HalloweenNightItems;
+use ree_jp\coral_reef\gatya\items\event\SnowCandyItem;
 use ree_jp\coral_reef\gatya\items\NormalItems;
 use ree_jp\coral_reef\gatya\items\RareItems;
 use ree_jp\coral_reef\gatya\items\SuperItems;
@@ -24,14 +24,17 @@ use ree_jp\coral_reef\gatya\items\UltimateItems;
 use ree_jp\coral_reef\sql\mysql\SQLRepository;
 use ree_jp\coral_reef\sql\SQLConst;
 
-class HalloweenNight
+class SnowCandy
 {
+    const LOG = SQLConst::LOG_GATYA_SNOW_CANDY;
+    const TICKET = SQLConst::TICKETS_CHRISTMAS_2022;
+
     /** @noinspection DuplicatedCode */
     static function gatya(SQLRepository $repo, Player $p, int $number = 1): void
     {
         if ($number <= 0) return;
         $xuid = $p->getXuid();
-        $repo->getLog($xuid, SQLConst::LOG_GATYA_HALLOWEEN_NIGHT, function (array $rows) use ($repo, $number, $p, $xuid) {
+        $repo->getLog($xuid, self::LOG, function (array $rows) use ($repo, $number, $p, $xuid) {
             $firstRand = mt_rand(1, 1000);
             $isLimit = true;
             for ($i = 1; $i < 100; $i++) { // 99回のガチャ履歴を調べてReefRareを引いてなかったら確定
@@ -50,16 +53,16 @@ class HalloweenNight
             switch (true) {
                 case ($firstRand <= 5) || $isLimit:// 0.5% or 天井
                     $item = match (mt_rand(1, 10)) {
-                        1, 2, 3 => HalloweenNightItems::getItem($xuid, HalloweenNightItems::PICKAXE),
+                        1, 2, 3 => SnowCandyItem::getItem($xuid, SnowCandyItem::PICKAXE),
 
-                        4, 5, 6 => HalloweenNightItems::getItem($xuid, HalloweenNightItems::SHOVEL),
+                        4, 5, 6 => SnowCandyItem::getItem($xuid, SnowCandyItem::SHOVEL),
 
-                        7, 8, 9 => HalloweenNightItems::getItem($xuid, HalloweenNightItems::AXE),
+                        7, 8, 9 => SnowCandyItem::getItem($xuid, SnowCandyItem::AXE),
 
-                        10 => HalloweenNightItems::getItem($xuid, HalloweenNightItems::HOE),
+                        10 => SnowCandyItem::getItem($xuid, SnowCandyItem::HOE),
                     };
-                    GatyaManager::gatyaProcess($repo, SQLConst::LOG_GATYA_HALLOWEEN_NIGHT, $p, SQLConst::TICKETS_NORMAL, 1, $item, 'reef_rare',
-                        TextFormat::GOLD . "Halloween" . TextFormat::DARK_PURPLE . "Night" . TextFormat::DARK_GRAY . '[0.5%]' . TextFormat::RESET, true, $func);
+                    GatyaManager::gatyaProcess($repo, self::LOG, $p, self::TICKET, 1, $item, 'reef_rare',
+                        TextFormat::WHITE . "Snow" . TextFormat::RED . "Candy" . TextFormat::DARK_GRAY . '[0.5%]' . TextFormat::RESET, true, $func);
                     break;
 
                 case $firstRand <= (5 + 25):// 2.5%
@@ -77,7 +80,7 @@ class HalloweenNight
                             $p->sendMessage('エラーが発生しました');
                             return;
                     }
-                    GatyaManager::gatyaProcess($repo, SQLConst::LOG_GATYA_HALLOWEEN_NIGHT, $p, SQLConst::TICKETS_NORMAL, 1, $item, 'ultimate_rare',
+                    GatyaManager::gatyaProcess($repo, self::LOG, $p, self::TICKET, 1, $item, 'ultimate_rare',
                         TextFormat::GOLD . 'ウルトラレア' . TextFormat::DARK_GRAY . '[2.5%]' . TextFormat::RESET, false, $func);
                     break;
 
@@ -93,7 +96,7 @@ class HalloweenNight
                             $p->sendMessage('エラーが発生しました');
                             return;
                     }
-                    GatyaManager::gatyaProcess($repo, SQLConst::LOG_GATYA_HALLOWEEN_NIGHT, $p, SQLConst::TICKETS_NORMAL, 1, $item, 'super_rare',
+                    GatyaManager::gatyaProcess($repo, self::LOG, $p, self::TICKET, 1, $item, 'super_rare',
                         TextFormat::BLUE . 'スーパーレア' . TextFormat::DARK_GRAY . '[10%]' . TextFormat::RESET, false, $func);
                     break;
 
@@ -109,13 +112,13 @@ class HalloweenNight
                             $p->sendMessage('エラーが発生しました');
                             return;
                     }
-                    GatyaManager::gatyaProcess($repo, SQLConst::LOG_GATYA_HALLOWEEN_NIGHT, $p, SQLConst::TICKETS_NORMAL, 1, $item, 'rare',
+                    GatyaManager::gatyaProcess($repo, self::LOG, $p, self::TICKET, 1, $item, 'rare',
                         TextFormat::AQUA . 'レア' . TextFormat::DARK_GRAY . '[30%]' . TextFormat::RESET, false, $func);
                     break;
 
                 default:// 残り
                     $item = NormalItems::getItemInt($xuid, mt_rand(1, 7));
-                    GatyaManager::gatyaProcess($repo, SQLConst::LOG_GATYA_HALLOWEEN_NIGHT, $p, SQLConst::TICKETS_NORMAL, 1, $item, 'normal',
+                    GatyaManager::gatyaProcess($repo, self::LOG, $p, self::TICKET, 1, $item, 'normal',
                         TextFormat::DARK_GRAY . 'ノーマル' . TextFormat::RESET, false, $func);
                     break;
             }

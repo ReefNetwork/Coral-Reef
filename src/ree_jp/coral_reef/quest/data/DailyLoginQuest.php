@@ -12,9 +12,12 @@
 namespace ree_jp\coral_reef\quest\data;
 
 use pocketmine\Server;
+use ree_jp\coral_reef\CoralReefPlugin;
 use ree_jp\coral_reef\gatya\GatyaManager;
 use ree_jp\coral_reef\quest\QuestListener;
+use ree_jp\coral_reef\sql\model\LogData;
 use ree_jp\coral_reef\sql\mysql\SQLRepository;
+use ree_jp\coral_reef\sql\repo\LogRepository;
 use ree_jp\coral_reef\sql\SQLConst;
 
 class DailyLoginQuest extends DailyQuest
@@ -33,8 +36,9 @@ class DailyLoginQuest extends DailyQuest
         if ($this->value !== "true") {
             $this->value = "true";
             QuestListener::callSubscribedQuest($this->xuid, QuestListener::CLEAR_QUEST, $this);
-            $this->repo->addLog($this->xuid, SQLConst::LOG_QUEST, static::ID, SQLConst::COMPLETE,
-                SQLConst::NOW_TIME, null, null);
+            /** @var LogRepository $repo */
+            $repo = CoralReefPlugin::$plugin->pool->get(LogRepository::class);
+            $repo->addLog(LogData::create($this->xuid, SQLConst::LOG_QUEST, static::ID, SQLConst::COMPLETE));
             GatyaManager::addTicket($this->repo, $this->xuid, static::BONUS_TICKET, 1);
             foreach (Server::getInstance()->getOnlinePlayers() as $p) {
                 if ($p->getXuid() === $xuid) $p->sendMessage("ログインボーナスで" . static::BONUS_TICKET_NAME . "×1枚を受け取りました");
