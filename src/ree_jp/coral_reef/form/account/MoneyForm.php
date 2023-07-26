@@ -72,10 +72,16 @@ class MoneyForm
 
                 $target = AccountService::getPlayerByXuid($targetXuid);
                 if ($target instanceof Player) $target->sendMessage($p->getName() . "さんから§6" . MoneyService::moneyFormat($amount) . "円§r送金されました");
-                ReefEdgePlugin::$socketClient->send(new SocketData("discord-message", ["message" => $p->getName() . " => " . $target->getName() . " : " . MoneyService::moneyFormat($amount),
+
+                /** @var AccountStore $store */
+                $store = StoreHouse::$instance->get(AccountStore::class);
+                $targetName = $store->getUserName($targetXuid);
+                if ($targetName === "") $targetName = $targetXuid;
+
+                ReefEdgePlugin::$socketClient->send(new SocketData("discord-message", ["message" => $p->getName() . " => " . $targetName . " : " . MoneyService::moneyFormat($amount),
                     "channelID" => "1118893132025708604"]));
                 if ($amount >= 100000000) { //1億以上は報告チャンネルにも
-                    ReefEdgePlugin::$socketClient->send(new SocketData("discord-message", ["message" => $p->getName() . " => " . $target->getName() . " : " . MoneyService::moneyFormat($amount),
+                    ReefEdgePlugin::$socketClient->send(new SocketData("discord-message", ["message" => $p->getName() . " => " . $targetName . " : " . MoneyService::moneyFormat($amount),
                         "channelID" => "1081257724202983444"]));
                 }
             });
