@@ -1,4 +1,4 @@
-<?php /** @noinspection ALL */
+<?php /** @noinspection DuplicatedCode */
 
 /*
  *  CCCCC                        lll RRRRRR                 fff
@@ -7,28 +7,29 @@
  * CC    C oo  oo rr     aa  aaa lll RR  RR  eeeee  eeeee  ff
  *  CCCCC   oooo  rr      aaa aa lll RR   RR  eeeee  eeeee ff
  *
- * Copyright (c) 2021. Ree-jp(https://ree-jp.net)
+ * Copyright (c) 2023. Ree-jp(https://ree-jp.net)
  */
 
-namespace ree_jp\coral_reef\gatya;
+namespace ree_jp\coral_reef\gatya\event;
 
 use Generator;
 use pocketmine\player\Player;
 use pocketmine\utils\TextFormat;
-use ree_jp\coral_reef\gatya\items\event\HalloweenNightItems;
-use ree_jp\coral_reef\gatya\items\event\HalloweenPartyItems;
+use ree_jp\coral_reef\gatya\GatyaManager;
+use ree_jp\coral_reef\gatya\GatyaResult;
+use ree_jp\coral_reef\gatya\GatyaService;
+use ree_jp\coral_reef\gatya\items\event\AtomicReefItem;
 use ree_jp\coral_reef\gatya\items\NormalItems;
 use ree_jp\coral_reef\gatya\items\RareItems;
-use ree_jp\coral_reef\gatya\items\ReefItems;
 use ree_jp\coral_reef\gatya\items\SuperItems;
 use ree_jp\coral_reef\gatya\items\UltimateItems;
 use ree_jp\coral_reef\sql\SQLConst;
 use SOFe\AwaitGenerator\Await;
 
-class NormalGatya
+class AtomicReefGatya
 {
-    const GATYA_LOG = SQLConst::LOG_GATYA;
-    const TICKET_TYPE = SQLConst::TICKETS_NORMAL;
+    const GATYA_LOG = SQLConst::LOG_GATYA_ATOMIC;
+    const TICKET_TYPE = SQLConst::TICKETS_SUMMER_2023;
     const PROBABILITY = [
         self::REEF_RARE => 5, // 0.5%
         self::ULTIMATE_RARE => 25, // 2.5%
@@ -88,40 +89,15 @@ class NormalGatya
 
         switch ($rarity) {
             case self::REEF_RARE:
-                if (mt_rand(1, 10) < 5) { // 40%の確率でTool
-                    $item = match (mt_rand(1, 10)) {
-                        1, 2, 3 => match (mt_rand(1, 3)) {
-                            1 => ReefItems::getItem($xuid, ReefItems::PICKAXE),
-                            2 => HalloweenNightItems::getItem($xuid, HalloweenNightItems::PICKAXE),
-                            3 => HalloweenPartyItems::getItem($xuid, HalloweenPartyItems::PICKAXE),
-                        },
+                $item = match (mt_rand(1, 10)) {
+                    1, 2, 3 => AtomicReefItem::getItem($xuid, AtomicReefItem::PICKAXE),
 
-                        4, 5, 6 => match (mt_rand(1, 3)) {
-                            1 => ReefItems::getItem($xuid, ReefItems::SHOVEL),
-                            2 => HalloweenNightItems::getItem($xuid, HalloweenNightItems::SHOVEL),
-                            3 => HalloweenPartyItems::getItem($xuid, HalloweenPartyItems::SHOVEL),
-                        },
+                    4, 5, 6 => AtomicReefItem::getItem($xuid, AtomicReefItem::SHOVEL),
 
-                        7, 8, 9 => match (mt_rand(1, 3)) {
-                            1 => ReefItems::getItem($xuid, ReefItems::AXE),
-                            2 => HalloweenNightItems::getItem($xuid, HalloweenNightItems::AXE),
-                            3 => HalloweenPartyItems::getItem($xuid, HalloweenPartyItems::AXE),
-                        },
+                    7, 8, 9 => AtomicReefItem::getItem($xuid, AtomicReefItem::AXE),
 
-                        10 => match (mt_rand(1, 3)) {
-                            1 => ReefItems::getItem($xuid, ReefItems::HOE),
-                            2 => HalloweenNightItems::getItem($xuid, HalloweenNightItems::HOE),
-                            3 => HalloweenPartyItems::getItem($xuid, HalloweenPartyItems::HOE),
-                        },
-                    };
-                } else { // 60%の確率で防具
-                    $item = match (mt_rand(1, 4)) {
-                        1 => ReefItems::getItem($xuid, ReefItems::HELMET),
-                        2 => ReefItems::getItem($xuid, ReefItems::CHEST_PLATE),
-                        3 => ReefItems::getItem($xuid, ReefItems::LEGGINGS),
-                        4 => ReefItems::getItem($xuid, ReefItems::BOOTS),
-                    };
-                }
+                    10 => AtomicReefItem::getItem($xuid, AtomicReefItem::HOE),
+                };
                 $broadMessage = TextFormat::GREEN . "REEFレア" . TextFormat::RESET . "を引きました" . $percent;
                 return new GatyaResult($rarity, TextFormat::GREEN . "REEFレア" . $percent, $item, $broadMessage);
 

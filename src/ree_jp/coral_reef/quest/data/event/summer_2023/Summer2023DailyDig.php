@@ -9,16 +9,16 @@
  * Copyright (c) 2022-2023. Ree-jp(https://ree-jp.net)
  */
 
-namespace ree_jp\coral_reef\quest\data\event\summer_2022;
+namespace ree_jp\coral_reef\quest\data\event\summer_2023;
 
 use ree_jp\coral_reef\quest\data\DailyDigQuest;
 use ree_jp\coral_reef\sql\SQLConst;
 
-class Summer2022DailyDig extends DailyDigQuest
+class Summer2023DailyDig extends DailyDigQuest
 {
-    const ID = "summer_2022_dig";
-    const NAME = "2022夏限定!整地(毎日)";
+    const ID = "summer_2023_dig";
+    const NAME = "2023夏限定!整地(毎日)";
 
-    const BONUS_TICKET = SQLConst::TICKETS_SUMMER_2022;
+    const BONUS_TICKET = SQLConst::TICKETS_SUMMER_2023;
     const BONUS_TICKET_NAME = "§bサマー§rガチャチケット";
 }

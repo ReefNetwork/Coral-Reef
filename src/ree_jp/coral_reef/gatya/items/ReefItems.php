@@ -19,6 +19,7 @@ use pocketmine\item\ItemFactory;
 use pocketmine\item\VanillaItems;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\utils\TextFormat;
+use ree_jp\coral_reef\gatya\items\event\AtomicReefItem;
 use ree_jp\coral_reef\gatya\items\event\Christmas2021ReefItems;
 use ree_jp\coral_reef\gatya\items\event\HalloweenNightItems;
 use ree_jp\coral_reef\gatya\items\event\HalloweenPartyItems;
@@ -175,5 +176,6 @@ class ReefItems
         HalloweenNightItems::registerItems();
         HalloweenPartyItems::registerItems();
         SnowCandyItem::registerItems();
+        AtomicReefItem::registerItems();
     }
 }

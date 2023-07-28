@@ -71,7 +71,7 @@ class ScoreBoardService
             self::setScore($pk, 5, $land->name);
         }
 
-//        self::setScore($pk, 7, TextFormat::RED . "クリスマス§" . self::color[mt_rand(0, 17)] . "イベント§r 開催中");
+        self::setScore($pk, 7, TextFormat::BLUE . "Summer§" . self::color[mt_rand(0, 17)] . "イベント§r 開催中");
 
         self::setScore($pk, 8, TextFormat::DARK_GRAY . $p->getDisplayName());
         self::setScore($pk, 9, TextFormat::DARK_GRAY . date("Y/m/d H:i"));

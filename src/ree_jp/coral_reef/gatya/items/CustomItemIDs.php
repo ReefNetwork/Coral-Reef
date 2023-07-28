@@ -43,4 +43,9 @@ interface CustomItemIDs
     const STEAM_PUNK_SHOVEL = 6042;
     const STEAM_PUNK_AXE = 6043;
     const STEAM_PUNK_HOE = 6044;
+
+    const ATOMIC_PICKAXE = 6051;
+    const ATOMIC_SHOVEL = 6052;
+    const ATOMIC_AXE = 6053;
+    const ATOMIC_HOE = 6054;
 }
