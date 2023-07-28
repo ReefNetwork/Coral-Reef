@@ -19,6 +19,7 @@ use bbo51dog\bboform\form\ModalForm;
 use bbo51dog\bboform\form\SimpleForm;
 use pocketmine\player\Player;
 use ree_jp\coral_reef\gatya\event\AtomicReefGatya;
+use ree_jp\coral_reef\gatya\event\Summer2022Re1;
 use ree_jp\coral_reef\gatya\GatyaService;
 use ree_jp\coral_reef\gatya\NormalGatya;
 use ree_jp\coral_reef\sql\mysql\SQLRepository;
@@ -104,6 +105,10 @@ class GatyaForm
 
                             case SQLConst::LOG_GATYA_ATOMIC:
                                 AtomicReefGatya::gatya($p, $num);
+                                break;
+
+                            case SQLConst::LOG_GATYA_SUMMER_2022_RE_1:
+                                Summer2022Re1::gatya($p, $num);
                                 break;
 
                             default:
