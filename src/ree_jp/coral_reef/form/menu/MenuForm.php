@@ -55,74 +55,87 @@ class MenuForm
                 ->setText("§7現在のレベル §8: §f$level \n§7レベルアップまで §8: §f$necessaryExperience §7経験値\n§7経験値 §8: §f$exp\n§7所持金 §8: §f" . MoneyService::moneyFormat($money))
                 ->addElements(
                     new ClosureButton(
-                        "[grid_panel]ストレージ \n§7StackStorageを開きます", new ButtonImage(ButtonImage::TYPE_PATH, "textures/items/compass_item.png"),
+                        "[grid_panel]§fストレージ", new ButtonImage(ButtonImage::TYPE_PATH, "textures/items/chest.png"),
                         function (Player $p) {
                             Server::getInstance()->dispatchCommand($p, 'stackstorage');
                             $p->sendMessage(TextFormat::DARK_GRAY . "ストレージを開いています(数秒かかることがあります)");
                         }
                     ),
                     new ClosureButton(
-                        "[grid_panel]ワープ地点 \n§7自分だけのワープ地点を作成します", new ButtonImage(ButtonImage::TYPE_PATH, "textures/items/compass_item.png"),
+                        "[grid_panel]§7ワープ地点", new ButtonImage(ButtonImage::TYPE_PATH, "textures/items/compass_item.png"),
                         function (Player $p) use ($pool) {
                             MyWarpForm::sendForm($pool, $p);
                         }),
                     new ClosureButton(
-                        "[grid_panel]ワールド移動 \n§7ロビーやショップに移動ができます", null, function (Player $p) {
-                        WorldTeleportForm::sendForm($p);
-                    }),
+                        "[grid_panel]§7ワールド移動", new ButtonImage(ButtonImage::TYPE_URL, "https://cdn-icons-png.flaticon.com/512/2072/2072130.png"),
+                        function (Player $p) {
+                            WorldTeleportForm::sendForm($p);
+                        }),
                     new ClosureButton(
-                        "[grid_panel]スキル設定 \n§7掘った時に発動するスキルを設定できます", null, function (Player $p) use ($store) {
-                        SkillSettingForm::sendForm($store, $p);
-                    }),
+                        "[grid_panel]§7スキル設定", new ButtonImage(ButtonImage::TYPE_PATH, "textures/items/nether_star.png"),
+                        function (Player $p) use ($store) {
+                            SkillSettingForm::sendForm($store, $p);
+                        }),
                     new ClosureButton(
-                        "[grid_panel]クエスト \n§7チュートリアルなどがあります", null, function (Player $p) {
-                        QuestForm::sendForm($p);
-                    }),
+                        "[grid_panel]§7クエスト", new ButtonImage(ButtonImage::TYPE_PATH, "textures/items/apple.png"),
+                        function (Player $p) {
+                            QuestForm::sendForm($p);
+                        }),
                     new ClosureButton(
-                        "[grid_panel]ランダムワープ \n§7ランダムな場所にワープします", null, function (Player $p) use ($pool, $store) {
-                        self::sendRandomWarpForm($pool, $store, $p);
-                    }),
+                        "[grid_panel]§7ランダムワープ", new ButtonImage(ButtonImage::TYPE_PATH, "textures/items/apple.png"),
+                        function (Player $p) use ($pool, $store) {
+                            self::sendRandomWarpForm($pool, $store, $p);
+                        }),
                     new ClosureButton(
-                        "[grid_panel]ゴミ箱 \n§7アイテムを捨てる事ができます", null,
+                        "[grid_panel]§7ゴミ箱", new ButtonImage(ButtonImage::TYPE_PATH, "textures/items/apple.png"),
                         function (Player $p) {
                             Server::getInstance()->dispatchCommand($p, "trash");
                         }
                     ),
                     new ClosureButton(
-                        "[grid_panel]土地保護 \n§7土地を編集したり作成ができます", null, function (Player $p) {
-                        Server::getInstance()->dispatchCommand($p, "reef-form land");
-                    }),
+                        "[grid_panel]§7土地保護", new ButtonImage(ButtonImage::TYPE_PATH, "textures/items/apple.png"),
+                        function (Player $p) {
+                            Server::getInstance()->dispatchCommand($p, "reef-form land");
+                        }),
                     new ClosureButton(
-                        "[grid_panel]ランキング \n§7所持金ランキングなどが見れます", null, function (Player $p) use ($pool, $store) {
-                        RankingForm::sendForm($pool, $store, $p);
-                    }),
+                        "[grid_panel]§7ランキング", new ButtonImage(ButtonImage::TYPE_PATH, "textures/items/apple.png"),
+                        function (Player $p) use ($pool, $store) {
+                            RankingForm::sendForm($pool, $store, $p);
+                        }),
                     new ClosureButton(
-                        "[grid_panel]ガチャ \n§7ガチャチケットでひくことができます", null, function (Player $p) use ($sqlRepo) {
-                        GatyaForm::sendForm($sqlRepo, $p);
-                    }),
+                        "[grid_panel]§7ガチャ", new ButtonImage(ButtonImage::TYPE_PATH, "textures/items/apple.png"),
+                        function (Player $p) use ($sqlRepo) {
+                            GatyaForm::sendForm($sqlRepo, $p);
+                        }),
                     new ClosureButton(
-                        "[grid_panel]ギフト \n§7ギフトがある場合はここから受け取れます", null, function (Player $p) use ($sqlRepo, $store) {
-                        GiftForm::sendForm($sqlRepo, $store, $p);
-                    }),
+                        "[grid_panel]§7ギフト", new ButtonImage(ButtonImage::TYPE_PATH, "textures/items/apple.png"),
+                        function (Player $p) use ($sqlRepo, $store) {
+                            GiftForm::sendForm($sqlRepo, $store, $p);
+                        }),
                     new ClosureButton(
-                        "[grid_panel]ボーナスコード \n§7運営が配布するコードで特別なアイテムが受け取れます", null, function (Player $p) use ($sqlRepo) {
-                        BonusCodeForm::sendForm($sqlRepo, $p);
-                    }),
+                        "[grid_panel]§7ボーナスコード", new ButtonImage(ButtonImage::TYPE_PATH, "textures/items/apple.png"),
+                        function (Player $p) use ($sqlRepo) {
+                            BonusCodeForm::sendForm($sqlRepo, $p);
+                        }),
                     new ClosureButton(
-                        "[grid_panel]サーバー移動 \n§7整地2などへの移動ができます", null, function (Player $p) {
-                        Server::getInstance()->dispatchCommand($p, "exe-p server-select");
-                    }),
+                        "[grid_panel]§7サーバー移動", new ButtonImage(ButtonImage::TYPE_PATH, "textures/items/apple.png"),
+                        function (Player $p) {
+                            Server::getInstance()->dispatchCommand($p, "exe-p server-select");
+                        }),
                     new ClosureButton(
-                        "[grid_panel]設定", null, function (Player $p) use ($sqlRepo) {
-                        SettingForm::sendForm($sqlRepo, $p);
-                    }),
+                        "[grid_panel]§7設定", new ButtonImage(ButtonImage::TYPE_PATH, "textures/items/apple.png"),
+                        function (Player $p) use ($sqlRepo) {
+                            SettingForm::sendForm($sqlRepo, $p);
+                        }),
                     new ClosureButton(
-                        "[grid_panel]アカウント設定 \n§7称号の変更や自分の情報を確認できます", null, function (Player $p) {
-                        Server::getInstance()->dispatchCommand($p, "exe-p setting");
-                    }),
-                    new ClosureButton("[grid_panel]解説 \n§7機能の解説やルールの確認ができます", null, function () use ($p): void {
-                        DocsForm::sendForm($p);
-                    }),
+                        "[grid_panel]§7アカウント設定", new ButtonImage(ButtonImage::TYPE_PATH, "textures/items/apple.png"),
+                        function (Player $p) {
+                            Server::getInstance()->dispatchCommand($p, "exe-p setting");
+                        }),
+                    new ClosureButton("[grid_panel]§7解説", new ButtonImage(ButtonImage::TYPE_PATH, "textures/items/apple.png"),
+                        function () use ($p): void {
+                            DocsForm::sendForm($p);
+                        }),
                     new Button("[close]"),
                 );
             $p->sendForm($form);
