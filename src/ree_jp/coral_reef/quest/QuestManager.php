@@ -77,8 +77,8 @@ class QuestManager
             WeeklyAchieveQuest::ID => new WeeklyAchieveQuest($repo, $xuid, $value),
 
             // 期間限定
-//            Christmas2022DailyLogin::ID => new Christmas2022DailyLogin($repo, $xuid, $value),
-//            Christmas2022DailyDig::ID => new Christmas2022DailyDig($repo, $xuid, $value),
+            Summer2023DailyLogin::ID => new Summer2023DailyLogin($repo, $xuid, $value),
+            Summer2023DailyDig::ID => new Summer2023DailyDig($repo, $xuid, $value),
 
             default => null,
         };
