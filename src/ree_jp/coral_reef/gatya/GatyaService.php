@@ -67,7 +67,7 @@ class GatyaService
             "details" => "steampunk-gacha", "ticket" => SQLConst::TICKETS_NORMAL
         ],
         SQLConst::LOG_GATYA_SUMMER_2022_RE_1 => [
-            "name" => "サマーガチャ2022復刻(1)", "image" => "textures\ui\gatya\summer2022gatya.png",
+            "name" => "サマーガチャ2022復刻(1)", "image" => "textures/ui/gatya/summer2022gatya",
             "pick_up_image" => ["textures/items/summer2022/pickaxe", "textures/items/summer2022/axe",
                 "textures/items/summer2022/shovel", "textures/items/summer2022/hoe"],
             "details" => "reinstatting-summer-event-limited-gacha-2022",

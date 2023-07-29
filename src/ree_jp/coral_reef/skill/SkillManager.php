@@ -95,7 +95,7 @@ class SkillManager
             $store->setValue($xuid, "event_ticket_cool_down", 20 * 10);
             if (mt_rand(1, 33) === 1) {
                 GatyaManager::addTicket($repo, $xuid, SQLConst::TICKETS_SUMMER_2023, 1);
-                $p->sendMessage("§bクリスマス§rガチャチケットを入手しました");
+                $p->sendMessage("§9サマー§rガチャチケットを入手しました");
             }
         }
 
