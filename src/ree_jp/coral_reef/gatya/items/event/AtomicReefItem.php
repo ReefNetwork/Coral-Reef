@@ -84,7 +84,6 @@ class AtomicReefItem extends ReefItems
             default:
                 return null;
         }
-        var_dump($type);
         var_dump($item);
         if (!$item instanceof Durable) return null;
 
