@@ -82,10 +82,10 @@ class AtomicReefItem extends ReefItems
                 $item->addEnchantment(new EnchantmentInstance(VanillaEnchantments::SILK_TOUCH(), 10));
                 break;
             default:
-                var_dump("nooo");
                 return null;
         }
-        var_dump("b");
+        var_dump($type);
+        var_dump($item);
         if (!$item instanceof Durable) return null;
 
         var_dump("c");
