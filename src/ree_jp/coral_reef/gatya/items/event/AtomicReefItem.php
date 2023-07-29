@@ -84,10 +84,8 @@ class AtomicReefItem extends ReefItems
             default:
                 return null;
         }
-        var_dump($item);
         if (!$item instanceof Durable) return null;
 
-        var_dump("c");
         $item->setUnbreakable();
         $nbt = $item->getNamedTag();
         $nbt->setString("owner", $xuid);
