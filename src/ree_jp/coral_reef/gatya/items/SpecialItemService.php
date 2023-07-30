@@ -4,6 +4,7 @@ namespace ree_jp\coral_reef\gatya\items;
 
 use pocketmine\item\Item;
 use ree_jp\coral_reef\account\AccountStore;
+use ree_jp\coral_reef\gatya\items\event\AtomicReefItem;
 use ree_jp\coral_reef\gatya\items\event\Christmas2021ReefItems;
 use ree_jp\coral_reef\gatya\items\event\HalloweenNightItems;
 use ree_jp\coral_reef\gatya\items\event\HalloweenPartyItems;
@@ -49,6 +50,9 @@ class SpecialItemService
 
             SteamPunkItems::PICKAXE, SteamPunkItems::SHOVEL, SteamPunkItems::AXE, SteamPunkItems::HOE,
             => self::setOwner(SteamPunkItems::getItem($xuid, $item, $durable), $store)->setCount($count),
+
+            AtomicReefItem::PICKAXE, AtomicReefItem::SHOVEL, AtomicReefItem::AXE, AtomicReefItem::HOE,
+            => self::setOwner(AtomicReefItem::getItem($xuid, $item, $durable), $store)->setCount($count),
 
             default => null,
         };

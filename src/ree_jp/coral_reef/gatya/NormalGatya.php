@@ -57,6 +57,7 @@ class NormalGatya
 
                 $result = self::getGatyaResult($xuid, $lastReef);
                 if ($result->rare === self::REEF_RARE) {
+                    var_dump("last reef reset");
                     $lastReef = 0;
                 }
                 $results[] = $result;

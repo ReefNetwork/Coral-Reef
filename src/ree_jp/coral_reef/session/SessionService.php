@@ -93,7 +93,7 @@ class SessionService
                             $message .= "$name さんが見つかりませんでした";
                         } else {
                             GatyaManager::addTicket($sqlRepo, $p->getXuid(), SQLConst::TICKETS_SUMMER_2023, $getTicket);
-                            $p->sendMessage("ランキング報酬として§c9サマー§rガチャチケットを$getTicket 枚受け取りました");
+                            $p->sendMessage("ランキング報酬として§9サマー§rガチャチケットを$getTicket 枚受け取りました");
                         }
 
                         $message .= "$now 位 $name さん($count)\n";
