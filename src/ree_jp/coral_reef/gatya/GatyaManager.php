@@ -58,13 +58,22 @@ class GatyaManager
      */
     static function gatyaProcess(Player $p, array $gatyaResults, string $gatyaLog, string $ticketType): void
     {
-        /** @var AccountStore $store */
-        $store = StoreHouse::$instance->get(AccountStore::class);
-        if ($store->hasValue($p->getXuid(), KVConst::GATYA_PROCESSING)) {
-            $p->sendMessage("ガチャが終わるまでお待ちください");
-            return;
+        $reefCount = 0;
+        foreach ($gatyaResults as $result) {
+            if ($result->broadcastMessage != null) $reefCount++;
         }
-        $store->setValue($p->getXuid(), KVConst::GATYA_PROCESSING);
+        if ($reefCount >= 2) {
+            /** @var AccountStore $store */
+            $store = StoreHouse::$instance->get(AccountStore::class);
+            $message = "[ガチャシステムエラー?報告]\n";
+            $message .= "user:" . $p->getXuid() . "\n";
+            $message .= "now processing:" . $store->hasValue($p->getXuid(), KVConst::GATYA_PROCESSING) . "\n";
+            $message .= "type:" . $gatyaLog . ":" . $ticketType . ":" . $reefCount . "\n";
+            $message .= "count:" . count($gatyaResults) . "\n";
+
+            SocketService::sendBroadcastMessage(ReefEdgePlugin::$socketClient, $message);
+        }
+
         $count = count($gatyaResults);
         /** @var SQLRepository $sqlRepo */
         $sqlRepo = CoralReefPlugin::$plugin->pool->get(SQLRepository::class);

@@ -18,12 +18,15 @@ use bbo51dog\bboform\form\ClosureCustomForm;
 use bbo51dog\bboform\form\ModalForm;
 use bbo51dog\bboform\form\SimpleForm;
 use pocketmine\player\Player;
+use ree_jp\coral_reef\account\AccountStore;
+use ree_jp\coral_reef\account\KVConst;
 use ree_jp\coral_reef\gatya\event\AtomicReefGatya;
 use ree_jp\coral_reef\gatya\event\Summer2022Re1;
 use ree_jp\coral_reef\gatya\GatyaService;
 use ree_jp\coral_reef\gatya\NormalGatya;
 use ree_jp\coral_reef\sql\mysql\SQLRepository;
 use ree_jp\coral_reef\sql\SQLConst;
+use ree_jp\coral_reef\StoreHouse;
 
 class GatyaForm
 {
@@ -98,6 +101,14 @@ class GatyaForm
                 "はい", null,
                 function (Player $p) use ($repo, $gatyaType, $num, $tickets) {
                     if ($tickets >= $num) {
+                        /** @var AccountStore $store */
+                        $store = StoreHouse::$instance->get(AccountStore::class);
+                        if ($store->hasValue($p->getXuid(), KVConst::GATYA_PROCESSING)) {
+                            $p->sendMessage("ガチャが終わるまでお待ちください");
+                            return;
+                        }
+                        $store->setValue($p->getXuid(), KVConst::GATYA_PROCESSING);
+
                         switch ($gatyaType) {
                             case SQLConst::LOG_GATYA:
                                 NormalGatya::gatya($p, $num);
@@ -113,6 +124,7 @@ class GatyaForm
 
                             default:
                                 $p->sendMessage("エラーが発生しました");
+                                $store->setValue($p->getXuid(), KVConst::GATYA_PROCESSING, 0);
                         }
                     } else {
                         $p->sendMessage('チケットが足りません');
