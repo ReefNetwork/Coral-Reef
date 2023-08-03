@@ -54,9 +54,10 @@ class GatyaManager
      * @param GatyaResult[] $gatyaResults
      * @param string $gatyaLog
      * @param string $ticketType
+     * @param string $trackId
      * @return void
      */
-    static function gatyaProcess(Player $p, array $gatyaResults, string $gatyaLog, string $ticketType): void
+    static function gatyaProcess(Player $p, array $gatyaResults, string $gatyaLog, string $ticketType, string $trackId = ""): void
     {
         $reefCount = 0;
         foreach ($gatyaResults as $result) {
@@ -70,6 +71,7 @@ class GatyaManager
             $message .= "now processing:" . $store->hasValue($p->getXuid(), KVConst::GATYA_PROCESSING) . "\n";
             $message .= "type:" . $gatyaLog . ":" . $ticketType . ":" . $reefCount . "\n";
             $message .= "count:" . count($gatyaResults) . "\n";
+            $message .= "trackId:" . $trackId . "\n";
 
             SocketService::sendBroadcastMessage(ReefEdgePlugin::$socketClient, $message);
         }

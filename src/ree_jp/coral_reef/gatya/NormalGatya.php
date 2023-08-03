@@ -23,6 +23,8 @@ use ree_jp\coral_reef\gatya\items\ReefItems;
 use ree_jp\coral_reef\gatya\items\SuperItems;
 use ree_jp\coral_reef\gatya\items\UltimateItems;
 use ree_jp\coral_reef\sql\SQLConst;
+use ree_jp\reef_edge\ReefEdgePlugin;
+use ree_jp\reef_edge\socket\SocketData;
 use SOFe\AwaitGenerator\Await;
 
 class NormalGatya
@@ -45,7 +47,10 @@ class NormalGatya
 
     static function gatya(Player $p, int $number = 1): void
     {
-        Await::f2c(function () use ($number, $p): Generator {
+        $trackId = $p->getXuid() . "-" . mt_rand(1, 999999);
+        Await::f2c(function () use ($trackId, $number, $p): Generator {
+            $trackMessage = "<trackId:$trackId>";
+
             $xuid = $p->getXuid();
             $lastReef = yield from GatyaService::getLastReef($p->getXuid(), self::GATYA_LOG);
             $results = [];
@@ -60,8 +65,12 @@ class NormalGatya
                     $lastReef = 0;
                 }
                 $results[] = $result;
+                $trackMessage .= "[$result->rare:$lastReef]";
             }
-            GatyaManager::gatyaProcess($p, $results, self::GATYA_LOG, self::TICKET_TYPE);
+            GatyaManager::gatyaProcess($p, $results, self::GATYA_LOG, self::TICKET_TYPE, $trackId);
+
+            ReefEdgePlugin::$socketClient->send(new SocketData("discord-message", ["message" => $trackMessage,
+                "channelID" => "1136687962889916498"]));
         });
     }
 
