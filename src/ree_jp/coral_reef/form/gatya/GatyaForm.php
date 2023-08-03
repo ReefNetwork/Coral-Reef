@@ -83,7 +83,7 @@ class GatyaForm
         if ($tickets < $max) $max = $tickets;
         $amount = new Slider(GatyaService::GATYA[$gatyaType]["name"] . "を引く回数を選択してください", $min, $max, $min);
         $form = new ClosureCustomForm(function (Player $p) use ($repo, $tickets, $gatyaType, $amount): void {
-            self::sendGatyaConfirmForm($repo, $p, $gatyaType, $amount->getValue(), $tickets);
+            self::sendGatyaConfirmForm($repo, $p, $gatyaType, intval($amount->getValue()), $tickets);
         });
         $form->setTitle("Gatya")->addElements($amount);
         $p->sendForm($form);
