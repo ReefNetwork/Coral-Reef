@@ -22,12 +22,14 @@ use ree_jp\coral_reef\account\GiftService;
 use ree_jp\coral_reef\account\KVConst;
 use ree_jp\coral_reef\CoralReefPlugin;
 use ree_jp\coral_reef\gatya\items\ReefItems;
+use ree_jp\coral_reef\quest\QuestListener;
 use ree_jp\coral_reef\sql\model\LogData;
 use ree_jp\coral_reef\sql\mysql\SQLRepository;
 use ree_jp\coral_reef\sql\repo\LogRepository;
 use ree_jp\coral_reef\sql\SQLConst;
 use ree_jp\coral_reef\StoreHouse;
 use ree_jp\reef_edge\ReefEdgePlugin;
+use ree_jp\reef_edge\socket\SocketData;
 use ree_jp\reef_edge\socket\SocketService;
 use SOFe\AwaitGenerator\Await;
 
@@ -73,7 +75,9 @@ class GatyaManager
             $message .= "count:" . count($gatyaResults) . "\n";
             $message .= "trackId:" . $trackId . "\n";
 
-            SocketService::sendBroadcastMessage(ReefEdgePlugin::$socketClient, $message);
+            ReefEdgePlugin::$socketClient->send(new SocketData("discord-message", ["message" => $message,
+                "channelID" => "970824600076304415"]));
+            SocketService::sendBroadcastMessage(ReefEdgePlugin::$socketClient, "[システム]trackId:" . $trackId);
         }
 
         $count = count($gatyaResults);
@@ -91,7 +95,7 @@ class GatyaManager
                 $logRepo = CoralReefPlugin::$plugin->pool->get(LogRepository::class);
 
                 foreach ($gatyaResults as $result) {
-                    Await::f2c(function () use ($sqlRepo, $p, $gatyaLog, $xuid, $result, $logRepo): Generator {
+                    Await::f2c(function () use ($count, $sqlRepo, $p, $gatyaLog, $xuid, $result, $logRepo): Generator {
                         $logValue = $result->item->getNamedTag()->getString(ReefItems::REEF_SP_ITEM, "unknown");
                         yield from $logRepo->addLog(LogData::create($xuid, $gatyaLog, $result->rare, $logValue));
 
@@ -104,6 +108,8 @@ class GatyaManager
 
                         if ($p->isOnline() && $p->getInventory()->canAddItem($result->item)) {
                             $p->getInventory()->addItem($result->item);
+                            QuestListener::callSubscribedQuest($p->getXuid(), QuestListener::GATYA, $count);
+
                         } else {
                             GiftService::addGift($sqlRepo, $p->getXuid(), new GiftData("0", "ガチャ",
                                 time() + (7 * 24 * 60 * 60), [$result->item]),

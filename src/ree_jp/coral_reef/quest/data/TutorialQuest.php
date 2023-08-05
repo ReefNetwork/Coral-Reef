@@ -148,7 +148,7 @@ class TutorialQuest extends QuestData
                 break;
             case QuestListener::GATYA:
                 if (intval($this->value) === 6) {
-                    $this->progress++;
+                    $this->progress += intval($value);
                     if ($this->progress >= 10) {
                         $this->value++;
                         $this->giveReward();
