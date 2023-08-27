@@ -15,12 +15,10 @@ use Exception;
 use Generator;
 use pocketmine\Server;
 use ree_jp\coral_reef\CoralReefPlugin;
-use ree_jp\coral_reef\gatya\GatyaManager;
 use ree_jp\coral_reef\sql\model\BlockStatisticsModel;
 use ree_jp\coral_reef\sql\mysql\SQLRepository;
 use ree_jp\coral_reef\sql\repo\SessionRepository;
 use ree_jp\coral_reef\sql\RepositoryPool;
-use ree_jp\coral_reef\sql\SQLConst;
 use ree_jp\coral_reef\StoreHouse;
 use ree_jp\reef_edge\ReefEdgePlugin;
 use ree_jp\reef_edge\socket\SocketService;
@@ -92,8 +90,8 @@ class SessionService
                         if (is_null($p)) {
                             $message .= "$name さんが見つかりませんでした";
                         } else {
-                            GatyaManager::addTicket($sqlRepo, $p->getXuid(), SQLConst::TICKETS_SUMMER_2023, $getTicket);
-                            $p->sendMessage("ランキング報酬として§9サマー§rガチャチケットを$getTicket 枚受け取りました");
+//                            GatyaManager::addTicket($sqlRepo, $p->getXuid(), SQLConst::TICKETS_SUMMER_2023, $getTicket);
+//                            $p->sendMessage("ランキング報酬として§9サマー§rガチャチケットを$getTicket 枚受け取りました");
                         }
 
                         $message .= "$now 位 $name さん($count)\n";

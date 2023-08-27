@@ -21,7 +21,6 @@ use pocketmine\player\Player;
 use ree_jp\coral_reef\account\AccountStore;
 use ree_jp\coral_reef\account\KVConst;
 use ree_jp\coral_reef\gatya\event\AtomicReefGatya;
-use ree_jp\coral_reef\gatya\event\Summer2022Re1;
 use ree_jp\coral_reef\gatya\GatyaService;
 use ree_jp\coral_reef\gatya\NormalGatya;
 use ree_jp\coral_reef\sql\mysql\SQLRepository;
@@ -30,7 +29,7 @@ use ree_jp\coral_reef\StoreHouse;
 
 class GatyaForm
 {
-    const NOW_GATYA = [SQLConst::LOG_GATYA_ATOMIC, SQLConst::LOG_GATYA_SUMMER_2022_RE_1, SQLConst::LOG_GATYA];
+    const NOW_GATYA = [SQLConst::LOG_GATYA, SQLConst::LOG_GATYA_ATOMIC];
 
     static function sendForm(SQLRepository $repo, Player $p, string $gatyaType = null): void
     {
@@ -116,10 +115,6 @@ class GatyaForm
 
                             case SQLConst::LOG_GATYA_ATOMIC:
                                 AtomicReefGatya::gatya($p, $num);
-                                break;
-
-                            case SQLConst::LOG_GATYA_SUMMER_2022_RE_1:
-                                Summer2022Re1::gatya($p, $num);
                                 break;
 
                             default:

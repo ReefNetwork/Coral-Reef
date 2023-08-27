@@ -15,8 +15,6 @@ use Closure;
 use ree_jp\coral_reef\account\AccountStore;
 use ree_jp\coral_reef\quest\data\DailyDigQuest;
 use ree_jp\coral_reef\quest\data\DailyLoginQuest;
-use ree_jp\coral_reef\quest\data\event\summer_2023\Summer2023DailyDig;
-use ree_jp\coral_reef\quest\data\event\summer_2023\Summer2023DailyLogin;
 use ree_jp\coral_reef\quest\data\LevelUpQuest;
 use ree_jp\coral_reef\quest\data\QuestData;
 use ree_jp\coral_reef\quest\data\TutorialQuest;
@@ -46,8 +44,8 @@ class QuestManager
             self::addUserQuest($repo, $xuid, WeeklyAchieveQuest::ID, null);
 
             // 期間限定
-            self::addUserQuest($repo, $xuid, Summer2023DailyLogin::ID, null);
-            self::addUserQuest($repo, $xuid, Summer2023DailyDig::ID, null);
+//            self::addUserQuest($repo, $xuid, Summer2023DailyLogin::ID, null);
+//            self::addUserQuest($repo, $xuid, Summer2023DailyDig::ID, null);
 
             if ($func instanceof Closure) $func($rows);
         });
@@ -77,8 +75,8 @@ class QuestManager
             WeeklyAchieveQuest::ID => new WeeklyAchieveQuest($repo, $xuid, $value),
 
             // 期間限定
-            Summer2023DailyLogin::ID => new Summer2023DailyLogin($repo, $xuid, $value),
-            Summer2023DailyDig::ID => new Summer2023DailyDig($repo, $xuid, $value),
+//            Summer2023DailyLogin::ID => new Summer2023DailyLogin($repo, $xuid, $value),
+//            Summer2023DailyDig::ID => new Summer2023DailyDig($repo, $xuid, $value),
 
             default => null,
         };
