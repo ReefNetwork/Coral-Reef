@@ -55,7 +55,7 @@ class MenuForm
                 ->setText("§7現在のレベル §8: §f$level \n§7レベルアップまで §8: §f$necessaryExperience §7経験値\n§7経験値 §8: §f$exp\n§7所持金 §8: §f" . MoneyService::moneyFormat($money))
                 ->addElements(
                     new ClosureButton(
-                        "[grid_panel]§fストレージ", new ButtonImage(ButtonImage::TYPE_PATH, "textures/items/chest.png"),
+                        "[grid_panel]§fストレージ", new ButtonImage(ButtonImage::TYPE_PATH, "textures/icon/storage.png"),
                         function (Player $p) {
                             Server::getInstance()->dispatchCommand($p, 'stackstorage');
                             $p->sendMessage(TextFormat::DARK_GRAY . "ストレージを開いています(数秒かかることがあります)");
@@ -67,7 +67,7 @@ class MenuForm
                             MyWarpForm::sendForm($pool, $p);
                         }),
                     new ClosureButton(
-                        "[grid_panel]§7ワールド移動", new ButtonImage(ButtonImage::TYPE_URL, "https://cdn-icons-png.flaticon.com/512/2072/2072130.png"),
+                        "[grid_panel]§7ワールド移動", new ButtonImage(ButtonImage::TYPE_PATH, "textures/items/map_locked.png"),
                         function (Player $p) {
                             WorldTeleportForm::sendForm($p);
                         }),
@@ -77,12 +77,12 @@ class MenuForm
                             SkillSettingForm::sendForm($store, $p);
                         }),
                     new ClosureButton(
-                        "[grid_panel]§7クエスト", new ButtonImage(ButtonImage::TYPE_PATH, "textures/items/apple.png"),
+                        "[grid_panel]§7クエスト", new ButtonImage(ButtonImage::TYPE_PATH, "textures/items/map_filled.png"),
                         function (Player $p) {
                             QuestForm::sendForm($p);
                         }),
                     new ClosureButton(
-                        "[grid_panel]§7ランダムワープ", new ButtonImage(ButtonImage::TYPE_PATH, "textures/items/apple.png"),
+                        "[grid_panel]§7ランダムワープ", new ButtonImage(ButtonImage::TYPE_PATH, "textures/items/cookie.png"),
                         function (Player $p) use ($pool, $store) {
                             self::sendRandomWarpForm($pool, $store, $p);
                         }),
@@ -93,7 +93,7 @@ class MenuForm
                         }
                     ),
                     new ClosureButton(
-                        "[grid_panel]§7土地保護", new ButtonImage(ButtonImage::TYPE_PATH, "textures/items/apple.png"),
+                        "[grid_panel]§7土地保護", new ButtonImage(ButtonImage::TYPE_PATH, "textures/items/clock_item.png"),
                         function (Player $p) {
                             Server::getInstance()->dispatchCommand($p, "reef-form land");
                         }),
@@ -123,12 +123,12 @@ class MenuForm
                             Server::getInstance()->dispatchCommand($p, "exe-p server-select");
                         }),
                     new ClosureButton(
-                        "[grid_panel]§7設定", new ButtonImage(ButtonImage::TYPE_PATH, "textures/items/apple.png"),
+                        "[grid_panel]§7設定", new ButtonImage(ButtonImage::TYPE_PATH, "textures/icon/setting.png"),
                         function (Player $p) use ($sqlRepo) {
                             SettingForm::sendForm($sqlRepo, $p);
                         }),
                     new ClosureButton(
-                        "[grid_panel]§7アカウント設定", new ButtonImage(ButtonImage::TYPE_PATH, "textures/items/apple.png"),
+                        "[grid_panel]§7アカウント設定", new ButtonImage(ButtonImage::TYPE_PATH, "textures/icon/setting.png"),
                         function (Player $p) {
                             Server::getInstance()->dispatchCommand($p, "exe-p setting");
                         }),
