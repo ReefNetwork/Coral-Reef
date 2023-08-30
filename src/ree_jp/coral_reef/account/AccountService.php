@@ -207,10 +207,10 @@ class AccountService
         if (isset(Experiment::LEVEL_EXPERIMENT[$user->level])) {
             $oldLevelExp = Experiment::LEVEL_EXPERIMENT[$user->level];
             $percent = round(($user->experience - $oldLevelExp) / ($user->experience + $user->necessaryExperience - $oldLevelExp), 5);
-            BossBarAPI::getInstance()->setTitle($p, "レベルアップまで $user->necessaryExperience 経験値", $p->getId());
+            BossBarAPI::getInstance()->setTitle($p, "レベル:" . $user->level . "   レベルアップまで $user->necessaryExperience 経験値", $p->getId());
             BossBarAPI::getInstance()->setPercent($p, $percent, $p->getId());
         } else {
-            BossBarAPI::getInstance()->setTitle($p, "レベル上限", $p->getId());
+            BossBarAPI::getInstance()->setTitle($p, "レベル:" . $user->level . "    レベル上限", $p->getId());
             BossBarAPI::getInstance()->setPercent($p, 1, $p->getId());
         }
     }
