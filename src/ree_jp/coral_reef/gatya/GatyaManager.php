@@ -17,8 +17,6 @@ use pocketmine\player\Player;
 use pocketmine\Server;
 use poggit\libasynql\SqlError;
 use ree_jp\coral_reef\account\AccountStore;
-use ree_jp\coral_reef\account\GiftData;
-use ree_jp\coral_reef\account\GiftService;
 use ree_jp\coral_reef\account\KVConst;
 use ree_jp\coral_reef\CoralReefPlugin;
 use ree_jp\coral_reef\gatya\items\ReefItems;
@@ -31,6 +29,7 @@ use ree_jp\coral_reef\StoreHouse;
 use ree_jp\reef_edge\ReefEdgePlugin;
 use ree_jp\reef_edge\socket\SocketData;
 use ree_jp\reef_edge\socket\SocketService;
+use ree_jp\stackstorage\api\StackStorageAPI;
 use SOFe\AwaitGenerator\Await;
 
 class GatyaManager
@@ -109,18 +108,9 @@ class GatyaManager
                         if ($p->isOnline() && $p->getInventory()->canAddItem($result->item)) {
                             $p->getInventory()->addItem($result->item);
                             QuestListener::callSubscribedQuest($p->getXuid(), QuestListener::GATYA, $count);
-
                         } else {
-                            GiftService::addGift($sqlRepo, $p->getXuid(), new GiftData("0", "ガチャ",
-                                time() + (7 * 24 * 60 * 60), [$result->item]),
-                                function () use ($p) {
-                                    if (!$p->isConnected()) return;
-                                    $p->sendMessage("ガチャの景品がインベントリに入れるスペースがなかったためギフトに送信しました");
-                                }, function () use ($result, $p) { // ギフト出来なければ落とす
-                                    if (!$p->isConnected()) return;
-                                    $p->dropItem($result->item);
-                                    $p->sendMessage("ガチャの景品を地面にドロップしました");
-                                });
+                            StackStorageAPI::$instance->add($xuid, $result->item);
+                            if ($p->isOnline()) $p->sendMessage("ガチャを景品がインベントリに入れるスペースがなかったためギフトに送信しました");
                         }
                     });
                 }
