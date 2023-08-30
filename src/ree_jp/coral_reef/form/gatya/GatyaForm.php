@@ -47,8 +47,6 @@ class GatyaForm
                 ->setTitle("[dynamic_seichi_gatya]$gatya_image")
                 ->setText(GatyaService::ticketName(GatyaService::GATYA[$gatyaType]["ticket"]) . ": $ticketCount 個")
                 ->addElements(
-                    new ClosureButton("[gatya_close]", null, function (): void {
-                    }),
                     new ClosureButton("[gatya_info]詳細", null, function () use ($gatyaType, $p) {
                         $p->getServer()->dispatchCommand($p, "exe-p wp-view post " . GatyaService::GATYA[$gatyaType]["details"]);
                     }),

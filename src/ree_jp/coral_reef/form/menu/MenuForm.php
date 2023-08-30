@@ -11,7 +11,6 @@
 
 namespace ree_jp\coral_reef\form\menu;
 
-use bbo51dog\bboform\element\Button;
 use bbo51dog\bboform\element\ButtonImage;
 use bbo51dog\bboform\element\ClosureButton;
 use bbo51dog\bboform\form\ModalForm;
@@ -136,7 +135,6 @@ class MenuForm
                         function () use ($p): void {
                             DocsForm::sendForm($p);
                         }),
-                    new Button("[close]"),
                 );
             $p->sendForm($form);
         });
