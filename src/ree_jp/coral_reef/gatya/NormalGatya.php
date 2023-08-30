@@ -15,6 +15,7 @@ namespace ree_jp\coral_reef\gatya;
 use Generator;
 use pocketmine\player\Player;
 use pocketmine\utils\TextFormat;
+use ree_jp\coral_reef\gatya\items\ConvertItems;
 use ree_jp\coral_reef\gatya\items\event\HalloweenNightItems;
 use ree_jp\coral_reef\gatya\items\event\HalloweenPartyItems;
 use ree_jp\coral_reef\gatya\items\NormalItems;
@@ -143,9 +144,10 @@ class NormalGatya
                 return new GatyaResult($rarity, TextFormat::GOLD . "ウルトラレア" . $percent, $item);
 
             case self::SUPER_RARE:// 10%
-                $item = match (mt_rand(1, 2)) {
+                $item = match (mt_rand(1, 3)) {
                     1 => SuperItems::getItem($xuid, SuperItems::PICKAXE),
                     2 => SuperItems::getItem($xuid, SuperItems::SHOVEL),
+                    3 => ConvertItems::getItem($xuid, ConvertItems::HERBICIDE),
                 };
                 return new GatyaResult($rarity, TextFormat::BLUE . "スーパーレア" . $percent, $item);
 
