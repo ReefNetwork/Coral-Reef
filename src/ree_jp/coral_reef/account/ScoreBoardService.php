@@ -70,7 +70,7 @@ class ScoreBoardService
         $landStore = StoreHouse::$instance->get(LandStore::class);
         $land = LandService::getLand($landStore, $p->getPosition());
         if ($land instanceof LandData) {
-            self::setScore($pk, 5, "現在の土地");
+            self::setScore($pk, 6, "現在の土地");
             self::setScore($pk, 7, $land->name);
         }
 
