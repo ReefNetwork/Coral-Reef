@@ -29,8 +29,6 @@ class ScoreBoardService
     const board = "board";
     const object = "sidebar";
 
-    const color = [1, 2, 3, 4, 5, 6, 7, 8, 9, "a", "b", "c", "d", "e", "f", "g", "l", "o"];
-
     static function sendScoreBoard(Player $p): void
     {
         /** @var $accountStore AccountStore */
@@ -74,7 +72,7 @@ class ScoreBoardService
             self::setScore($pk, 7, $land->name);
         }
 
-//        self::setScore($pk, 7, TextFormat::BLUE . "Summer§" . self::color[mt_rand(0, 17)] . "イベント§r 開催中");
+//        self::setScore($pk, 7, TextFormat::BLUE . "Summer§" . AccountService::color[mt_rand(0, 17)] . "イベント§r 開催中");
 
         self::setScore($pk, 8, TextFormat::DARK_GRAY . $p->getDisplayName());
         self::setScore($pk, 9, TextFormat::DARK_GRAY . date("Y/m/d H:i"));

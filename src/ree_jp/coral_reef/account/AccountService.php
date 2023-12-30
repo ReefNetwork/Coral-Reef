@@ -41,6 +41,8 @@ use SOFe\AwaitGenerator\Await;
 
 class AccountService
 {
+    const color = [1, 2, 3, 4, 5, 6, 7, 8, 9, "a", "b", "c", "d", "e", "f", "g", "l", "o"];
+
     const STOP_FLY_WORLD = array("lobby", "shop");
 
     static function userJoin(SQLRepository $repo, AccountStore $store, Player $p): void
@@ -218,5 +220,14 @@ class AccountService
     static function autoSaveWarpName(): string
     {
         return "[auto-save]" . CoralReefPlugin::$serverID;
+    }
+
+    static function colorFullText(string $text): string
+    {
+        $result = "";
+        for ($i = 0; $i < strlen($text); $i++) {
+            $result .= "§" . self::color[mt_rand(0, 17)] . $text[$i] . "§r";
+        }
+        return $result;
     }
 }

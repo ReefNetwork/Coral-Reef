@@ -17,6 +17,7 @@ use bbo51dog\bboform\form\ClosureCustomForm;
 use Closure;
 use pocketmine\player\Player;
 use pocketmine\utils\TextFormat;
+use ree_jp\coral_reef\account\AccountService;
 use ree_jp\coral_reef\CoralReefPlugin;
 use ree_jp\coral_reef\gatya\GatyaManager;
 use ree_jp\coral_reef\sql\model\LogData;
@@ -55,9 +56,10 @@ class BonusCodeForm
                     GatyaManager::addTicket($repo, $p->getXuid(), SQLConst::TICKETS_NORMAL, 1);
                 });
                 break;
-            case "discord-2000":
+            case "2024":
                 self::useCode($repo, $p, $code, function () use ($repo, $p): void {
-                    $p->sendMessage(TextFormat::AQUA . "ガチャチケットを" . TextFormat::RED . "20枚" . TextFormat::AQUA . "受け取りました");
+                    $p->sendMessage(AccountService::colorFullText("ハッピーニューイヤー!!!!!"));
+                    $p->sendMessage(TextFormat::AQUA . "ガチャチケットを" . TextFormat::RED . "10枚" . TextFormat::AQUA . "受け取りました");
                     GatyaManager::addTicket($repo, $p->getXuid(), SQLConst::TICKETS_NORMAL, 20);
                 });
                 break;

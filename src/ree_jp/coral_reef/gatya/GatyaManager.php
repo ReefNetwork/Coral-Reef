@@ -110,7 +110,7 @@ class GatyaManager
                             QuestListener::callSubscribedQuest($p->getXuid(), QuestListener::GATYA, $count);
                         } else {
                             StackStorageAPI::$instance->add($xuid, $result->item);
-                            if ($p->isOnline()) $p->sendMessage("ガチャを景品がインベントリに入れるスペースがなかったためギフトに送信しました");
+                            if ($p->isOnline()) $p->sendMessage("ガチャを景品がインベントリに入れるスペースがなかったため§lストレージ§rに送信しました");
                         }
                     });
                 }
